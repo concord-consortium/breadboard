@@ -1,3 +1,5 @@
+var allResults = []
+
 function buttonClicked(event){
   form = jQuery(event.target).parent()
   disableForm(form)
@@ -15,7 +17,24 @@ function completed(){
     form = jQuery(this)
     result2[this.id] = serializeForm(form)
   })
-  $("#result").append("<pre>"+$.toJSON(result2)+"</pre>")  
+  allResults.push(result2)
+  
+  resultString = jQuery.map(allResults, function(el, i){
+    return jQuery.toJSON(el)
+  }).join("<br\>")
+  
+  $("#result").html("<pre>"+resultString+"</pre>")
+
+  // display contextual help next to each item
+
+  if(allResults.length < 3) {
+    $(".next_button").each(function(){
+      this.disabled = false
+    }).show()
+  } else {
+    $(".next_button").hide()
+    $(".show_report_button").show()    
+  }      
 }
 
 function enableForm(form){
@@ -66,16 +85,37 @@ function serializeForm(form){
 }
 
 
+function nextButtonClick(event){
+  $(".next_button").each(function(i){
+    this.disabled = true;
+  })
+  form = $("form:first")
+  enableForm(form)     
+}
+
+function showReportClick(event){
+  $("#report").html("<h3>Report Goes Here</h3>")
+}
+
 $(document).ready(function(){
    // disable all form elements
    $("input, select").attr("disabled", "true")
 
+   // hide the next buttons and their listeners
+   $(".next_button").hide().click(nextButtonClick)
+
+   // hide the show report buttons
+   $(".show_report_button").hide().click(showReportClick)
+ 
    // add start and stop times to all forms
    $("form").append(
      "<input name='start_time' type='hidden'></input><input name='stop_time' type='hidden'></input>")   
 
-   button = $("button[name='start']").click(function(event){
+   $("#start_button").click(function(event){
+     jQuery(event.target).hide()
      form = $("form:first")
      enableForm(form)     
-   })
+   })   
+   
+   $(".next_button").hide().click(nextButtonClick)
  });
