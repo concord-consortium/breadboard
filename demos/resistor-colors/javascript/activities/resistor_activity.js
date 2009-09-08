@@ -3,11 +3,7 @@ function initActivity() {
 }
 
 function ResistorActivity() {
-    flash = getFlashMovie("resistor_colors");
-    theMethod = flash.sendMessageToFlash;
-    while (!theMethod) {
-        theMethod = flash.sendMessageToFlash;
-    }
+    flash = getFlashMovie('resistor_colors');
     this.resistor = new Resistor();
     this.resistor.randomize();
     console.log('Resistance=' + this.resistor.value);

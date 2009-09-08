@@ -4,9 +4,9 @@ import flash.display.Loader;
 import flash.external.ExternalInterface;
 import flash.net.URLRequest;
 
-//trace('my.as this=' + this)
+trace('my.as this=' + this)
 
-/*
+
 function traceDisplayList(container:DisplayObjectContainer, indentString:String = ""):void {
     var child:DisplayObject;
     trace(indentString + container, container.name);
@@ -20,7 +20,7 @@ function traceDisplayList(container:DisplayObjectContainer, indentString:String 
 
 trace('Display List:')
 traceDisplayList(this.stage);
- */
+
 
 /*
 function clickSend(event:Event):void {

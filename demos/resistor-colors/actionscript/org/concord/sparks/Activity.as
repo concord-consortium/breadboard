@@ -7,13 +7,14 @@ package org.concord.sparks
         protected var name:String;
         protected var parent;
         protected var root;
+        protected var javascript;
         
         public function Activity(name:String, parent, root):void {
             trace("\nActivity: " + name + ' - ' + new Date());
             this.name = name;
             this.parent = parent;
             this.root = root;
-            new JavaScript(this);
+            this.javascript = new JavaScript(this);
         }
         
         public function processMessageFromJavaScript(args) {

@@ -145,6 +145,10 @@ package org.concord.sparks.circuit
             }
         }
         
+        public function doConnection() {
+            
+        }
+        
         private function distance(x1:Number, y1:Number, x2:Number, y2:Number) {
             return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
         }

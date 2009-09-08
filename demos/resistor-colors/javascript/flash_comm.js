@@ -10,7 +10,7 @@ function sendCommand() {
   }
   flash = getFlashMovie("my");
   retVal = flash.sendMessageToFlash.apply(flash, params);
-  document.callFunctionForm.returnValue.value = retVal;
+  console.log('Returned by flash: ' + retVal);
 }
 
 function receiveEvent(name, value, time) {
