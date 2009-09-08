@@ -36,11 +36,12 @@ package org.concord.sparks.circuit
         var y = 200;
         var width = 260;
         var height = 80;
-        var end1_x = 430;
-        var end1_y = 240;
-        var end2_x = 690;
-        var end2_y = 240;
-        var highlightRadius = 20;
+        
+        public var end1_x = 430;
+        public var end1_y = 240;
+        public var end2_x = 690;
+        public var end2_y = 240;
+        public var snapRadius = 20;
         
         var highlightShape1:Shape;
         var highlightShape2:Shape;
@@ -116,7 +117,7 @@ package org.concord.sparks.circuit
         private function drawHighlightCircle(g:Graphics, x:Number, y:Number) {
             g.lineStyle(1, 0x000000, 0.0);
             g.beginFill(0xdd00dd, 0.5);
-            g.drawCircle(x, y, highlightRadius);
+            g.drawCircle(x, y, snapRadius);
         }
         
         // Set color labels
@@ -131,13 +132,13 @@ package org.concord.sparks.circuit
         }
 
         public function checkHighlight(leadX:Number, leadY:Number) {
-            if (distance(leadX, leadY, end1_x, end1_y) < highlightRadius) {
+            if (distance(leadX, leadY, end1_x, end1_y) < snapRadius) {
                 highlightShape1.visible = true;
             }
             else {
                 highlightShape1.visible = false;
             }
-            if (distance(leadX, leadY, end2_x, end2_y) < highlightRadius) {
+            if (distance(leadX, leadY, end2_x, end2_y) < snapRadius) {
                 highlightShape2.visible = true;
             }
             else {

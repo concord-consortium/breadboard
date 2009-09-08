@@ -18,9 +18,9 @@ package org.concord.sparks
                     getMessageFromJavaScript);
         }
         
-        public function sendEvent(name:String, value) {
+        public function sendEvent(name:String, ... values) {
             var time = String(new Date().valueOf());
-            ExternalInterface.call('receiveEvent', name, value, time);
+            ExternalInterface.call('receiveEvent', name, values.join('|'), time);
         }
         
         private function parseParameter(parm) {

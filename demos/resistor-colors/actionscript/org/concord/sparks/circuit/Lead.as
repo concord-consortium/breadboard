@@ -31,6 +31,11 @@ package org.concord.sparks.circuit
             displayObject.addEventListener(MouseEvent.MOUSE_MOVE,handleMouseMove);
         }
         
+        public function snapTo(x:Number, y:Number) {
+            displayObject.x = x - endLocalX;
+            displayObject.y = y - endLocalY;
+        }
+        
         function handleMouseDown(event:MouseEvent):void {
             mouseDown = true;
             xOffset = endLocalX - event.localX;

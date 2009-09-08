@@ -59,15 +59,13 @@ package org.concord.sparks.activities
         }
         
         private function checkConnection(lead:Lead) {
-        	/*
-            if (distance(lead.x, lead.y, resistor.end1_x, resistor.end1_y)) {
-                //lead.snapTo(resistor.end1_x, resistor.end1_y);
-                //javascript.sendEvent('connection', 'multimeter.red_lead', 'resistor.end1')
+            if (distance(lead.x, lead.y, resistor.end1_x, resistor.end1_y) < resistor.snapRadius) {
+                lead.snapTo(resistor.end1_x, resistor.end1_y);
+                javascript.sendEvent('connection', 'multimeter.red_lead', 'resistor.end1')
             }
-            else if (distance(lead.x, lead.y, resistor.end2_x, resistor.end2_y)) {
-                //lead.snapTo(resistor.end2_x, resistor.end2_y);
+            else if (distance(lead.x, lead.y, resistor.end2_x, resistor.end2_y) < resistor.snapRadius) {
+                lead.snapTo(resistor.end2_x, resistor.end2_y);
             }
-             */
         }
         
         private function distance(x1:Number, y1:Number, x2:Number, y2:Number) {
