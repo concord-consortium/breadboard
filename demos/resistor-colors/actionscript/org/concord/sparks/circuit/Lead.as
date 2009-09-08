@@ -4,7 +4,7 @@ package org.concord.sparks.circuit
     import flash.events.MouseEvent;
     import org.concord.sparks.Activity;
     
-    public class Lead
+    public class Lead implements Node
     {
         // Global coordinates of the end point of the lead
         public var x:Number;
@@ -20,15 +20,26 @@ package org.concord.sparks.circuit
         var endLocalX:Number; 
         var endLocalY:Number;
         
-        public var mouseDown:Boolean; 
+        public var mouseDown:Boolean;
         
-        public function Lead(displayObject, endLocalX:Number, endLocalY:Number) {
+        private var _id:String; 
+        
+        public function Lead(id, displayObject, endLocalX:Number, endLocalY:Number) {
+        	this.id = id;
             this.displayObject = displayObject;
             this.endLocalX = endLocalX;
             this.endLocalY = endLocalY;
             displayObject.addEventListener(MouseEvent.MOUSE_DOWN, handleMouseDown);
             displayObject.addEventListener(MouseEvent.MOUSE_UP, handleMouseUp);
             displayObject.addEventListener(MouseEvent.MOUSE_MOVE,handleMouseMove);
+        }
+        
+        public function get id():String {
+        	return _id;
+        }
+        
+        public function set id(val:String):void {
+            _id = val;
         }
         
         public function snapTo(x:Number, y:Number) {

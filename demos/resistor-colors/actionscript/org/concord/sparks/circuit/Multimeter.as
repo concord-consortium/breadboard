@@ -45,8 +45,8 @@ package org.concord.sparks.circuit {
             dialSetting = ACV_750;
             display = root['multimeter_display'];
             display.text = '';
-            redLead = new Lead(root['red_lead'], 33, 5);
-            blackLead = new Lead(root['black_lead'], 36, 4);
+            redLead = new Lead('red_lead', root['red_lead'], 33, 5);
+            blackLead = new Lead('black_lead', root['black_lead'], 36, 4);
         }
         
         private function rotateDial(event:MouseEvent):void {

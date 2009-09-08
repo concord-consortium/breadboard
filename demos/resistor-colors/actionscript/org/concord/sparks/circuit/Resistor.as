@@ -37,10 +37,9 @@ package org.concord.sparks.circuit
         var width = 260;
         var height = 80;
         
-        public var end1_x = 430;
-        public var end1_y = 240;
-        public var end2_x = 690;
-        public var end2_y = 240;
+        public var end1 = new ResistorEnd('resistor_end1', 430, 240);
+        public var end2 = new ResistorEnd('resistor_end2', 690, 240);
+        
         public var snapRadius = 20;
         
         var highlightShape1:Shape;
@@ -110,8 +109,8 @@ package org.concord.sparks.circuit
         }
         
         private function drawHighlights() {
-            drawHighlightCircle(highlightShape1.graphics, end1_x, end1_y);
-            drawHighlightCircle(highlightShape2.graphics, end2_x, end2_y);
+            drawHighlightCircle(highlightShape1.graphics, end1.x, end1.y);
+            drawHighlightCircle(highlightShape2.graphics, end2.x, end2.y);
         }
         
         private function drawHighlightCircle(g:Graphics, x:Number, y:Number) {
@@ -132,18 +131,23 @@ package org.concord.sparks.circuit
         }
 
         public function checkHighlight(leadX:Number, leadY:Number) {
-            if (distance(leadX, leadY, end1_x, end1_y) < snapRadius) {
+            if (distance(leadX, leadY, end1.x, end1.y) < snapRadius) {
                 highlightShape1.visible = true;
             }
             else {
                 highlightShape1.visible = false;
             }
-            if (distance(leadX, leadY, end2_x, end2_y) < snapRadius) {
+            if (distance(leadX, leadY, end2.x, end2.y) < snapRadius) {
                 highlightShape2.visible = true;
             }
             else {
                highlightShape2.visible = false;
             }
+        }
+        
+        public function removeHighlights() {
+            highlightShape1.visible = false;
+            highlightShape2.visible = false;
         }
         
         public function doConnection() {
