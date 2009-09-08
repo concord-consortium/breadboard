@@ -130,7 +130,7 @@ package org.concord.sparks.circuit
             value = r;
         }
 
-        public function showHighlight(leadX:Number, leadY:Number) {
+        public function checkHighlight(leadX:Number, leadY:Number) {
             if (distance(leadX, leadY, end1_x, end1_y) < highlightRadius) {
                 highlightShape1.visible = true;
             }
@@ -143,11 +143,6 @@ package org.concord.sparks.circuit
             else {
                highlightShape2.visible = false;
             }
-        }
-        
-        public function hideHighlights() {
-            highlightShape1.visible = false;
-            highlightShape2.visible = false;
         }
         
         private function distance(x1:Number, y1:Number, x2:Number, y2:Number) {

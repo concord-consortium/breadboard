@@ -30,12 +30,13 @@ package org.concord.sparks.circuit {
         const HFE = "hfe";
         const DIODE = "diode";
         
+        public var redLead;
+        public var blackLead;
+        
         var root;
         var dial:MovieClip;
         var dialSetting:String; //label representing position of dial
         var display; //display for dmm
-        var redLead;
-        var blackLead;
         
         public function Multimeter(root) {
             this.root = root;

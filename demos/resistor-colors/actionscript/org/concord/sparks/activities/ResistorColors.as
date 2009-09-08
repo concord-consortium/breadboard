@@ -1,8 +1,10 @@
 package org.concord.sparks.activities
 {
+	import flash.events.MouseEvent;
     import flash.external.ExternalInterface;
     
     import org.concord.sparks.Activity;
+    import org.concord.sparks.circuit.Lead;
     import org.concord.sparks.circuit.Multimeter;
     import org.concord.sparks.circuit.Resistor;
     
@@ -15,6 +17,10 @@ package org.concord.sparks.activities
             super(name, parent, root);
             multimeter = new Multimeter(root);
             resistor = new Resistor(parent);
+            setupEvents();
+            
+            // initActivity must be called after the ExternalInterface is 
+            // ready to communicate with JavaScript.
             ExternalInterface.call('initActivity');
         }
         
@@ -27,6 +33,21 @@ package org.concord.sparks.activities
                     return resistor.getColors().join('|');
             }
             return "UNKNOWN";
+        }
+        
+        private function setupEvents() {
+            root.addEventListener(MouseEvent.MOUSE_MOVE, handleMouseMove);
+        }
+        
+        private function handleMouseMove(event:MouseEvent) {
+            checkLead(multimeter.redLead);
+            checkLead(multimeter.blackLead);
+        }
+        
+        private function checkLead(lead:Lead) {
+            if (lead.mouseDown) {
+            	resistor.checkHighlight(lead.x, lead.y);
+            }
         }
     }
 }

@@ -20,7 +20,7 @@ package org.concord.sparks.circuit
         var endLocalX:Number; 
         var endLocalY:Number;
         
-        var mouseDown:Boolean; 
+        public var mouseDown:Boolean; 
         
         public function Lead(displayObject, endLocalX:Number, endLocalY:Number) {
             this.displayObject = displayObject;
@@ -41,16 +41,12 @@ package org.concord.sparks.circuit
         function handleMouseUp(event:Event):void {
             displayObject.stopDrag();
             mouseDown = false;
-            //Activity.resistor.hideHighlights();
-            trace("TODO: handlemouseup")
         }
         
         function handleMouseMove(event:MouseEvent):void {
             if (mouseDown) {
                 x = event.stageX + xOffset;
                 y = event.stageY + yOffset;
-                //Activity.resistor.showHighlight(x, y);
-                trace("TODO: handlemousemove")
             }
         }
     }
