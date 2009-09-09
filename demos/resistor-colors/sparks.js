@@ -118,7 +118,8 @@ function nextButtonClick(event){
 }
 
 function showReportClick(event){
-  $("#report").html("<h3>Report Goes Here</h3>")
+  $("#report").dialog('open')
+  // $("#report").html("<h3>Report Goes Here</h3>")
 }
 
 $(document).ready(function(){
@@ -141,4 +142,7 @@ $(document).ready(function(){
    })   
    
    $(".next_button").hide().click(nextButtonClick)
+   
+   $("#report").load("fake-report/report.html").dialog({autoOpen: false})
+   
  });
