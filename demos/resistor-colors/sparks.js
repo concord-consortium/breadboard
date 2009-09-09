@@ -5,27 +5,33 @@ function buttonClicked(event){
   disableForm(form)
   nextForm = form.nextAll("form:first")
   if(nextForm.size() == 0){
-    completed()
+    completedTry()
   } else {
     enableForm(nextForm)
   }
 }
 
-function completed(){
-  result2 = {}
-  formData = $("form").each(function (i){
-    form = jQuery(this)
+function completedTry(){
+  var result2 = {}
+  var formData = $("form").each(function (i){
+    var form = jQuery(this)
     result2[this.id] = serializeForm(form)
   })
   allResults.push(result2)
   
-  resultString = jQuery.map(allResults, function(el, i){
+  var resultString = jQuery.map(allResults, function(el, i){
     return jQuery.toJSON(el)
   }).join("<br\>")
   
   $("#result").html("<pre>"+resultString+"</pre>")
 
-  // display contextual help next to each item
+  // indication of correctness next to each item
+  // show contextual help
+  // cycle through the results using the name of each to find
+  // the form and then add an icon next to the form
+  for (var item in result2) {
+    $("#" + item).prepend("<img class='grade' src='../../icons/ok.png'/>")
+  }  
 
   if(allResults.length < 3) {
     $(".next_button").each(function(){
@@ -35,6 +41,25 @@ function completed(){
     $(".next_button").hide()
     $(".show_report_button").show()    
   }      
+}
+
+function startTry(){
+  // reset fields to their initial value
+  $("form").each(function (i){ this.reset()})
+
+  
+  // This is an alternative, but it doesn't do the right thing with some form input elements
+  // $("form").map(function (){ return jQuery.makeArray(this.elements)})
+  // .each(function (i){ $(this).val(null)})
+  // for a better example see: http://www.learningjquery.com/2007/08/clearing-form-data
+  
+  // clear the grading icons
+  $(".grade").remove()
+  
+  // hide the contextual help  
+    
+  form = $("form:first")
+  enableForm(form)     
 }
 
 function enableForm(form){
@@ -89,8 +114,7 @@ function nextButtonClick(event){
   $(".next_button").each(function(i){
     this.disabled = true;
   })
-  form = $("form:first")
-  enableForm(form)     
+  startTry()
 }
 
 function showReportClick(event){
@@ -113,8 +137,7 @@ $(document).ready(function(){
 
    $("#start_button").click(function(event){
      jQuery(event.target).hide()
-     form = $("form:first")
-     enableForm(form)     
+     startTry()
    })   
    
    $(".next_button").hide().click(nextButtonClick)
