@@ -1,6 +1,7 @@
 function Resistor()
 {
-    this.value = 0.0; //resistance value
+    this.nominalValue = 0.0; //resistance value specified by band colors;
+    this.realValue = 0.0; //real resistance value in Ohms
     this.tolerance = 0.0; //tolerance value
     
     this.colorMap = { 0 : 'black', 1 : 'brown', 2 : 'red', 3 : 'orange',
@@ -29,20 +30,48 @@ function Resistor()
         // Multiplier: 10^-2..10^9
         var pwr = this.randInt(-2, 9);
         colors[2] = this.colorMap[pwr];
-        this.value = base * Math.pow(10, pwr);
+        this.nominalValue = base * Math.pow(10, pwr);
         
         var ix = this.randInt(0, 8);
         this.tolerance = this.toleranceValues[ix];
         colors[3] = this.toleranceColorMap[this.tolerance];
         
-        console.log('sending colors=' + colors.join('|'));
+        this.realValue = this.getRealValue(this.nominalValue, this.tolerance);
         
-        sendCommand('set_resistor_value', this.value);
-        sendCommand('set_resistor_tolerance', this.tolerance);
+        console.log('sending colors=' + colors.join('|'));
         sendCommand('set_resistor_label', colors);
+    }
+    
+    this.getRealValue = function(nominalValue, tolerance) {
+    	var chance = Math.random();
+    	if (chance > 0.8) {
+    		var chance2 = Math.random();
+    		if (chance < 0.5) {
+    			return nominalValue + tolerance + Math.random() * tolerance;
+    		}
+    		else {
+    			return nominalValue - tolerance - Math.random() * tolerance;
+    		}
+    	}
+    	
+    	// Multiply 0.9 just to be comfortably within tolerance
+    	var realTolerance = tolerance * 0.9;
+    	return nominalValue * this.randFloat(1 - realTolerance, 1 + realTolerance);
     }
     
     this.randInt = function(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+    
+    this.randFloat = function(min, max) {
+    	return this.randPseudoGaussian(3) * (max - min) + min;
+    }
+    
+    this.randPseudoGaussian = function(n) {
+    	var r = 0.0;
+    	for (var i = 0; i < n; ++i) {
+    		r += Math.random();
+    	}
+    	return r / n;
     }
 }

@@ -28,11 +28,14 @@ package org.concord.sparks.activities
         public override function processMessageFromJavaScript(args) {
             var command:String = args[0];
             switch (command) {
-                case "set_resistor_label":
+                case 'set_resistor_label':
                     resistor.setLabel(args[1][0], args[1][1], args[1][2], args[1][3]);
                     return resistor.getColors().join('|');
+                case 'set_multimeter_display':
+                    multimeter.setDisplayText(args[1]);
+                    return multimeter.getDisplayText();
             }
-            return "UNKNOWN";
+            return 'UNKNOWN';
         }
         
         private function setupEvents() {

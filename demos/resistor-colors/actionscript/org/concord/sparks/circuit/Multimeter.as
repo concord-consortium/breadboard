@@ -49,6 +49,14 @@ package org.concord.sparks.circuit {
             blackLead = new Lead('black_lead', root['black_lead'], 36, 4);
         }
         
+        public function setDisplayText(s:String) {
+        	display.text = s;
+        }
+        
+        public function getDisplayText():String {
+        	return display.text;
+        }
+        
         private function rotateDial(event:MouseEvent):void {
             var x = event.stageX - dial.x;
             var y = dial.y - event.stageY;
