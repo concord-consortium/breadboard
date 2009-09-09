@@ -44,28 +44,36 @@ package org.concord.sparks.activities
             //trace('eventPhase=' + event.eventPhase);
             checkLead(multimeter.redLead);
             checkLead(multimeter.blackLead);
-            //trace('eventPhase=' + event.eventPhase);
         }
         
         private function handleMouseUp(event:MouseEvent) {
             //trace('eventPhase=' + event.eventPhase);
-            checkLeadResistorConnection(multimeter.redLead, resistor.end1);
-            checkLeadResistorConnection(multimeter.redLead, resistor.end2);
-            checkLeadResistorConnection(multimeter.blackLead, resistor.end1);
-            checkLeadResistorConnection(multimeter.blackLead, resistor.end2);
+            if (event.target == multimeter.redLead.displayObject) {
+                checkLeadResistorConnection(multimeter.redLead, resistor.end1);
+                checkLeadResistorConnection(multimeter.redLead, resistor.end2);
+            }
+            else if (event.target == multimeter.blackLead.displayObject) {
+                checkLeadResistorConnection(multimeter.blackLead, resistor.end1);
+                checkLeadResistorConnection(multimeter.blackLead, resistor.end2);
+            }
             resistor.removeHighlights();
         }
         
         private function checkLead(lead:Lead) {
             if (lead.mouseDown) {
                 resistor.checkHighlight(lead.x, lead.y);
+                if (lead.connected) {
+                    lead.connected = false;
+                    javascript.sendEvent('disconnect', lead.id);
+                }
             }
         }
         
         private function checkLeadResistorConnection(lead:Lead, end:ResistorEnd) {
-            if (distance(lead.x, lead.y, end.x, end.y) < resistor.snapRadius) {
+            if (!lead.connected && distance(lead.x, lead.y, end.x, end.y) < resistor.snapRadius) {
                 lead.snapTo(end.x, end.y);
-                javascript.sendEvent('connection', lead.id, end.id)
+                lead.connected = true;
+                javascript.sendEvent('connect', lead.id, end.id)
             }
         }
         

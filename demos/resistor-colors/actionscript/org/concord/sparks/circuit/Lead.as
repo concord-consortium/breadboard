@@ -10,7 +10,7 @@ package org.concord.sparks.circuit
         public var x:Number;
         public var y:Number;
 
-        var displayObject;
+        public var displayObject;
         
         // Offset used to calculate global coordinates of the end point
         var xOffset:Number;
@@ -20,7 +20,8 @@ package org.concord.sparks.circuit
         var endLocalX:Number; 
         var endLocalY:Number;
         
-        public var mouseDown:Boolean;
+        public var mouseDown:Boolean = false;
+        public var connected:Boolean = false;
         
         private var _id:String; 
         

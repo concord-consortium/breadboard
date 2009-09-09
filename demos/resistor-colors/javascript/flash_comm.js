@@ -8,7 +8,7 @@ function sendCommand() {
   for (var i = 0; i < arguments.length; ++i) {
       params[i] = arguments[i];
   }
-  flash = getFlashMovie("my");
+  flash = getFlashMovie("resistor_colors");
   retVal = flash.sendMessageToFlash.apply(flash, params);
   console.log('Returned by flash: ' + retVal);
 }
@@ -16,3 +16,4 @@ function sendCommand() {
 function receiveEvent(name, value, time) {
   console.log('received: ' + name + ', ' + value + ', ' + new Date(parseInt(time)));
 }
+
