@@ -36,6 +36,9 @@ package org.concord.sparks.circuit {
         public var dial:MovieClip;
         public var dialSetting:String; //label representing position of dial
         
+        public var powerSwitch:MovieClip;
+        public var powerOn:Boolean = false; //true if multimeter is turned on
+        
         var root;
         var display; //display for dmm
         
@@ -44,6 +47,8 @@ package org.concord.sparks.circuit {
             dial = root['dial'];
             dial.addEventListener(MouseEvent.CLICK, rotateDial);
             dialSetting = ACV_750;
+            powerSwitch = root['dmm_switch'];
+            powerSwitch.addEventListener(MouseEvent.CLICK, togglePower);
             display = root['multimeter_display'];
             display.text = '';
             redLead = new Lead('red_lead', root['red_lead'], 33, 5);
@@ -57,10 +62,14 @@ package org.concord.sparks.circuit {
         public function getDisplayText():String {
         	return display.text;
         }
+
+        private function togglePower(event:MouseEvent):void {
+        	powerSwitch.rotation += 180;
+        	powerOn = !powerOn;
+        	trace('powerOn=' + powerOn);
+        }
         
         private function rotateDial(event:MouseEvent):void {
-        	trace('eventPhase=' + event.eventPhase);
-        	
             var x = event.stageX - dial.x;
             var y = dial.y - event.stageY;
             var deg = Math.atan2(y, x) * 180 / Math.PI;

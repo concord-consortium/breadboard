@@ -146,6 +146,8 @@ function startTry(){
   var activity = getActivity()
   var resistor = activity.resistor
   
+  resistor.show();
+  
   // re randomzie the resistor
   resistor.randomize()
     

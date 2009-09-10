@@ -3,9 +3,16 @@ function Multimeter()
     this.redLeadConnection = null;
     this.blackLeadConnection = null;
     this.dialPosition = 'acv_750'
+    this.powerOn = false;
     
     this.update = function() {
-        console.log('ENTER update');
+        console.log('ENTER update powerOn=', this.powerOn + ' ' + (typeof this.powerOn));
+        
+        if (!this.powerOn) {
+            sendCommand('set_multimeter_display', '');
+            return;
+        }
+        
         var resistor = getActivity().resistor;
         console.log('Resistance=' + resistor.realValue);
         
@@ -15,25 +22,25 @@ function Multimeter()
             var text = '';
             var value = resistor.realValue;
             console.log('pos=' + this.dialPosition + ' val=' + value);
-            if (this.dialPosition == 'r_200' && value < 99.95) {
+            if (this.dialPosition == 'r_200' && value < 199.95) {
                 text = (Math.round(value * 10) * 0.1).toString();
-                text = this.formatDecimalString(text, 3, 1);
+                text = this.formatDecimalString(text, 1);
             }
-            else if (this.dialPosition == 'r_2000' && value < 999.5) {
+            else if (this.dialPosition == 'r_2000' && value < 1999.5) {
                 text = Math.round(value).toString();
-                text = this.formatDecimalString(text, 3, 0);
+                text = this.formatDecimalString(text, 0);
             }
-            else if (this.dialPosition == 'r_20k' && value < 9995) {
+            else if (this.dialPosition == 'r_20k' && value < 19995) {
                 text = (Math.round(value * 0.1) * 0.01).toString();
-                text = this.formatDecimalString(text, 3, 2);
+                text = this.formatDecimalString(text, 2);
             }
-            else if (this.dialPosition == 'r_200k' && value < 99950) {
+            else if (this.dialPosition == 'r_200k' && value < 199950) {
                 text = (Math.round(value * 0.01) * 0.1).toString();
-                text = this.formatDecimalString(text, 3, 1);
+                text = this.formatDecimalString(text, 1);
             }
-            else if (this.dialPosition == 'r_2000k' && value < 999500) {
+            else if (this.dialPosition == 'r_2000k' && value < 1999500) {
                 text = Math.round(value * 0.001).toString();
-                text = this.formatDecimalString(text, 3, 0);
+                text = this.formatDecimalString(text, 0);
             }
             else {
                 text = '--';
@@ -49,18 +56,24 @@ function Multimeter()
     // Pad 0's to the number text
     // sig: number of significant digits
     // dec: number of digits after decimal points
-    this.formatDecimalString = function(s, sig, dec) {
+    this.formatDecimalString = function(s, dec) {
+        console.log('s=' + s + ' dec=' + dec);
         var pointLoc = s.indexOf('.');
-        var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc).length;
+        console.log('pointLoc=' + pointLoc);
+        var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
+        console.log('decLen=' + decLen);
         if (decLen == 0) {
             s = s.concat('.');
         }
-        for (var i = 0; i < dec - decLen; ++i) {
-            s = s.concat('0');
+        if (dec < decLen) {
+            s = s.substring(0, pointLoc + dec + 1);
         }
-        for (var i = 0; i < sig - s.length + 1; ++i) {
-            s = '0' + s;
+        else {
+            for (var i = 0; i < dec - decLen; ++i) {
+                s = s.concat('0');
+            }
         }
+        console.log('out=' + s);
         return s;
     }
 }

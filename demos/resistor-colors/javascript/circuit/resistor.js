@@ -19,6 +19,10 @@ function Resistor()
     this.toleranceValues = [ 0.01, 0.02, 5e-3, 2.5e-3, 1e-3, 5e-4, 5e-2,
         0.1, 0.2];
     
+    this.show = function() {
+        sendCommand('show_resistor');
+    }
+    
     this.randomize = function() {
         var colors = [];
         
@@ -31,8 +35,16 @@ function Resistor()
         var base = band1 * 10 +  band2; // 10..99
         
         // Multiplier: 10^-2..10^9
-        var pwr = base < 10 ?  this.randInt(-2, 5) : this.randInt(-2, 4);
-        
+        var pwr;
+        if (base > 19) {
+            pwr = this.randInt(-2, 4);
+        }
+        else if (base > 1) {
+            pwr = this.randInt(-2, 5);
+        }
+        else {
+            pwr = this.randInt(-2, 6);
+        }
         colors[2] = this.colorMap[pwr];
         this.nominalValue = base * Math.pow(10, pwr);
         

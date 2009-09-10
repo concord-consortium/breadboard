@@ -48,6 +48,7 @@ package org.concord.sparks.circuit
         public function Resistor(parent) {
             this.parent = parent;
             shape = new Shape();
+            shape.visible = false;
             parent.addChildAt(shape, 0);
             
             highlightShape1 = new Shape();
@@ -60,6 +61,18 @@ package org.concord.sparks.circuit
             
             drawColorBands();
             drawHighlights();
+        }
+        
+        public function show() {
+        	shape.visible = true;
+        }
+        
+        public function hide() {
+        	shape.visible = false;
+        }
+        
+        public function isVisible():Boolean {
+        	return shape.visible;
         }
         
         public function setLabel(color1, color2, color3, color4) {
@@ -131,13 +144,13 @@ package org.concord.sparks.circuit
         }
 
         public function checkHighlight(leadX:Number, leadY:Number) {
-            if (distance(leadX, leadY, end1.x, end1.y) < snapRadius) {
+            if (distance(leadX, leadY, end1.x, end1.y) < snapRadius && isVisible()) {
                 highlightShape1.visible = true;
             }
             else {
                 highlightShape1.visible = false;
             }
-            if (distance(leadX, leadY, end2.x, end2.y) < snapRadius) {
+            if (distance(leadX, leadY, end2.x, end2.y) < snapRadius && isVisible()) {
                 highlightShape2.visible = true;
             }
             else {

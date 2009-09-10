@@ -40,5 +40,8 @@ function receiveEvent(name, value, time) {
       multimeter.dialPosition = value;
       multimeter.update();
   }
+  else if (name == 'multimeter_power') {
+      multimeter.powerOn = value == 'true' ? true : false;
+      multimeter.update();
+  }
 }
-

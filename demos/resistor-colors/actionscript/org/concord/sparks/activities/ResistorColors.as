@@ -34,6 +34,9 @@ package org.concord.sparks.activities
                 case 'set_multimeter_display':
                     multimeter.setDisplayText(args[1]);
                     return multimeter.getDisplayText();
+                case 'show_resistor':
+                    resistor.show();
+                    return 'show_resistor';
             }
             return 'UNKNOWN';
         }
@@ -66,6 +69,9 @@ package org.concord.sparks.activities
         private function handleClick(event:MouseEvent) {
             if (event.target == multimeter.dial) {
                 javascript.sendEvent("multimeter_dial", multimeter.dialSetting);
+            }
+            else if (event.target == multimeter.powerSwitch) {
+                javascript.sendEvent("multimeter_power", multimeter.powerOn);
             }
         }
 
