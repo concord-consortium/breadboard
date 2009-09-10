@@ -46,7 +46,6 @@ function completedTry(){
 function startTry(){
   // reset fields to their initial value
   $("form").each(function (i){ this.reset()})
-
   
   // This is an alternative, but it doesn't do the right thing with some form input elements
   // $("form").map(function (){ return jQuery.makeArray(this.elements)})
@@ -57,7 +56,24 @@ function startTry(){
   $(".grade").remove()
   
   // hide the contextual help  
+
+  // generate the resistor numbers
+  // display them on the page so people can see it working
+  // this is defined in javascript/resistor_activity.js
+  var activity = getActivity()
+  var resistor = activity.resistor
+  
+  // re randomzie the resistor
+  resistor.randomize()
     
+  model = $("#rcc_model")
+    
+  model.append("<div>" +
+    "Nominal Value: " + resistor.nominalValue + "<br/>" +
+    "Tolerance: " + resistor.tolerance + "<br/>" +
+    "Real Value: " + resistor.realValue + "<br/>" +
+    "</div>")
+      
   form = $("form:first")
   enableForm(form)     
 }
