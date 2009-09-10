@@ -4,6 +4,9 @@ function Resistor()
     this.realValue = 0.0; //real resistance value in Ohms
     this.tolerance = 0.0; //tolerance value
     
+    this.minValue = 0.1;
+    this.maxValue = 999500;
+    
     this.colorMap = { 0 : 'black', 1 : 'brown', 2 : 'red', 3 : 'orange',
         4 : 'yellow', 5 : 'green', 6 : 'blue', 7 : 'violet', 8 : 'gray',
         9 : 'white' };
@@ -28,12 +31,14 @@ function Resistor()
         var base = band1 * 10 +  band2; // 10..99
         
         // Multiplier: 10^-2..10^9
-        var pwr = this.randInt(-2, 9);
+        var pwr = base < 10 ?  this.randInt(-2, 5) : this.randInt(-2, 4);
+        
         colors[2] = this.colorMap[pwr];
         this.nominalValue = base * Math.pow(10, pwr);
         
         var ix = this.randInt(0, 8);
         this.tolerance = this.toleranceValues[ix];
+        
         colors[3] = this.toleranceColorMap[this.tolerance];
         
         this.realValue = this.getRealValue(this.nominalValue, this.tolerance);

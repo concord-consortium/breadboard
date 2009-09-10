@@ -16,9 +16,7 @@ function sendCommand() {
 function receiveEvent(name, value, time) {
   console.log('received: ' + name + ', ' + value + ', ' + new Date(parseInt(time)));
   var activity = getActivity();
-  console.log(0);
   var multimeter = activity.multimeter;
-  console.log(1);
   if (name == 'connect') {
 	  var ids = value.split('|');
 	  if (ids[0] == 'red_lead') {
@@ -37,6 +35,10 @@ function receiveEvent(name, value, time) {
 		  multimeter.blackLeadConnection = null;
 	  }
 	  multimeter.update();
+  }
+  else if (name == 'multimeter_dial') {
+      multimeter.dialPosition = value;
+      multimeter.update();
   }
 }
 

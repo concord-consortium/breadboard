@@ -33,9 +33,10 @@ package org.concord.sparks.circuit {
         public var redLead;
         public var blackLead;
         
+        public var dial:MovieClip;
+        public var dialSetting:String; //label representing position of dial
+        
         var root;
-        var dial:MovieClip;
-        var dialSetting:String; //label representing position of dial
         var display; //display for dmm
         
         public function Multimeter(root) {
@@ -58,6 +59,8 @@ package org.concord.sparks.circuit {
         }
         
         private function rotateDial(event:MouseEvent):void {
+        	trace('eventPhase=' + event.eventPhase);
+        	
             var x = event.stageX - dial.x;
             var y = dial.y - event.stageY;
             var deg = Math.atan2(y, x) * 180 / Math.PI;
@@ -142,8 +145,6 @@ package org.concord.sparks.circuit {
                 dial.rotation = -108;
                 dialSetting = R_2000k;
             }
-            //Javascript.sendEvent("multimeter_dial", dialSetting);
-            trace("TODO: sendEvent");
         }
     }
 }

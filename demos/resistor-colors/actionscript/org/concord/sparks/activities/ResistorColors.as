@@ -41,6 +41,7 @@ package org.concord.sparks.activities
         private function setupEvents() {
             root.addEventListener(MouseEvent.MOUSE_MOVE, handleMouseMove);
             root.addEventListener(MouseEvent.MOUSE_UP, handleMouseUp);
+            root.addEventListener(MouseEvent.CLICK, handleClick);
         }
         
         private function handleMouseMove(event:MouseEvent) {
@@ -50,18 +51,24 @@ package org.concord.sparks.activities
         }
         
         private function handleMouseUp(event:MouseEvent) {
-            //trace('eventPhase=' + event.eventPhase);
             if (event.target == multimeter.redLead.displayObject) {
                 checkLeadResistorConnection(multimeter.redLead, resistor.end1);
                 checkLeadResistorConnection(multimeter.redLead, resistor.end2);
+                resistor.removeHighlights();
             }
             else if (event.target == multimeter.blackLead.displayObject) {
                 checkLeadResistorConnection(multimeter.blackLead, resistor.end1);
                 checkLeadResistorConnection(multimeter.blackLead, resistor.end2);
+                resistor.removeHighlights();
             }
-            resistor.removeHighlights();
         }
         
+        private function handleClick(event:MouseEvent) {
+            if (event.target == multimeter.dial) {
+                javascript.sendEvent("multimeter_dial", multimeter.dialSetting);
+            }
+        }
+
         private function checkLead(lead:Lead) {
             if (lead.mouseDown) {
                 resistor.checkHighlight(lead.x, lead.y);
