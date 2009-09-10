@@ -66,14 +66,15 @@ function startTry(){
   // re randomzie the resistor
   resistor.randomize()
     
-  model = $("#rcc_model")
-    
-  model.append("<div>" +
-    "Nominal Value: " + resistor.nominalValue + "<br/>" +
-    "Tolerance: " + resistor.tolerance + "<br/>" +
-    "Real Value: " + resistor.realValue + "<br/>" +
-    "</div>")
-      
+  if(jQuery.sparks.debug){
+    model = $("#rcc_model")      
+    model.append("<div>" +
+      "Nominal Value: " + resistor.nominalValue + "<br/>" +
+      "Tolerance: " + resistor.tolerance + "<br/>" +
+      "Real Value: " + resistor.realValue + "<br/>" +
+      "</div>")
+  }
+  
   form = $("form:first")
   enableForm(form)     
 }

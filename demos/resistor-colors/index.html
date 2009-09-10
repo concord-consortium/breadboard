@@ -6,6 +6,7 @@
   <script type="text/javascript" src="../../js-libs/jquery-1.3.2.js"></script>
   <script type="text/javascript" src="../../js-libs/jquery.json-2.2.js"></script>
   <script type="text/javascript" src="../../js-libs/jquery-ui-1.7.2.custom.min.js"></script>
+  <script type="text/javascript" src="../../js-libs/jquery.url.packed.js"></script>
   <script type="text/javascript" src="sparks.js"></script>
   <script type="text/javascript" src="javascript/flash_version_detection.js"></script>
   <script type="text/javascript" src="javascript/flash_comm.js"></script>
@@ -17,6 +18,16 @@
   <link href="../../css/ui-lightness/jquery-ui-1.7.2.custom.css" rel="stylesheet" type="text/css">
 </head>
 <body>
+<script language="JavaScript" type="text/javascript">
+    // parse the page params so things can be customized
+    var value = null;
+    jQuery.sparks = {}
+
+    value = jQuery.url.param("model_height");
+    jQuery.sparks.modelHeight = value != null ? value : '560';
+
+    jQuery.sparks.debug = jQuery.url.param("debug") != null
+</script>
 
 <h2>Resistor and Multimeter</h2>
 
@@ -25,7 +36,7 @@
     AC_FL_RunContent(
         'codebase', 'http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=10,0,0,0',
         'width', '790',
-        'height', '560',
+        'height', jQuery.sparks.modelHeight,
         'src', 'resistor_colors',
         'quality', 'high',
         'pluginspage', 'http://www.adobe.com/go/getflashplayer',
