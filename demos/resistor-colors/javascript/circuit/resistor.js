@@ -46,7 +46,7 @@ function Resistor()
     	var chance = Math.random();
     	if (chance > 0.8) {
     		var chance2 = Math.random();
-    		if (chance < 0.5) {
+    		if (chance2 < 0.5) {
     			return nominalValue + tolerance + Math.random() * tolerance;
     		}
     		else {
