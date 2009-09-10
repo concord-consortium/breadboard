@@ -1,9 +1,19 @@
-var allResults = []
+// setup a global namespace to store page variables
+jQuery.sparks = {}
+
+// parse the page params so things can be customized
+var value = null;
+value = jQuery.url.param("model_height");
+jQuery.sparks.modelHeight = value != null ? value : '560';
+
+jQuery.sparks.debug = jQuery.url.param("debug") != null
+
+jQuery.sparks.allResults = []
 
 function buttonClicked(event){
-  form = jQuery(event.target).parent()
+  var form = jQuery(event.target).parent()
   disableForm(form)
-  nextForm = form.nextAll("form:first")
+  var nextForm = form.nextAll("form:first")
   if(nextForm.size() == 0){
     completedTry()
   } else {
@@ -17,23 +27,25 @@ function completedTry(){
     var form = jQuery(this)
     result2[this.id] = serializeForm(form)
   })
-  allResults.push(result2)
+  jQuery.sparks.allResults.push(result2)
+
+  if(jQuery.sparks.debug) {  
+    var resultString = jQuery.map(jQuery.sparks.allResults, function(el, i){
+      return jQuery.toJSON(el)
+    }).join("<br\>")
   
-  var resultString = jQuery.map(allResults, function(el, i){
-    return jQuery.toJSON(el)
-  }).join("<br\>")
-  
-  $("#result").html("<pre>"+resultString+"</pre>")
+    $("#result").html("<pre>"+resultString+"</pre>")
+  }
 
   // indication of correctness next to each item
   // show contextual help
   // cycle through the results using the name of each to find
   // the form and then add an icon next to the form
-  for (var item in result2) {
+  for (var item in result2) {  
     $("#" + item).prepend("<img class='grade' src='../../icons/ok.png'/>")
   }  
 
-  if(allResults.length < 3) {
+  if(jQuery.sparks.allResults.length < 3) {
     $(".next_button").each(function(){
       this.disabled = false
     }).show()
@@ -136,7 +148,6 @@ function nextButtonClick(event){
 
 function showReportClick(event){
   $("#report").dialog('open')
-  // $("#report").html("<h3>Report Goes Here</h3>")
 }
 
 $(document).ready(function(){
