@@ -13,7 +13,7 @@
 </thead><tbody>
 <tr>
 	<td>open</td>
-	<td>demos/resistor-colors/index.html</td>
+	<td>demos/resistor-colors/index.html?debug=true</td>
 	<td></td>
 </tr>
 <tr>
@@ -25,6 +25,11 @@
 	<td>type</td>
 	<td>value</td>
 	<td>10</td>
+</tr>
+<tr>
+	<td>select</td>
+	<td>units</td>
+	<td>label=Ohms</td>
 </tr>
 <tr>
 	<td>click</td>

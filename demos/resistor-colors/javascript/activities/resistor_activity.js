@@ -9,11 +9,11 @@ function initActivity() {
         console = { log: function() {} };
     }
     console.log('ENTER initActivity');
-    window.sparks_activity = new ResistorActivity();
+    jQuery.sparks.activity = new ResistorActivity();
 }
 
 function getActivity() {
-    return window.sparks_activity;
+    return jQuery.sparks.activity;
 }
 
 function ResistorActivity() {

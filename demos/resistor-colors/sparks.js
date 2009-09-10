@@ -41,8 +41,12 @@ function completedTry(){
   // show contextual help
   // cycle through the results using the name of each to find
   // the form and then add an icon next to the form
+  
+  // rated resistance
+  gradeResistance(result2.rated_resistance, jQuery.sparks.activity.resistor.nominalValue)
+
   for (var item in result2) {  
-    $("#" + item).prepend("<img class='grade' src='../../icons/ok.png'/>")
+    updateItem(result2, item) 
   }  
 
   if(jQuery.sparks.allResults.length < 3) {
@@ -53,6 +57,73 @@ function completedTry(){
     $(".next_button").hide()
     $(".show_report_button").show()    
   }      
+}
+
+function updateItem(result, name) {
+  var itemForm = $("#" + name);
+  var titleText = ""
+  if(result[name].message){
+    titleText = "title='" + result[name].message + "' ";
+  }
+  
+  if(result[name].correct){
+    itemForm.prepend("<img class='grade' src='../../icons/ok.png' " + titleText + "/>")    
+  } else {
+    itemForm.prepend("<img class='grade' src='../../icons/cancel.png' " + titleText + "/>")
+  }  
+}
+
+function gradeResistance(answer, correctValue){
+  // rated resistance
+  answer.message = "Unknown Error";
+  answer.correct = false;
+  
+  if(answer.value == null || answer.value.length < 1) {
+    answer.message = "No Value Entered";
+    return;
+  }
+
+  // I don't know if this works correctly IE
+  // parseFloat will return all numbers before a non numeric char so 
+  // parseFloat('3a') returns 3 which isn't really what we want
+  value_num = Number(answer.value)
+  if(isNaN(value_num)){
+    answer.message = "Value entered is not a number";
+    return;
+  }
+  
+  if(answer.units == null || 
+     answer.units.length < 1){
+     answer.message = "No Unit Entered";
+     return;
+  }
+     
+  var multiplier = -1
+  
+  switch (answer.units) {
+  case 'Ohms':
+    multiplier = 1;
+    break;
+  case 'KOhms':
+    multiplier = 1000;
+    break;
+  case 'MOhms':
+    multiplier = 1000000;
+    break;
+  default:
+    answer.message = "Incorrect Unit";
+    return;
+  }  
+  
+  parsed_value = value_num * multiplier;
+  
+  if(correctValue != parsed_value){
+    answer.message = "The entered value or unit is incorrect.";
+    return;
+  }
+  
+  answer.correct = true;
+  answer.message = "Correct";
 }
 
 function startTry(){
