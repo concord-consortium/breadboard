@@ -5,6 +5,7 @@ package org.concord.sparks.circuit
     
     public class Resistor
     {
+        /*
         const RED = 0xe94023;
         const BROWN = 0x9d611f;
         const ORANGE = 0xf4b53d;
@@ -18,6 +19,21 @@ package org.concord.sparks.circuit
         const GOLD = 0xd5bf5e;
         const SILVER = 0xcbcbcb;
         const BG_COLOR = 0x00eeee;
+         */
+
+        const RED = 0xff0000;
+        const BROWN = 0x804000;
+        const ORANGE = 0xff8040;
+        const YELLOW = 0xffff00;
+        const GREEN = 0x347c17;
+        const BLUE = 0x2b65ec;
+        const VIOLET = 0x8d38c9;
+        const WHITE = 0xffffff;
+        const GRAY = 0x736f6e;
+        const BLACK = 0x000000;
+        const GOLD = 0xeac117;
+        const SILVER = 0xc0c0c0;
+        const BG_COLOR = 0xf5deb3;
         
         const ColorMap = { 'red' : RED, 'brown' : BROWN, 'orange' : ORANGE,
             'yellow' : YELLOW, 'green' : GREEN, 'blue' : BLUE,
