@@ -64,6 +64,11 @@ package org.concord.sparks.circuit
             if (mouseDown) {
                 x = event.stageX + xOffset;
                 y = event.stageY + yOffset;
+                trace('------------');
+                trace('tip_x=' + x + ' tip_y=' + y);
+                trace('stage_x=' + event.stageX + ' stage_y=' + event.stageY);
+                trace('loc_x=' + event.localX + ' loc_y=' + event.localY);
+                trace('xOffset=' + xOffset + ' yOffset=' + yOffset);
             }
         }
     }

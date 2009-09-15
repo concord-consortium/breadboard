@@ -51,8 +51,8 @@ package org.concord.sparks.circuit {
             powerSwitch.addEventListener(MouseEvent.CLICK, togglePower);
             display = root['multimeter_display'];
             display.text = '';
-            redLead = new Lead('red_lead', root['red_lead'], 33, 5);
-            blackLead = new Lead('black_lead', root['black_lead'], 36, 4);
+            redLead = new Lead('red_lead', root['probeRed_mc'], 27.8, 156.45);
+            blackLead = new Lead('black_lead', root['probeBlack_mc'], 27.8, -156.45);
         }
         
         public function setDisplayText(s:String) {

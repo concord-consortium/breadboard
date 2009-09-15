@@ -51,6 +51,8 @@ function Multimeter()
         else {
             sendCommand('set_multimeter_display', '--');
         }
+        
+        this.displayValue = this.getDisplayValue(resistor.realValue);
     }
     
     // Pad 0's to the number text
@@ -75,5 +77,39 @@ function Multimeter()
         }
         console.log('out=' + s);
         return s;
+    }
+
+      /*
+     * Return value to be shown under optimal setting.
+     * This value is to be compared with the student answer for grading.
+     *
+     * Take three significant digits, four if the first digit is 1.
+     */
+    this.getDisplayValue = function(value) {
+        var text;
+        if (value < 199.95) {
+            text = (Math.round(value * 10) * 0.1).toString();
+            text = this.formatDecimalString(text, 1);
+        }
+        else if (value < 1999.5) {
+            text = Math.round(value).toString();
+            text = this.formatDecimalString(text, 0);
+        }
+        else if (value < 19995) {
+            text = (Math.round(value * 0.1) * 0.01).toString();
+            text = this.formatDecimalString(text, 2);
+        }
+        else if (value < 199950) {
+            text = (Math.round(value * 0.01) * 0.1).toString();
+            text = this.formatDecimalString(text, 1);
+        }
+        else if (value < 1999500) {
+            text = Math.round(value * 0.001).toString();
+            text = this.formatDecimalString(text, 0);
+        }
+        else {
+            text = 'NaN';
+        }
+        return parseFloat(text);
     }
 }

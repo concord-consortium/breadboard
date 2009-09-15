@@ -17,7 +17,7 @@ package org.concord.sparks.activities
         public function ResistorColors(name:String, parent, root):void {
             super(name, parent, root);
             multimeter = new Multimeter(root);
-            resistor = new Resistor(parent);
+            resistor = new Resistor(parent, root);
             setupEvents();
             
             // initActivity must be called after the ExternalInterface is 
@@ -26,6 +26,7 @@ package org.concord.sparks.activities
         }
         
         public override function processMessageFromJavaScript(args) {
+            trace('processMessageFromJavaScript args=' + args);
             var command:String = args[0];
             switch (command) {
                 case 'set_resistor_label':

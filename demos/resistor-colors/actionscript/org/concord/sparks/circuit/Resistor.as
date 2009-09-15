@@ -1,71 +1,48 @@
 package org.concord.sparks.circuit
 {
     import flash.display.Graphics;
+    import flash.display.Loader;
     import flash.display.Shape;
+    import flash.events.ErrorEvent;
+    import flash.net.URLRequest;
     
     public class Resistor
     {
-        /*
-        const RED = 0xe94023;
-        const BROWN = 0x9d611f;
-        const ORANGE = 0xf4b53d;
-        const YELLOW = 0xfff950;
-        const GREEN = 0xb5d058;
-        const BLUE = 0x80a9eb;
-        const VIOLET = 0xe3a2ed;
-        const WHITE = 0xffffff;
-        const GRAY = 0xe3a2ed;
-        const BLACK = 0x000000;
-        const GOLD = 0xd5bf5e;
-        const SILVER = 0xcbcbcb;
-        const BG_COLOR = 0x00eeee;
-         */
-
-        const RED = 0xff0000;
-        const BROWN = 0x804000;
-        const ORANGE = 0xff8040;
-        const YELLOW = 0xffff00;
-        const GREEN = 0x347c17;
-        const BLUE = 0x2b65ec;
-        const VIOLET = 0x8d38c9;
-        const WHITE = 0xffffff;
-        const GRAY = 0x736f6e;
-        const BLACK = 0x000000;
-        const GOLD = 0xeac117;
-        const SILVER = 0xc0c0c0;
-        const BG_COLOR = 0xf5deb3;
-        
-        const ColorMap = { 'red' : RED, 'brown' : BROWN, 'orange' : ORANGE,
-            'yellow' : YELLOW, 'green' : GREEN, 'blue' : BLUE,
-            'violet' : VIOLET, 'white' : WHITE, 'gray' : GRAY, 'black': BLACK,
-            'gold' : GOLD, 'silver': SILVER };
-        
-        private static var instance;
-        
         var parent;
-        var shape:Shape;
+        var root;
+        var displayObject;
+        
         var value:Number;
-        //var colors = [BLACK, BLACK, BLACK, BLACK];
-        var colors = [RED, GREEN, ORANGE, YELLOW];
         
         var x = 430;
         var y = 200;
         var width = 260;
         var height = 80;
         
-        public var end1 = new ResistorEnd('resistor_end1', 430, 240);
-        public var end2 = new ResistorEnd('resistor_end2', 690, 240);
+        public var end1 = new ResistorEnd('resistor_end1', 168, 180);
+        public var end2 = new ResistorEnd('resistor_end2', 489, 180);
         
         public var snapRadius = 20;
         
         var highlightShape1:Shape;
         var highlightShape2:Shape;
         
-        public function Resistor(parent) {
+        var band1Loader:Loader = new Loader(); 
+        var band2Loader:Loader = new Loader(); 
+        var band3Loader:Loader = new Loader();
+        var band4Loader:Loader = new Loader();
+        
+        var colors = [];
+        
+        public function Resistor(parent, root) {
             this.parent = parent;
-            shape = new Shape();
-            shape.visible = false;
-            parent.addChildAt(shape, 0);
+            this.root = root;
+            displayObject = root['resistor_mc'];
+            
+            displayObject.band1.addChild(band1Loader);
+            displayObject.band2.addChild(band2Loader);
+            displayObject.band3.addChild(band3Loader);
+            displayObject.band4.addChild(band4Loader);
             
             highlightShape1 = new Shape();
             highlightShape1.visible = false;
@@ -75,69 +52,48 @@ package org.concord.sparks.circuit
             highlightShape2.visible = false;
             parent.addChild(highlightShape2);
             
-            drawColorBands();
+            setLabel('red', 'white', 'blue', 'black');
             drawHighlights();
         }
         
         public function show() {
-        	shape.visible = true;
+            displayObject.visible = true;
         }
         
         public function hide() {
-        	shape.visible = false;
+            displayObject.visible = false;
         }
         
         public function isVisible():Boolean {
-        	return shape.visible;
-        }
-        
-        public function setLabel(color1, color2, color3, color4) {
-            trace('ENTER setLabel');
-            colors[0] = ColorMap[color1];
-            colors[1] = ColorMap[color2];
-            colors[2] = ColorMap[color3];
-            colors[3] = ColorMap[color4];
-            trace('color4=' + color4);
-            if (color4 == 'none') {
-                colors[3] = 'none';
-            }
-            else {
-                colors[3] = ColorMap[color4];
-            }
-            trace('colors[3]=' + colors[3]);
-            trace('colors=' + colors);
-            drawColorBands();
+            return displayObject.visible;
         }
         
         public function getColors() {
             return colors;
         }
         
-        public function drawColorBands():void {
-            trace('REDRAW colors=' + colors);
-            var g = shape.graphics;
-            var alpha = 1.0;
-            g.lineStyle(2, 0x000000, alpha)
-            g.beginFill(BG_COLOR);
-            g.drawRect(x+2, y+2, width-4, height-4);
-            g.beginFill(colors[0]);
-            g.drawRect(x+20, y+2, 30, height-4);
-            g.beginFill(colors[1]);
-            g.drawRect(x+70, y+2, 30, height-4);
-            g.beginFill(colors[2]);
-            g.drawRect(x+120, y+2, 30, height-4);
-            if (colors[3] == 'none') {
-                alpha = 0.0;
-            }
-            else {
-                alpha = 1.0;
-            }
-            g.lineStyle(2, 0x000000, alpha);
-            g.beginFill(colors[3], alpha);
-            g.drawRect(x+210, y+2, 30, height-4);
+        public function setLabel(color1, color2, color3, color4):void {
+            trace('Enter setLabel');
+            colors = [color1, color2, color3, color4];
+            loadBandImage(band1Loader, 't_' + color1 + '.png');
+            loadBandImage(band2Loader, 's_' + color2 + '.png');
+            loadBandImage(band3Loader, 's_' + color3 + '.png');
+            loadBandImage(band4Loader, 's_' + color4 + '.png');
         }
         
-        private function drawHighlights() {
+        private function loadBandImage(loader:Loader, fname:String):void {
+            var s = 'images/resistor/' + fname;
+            trace('path=' + s);
+            var req:URLRequest = new URLRequest(s);
+            try {
+                loader.load(req);
+            }
+            catch (e:ErrorEvent) {
+                trace("Failed to load " + s);
+            }
+        }
+        
+        private function drawHighlights():void {
             drawHighlightCircle(highlightShape1.graphics, end1.x, end1.y);
             drawHighlightCircle(highlightShape2.graphics, end2.x, end2.y);
         }
@@ -148,17 +104,6 @@ package org.concord.sparks.circuit
             g.drawCircle(x, y, snapRadius);
         }
         
-        // Set color labels
-        public function setColors(band1, band2, band3, band4):void {
-            colors = [band1, band2, band3, band4];
-            drawColorBands();
-        }
-        
-        // Set real resistance
-        public function setValue(r):void {
-            value = r;
-        }
-
         public function checkHighlight(leadX:Number, leadY:Number) {
             if (distance(leadX, leadY, end1.x, end1.y) < snapRadius && isVisible()) {
                 highlightShape1.visible = true;
@@ -179,12 +124,9 @@ package org.concord.sparks.circuit
             highlightShape2.visible = false;
         }
         
-        public function doConnection() {
-            
-        }
-        
         private function distance(x1:Number, y1:Number, x2:Number, y2:Number) {
             return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
         }
+        
      }
 }
