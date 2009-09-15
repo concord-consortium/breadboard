@@ -1,5 +1,7 @@
 package org.concord.sparks.circuit {
     
+    import fl.ik.IKManager;
+
     import flash.display.MovieClip;
     import flash.display.Sprite;
     import flash.events.MouseEvent;
@@ -51,8 +53,11 @@ package org.concord.sparks.circuit {
             powerSwitch.addEventListener(MouseEvent.CLICK, togglePower);
             display = root['multimeter_display'];
             display.text = '';
-            redLead = new Lead('red_lead', root['probeRed_mc'], 27.8, 156.45);
-            blackLead = new Lead('black_lead', root['probeBlack_mc'], 27.8, -156.45);
+            
+            var redCord = IKManager.getArmatureByName('Armature_9');
+            
+            redLead = new Lead('red_lead', root['probeRed_mc'], 0, 0, 18, 143, redCord);
+            blackLead = new Lead('black_lead', root['probeBlack_mc'], 0, 0, 28, 147, redCord);
         }
         
         public function setDisplayText(s:String) {

@@ -18,6 +18,7 @@ package org.concord.sparks.activities
             super(name, parent, root);
             multimeter = new Multimeter(root);
             resistor = new Resistor(parent, root);
+            resistor.hide();
             setupEvents();
             
             // initActivity must be called after the ExternalInterface is 
@@ -77,7 +78,7 @@ package org.concord.sparks.activities
         }
 
         private function checkLead(lead:Lead) {
-            if (lead.mouseDown) {
+            if (lead.drag) {
                 resistor.checkHighlight(lead.x, lead.y);
                 if (lead.connected) {
                     lead.connected = false;
