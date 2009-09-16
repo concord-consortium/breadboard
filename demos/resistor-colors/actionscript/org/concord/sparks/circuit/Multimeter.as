@@ -68,10 +68,28 @@ package org.concord.sparks.circuit {
         	return display.text;
         }
 
+        public function turnOn():void {
+            if (!powerOn) {
+                powerSwitch.rotation += 180;
+                powerOn = true;
+            }
+        }
+        
+        public function turnOff():void {
+            if (powerOn) {
+                powerSwitch.rotation += 180;
+                powerOn = false;
+            }
+        }
+        
         private function togglePower(event:MouseEvent):void {
-        	powerSwitch.rotation += 180;
-        	powerOn = !powerOn;
-        	trace('powerOn=' + powerOn);
+            if (powerOn) {
+                turnOff();
+            }
+            else {
+                turnOn();
+            }
+            trace('powerOn=' + powerOn);
         }
         
         private function rotateDial(event:MouseEvent):void {

@@ -14,12 +14,12 @@ function Multimeter()
         }
         
         var resistor = getActivity().resistor;
-        console.log('Resistance=' + resistor.realValue);
+        console.log('Multimeter.update: resistance=' + resistor.realValue + ' dialPosition=' + this.dialPosition);
         
+        var text = '';
         if (this.redLeadConnection != null && this.blackLeadConnection != null &&
-                this.redLeadConnection != this.blackLeadConnection) {
-            
-            var text = '';
+            this.redLeadConnection != this.blackLeadConnection)
+        {
             var value = resistor.realValue;
             console.log('pos=' + this.dialPosition + ' val=' + value);
             if (this.dialPosition == 'r_200' && value < 199.95) {
@@ -45,13 +45,29 @@ function Multimeter()
             else {
                 text = '--';
             }
-            console.log('text=' + text);
-            sendCommand('set_multimeter_display', text);
         }
         else {
-            sendCommand('set_multimeter_display', '--');
+            if (this.dialPosition == 'r_200') {
+                text = '1  . ';
+            }
+            else if (this.dialPosition == 'r_2000') {
+                text = '1   ';
+            }
+            else if (this.dialPosition == 'r_20k') {
+                text = '1 .  ';
+            }
+            else if (this.dialPosition == 'r_200k') {
+                text = '1  . ';
+            }
+            else if (this.dialPosition == 'r_2000k') {
+                text = '1   ';
+            }
+            else {
+                text = '--';
+            }
         }
-        
+        console.log('text=' + text);
+        sendCommand('set_multimeter_display', text);
         this.displayValue = this.getDisplayValue(resistor.realValue);
     }
     
@@ -59,11 +75,11 @@ function Multimeter()
     // sig: number of significant digits
     // dec: number of digits after decimal points
     this.formatDecimalString = function(s, dec) {
-        console.log('s=' + s + ' dec=' + dec);
+        //console.log('s=' + s + ' dec=' + dec);
         var pointLoc = s.indexOf('.');
-        console.log('pointLoc=' + pointLoc);
+        //console.log('pointLoc=' + pointLoc);
         var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
-        console.log('decLen=' + decLen);
+        //console.log('decLen=' + decLen);
         if (decLen == 0) {
             s = s.concat('.');
         }

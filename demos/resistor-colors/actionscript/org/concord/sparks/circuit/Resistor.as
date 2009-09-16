@@ -75,6 +75,7 @@ package org.concord.sparks.circuit
         public function setLabel(color1, color2, color3, color4):void {
             trace('Enter setLabel');
             colors = [color1, color2, color3, color4];
+
             loadBandImage(band1Loader, 't_' + color1 + '.png');
             loadBandImage(band2Loader, 's_' + color2 + '.png');
             loadBandImage(band3Loader, 's_' + color3 + '.png');
@@ -84,8 +85,8 @@ package org.concord.sparks.circuit
         private function loadBandImage(loader:Loader, fname:String):void {
             var s = 'images/resistor/' + fname;
             trace('path=' + s);
-            var req:URLRequest = new URLRequest(s);
             try {
+                var req:URLRequest = new URLRequest(s);
                 loader.load(req);
             }
             catch (e:ErrorEvent) {

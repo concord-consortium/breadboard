@@ -4,9 +4,10 @@ jQuery.sparks = {}
 // parse the page params so things can be customized
 var value = null;
 value = jQuery.url.param("model_height");
-jQuery.sparks.modelHeight = value != null ? value : '560';
+jQuery.sparks.modelHeight = value != null ? value : '500';
 
 jQuery.sparks.debug = jQuery.url.param("debug") != null
+jQuery.sparks.debug_mode = jQuery.url.param("debug_mode");
 
 jQuery.sparks.allResults = []
 
@@ -99,17 +100,33 @@ function startTry(){
   resistor.show();
 
   if(jQuery.sparks.debug){
-    model = $("#rcc_model")
-    model.append("<div>" +
-      "Nominal Value: " + resistor.nominalValue + "<br/>" +
-      "Tolerance: " + resistor.tolerance + "<br/>" +
-      "Real Value: " + resistor.realValue + "<br/>" +
-      "Display Value: " + activity.multimeter.getDisplayValue(resistor.realValue) + "<br/>" +
-      "</div>")
+      console.log('1 activity=' + activity);
+    showRccDebugInfo(activity);
   }
   
   form = $("form:first")
   enableForm(form)
+}
+
+function showRccDebugInfo(activity) {
+    var resistor = activity.resistor;
+    var model = $("#rcc_model");
+    var debug_div = $("#rcc_debug");
+    
+    console.log('debug_div=' + debug_div.length);
+    
+    var html =
+      "Nominal Value: " + resistor.nominalValue + "<br/>" +
+      "Tolerance: " + resistor.tolerance * 100.0 + "%<br/>" +
+      "Real Value: " + resistor.realValue + "<br/>" +
+      "Display Value: " + activity.multimeter.getDisplayValue(resistor.realValue) + "<br/>";
+    
+    if (debug_div.length > 0) {
+        debug_div.html(html);
+    }
+    else {
+        model.append('<div id="rcc_debug">' + html + '</div>');
+    }
 }
 
 function enableForm(form){

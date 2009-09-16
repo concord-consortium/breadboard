@@ -15,6 +15,7 @@ package org.concord.sparks.activities
         public var resistor;
         
         public function ResistorColors(name:String, parent, root):void {
+            trace('ENTER ResistorColors');
             super(name, parent, root);
             multimeter = new Multimeter(root);
             resistor = new Resistor(parent, root);
@@ -39,6 +40,17 @@ package org.concord.sparks.activities
                 case 'show_resistor':
                     resistor.show();
                     return 'show_resistor';
+                case 'set_debug_mode':
+                    if (args[1] == 'multimeter') {
+                         resistor.show();
+                         multimeter.redLead.snapTo(resistor.end1.x, resistor.end1.y);
+                         multimeter.blackLead.snapTo(resistor.end2.x, resistor.end2.y);
+                         multimeter.turnOn();
+                         javascript.sendEvent("multimeter_power", true);
+                         javascript.sendEvent('connect', 'red_lead', 'resistor_end1');
+                         javascript.sendEvent('connect', 'black_lead', 'resistor_end2');
+                    }
+                    return 'set_debug_mode';
             }
             return 'UNKNOWN';
         }
@@ -91,7 +103,7 @@ package org.concord.sparks.activities
             if (!lead.connected && distance(lead.x, lead.y, end.x, end.y) < resistor.snapRadius) {
                 lead.snapTo(end.x, end.y);
                 lead.connected = true;
-                javascript.sendEvent('connect', lead.id, end.id)
+                javascript.sendEvent('connect', lead.id, end.id);
             }
         }
         

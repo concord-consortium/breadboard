@@ -17,6 +17,7 @@ function receiveEvent(name, value, time) {
   console.log('received: ' + name + ', ' + value + ', ' + new Date(parseInt(time)));
   var activity = getActivity();
   var multimeter = activity.multimeter;
+  
   if (name == 'connect') {
 	  var ids = value.split('|');
 	  if (ids[0] == 'red_lead') {

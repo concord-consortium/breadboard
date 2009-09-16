@@ -10,6 +10,12 @@ function initActivity() {
     }
     console.log('ENTER initActivity');
     jQuery.sparks.activity = new ResistorActivity();
+    
+    if (jQuery.sparks.debug_mode == 'multimeter') {
+        var activity = jQuery.sparks.activity;
+        sendCommand('set_debug_mode', 'multimeter');
+        showRccDebugInfo(activity);
+    }
 }
 
 function getActivity() {
@@ -22,8 +28,9 @@ function ResistorActivity() {
     var flash = getFlashMovie('resistor_colors');
     this.multimeter = new Multimeter();
     this.resistor = new Resistor();
+    
     this.resistor.randomize();
-
+    
     console.log('Nominal Resistance=' + this.resistor.nominalValue);
     console.log('Tolerance=' + this.resistor.tolerance * 100 + '%');
     console.log('Real Resistance=' + this.resistor.realValue);
