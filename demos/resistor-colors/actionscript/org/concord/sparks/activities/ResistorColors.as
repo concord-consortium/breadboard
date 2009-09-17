@@ -11,8 +11,13 @@ package org.concord.sparks.activities
     
     public class ResistorColors extends Activity
     {
-        public var multimeter;
-        public var resistor;
+        public var multimeter:Multimeter;
+        public var resistor:Resistor;
+        
+        var redLeadDefaultX:Number;
+        var redLeadDefaultY:Number;
+        var blackLeadDefaultX:Number;
+        var blackLeadDefaultY:Number;
         
         public function ResistorColors(name:String, parent, root):void {
             trace('ENTER ResistorColors');
@@ -21,6 +26,11 @@ package org.concord.sparks.activities
             resistor = new Resistor(parent, root);
             resistor.hide();
             setupEvents();
+            
+            redLeadDefaultX = multimeter.redLead.displayObject.x;
+            redLeadDefaultY = multimeter.redLead.displayObject.y;
+            blackLeadDefaultX = multimeter.blackLead.displayObject.x;
+            blackLeadDefaultY = multimeter.blackLead.displayObject.y;
             
             // initActivity must be called after the ExternalInterface is 
             // ready to communicate with JavaScript.
@@ -40,6 +50,9 @@ package org.concord.sparks.activities
                 case 'show_resistor':
                     resistor.show();
                     return 'show_resistor';
+                case 'reset_circuit':
+                    resetCircuit();
+                    return 'reset_circuit';
                 case 'set_debug_mode':
                     if (args[1] == 'multimeter') {
                          resistor.show();
@@ -55,6 +68,20 @@ package org.concord.sparks.activities
                     return 'set_debug_mode';
             }
             return 'UNKNOWN';
+        }
+        
+        private function resetCircuit() {
+            multimeter.setDial('acv_750');
+            multimeter.turnOff();
+            trace('rx=' + redLeadDefaultX + ' ry=' + redLeadDefaultY);
+            trace('bx=' + blackLeadDefaultX + ' by=' + blackLeadDefaultY);
+            multimeter.redLead.snapTo(redLeadDefaultX, redLeadDefaultY);
+            multimeter.blackLead.snapTo(blackLeadDefaultX, blackLeadDefaultY);
+            multimeter.redLead.connected = false;
+            multimeter.blackLead.connected = false;
+            javascript.sendEvent("multimeter_power", false);
+            javascript.sendEvent('disconnect', 'red_lead');
+            javascript.sendEvent('disconnect', 'black_lead');
         }
         
         private function setupEvents() {

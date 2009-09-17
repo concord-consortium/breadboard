@@ -18,20 +18,23 @@ function initActivity() {
     }
 }
 
-function getActivity() {
-    return jQuery.sparks.activity;
-}
-
 function ResistorActivity() {
     console.log('ENTER ResistorActivity');
+    this.assessment = new Assessment(this);
     
     var flash = getFlashMovie('resistor_colors');
     this.multimeter = new Multimeter();
     this.resistor = new Resistor();
-    
-    this.resistor.randomize();
-    
+
     console.log('Nominal Resistance=' + this.resistor.nominalValue);
     console.log('Tolerance=' + this.resistor.tolerance * 100 + '%');
     console.log('Real Resistance=' + this.resistor.realValue);
+    
+    // Re-initialize the circuit settings for a new set of questions
+    this.resetCircuit = function() {
+        console.log('ENTER ResistorActivity.resetCircuit');
+        this.resistor.randomize();
+        sendCommand('reset_circuit');
+        this.multimeter.update();
+    }
 }

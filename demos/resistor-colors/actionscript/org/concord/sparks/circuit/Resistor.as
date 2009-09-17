@@ -3,7 +3,7 @@ package org.concord.sparks.circuit
     import flash.display.Graphics;
     import flash.display.Loader;
     import flash.display.Shape;
-    import flash.events.ErrorEvent;
+    import flash.events.IOErrorEvent;
     import flash.net.URLRequest;
     
     public class Resistor
@@ -89,7 +89,7 @@ package org.concord.sparks.circuit
                 var req:URLRequest = new URLRequest(s);
                 loader.load(req);
             }
-            catch (e:ErrorEvent) {
+            catch (e:IOErrorEvent) {
                 trace("Failed to load " + s);
             }
         }

@@ -13,7 +13,7 @@ function Multimeter()
             return;
         }
         
-        var resistor = getActivity().resistor;
+        var resistor = jQuery.sparks.activity.resistor;
         console.log('Multimeter.update: resistance=' + resistor.realValue + ' dialPosition=' + this.dialPosition);
         
         var text = '';
@@ -112,16 +112,13 @@ function Multimeter()
             text = this.formatDecimalString(text, 0);
         }
         else if (value < 19995) {
-            text = (Math.round(value * 0.1) * 0.01).toString();
-            text = this.formatDecimalString(text, 2);
+            text = (Math.round(value * 0.1) * 10).toString();
         }
         else if (value < 199950) {
-            text = (Math.round(value * 0.01) * 0.1).toString();
-            text = this.formatDecimalString(text, 1);
+            text = (Math.round(value * 0.01) * 100).toString();
         }
         else if (value < 1999500) {
-            text = Math.round(value * 0.001).toString();
-            text = this.formatDecimalString(text, 0);
+            text = (Math.round(value * 0.001) * 1000).toString();
         }
         else {
             text = 'NaN';

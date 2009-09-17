@@ -23,6 +23,9 @@ function buttonClicked(event){
 }
 
 function completedTry(){
+  var activity = jQuery.sparks.activity;
+  var grader = activity.assessment.grader;
+  
   var result2 = {}
   var formData = $("form").each(function (i){
     var form = jQuery(this)
@@ -44,9 +47,9 @@ function completedTry(){
   // the form and then add an icon next to the form
   
   // rated resistance
-  gradeResistance(result2.rated_resistance, jQuery.sparks.activity.resistor.nominalValue)
-  gradeTolerance(result2.rated_tolerance, jQuery.sparks.activity.resistor.tolerance)
-
+  
+  grader.grade(result2);
+  
   for (var item in result2) {  
     updateItem(result2, item) 
   }  
@@ -92,12 +95,10 @@ function startTry(){
   // generate the resistor numbers
   // display them on the page so people can see it working
   // this is defined in javascript/resistor_activity.js
-  var activity = getActivity()
-  var resistor = activity.resistor
+  var activity = jQuery.sparks.activity;
   
-  // re randomzie the resistor
-  resistor.randomize()
-  resistor.show();
+  activity.resetCircuit();
+  activity.resistor.show();
 
   if(jQuery.sparks.debug){
       console.log('1 activity=' + activity);
