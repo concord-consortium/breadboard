@@ -91,7 +91,7 @@ function Multimeter()
                 s = s.concat('0');
             }
         }
-        console.log('out=' + s);
+        //console.log('formatDecimalString: formatted=' + s);
         return s;
     }
 

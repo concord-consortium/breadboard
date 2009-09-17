@@ -45,6 +45,8 @@ package org.concord.sparks.activities
                          resistor.show();
                          multimeter.redLead.snapTo(resistor.end1.x, resistor.end1.y);
                          multimeter.blackLead.snapTo(resistor.end2.x, resistor.end2.y);
+                         multimeter.redLead.connected = true;
+                         multimeter.blackLead.connected = true;
                          multimeter.turnOn();
                          javascript.sendEvent("multimeter_power", true);
                          javascript.sendEvent('connect', 'red_lead', 'resistor_end1');
