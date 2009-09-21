@@ -60,20 +60,20 @@ function Resistor()
     }
     
     this.getRealValue = function(nominalValue, tolerance) {
-    	var chance = Math.random();
-    	if (chance > 0.8) {
-    		var chance2 = Math.random();
-    		if (chance2 < 0.5) {
-    			return nominalValue + tolerance + Math.random() * tolerance;
-    		}
-    		else {
-    			return nominalValue - tolerance - Math.random() * tolerance;
-    		}
-    	}
-    	
-    	// Multiply 0.9 just to be comfortably within tolerance
-    	var realTolerance = tolerance * 0.9;
-    	return nominalValue * this.randFloat(1 - realTolerance, 1 + realTolerance);
+        var chance = Math.random();
+        if (chance > 0.8) {
+            var chance2 = Math.random();
+            if (chance2 < 0.5) {
+                return nominalValue + nominalValue * (tolerance + Math.random() * tolerance);
+            }
+            else {
+                return nominalValue - nominalValue * (tolerance + Math.random() * tolerance);
+            }
+        }
+
+        // Multiply 0.9 just to be comfortably within tolerance
+        var realTolerance = tolerance * 0.9;
+        return nominalValue * this.randFloat(1 - realTolerance, 1 + realTolerance);
     }
     
     this.randInt = function(min, max) {
@@ -81,14 +81,14 @@ function Resistor()
     }
     
     this.randFloat = function(min, max) {
-    	return this.randPseudoGaussian(3) * (max - min) + min;
+        return this.randPseudoGaussian(3) * (max - min) + min;
     }
     
     this.randPseudoGaussian = function(n) {
-    	var r = 0.0;
-    	for (var i = 0; i < n; ++i) {
-    		r += Math.random();
-    	}
-    	return r / n;
+        var r = 0.0;
+        for (var i = 0; i < n; ++i) {
+            r += Math.random();
+        }
+        return r / n;
     }
 }
