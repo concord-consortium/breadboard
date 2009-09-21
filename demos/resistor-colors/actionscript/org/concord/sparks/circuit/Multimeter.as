@@ -1,5 +1,7 @@
 package org.concord.sparks.circuit {
     
+    import fl.ik.IKArmature;
+    import fl.ik.IKBone;
     import fl.ik.IKManager;
 
     import flash.display.MovieClip;
@@ -40,8 +42,10 @@ package org.concord.sparks.circuit {
             
             var redCord = IKManager.getArmatureByName('Armature_9');
             
-            redLead = new Lead('red_lead', root['probeRed_mc'], 0, 0, 18, 143, redCord);
-            blackLead = new Lead('black_lead', root['probeBlack_mc'], 0, 0, 28, 147, redCord);
+            //redLead = new Lead('red_lead', root['probeRed_mc'], 0, 0, 18, 143, redCord);
+            //blackLead = new Lead('black_lead', root['probeBlack_mc'], 0, 0, 28, 147, redCord);
+            redLead = new Lead('red_lead', getBone('Armature_18', 'ikBoneName552'), 0, 0, 18, 143, redCord);
+            blackLead = new Lead('black_lead', root['probeBlack_mc'], getBone('Armature_16', 'ikBoneName169'), 0, 0, 28, 147, redCord);
         }
         
         public function setDisplayText(s:String) {
@@ -147,5 +151,10 @@ package org.concord.sparks.circuit {
                 setDial('r_2000k');
             }
         }
+    }
+    
+    private function getBone(armatureName:String, boneName:String):IKBone {
+        var armature:IKArmature = IKManager.getArmatureByName(armatureName);
+        return armature.getBoneByName(boneName);
     }
 }
