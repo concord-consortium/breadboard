@@ -14,6 +14,7 @@ function Grader(activity)
                 multimeter.getDisplayValue(resistor.realValue));
         this.gradeToleranceRange(resultObject.measured_tolerance,
                 resistor.nominalValue, resistor.tolerance);
+        this.gradeWithinTolerance(resultObject.within_tolerance, resistor);
     }
     
     this.gradeResistance = function(answer, correctValue) {
@@ -25,7 +26,7 @@ function Grader(activity)
         }
         
         var value_num = Number(answer.value)
-        if (!this.validateNumber(value_num)){
+        if (!this.validateNumber(value_num)) {
             return;
         }
         
@@ -107,13 +108,48 @@ function Grader(activity)
         console.log('correct min=' + correctMin + ' max=' + correctMax);
         console.log('submitted min=' + min + ' max=' + max);
         
-        if (equalWithTolerance(min, correctMin, 1e-6) &&
-            equalWithTolerance(max, correctMax, 1e-6))
+        if (this.equalWithTolerance(min, correctMin, 1e-6) &&
+            this.equalWithTolerance(max, correctMax, 1e-6))
         {
             answer.correct = true;
             answer.message = "Correct";
         }
         return;
+    }
+    
+    
+    this.gradeWithinTolerance = function(answer, resistor) {
+        answer.message = "Unknown Error";
+        answer.correct = false;
+        
+        if (!this.validateNonEmpty(answer.value, answer)) {
+            return;
+        }
+
+        var correctAnswer;
+        var tolerance = resistor.nominalValue * resistor.tolerance;
+        
+        /*
+        console.log('nominal=' + resistor.nominalValue + 
+         ' tolerance=' + resistor.tolerance + ' real=' + resistor.realValue);
+        console.log('min=' + (resistor.nominalValue - tolerance));
+        console.log('max=' + (resistor.nominalValue + tolerance));
+        */
+        
+        if (resistor.realValue < resistor.nominalValue - tolerance ||
+            resistor.realValue > resistor.nominalValue + tolerance)
+        {
+            correctAnswer = 'no';
+        }
+        else {
+            correctAnswer = 'yes';
+        }
+
+        if (answer.value != correctAnswer) {
+            return;
+        }
+        answer.correct = true;
+        answer.message = "Correct";
     }
     
     this.equalWithTolerance = function(value1, value2, tolerance) {
