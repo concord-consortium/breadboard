@@ -14,6 +14,7 @@ function initActivity() {
     if (jQuery.sparks.debug_mode == 'multimeter') {
         var activity = jQuery.sparks.activity;
         sendCommand('set_debug_mode', 'multimeter');
+        activity.resistor.randomize();
         showRccDebugInfo(activity);
     }
 }
