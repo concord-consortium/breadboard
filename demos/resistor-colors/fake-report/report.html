@@ -1,22 +1,35 @@
 <html>
-<head></head>
-<body>
-<h3>Report</h3>
-Student Name:  Ima Student<br/>
-Task #: 1<br/>
-Date:  8/11/2009<br/>
-<h4>Competencies</h4>
-<div class="score_item">
-Reading Resistor Color Code: <span id="reading_color_code_score"></span>
-<a href="">What this means</a></div>
+  <head></head>
+  <body>
 
-<div class="score_item">
-Computing Tolerance: <span id="computing_tolerance_score"></span>
-<a href="">What this means</a></div>
+    <h3>Report</h3>
+    Student Name:  Ima Student<br/>
+    Task #: 1<br/>
+    Date: <span id="report_date"></span><br/>
 
-<div class="score_item">
-Measuring Resistance: <span id="measuring_resistance_score"></span>
-<a href="">What this means</a></div>
-</body>
+    <h4>Competencies</h4>
 
+    <div class="score_item">
+      Reading Resistor Color Code: <span id="reading_color_code_score"></span>
+      <img src="../../icons/star.png"></img>
+      <img src="../../icons/star.png"></img>
+      <img src="../../icons/star.png"></img>
+      <a id="report_link_1" href="#">Excellent! Keep up the good work!</a>
+    </div>
+
+    <div class="score_item">
+      Computing Tolerance: <span id="computing_tolerance_score"></span>
+      <a href="">Almost there! Here's how you can perfect!</a>
+    </div>
+
+    <div class="score_item">
+      Measuring Resistance: <span id="measuring_resistance_score"></span>
+      <a href="" onclick="alert('hello')">You can do better! Here's how.</a>
+    </div>
+    
+    <div id="kaka" onclick="alert('kaka maka');">KAKA MAKA </div>
+    
+    <div id="report_log"></div>
+
+  </body>
 </html>

@@ -1,8 +1,13 @@
 function Grader(activity)
 {
     this.activity = activity;
+}
+
+Grader.prototype =
+{
+    activity : null,
     
-    this.grade = function(resultObject) {
+    grade : function(resultObject) {
         console.log('ENTER Grader.grade');
         var multimeter = this.activity.multimeter;
         var resistor = this.activity.resistor;
@@ -15,9 +20,9 @@ function Grader(activity)
         this.gradeToleranceRange(resultObject.measured_tolerance,
                 resistor.nominalValue, resistor.tolerance);
         this.gradeWithinTolerance(resultObject.within_tolerance, resistor);
-    }
+    },
     
-    this.gradeResistance = function(answer, correctValue) {
+    gradeResistance : function(answer, correctValue) {
         answer.message = "Unknown Error";
         answer.correct = false;
         
@@ -62,9 +67,9 @@ function Grader(activity)
         
         answer.correct = true;
         answer.message = "Correct";
-    }
+    },
     
-    this.gradeTolerance = function(answer, correctValue) {
+    gradeTolerance : function(answer, correctValue) {
         answer.message = "Unknown Error";
         answer.correct = false;
         
@@ -84,9 +89,9 @@ function Grader(activity)
         
         answer.correct = true;
         answer.message = "Correct";
-    }
+    },
     
-    this.gradeToleranceRange = function(answer, nominalResistance, tolerance) {
+    gradeToleranceRange : function(answer, nominalResistance, tolerance) {
         console.log('ENTER Grader.gradeToleranceRange');
         answer.message = "Unknown Error";
         answer.correct = false;
@@ -115,10 +120,9 @@ function Grader(activity)
             answer.message = "Correct";
         }
         return;
-    }
+    },
     
-    
-    this.gradeWithinTolerance = function(answer, resistor) {
+    gradeWithinTolerance : function(answer, resistor) {
         answer.message = "Unknown Error";
         answer.correct = false;
         
@@ -150,21 +154,21 @@ function Grader(activity)
         }
         answer.correct = true;
         answer.message = "Correct";
-    }
+    },
     
-    this.equalWithTolerance = function(value1, value2, tolerance) {
+    equalWithTolerance : function(value1, value2, tolerance) {
         return Math.abs(value1 - value2) < tolerance;
-    }
+    },
     
-    this.validateNonEmpty = function(inputField, form) {
+    validateNonEmpty : function(inputField, form) {
         if (inputField == null || inputField.length < 1) {
             form.message = "No Value Entered";
             return false;
         }
         return true;;
-    }
+    },
     
-    this.validateNumber = function(num) {
+    validateNumber : function(num) {
         // I don't know if this works correctly IE
         // parseFloat will return all numbers before a non numeric char so 
         // parseFloat('3a') returns 3 which isn't really what we want
