@@ -24,7 +24,7 @@ function Multimeter()
             console.log('pos=' + this.dialPosition + ' val=' + value);
             if (this.dialPosition == 'r_200' && value < 199.95) {
                 text = (Math.round(value * 10) * 0.1).toString();
-                text = this.formatDecimalString(text, 1);
+                text = this.toDisplayString(text, 1);
             }
             else if (this.dialPosition == 'r_2000' && value < 1999.5) {
                 text = Math.round(value).toString();
@@ -43,32 +43,70 @@ function Multimeter()
                 text = this.formatDecimalString(text, 0);
             }
             else {
-                text = '--';
+                text = '       ';
             }
         }
         else {
             if (this.dialPosition == 'r_200') {
-                text = '1  . ';
+                text = ' 1   . ';
             }
             else if (this.dialPosition == 'r_2000') {
-                text = '1   ';
+                text = ' 1     ';
             }
             else if (this.dialPosition == 'r_20k') {
-                text = '1 .  ';
+                text = ' 1 .   ';
             }
             else if (this.dialPosition == 'r_200k') {
-                text = '1  . ';
+                text = ' 1   . ';
             }
             else if (this.dialPosition == 'r_2000k') {
-                text = '1   ';
+                text = ' 1     ';
             }
             else {
-                text = '--';
+                text = '       ';
             }
         }
         console.log('text=' + text);
         sendCommand('set_multimeter_display', text);
         this.displayValue = this.getDisplayValue(resistor.realValue);
+    }
+    
+    this.toDisplayString = function(s, dec) {
+        trace('s1=' + s);
+        var sign = s[0] == '-' ? s[0] : ' ';
+        s = s.replace('-', '');
+        
+        trace('s2=' + s);
+        var pointLoc = s.indexOf('.');
+        var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
+        if (decLen == 0) {
+            s = s.concat('.');
+        }
+        trace('s3=' + s);
+        if (dec < decLen) {
+            s = s.substring(0, pointLoc + dec + 1);
+        }
+        else {
+            for (var i = 0; i < dec - decLen; ++i) {
+                s = s.concat('0');
+            }
+        }
+        trace('s4=' + s);
+        s = s.replace('.', '');
+        trace('s5=' + s);
+        var len = s.length;
+        if (len < 4) {
+            for (var i = 0; i < 3 - len; ++i) {
+                s = '0' + s;
+            }
+            s = ' ' + s;
+        }
+        trace('s6=' + s);
+        
+        s = sign + s.substring[0, 2] + dot1 + s[2] + dot2 + s[3];
+        trace('s7=' + s);
+        return s;
+        
     }
     
     // Pad 0's to the number text

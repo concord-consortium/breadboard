@@ -1,23 +1,19 @@
 package org.concord.sparks.circuit {
-    
+
     import fl.ik.IKArmature;
     import fl.ik.IKBone;
+    import fl.ik.IKJoint;
     import fl.ik.IKManager;
 
+    import flash.display.Loader;
     import flash.display.MovieClip;
     import flash.display.Sprite;
     import flash.events.MouseEvent;
-        
+    import flash.events.IOErrorEvent;
+    import flash.net.URLRequest;
+    
     public class Multimeter
     {
-        var rotationMap = {
-            acv_750:     0, acv_200:  18, p_9v:      36, dca_200mc: 54,
-            dca_2000mc: 72, dca_20m:  90, dca_200m: 108, c_10a:    126,
-            hfe:       144, diode:   162, r_200:    180, r_2000:  -162,
-            r_20k:    -144, r_200k: -126, r_2000k: -108, dcv_200m: -90,
-            dcv_2000m: -72, dcv_20:  -54, dcv_200:  -36, dcv_1000: -18
-        };
-        
         public var redLead;
         public var blackLead;
         
@@ -27,8 +23,24 @@ package org.concord.sparks.circuit {
         public var powerSwitch:MovieClip;
         public var powerOn:Boolean = false; //true if multimeter is turned on
         
-        var root;
-        var display; //display for dmm
+        private var rotationMap = {
+            acv_750:     0, acv_200:  18, p_9v:      36, dca_200mc: 54,
+            dca_2000mc: 72, dca_20m:  90, dca_200m: 108, c_10a:    126,
+            hfe:       144, diode:   162, r_200:    180, r_2000:  -162,
+            r_20k:    -144, r_200k: -126, r_2000k: -108, dcv_200m: -90,
+            dcv_2000m: -72, dcv_20:  -54, dcv_200:  -36, dcv_1000: -18
+        };
+        
+        private var root;
+        private var display; //display for dmm
+
+        private var minus_hv_loader:Loader = new Loader();
+        private var digit1_loader:Loader = new Loader();
+        private var digit2_loader:Loader = new Loader();
+        private var dot1_loader:Loader = new Loader();
+        private var digit3_loader:Loader = new Loader();
+        private var dot2_loader:Loader = new Loader();
+        private var digit4_loader:Loader = new Loader();
         
         public function Multimeter(root) {
             this.root = root;
@@ -37,19 +49,41 @@ package org.concord.sparks.circuit {
             setDial('acv_750');
             powerSwitch = root['dmm_switch'];
             powerSwitch.addEventListener(MouseEvent.CLICK, togglePower);
-            display = root['multimeter_display'];
+            display = root['dmm_display'];
             display.text = '';
             
-            var redCord = IKManager.getArmatureByName('Armature_9');
+            redLead = new Lead('red_lead', root['ikNode_656'], 'Armature_39');
+            blackLead = new Lead('black_lead', root['ikNode_1'], 'Armature_40');
             
-            //redLead = new Lead('red_lead', root['probeRed_mc'], 0, 0, 18, 143, redCord);
-            //blackLead = new Lead('black_lead', root['probeBlack_mc'], 0, 0, 28, 147, redCord);
-            redLead = new Lead('red_lead', getBone('Armature_18', 'ikBoneName552'), 0, 0, 18, 143, redCord);
-            blackLead = new Lead('black_lead', root['probeBlack_mc'], getBone('Armature_16', 'ikBoneName169'), 0, 0, 28, 147, redCord);
+            display.minus_hv.addChild(minus_hv_loader);
+            display.thousand.addChild(digit1_loader);
+            display.hundred.addChild(digit2_loader);
+            display.decimalPoint_one.addChild(dot1_loader);
+            display.ten.addChild(digit3_loader);
+            display.decimalPoint_two.addChild(dot2_loader);
+            display.one.addChild(digit4_loader);
         }
         
+        /*
         public function setDisplayText(s:String) {
         	display.text = s;
+        }
+        */
+        public function setDisplayText(s:String) {
+            var origLen = s.length;
+            for (var i = 0; i < 7 - origLen; ++i) {
+                s = ' ' + s;
+            }
+            var symbols = s.split('');
+            trace('symbols=' + symbols);
+            
+            loadDisplayImage(minus_hv_loader, symbols[0]);
+            loadDisplayImage(digit1_loader, symbols[1]);
+            loadDisplayImage(digit2_loader, symbols[2]);
+            loadDisplayImage(dot1_loader, symbols[3]);
+            loadDisplayImage(digit3_loader, symbols[4]);
+            loadDisplayImage(dot2_loader, symbols[5]);
+            loadDisplayImage(digit4_loader, symbols[6]);
         }
         
         public function getDisplayText():String {
@@ -151,10 +185,42 @@ package org.concord.sparks.circuit {
                 setDial('r_2000k');
             }
         }
-    }
-    
-    private function getBone(armatureName:String, boneName:String):IKBone {
-        var armature:IKArmature = IKManager.getArmatureByName(armatureName);
-        return armature.getBoneByName(boneName);
+
+        private function loadDisplayImage(loader:Loader, char:String):void {
+            var fname;
+            trace('char=' + char);
+            switch (char) {
+            case ' ':
+                fname = 'blank.png';
+                break;
+            case 'h':
+                fname = 'hv.png';
+                break;
+            case '-':
+                fname = 'minus.png';
+                break;
+            case '.':
+                fname = 'point.png';
+                break;
+            default:
+                fname = char + '.png';
+            }
+            var path = 'images/multimeter/' + fname;
+            trace('path=' + path);
+            try {
+                var req:URLRequest = new URLRequest(path);
+                loader.load(req);
+                trace('Loaded ' + path);
+            }
+            catch (e:IOErrorEvent) {
+                trace("Failed to load " + path);
+            }
+        }
+
+        private function getBone(armatureName:String, boneName:String):IKBone {
+            var armature:IKArmature = IKManager.getArmatureByName(armatureName);
+            return armature.getBoneByName(boneName);
+        }
+        
     }
 }

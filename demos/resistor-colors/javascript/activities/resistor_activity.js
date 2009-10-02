@@ -5,10 +5,6 @@ function ResistorActivity() {
     console.log('log=' + this.log);
     this.assessment = new Assessment(this, this.log);
     this.reporter = new Reporter(this.assessment);
-
-    this.flash = null;
-    this.multimeter = null;
-    this.resistor = null;
 }
 
 ResistorActivity.prototype =
@@ -19,6 +15,9 @@ ResistorActivity.prototype =
     flash : null,
     multimeter : null,
     resistor : null,
+    
+    current_section : 0,
+    allResults : [],
 
     // Initial operation on document when it is loaded
     initDocument : function() {
@@ -36,8 +35,11 @@ ResistorActivity.prototype =
           "<input name='start_time' type='hidden'></input><input name='stop_time' type='hidden'></input>");
         
         $("#start_button").click(startButtonClicked);
-
-        var dialog = $("#report").load("fake-report/report.html").dialog({autoOpen: false, width: 600});
+        
+        /* skim: Ditching dialog for now due to problems attaching events
+         * to its elements
+        $("#report").dialog({ autoOpen: false, width: 600 });
+        */
     },
 
     // Initializations that can be done only when the flash movie is loaded
@@ -66,45 +68,36 @@ ResistorActivity.prototype =
     },
     
     completedTry : function() {
-      var activity = jQuery.sparks.activity;
-      var grader = activity.assessment.grader;
+      var result = {};
       
-      var result2 = {}
-      var formData = $("form").each(function (i) {
+      $("form").each(function(i) {
         var form = jQuery(this);
-        result2[this.id] = serializeForm(form);
+        result[this.id] = serializeForm(form);
       });
-      jQuery.sparks.allResults.push(result2)
     
       if(jQuery.sparks.debug) {  
-        var resultString = jQuery.map(jQuery.sparks.allResults, function(el, i){
+        var resultString = jQuery.map(this.allResults, function(el, i){
           return jQuery.toJSON(el)
         }).join("<br\>")
-      
         $("#result").html("<pre>"+resultString+"</pre>")
       }
     
-      // indication of correctness next to each item
-      // show contextual help
-      // cycle through the results using the name of each to find
-      // the form and then add an icon next to the form
-      
-      // rated resistance
-      
-      grader.grade(result2);
-    
-      for (var item in result2) {  
-        this.updateItem(result2, item) 
+      this.assessment.grader.grade(result, this.current_section);
+
+      // Update forms
+      for (var item in result) {  
+        this.updateItem(result, item); 
       }  
     
-      if(jQuery.sparks.allResults.length < 3) {
-        $(".next_button").each(function(){
-          this.disabled = false
-        }).show()
-      } else {
+      if (this.current_section < 3) {
+        $(".next_button").each(function() {
+          this.disabled = false;
+        }).show();
+      }
+      else {
         $(".next_button").hide();
         $(".show_report_button").show();
-        jQuery.sparks.activity.log.add('end_activity');
+        this.log.add('end_activity');
       }
     },
     
@@ -139,22 +132,35 @@ ResistorActivity.prototype =
       // generate the resistor numbers
       // display them on the page so people can see it working
       // this is defined in javascript/resistor_activity.js
-      var activity = jQuery.sparks.activity;
       
-      activity.resetCircuit();
-      activity.resistor.show();
+      this.resetCircuit();
+      this.resistor.show();
     
       if(jQuery.sparks.debug){
-          console.log('1 activity=' + activity);
-        this.showRccDebugInfo(activity);
+        this.showRccDebugInfo();
       }
       
       form = $("form:first")
       this.enableForm(form)
+
+      ++ this.current_section;
+      console.log('current_section changed to: ' + this.current_section);
+      switch(this.current_section)
+      {
+      case 1:
+          this.log.add('start_activity');
+          break;
+      case 2:
+          this.log.add('start_resistor2');
+          break;
+      case 3:
+          this.log.add('start_resistor3');
+          break;
+      }
     },
     
-    showRccDebugInfo : function(activity) {
-        var resistor = activity.resistor;
+    showRccDebugInfo : function() {
+        var resistor = this.resistor;
         var model = $("#rcc_model");
         var debug_div = $("#rcc_debug");
         
@@ -164,7 +170,7 @@ ResistorActivity.prototype =
           "Nominal Value: " + resistor.nominalValue + "<br/>" +
           "Tolerance: " + resistor.tolerance * 100.0 + "%<br/>" +
           "Real Value: " + resistor.realValue + "<br/>" +
-          "Display Value: " + activity.multimeter.getDisplayValue(resistor.realValue) + "<br/>";
+          "Display Value: " + this.multimeter.getDisplayValue(resistor.realValue) + "<br/>";
         
         if (debug_div.length > 0) {
             debug_div.html(html);
@@ -194,20 +200,19 @@ function buttonClicked(event) {
     var form = jQuery(event.target).parent();
     jQuery.sparks.activity.disableForm(form);
     var nextForm = form.nextAll("form:first");
-    if(nextForm.size() == 0){
+    if (nextForm.size() == 0) {
       jQuery.sparks.activity.completedTry();
     } else {
       jQuery.sparks.activity.enableForm(nextForm);
     }
-  }
-  
+}
+
 function startButtonClicked(event) {
     console.log('EVENT: ' + (typeof event));
     for (x in event) {
         console.log('event ' + x);
     }
     jQuery(event.target).hide();
-    jQuery.sparks.activity.log.add('start_activity');
     jQuery.sparks.activity.startTry();
 }
 
@@ -219,6 +224,14 @@ function nextButtonClicked(event) {
 }
 
 function showReportClicked(event) {
-    jQuery.sparks.activity.reporter.report();
-    $("#report").dialog('open');
+    /* skim: Ditching dialog for now due to problems attaching events
+     * to its elements
+    $("#report").load("fake-report/report.html", {}, function() {
+        jQuery.sparks.activity.reporter.report();
+        $("#report").dialog('open');
+    });
+    */
+    $("#report").load("fake-report/report.html", {}, function() {
+        jQuery.sparks.activity.reporter.report();
+    }).show();
 }

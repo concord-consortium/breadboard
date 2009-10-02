@@ -1,57 +1,41 @@
 package org.concord.sparks.circuit
 {
     import fl.ik.IKArmature;
-    import fl.ik.IKBone;
+    import fl.ik.IKJoint;
+    import fl.ik.IKManager;
     import fl.ik.IKMover;
     
+    import flash.display.MovieClip;
     import flash.geom.Point;
     import flash.events.Event;
     import flash.events.MouseEvent;
     
     import org.concord.sparks.Activity;
+    import org.concord.sparks.util.Geom;
     
     public class Lead implements Node
     {
-        // Global coordinates of the end point of the lead
-        public var x:Number;
-        public var y:Number;
-
-        public var displayObject;
+        public var displayObject:MovieClip;
         
         // Offset used to calculate global coordinates of the end point
         var xOffset:Number;
         var yOffset:Number;
         
-        // Local coordinates of the tip of the lead
-        var headLocalX:Number; 
-        var headLocalY:Number;
-        
-        // Local coordinates of the rear end of the lead
-        var tailLocalX:Number; 
-        var tailLocalY:Number; 
-        
         public var drag:Boolean = false;
         public var connected:Boolean = false;
         
-        var cord:IKArmature;
-        
         private var _id:String;
+        private var armature:IKArmature;
         
-        public function Lead(id, displayObject,
-            headLocalX:Number, headLocalY:Number,
-            tailLocalX:Number, tailLocalY:Number, 
-            cord:IKArmature)
+        public function Lead(id:String, displayObject:MovieClip, armatureName:String):void
         {
         	this.id = id;
             this.displayObject = displayObject;
-            this.headLocalX = headLocalX;
-            this.headLocalY = headLocalY;
-            this.tailLocalX = tailLocalX;
-            this.tailLocalY = tailLocalY;
-            this.cord = cord;
+
             displayObject.addEventListener(MouseEvent.MOUSE_DOWN, handleMouseDown);
             displayObject.addEventListener(MouseEvent.MOUSE_UP, handleMouseUp);
-            displayObject.addEventListener(MouseEvent.MOUSE_MOVE,handleMouseMove);
+            
+            armature = IKManager.getArmatureByName(armatureName);
         }
         
         public function get id():String {
@@ -62,53 +46,38 @@ package org.concord.sparks.circuit
             _id = val;
         }
         
-        public function snapTo(x:Number, y:Number) {
-            displayObject.x = x - headLocalX;
-            displayObject.y = y - headLocalY;
+        // Position of the probing end of the lead
+        public function get tip_position():Point {
+            return getTailJoint(armature.rootJoint).position;
         }
         
-        function handleMouseDown(event:MouseEvent):void {
-            xOffset = headLocalX - event.localX;
-            yOffset = headLocalY - event.localY;
-            displayObject.startDrag();
+        public function snapTo(target:Point):void {
+            trace('ENTER Lead.snapTo');
+            var tip:IKJoint = getTailJoint(armature.rootJoint);
+            var mover:IKMover = new IKMover(tip, tip.position);
+            
+            // The IK armature doesn't seem to move to target at once!
+            var n = 0;
+            while (Geom.distance(tip.position, target) > 2.0) {
+                mover.moveTo(target);
+                ++n;
+            }
+            trace('IK joint moved ' + n + ' times');
+        }
+        
+        private function getTailJoint(joint:IKJoint):IKJoint {
+            if (joint.numChildren < 1) {
+                return joint;
+            }
+            return getTailJoint(joint.getChildAt(0));
+        }
+        
+        private function handleMouseDown(event:MouseEvent):void {
             drag = true;
         }
 
-        function handleMouseUp(event:Event):void {
+        private function handleMouseUp(event:Event):void {
             drag = false;
-            displayObject.stopDrag();
-        }
-        
-        function handleMouseMove(event:MouseEvent):void {
-            if (drag) {
-                x = event.stageX + xOffset;
-                y = event.stageY + yOffset;
-                
-                /*
-                //trace('------------');
-                //trace('tipX=' + x + ' tipY=' + y);
-                trace('stageX=' + event.stageX + ' stageY=' + event.stageY);
-                trace('locX=' + event.localX + ' locY=' + event.localY);
-                //trace('xOffset=' + xOffset + ' yOffset=' + yOffset);
-                
-                trace('rot=' + displayObject.rotation);
-                var tailStageX = displayObject.x + tailLocalX;
-                var tailStageY = displayObject.y + tailLocalY;
-                
-                var bone:IKBone = cord.getBoneByName('ikBoneName142');
-                var mover:IKMover = new IKMover(bone.tailJoint,
-                bone.tailJoint.position);
-                mover.moveTo(new Point(tailStageX, tailStageY));
-                trace('headJoint at ' + bone.tailJoint.position);
-                trace('tailStage=' + tailStageX + ',' + tailStageY);
-                if (Math.abs(tailStageX - bone.headJoint.position.x) > 2 ||
-                    Math.abs(tailStageY - bone.headJoint.position.y) > 2)
-                {
-                    //drag = false;
-                    //displayObject.stopDrag();
-                }
-                 */
-            }
         }
     }
 }

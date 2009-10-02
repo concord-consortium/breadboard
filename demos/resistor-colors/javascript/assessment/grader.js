@@ -1,49 +1,56 @@
-function Grader(activity)
+function Grader(activity, activityLog)
 {
     this.activity = activity;
+    this.log = activityLog;
 }
 
 Grader.prototype =
 {
     activity : null,
+    log : null,
     
-    grade : function(resultObject) {
+    grade : function(resultObject, sectionNum) {
         console.log('ENTER Grader.grade');
+        var questions =  this.log.sections[sectionNum-1].questions;
+        
         var multimeter = this.activity.multimeter;
         var resistor = this.activity.resistor;
         
-        this.gradeResistance(resultObject.rated_resistance,
+        this.gradeResistance(questions[0], resultObject.rated_resistance,
                 resistor.nominalValue);
-        this.gradeTolerance(resultObject.rated_tolerance, resistor.tolerance);
-        this.gradeResistance(resultObject.measured_resistance,
+        this.gradeTolerance(questions[1], resultObject.rated_tolerance, resistor.tolerance);
+        this.gradeResistance(questions[2], resultObject.measured_resistance,
                 multimeter.getDisplayValue(resistor.realValue));
-        this.gradeToleranceRange(resultObject.measured_tolerance,
+        this.gradeToleranceRange(questions[3], resultObject.measured_tolerance,
                 resistor.nominalValue, resistor.tolerance);
-        this.gradeWithinTolerance(resultObject.within_tolerance, resistor);
+        this.gradeWithinTolerance(questions[4], resultObject.within_tolerance, resistor);
     },
     
-    gradeResistance : function(answer, correctValue) {
-        answer.message = "Unknown Error";
-        answer.correct = false;
+    gradeResistance : function(question, formAnswer, correctValue) {
+        formAnswer.message = "Unknown Error";
+        formAnswer.correct = false;
+        question.correct_answer = String(correctValue);
+        question.answer = formAnswer.value;
+        question.unit = formAnswer.units;
+        question.correct = false;
         
-        if (!this.validateNonEmpty(answer.value, answer)) {
+        if (!this.validateNonEmpty(formAnswer.value, formAnswer)) {
             return;
         }
         
-        var value_num = Number(answer.value)
+        var value_num = Number(formAnswer.value);
         if (!this.validateNumber(value_num)) {
             return;
         }
         
-        if(answer.units == null || 
-             answer.units.length < 1){
-             answer.message = "No Unit Entered";
+        if (formAnswer.units == null || formAnswer.units.length < 1) {
+             formAnswer.message = "No Unit Entered";
              return;
         }
         
         var multiplier = -1
         
-        switch (answer.units) {
+        switch (formAnswer.units) {
         case 'Ohms':
             multiplier = 1;
             break;
@@ -54,24 +61,29 @@ Grader.prototype =
             multiplier = 1000000;
             break;
         default:
-            answer.message = "Incorrect Unit";
+            formAnswer.message = "Incorrect Unit";
             return;
         }    
         
         parsed_value = value_num * multiplier;
         
         if(correctValue != parsed_value){
-            answer.message = "The entered value or unit is incorrect.";
+            formAnswer.message = "The entered value or unit is incorrect.";
             return;
         }
         
-        answer.correct = true;
-        answer.message = "Correct";
+        formAnswer.correct = true;
+        formAnswer.message = "Correct";
+        question.correct = true;
     },
     
-    gradeTolerance : function(answer, correctValue) {
+    gradeTolerance : function(question, answer, correctValue) {
         answer.message = "Unknown Error";
         answer.correct = false;
+        question.correct_answer = String(correctValue);
+        question.answer = answer.value;
+        question.unit = '%';
+        question.correct = false;
         
         if (!this.validateNonEmpty(answer.value, answer)) {
             return;
@@ -89,12 +101,21 @@ Grader.prototype =
         
         answer.correct = true;
         answer.message = "Correct";
+        question.correct = true;
     },
     
-    gradeToleranceRange : function(answer, nominalResistance, tolerance) {
+    gradeToleranceRange : function(question, answer, nominalResistance, tolerance) {
         console.log('ENTER Grader.gradeToleranceRange');
+        
+        var correctMin = nominalResistance * (1 - tolerance);
+        var correctMax = nominalResistance * (1 + tolerance);
+        
         answer.message = "Unknown Error";
         answer.correct = false;
+        question.correct_answer = [correctMin, correctMax];
+        question.answer = [answer.min, answer.max];
+        question.unit = [answer.min_unit, answer.max_unit];
+        question.correct = false;
 
         if (!this.validateNonEmpty(answer.min, answer) || !this.validateNonEmpty(answer.max, answer)) {
             return;
@@ -107,9 +128,6 @@ Grader.prototype =
             return;
         }
         
-        var correctMin = nominalResistance * (1 - tolerance);
-        var correctMax = nominalResistance * (1 + tolerance);
-        
         console.log('correct min=' + correctMin + ' max=' + correctMax);
         console.log('submitted min=' + min + ' max=' + max);
         
@@ -118,18 +136,12 @@ Grader.prototype =
         {
             answer.correct = true;
             answer.message = "Correct";
+            question.correct = true;
         }
         return;
     },
     
-    gradeWithinTolerance : function(answer, resistor) {
-        answer.message = "Unknown Error";
-        answer.correct = false;
-        
-        if (!this.validateNonEmpty(answer.value, answer)) {
-            return;
-        }
-
+    gradeWithinTolerance : function(question, answer, resistor) {
         var correctAnswer;
         var tolerance = resistor.nominalValue * resistor.tolerance;
         
@@ -148,12 +160,23 @@ Grader.prototype =
         else {
             correctAnswer = 'yes';
         }
+        
+        answer.message = "Unknown Error";
+        answer.correct = false;
+        question.correct_answer = correctAnswer;
+        question.answer = answer.value;
+        question.correct = false;
+        
+        if (!this.validateNonEmpty(answer.value, answer)) {
+            return;
+        }
 
         if (answer.value != correctAnswer) {
             return;
         }
         answer.correct = true;
         answer.message = "Correct";
+        question.correct = true;
     },
     
     equalWithTolerance : function(value1, value2, tolerance) {

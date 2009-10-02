@@ -1,17 +1,23 @@
-a:link {
-    color: blue;
-}
-a:visited { color: red; }
-a:hover { color: yellow; }
-a:active { color: white; }
-
 form { 
     display: block;
     width: 40em;
     padding: 3pt;
 }
-
 .score_item {
     text-indent: 20px;
     margin-bottom: 4px;
 }
+.mocassin {
+    background-color: #ffe4b5;
+}
+.tan {
+    background-color: #d2b48c;
+}
+.navaho_white {
+    background-color: #ffdead;
+}
+.burly_wood {
+    background-color: #deb887;
+}
+
+

@@ -4,17 +4,16 @@ if (typeof console == 'undefined') {
 }
 
 // setup a global namespace to store page variables
-jQuery.sparks = {}
+jQuery.sparks = {};
 
 // parse the page params so things can be customized
 var value = null;
+
 value = jQuery.url.param("model_height");
 jQuery.sparks.modelHeight = value != null ? value : '500';
 
-jQuery.sparks.debug = jQuery.url.param("debug") != null
+jQuery.sparks.debug = jQuery.url.param("debug") != null;
 jQuery.sparks.debug_mode = jQuery.url.param("debug_mode");
-
-jQuery.sparks.allResults = []
 
 $(document).ready(function() {
     jQuery.sparks.activity = new ResistorActivity();

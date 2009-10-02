@@ -2,15 +2,17 @@ package org.concord.sparks.circuit
 {
     import flash.display.Graphics;
     import flash.display.Loader;
+    import flash.display.MovieClip;
     import flash.display.Shape;
     import flash.events.IOErrorEvent;
+    import flash.geom.Point;
     import flash.net.URLRequest;
     
     public class Resistor
     {
         var parent;
         var root;
-        var displayObject;
+        var displayObject:MovieClip;
         
         var value:Number;
         
@@ -19,8 +21,8 @@ package org.concord.sparks.circuit
         var width = 260;
         var height = 80;
         
-        public var end1 = new ResistorEnd('resistor_end1', 110, 172);
-        public var end2 = new ResistorEnd('resistor_end2', 382, 172);
+        public var end1 = new ResistorEnd('resistor_end1', 536, 163);
+        public var end2 = new ResistorEnd('resistor_end2', 812, 161);
         
         public var snapRadius = 35;
         
@@ -88,6 +90,7 @@ package org.concord.sparks.circuit
             try {
                 var req:URLRequest = new URLRequest(s);
                 loader.load(req);
+                trace('Loaded ' + s);
             }
             catch (e:IOErrorEvent) {
                 trace("Failed to load " + s);
@@ -105,14 +108,14 @@ package org.concord.sparks.circuit
             g.drawCircle(x, y, snapRadius);
         }
         
-        public function checkHighlight(leadX:Number, leadY:Number) {
-            if (distance(leadX, leadY, end1.x, end1.y) < snapRadius && isVisible()) {
+        public function checkHighlight(lead:Point) {
+            if (distance(lead.x, lead.y, end1.x, end1.y) < snapRadius && isVisible()) {
                 highlightShape1.visible = true;
             }
             else {
                 highlightShape1.visible = false;
             }
-            if (distance(leadX, leadY, end2.x, end2.y) < snapRadius && isVisible()) {
+            if (distance(lead.x, lead.y, end2.x, end2.y) < snapRadius && isVisible()) {
                 highlightShape2.visible = true;
             }
             else {

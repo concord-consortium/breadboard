@@ -1,23 +1,23 @@
 package org.concord.sparks.activities
 {
-	import flash.events.MouseEvent;
+    import flash.events.MouseEvent;
     import flash.external.ExternalInterface;
+    import flash.geom.Point;
     
     import org.concord.sparks.Activity;
     import org.concord.sparks.circuit.Lead;
     import org.concord.sparks.circuit.Multimeter;
     import org.concord.sparks.circuit.Resistor;
     import org.concord.sparks.circuit.ResistorEnd;
+    import org.concord.sparks.util.Geom;
     
     public class ResistorColors extends Activity
     {
         public var multimeter:Multimeter;
         public var resistor:Resistor;
         
-        var redLeadDefaultX:Number;
-        var redLeadDefaultY:Number;
-        var blackLeadDefaultX:Number;
-        var blackLeadDefaultY:Number;
+        var redLeadDefaultPos:Point;
+        var blackLeadDefaultPos:Point;
         
         public function ResistorColors(name:String, parent, root):void {
             trace('ENTER ResistorColors');
@@ -26,12 +26,10 @@ package org.concord.sparks.activities
             resistor = new Resistor(parent, root);
             resistor.hide();
             setupEvents();
-            
-            redLeadDefaultX = multimeter.redLead.displayObject.x;
-            redLeadDefaultY = multimeter.redLead.displayObject.y;
-            blackLeadDefaultX = multimeter.blackLead.displayObject.x;
-            blackLeadDefaultY = multimeter.blackLead.displayObject.y;
-            
+
+            redLeadDefaultPos = multimeter.redLead.tip_position;
+            blackLeadDefaultPos = multimeter.blackLead.tip_position;
+
             // initActivity must be called after the ExternalInterface is 
             // ready to communicate with JavaScript.
             ExternalInterface.call('initActivity');
@@ -73,10 +71,8 @@ package org.concord.sparks.activities
         private function resetCircuit() {
             multimeter.setDial('acv_750');
             multimeter.turnOff();
-            trace('rx=' + redLeadDefaultX + ' ry=' + redLeadDefaultY);
-            trace('bx=' + blackLeadDefaultX + ' by=' + blackLeadDefaultY);
-            multimeter.redLead.snapTo(redLeadDefaultX, redLeadDefaultY);
-            multimeter.blackLead.snapTo(blackLeadDefaultX, blackLeadDefaultY);
+            multimeter.redLead.snapTo(redLeadDefaultPos);
+            multimeter.blackLead.snapTo(blackLeadDefaultPos);
             multimeter.redLead.connected = false;
             multimeter.blackLead.connected = false;
             javascript.sendEvent("multimeter_power", false);
@@ -91,22 +87,23 @@ package org.concord.sparks.activities
         }
         
         private function handleMouseMove(event:MouseEvent) {
-            //trace('eventPhase=' + event.eventPhase);
             checkLead(multimeter.redLead);
             checkLead(multimeter.blackLead);
         }
         
         private function handleMouseUp(event:MouseEvent) {
-            if (event.target == multimeter.redLead.displayObject) {
-                checkLeadResistorConnection(multimeter.redLead, resistor.end1);
-                checkLeadResistorConnection(multimeter.redLead, resistor.end2);
-                resistor.removeHighlights();
-            }
-            else if (event.target == multimeter.blackLead.displayObject) {
-                checkLeadResistorConnection(multimeter.blackLead, resistor.end1);
-                checkLeadResistorConnection(multimeter.blackLead, resistor.end2);
-                resistor.removeHighlights();
-            }
+            trace('ENTER ResistorColors.handleMouseUp');
+            trace('target=' + event.target + ' ' + event.target.name);
+            
+            // It is very hard to identify the target when it is a part of
+            // an IKArmature so checking for connections every time
+            checkLeadResistorConnection(multimeter.redLead, resistor.end1);
+            checkLeadResistorConnection(multimeter.redLead, resistor.end2);
+            checkLeadResistorConnection(multimeter.blackLead, resistor.end1);
+            checkLeadResistorConnection(multimeter.blackLead, resistor.end2);
+            resistor.removeHighlights();
+            
+            trace('mouse x=' + event.stageX + ',' + event.stageY);
         }
         
         private function handleClick(event:MouseEvent) {
@@ -120,24 +117,25 @@ package org.concord.sparks.activities
 
         private function checkLead(lead:Lead) {
             if (lead.drag) {
-                resistor.checkHighlight(lead.x, lead.y);
+                resistor.checkHighlight(lead.tip_position);
                 if (lead.connected) {
                     lead.connected = false;
                     javascript.sendEvent('disconnect', lead.id);
                 }
+                //trace(lead.id + ' tip position=' + lead.getTipPosition());
             }
         }
         
         private function checkLeadResistorConnection(lead:Lead, end:ResistorEnd) {
-            if (!lead.connected && distance(lead.x, lead.y, end.x, end.y) < resistor.snapRadius) {
-                lead.snapTo(end.x, end.y);
-                lead.connected = true;
-                javascript.sendEvent('connect', lead.id, end.id);
+            trace('ENTER ResistorColors.checkLeadResistorConnection');
+            if (!lead.connected) {
+                var pos = lead.tip_position;
+                if (Geom.distance(pos, new Point(end.x, end.y)) < resistor.snapRadius) {
+                    lead.snapTo(new Point(end.x, end.y));
+                    lead.connected = true;
+                    javascript.sendEvent('connect', lead.id, end.id);
+                }
             }
-        }
-        
-        private function distance(x1:Number, y1:Number, x2:Number, y2:Number) {
-            return Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2));
         }
     }
 }
