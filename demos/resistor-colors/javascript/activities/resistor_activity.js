@@ -55,7 +55,7 @@ ResistorActivity.prototype =
         if (jQuery.sparks.debug_mode == 'multimeter') {
             sendCommand('set_debug_mode', 'multimeter');
             this.resistor.randomize();
-            this.showRccDebugInfo(activity);
+            this.showRccDebugInfo();
         }
     },
     

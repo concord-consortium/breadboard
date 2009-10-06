@@ -28,19 +28,19 @@ function Multimeter()
             }
             else if (this.dialPosition == 'r_2000' && value < 1999.5) {
                 text = Math.round(value).toString();
-                text = this.formatDecimalString(text, 0);
+                text = this.toDisplayString(text, 0);
             }
             else if (this.dialPosition == 'r_20k' && value < 19995) {
                 text = (Math.round(value * 0.1) * 0.01).toString();
-                text = this.formatDecimalString(text, 2);
+                text = this.toDisplayString(text, 2);
             }
             else if (this.dialPosition == 'r_200k' && value < 199950) {
                 text = (Math.round(value * 0.01) * 0.1).toString();
-                text = this.formatDecimalString(text, 1);
+                text = this.toDisplayString(text, 1);
             }
             else if (this.dialPosition == 'r_2000k' && value < 1999500) {
                 text = Math.round(value * 0.001).toString();
-                text = this.formatDecimalString(text, 0);
+                text = this.toDisplayString(text, 0);
             }
             else {
                 text = '       ';
@@ -72,17 +72,17 @@ function Multimeter()
     }
     
     this.toDisplayString = function(s, dec) {
-        trace('s1=' + s);
+        console.log('s1=' + s);
         var sign = s[0] == '-' ? s[0] : ' ';
         s = s.replace('-', '');
         
-        trace('s2=' + s);
+        console.log('s2=' + s);
         var pointLoc = s.indexOf('.');
         var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
         if (decLen == 0) {
             s = s.concat('.');
         }
-        trace('s3=' + s);
+        console.log('s3=' + s);
         if (dec < decLen) {
             s = s.substring(0, pointLoc + dec + 1);
         }
@@ -91,9 +91,9 @@ function Multimeter()
                 s = s.concat('0');
             }
         }
-        trace('s4=' + s);
+        console.log('s4=' + s);
         s = s.replace('.', '');
-        trace('s5=' + s);
+        console.log('s5=' + s);
         var len = s.length;
         if (len < 4) {
             for (var i = 0; i < 3 - len; ++i) {
@@ -101,10 +101,30 @@ function Multimeter()
             }
             s = ' ' + s;
         }
-        trace('s6=' + s);
+        console.log('s6=' + s);
         
-        s = sign + s.substring[0, 2] + dot1 + s[2] + dot2 + s[3];
-        trace('s7=' + s);
+        var dot1;
+        var dot2;
+        
+        switch (dec) {
+        case 0:
+            dot1 = ' ';
+            dot2 = ' ';
+            break;
+        case 1:
+            dot1 = ' ';
+            dot2 = '.';
+            break;
+        case 2:
+            dot1 = '.';
+            dot2 = ' ';
+            break;
+        default:
+            console.log('ERROR: invalid dec ' + dec);
+        }
+        
+        s = sign + s.substring(0, 2) + dot1 + s[2] + dot2 + s[3];
+        console.log('s7=' + s);
         return s;
         
     }
