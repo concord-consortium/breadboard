@@ -10,7 +10,7 @@ jQuery.sparks = {};
 var value = null;
 
 value = jQuery.url.param("model_height");
-jQuery.sparks.modelHeight = value != null ? value : '500';
+jQuery.sparks.modelHeight = value != null ? value : '635';
 
 jQuery.sparks.debug = jQuery.url.param("debug") != null;
 jQuery.sparks.debug_mode = jQuery.url.param("debug_mode");
