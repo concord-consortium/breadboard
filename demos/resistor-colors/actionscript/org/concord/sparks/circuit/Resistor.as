@@ -21,8 +21,8 @@ package org.concord.sparks.circuit
         var width = 260;
         var height = 80;
         
-        public var end1 = new ResistorEnd('resistor_end1', 536, 163);
-        public var end2 = new ResistorEnd('resistor_end2', 812, 161);
+        public var end1 = new ResistorEnd('resistor_end1', new Point(591, 104));
+        public var end2 = new ResistorEnd('resistor_end2', new Point(867, 102));
         
         public var snapRadius = 35;
         
@@ -98,14 +98,14 @@ package org.concord.sparks.circuit
         }
         
         private function drawHighlights():void {
-            drawHighlightCircle(highlightShape1.graphics, end1.x, end1.y);
-            drawHighlightCircle(highlightShape2.graphics, end2.x, end2.y);
+            drawHighlightCircle(highlightShape1.graphics, end1.position);
+            drawHighlightCircle(highlightShape2.graphics, end2.position);
         }
         
-        private function drawHighlightCircle(g:Graphics, x:Number, y:Number) {
+        private function drawHighlightCircle(g:Graphics, endPos:Point) {
             g.lineStyle(1, 0x000000, 0.0);
             g.beginFill(0xcc00ee, 0.15);
-            g.drawCircle(x, y, snapRadius);
+            g.drawCircle(endPos.x, endPos.y, snapRadius);
         }
         
         public function checkHighlight(lead:Point) {

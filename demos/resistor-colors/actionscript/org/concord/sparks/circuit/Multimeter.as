@@ -52,8 +52,8 @@ package org.concord.sparks.circuit {
             display = root['dmm_display'];
             display.text = '';
             
-            redLead = new Lead('red_lead', root['ikNode_656'], 'Armature_39');
-            blackLead = new Lead('black_lead', root['ikNode_1'], 'Armature_40');
+            redLead = new Lead('red_lead', root['probe_red'], 'Armature_62');
+            blackLead = new Lead('black_lead', root['probe_black'], 'Armature_64');
             
             display.minus_hv.addChild(minus_hv_loader);
             display.thousand.addChild(digit1_loader);
@@ -188,7 +188,7 @@ package org.concord.sparks.circuit {
 
         private function loadDisplayImage(loader:Loader, char:String):void {
             var fname;
-            trace('char=' + char);
+            //trace('char=' + char);
             switch (char) {
             case ' ':
                 fname = 'blank.png';
@@ -206,11 +206,11 @@ package org.concord.sparks.circuit {
                 fname = char + '.png';
             }
             var path = 'images/multimeter/' + fname;
-            trace('path=' + path);
+            //trace('path=' + path);
             try {
                 var req:URLRequest = new URLRequest(path);
                 loader.load(req);
-                trace('Loaded ' + path);
+                //trace('Loaded ' + path);
             }
             catch (e:IOErrorEvent) {
                 trace("Failed to load " + path);

@@ -15,7 +15,7 @@ package org.concord.sparks.circuit
     
     public class Lead implements Node
     {
-        public var displayObject:MovieClip;
+        public var container:MovieClip;
         
         // Offset used to calculate global coordinates of the end point
         var xOffset:Number;
@@ -27,13 +27,13 @@ package org.concord.sparks.circuit
         private var _id:String;
         private var armature:IKArmature;
         
-        public function Lead(id:String, displayObject:MovieClip, armatureName:String):void
+        public function Lead(id:String, container:MovieClip, armatureName:String):void
         {
-        	this.id = id;
-            this.displayObject = displayObject;
+            this.id = id;
+            this.container = container;
 
-            displayObject.addEventListener(MouseEvent.MOUSE_DOWN, handleMouseDown);
-            displayObject.addEventListener(MouseEvent.MOUSE_UP, handleMouseUp);
+            container.addEventListener(MouseEvent.MOUSE_DOWN, handleMouseDown);
+            container.addEventListener(MouseEvent.MOUSE_UP, handleMouseUp);
             
             armature = IKManager.getArmatureByName(armatureName);
         }
@@ -48,21 +48,24 @@ package org.concord.sparks.circuit
         
         // Position of the probing end of the lead
         public function get tip_position():Point {
-            return getTailJoint(armature.rootJoint).position;
+            return new Point(container.x, container.y).add(getTailJoint(armature.rootJoint).position);
         }
         
         public function snapTo(target:Point):void {
             trace('ENTER Lead.snapTo');
+            var localTargetPos:Point = target.subtract(new Point(container.x, container.y));
             var tip:IKJoint = getTailJoint(armature.rootJoint);
-            var mover:IKMover = new IKMover(tip, tip.position);
-            
+            var mover:IKMover  = new IKMover(tip, tip.position);;
+
             // The IK armature doesn't seem to move to target at once!
-            var n = 0;
-            while (Geom.distance(tip.position, target) > 2.0) {
-                mover.moveTo(target);
-                ++n;
+            for (var i = 0; i < 1000; ++i) {
+                if (Geom.distance(tip.position, localTargetPos) < 2.0) {
+                    break;
+                }
+                mover.moveTo(localTargetPos);
+                //trace('' + i + ': tip pos=' + tip_position);
             }
-            trace('IK joint moved ' + n + ' times');
+            trace('IK joint moved ' + i + ' times');
         }
         
         private function getTailJoint(joint:IKJoint):IKJoint {

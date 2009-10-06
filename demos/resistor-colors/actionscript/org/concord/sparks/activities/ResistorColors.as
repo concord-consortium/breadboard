@@ -54,8 +54,8 @@ package org.concord.sparks.activities
                 case 'set_debug_mode':
                     if (args[1] == 'multimeter') {
                          resistor.show();
-                         multimeter.redLead.snapTo(resistor.end1.x, resistor.end1.y);
-                         multimeter.blackLead.snapTo(resistor.end2.x, resistor.end2.y);
+                         multimeter.redLead.snapTo(resistor.end1.position);
+                         multimeter.blackLead.snapTo(resistor.end2.position);
                          multimeter.redLead.connected = true;
                          multimeter.blackLead.connected = true;
                          multimeter.turnOn();
@@ -107,6 +107,7 @@ package org.concord.sparks.activities
         }
         
         private function handleClick(event:MouseEvent) {
+            trace('ENTER ResistorColors.handleClick');
             if (event.target == multimeter.dial) {
                 javascript.sendEvent("multimeter_dial", multimeter.dialSetting);
             }
@@ -122,16 +123,15 @@ package org.concord.sparks.activities
                     lead.connected = false;
                     javascript.sendEvent('disconnect', lead.id);
                 }
-                //trace(lead.id + ' tip position=' + lead.getTipPosition());
+                //trace(lead.id + ' tip position=' + lead.tip_position);
             }
         }
         
         private function checkLeadResistorConnection(lead:Lead, end:ResistorEnd) {
             trace('ENTER ResistorColors.checkLeadResistorConnection');
             if (!lead.connected) {
-                var pos = lead.tip_position;
-                if (Geom.distance(pos, new Point(end.x, end.y)) < resistor.snapRadius) {
-                    lead.snapTo(new Point(end.x, end.y));
+                if (Geom.distance(lead.tip_position, end.position) < resistor.snapRadius) {
+                    lead.snapTo(end.position);
                     lead.connected = true;
                     javascript.sendEvent('connect', lead.id, end.id);
                 }
