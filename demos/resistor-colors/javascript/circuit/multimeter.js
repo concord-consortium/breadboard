@@ -22,25 +22,50 @@ function Multimeter()
         {
             var value = resistor.realValue;
             console.log('pos=' + this.dialPosition + ' val=' + value);
-            if (this.dialPosition == 'r_200' && value < 199.95) {
-                text = (Math.round(value * 10) * 0.1).toString();
-                text = this.toDisplayString(text, 1);
+            if (this.dialPosition == 'r_200') {
+                if (value < 199.95) {
+                    text = (Math.round(value * 10) * 0.1).toString();
+                    text = this.toDisplayString(text, 1);
+                }
+                else {
+                    text = ' 1   . ';
+                }
             }
-            else if (this.dialPosition == 'r_2000' && value < 1999.5) {
-                text = Math.round(value).toString();
-                text = this.toDisplayString(text, 0);
+            else if (this.dialPosition == 'r_2000') {
+                if (value < 1999.5) {
+                    text = Math.round(value).toString();
+                    text = this.toDisplayString(text, 0);
+                }
+                else {
+                    text = ' 1     ';
+                }
             }
-            else if (this.dialPosition == 'r_20k' && value < 19995) {
-                text = (Math.round(value * 0.1) * 0.01).toString();
-                text = this.toDisplayString(text, 2);
+            else if (this.dialPosition == 'r_20k') {
+                if (value < 19995) {
+                    text = (Math.round(value * 0.1) * 0.01).toString();
+                    text = this.toDisplayString(text, 2);
+                }
+                else {
+                    text = ' 1 .   ';
+                }
             }
-            else if (this.dialPosition == 'r_200k' && value < 199950) {
-                text = (Math.round(value * 0.01) * 0.1).toString();
-                text = this.toDisplayString(text, 1);
+            else if (this.dialPosition == 'r_200k') {
+                if (value < 199950) {
+                    text = (Math.round(value * 0.01) * 0.1).toString();
+                    text = this.toDisplayString(text, 1);
+                }
+                else {
+                    text = ' 1   . ';
+                }
             }
-            else if (this.dialPosition == 'r_2000k' && value < 1999500) {
-                text = Math.round(value * 0.001).toString();
-                text = this.toDisplayString(text, 0);
+            else if (this.dialPosition == 'r_2000k') {
+                if (value < 1999500) {
+                    text = Math.round(value * 0.001).toString();
+                    text = this.toDisplayString(text, 0);
+                }
+                else {
+                    text = ' 1     ';
+                }
             }
             else {
                 text = '       ';
