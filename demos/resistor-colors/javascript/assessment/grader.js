@@ -51,13 +51,13 @@ Grader.prototype =
         var multiplier = -1
         
         switch (formAnswer.units) {
-        case 'Ohms':
+        case '\u2126':
             multiplier = 1;
             break;
-        case 'KOhms':
+        case 'K\u2126':
             multiplier = 1000;
             break;
-        case 'MOhms':
+        case 'M\u2126':
             multiplier = 1000000;
             break;
         default:

@@ -1,6 +1,7 @@
 // Create a dummy console.log when not run in Firebug
 if (typeof console == 'undefined') {
-    console = { log: function() {} };
+    var console = { log: function() {} };
+    //var console = { log: alert };
 }
 
 // setup a global namespace to store page variables
@@ -16,9 +17,14 @@ jQuery.sparks.debug = jQuery.url.param("debug") != null;
 jQuery.sparks.debug_mode = jQuery.url.param("debug_mode");
 
 $(document).ready(function() {
-    jQuery.sparks.activity = new ResistorActivity();
-    jQuery.sparks.activity.initDocument();
- });
+    // In some cases (e.g. IE) Flash is loaded before document ready,
+    // making initActivity() fail because activity isn't set up.
+    // So for now creating activity in initActivity
+    
+    //jQuery.sparks.activity = new ResistorActivity();
+    //jQuery.sparks.activity.initDocument();
+});
+
 
 /* 
  * This function gets called from Flash after Flash has set up the external
@@ -28,7 +34,8 @@ $(document).ready(function() {
 function initActivity() {
 //function onFlashLoad() {
     console.log('ENTER initActivity');
-
+    jQuery.sparks.activity = new ResistorActivity();
+    jQuery.sparks.activity.initDocument();
     jQuery.sparks.activity.onFlashDone();
 }
 
@@ -40,7 +47,7 @@ makes using the returned object easier.  It could be improved to handle dates an
 numbers perhaps using style classes to tag them as such.
 */
 function serializeForm(form) {
-    result = {}
+    var result = {}
     form.map(function(){
      return this.elements ? jQuery.makeArray(this.elements) : this;
     })

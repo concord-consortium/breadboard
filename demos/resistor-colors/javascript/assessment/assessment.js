@@ -10,5 +10,6 @@ Assessment.prototype =
 {
     activity : null,
     log : null,
-    grader : null,
-}
+    grader : null
+};
+

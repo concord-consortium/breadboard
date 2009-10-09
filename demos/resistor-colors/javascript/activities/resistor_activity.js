@@ -132,7 +132,6 @@ ResistorActivity.prototype =
       // generate the resistor numbers
       // display them on the page so people can see it working
       // this is defined in javascript/resistor_activity.js
-      
       this.resetCircuit();
       this.resistor.show();
     
@@ -209,9 +208,6 @@ function buttonClicked(event) {
 
 function startButtonClicked(event) {
     console.log('EVENT: ' + (typeof event));
-    for (x in event) {
-        console.log('event ' + x);
-    }
     jQuery(event.target).hide();
     jQuery.sparks.activity.startTry();
 }

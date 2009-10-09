@@ -20,5 +20,9 @@ package org.concord.sparks
         public function processMessageFromJavaScript(args) {
             trace("Overrided method shouldn't be called");
         }
+        
+        public function getJavaScript():JavaScript {
+            return javascript;
+        }
     }
 }

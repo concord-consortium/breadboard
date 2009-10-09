@@ -1,3 +1,22 @@
+function Question(id) {
+    this.id = id;
+}
+Question.prototype = {
+    id : '',
+    correct_answer : '',
+    answer : '',
+    unit : '',
+    correct : false
+};
+
+function Section() {
+}
+Section.prototype = {
+    start_time : null,
+    end_time : null,
+    questions : []
+};
+    
 function ActivityLog()
 {
     //console.log('ENTER ActivityLog');
@@ -56,25 +75,7 @@ ActivityLog.prototype =
     
     fillZero : function(val) {
         return val < 10 ? '0' + val : String(val);
-    },
+    }
     
-}
+};
 
-function Section() {
-}
-Section.prototype = {
-    start_time : null,
-    end_time : null,
-    questions : []
-}
-    
-function Question(id) {
-    this.id = id;
-}
-Question.prototype = {
-    id : '',
-    correct_answer : '',
-    answer : '',
-    unit : '',
-    correct : false
-}

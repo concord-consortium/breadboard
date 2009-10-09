@@ -20,5 +20,10 @@ package org.concord.sparks.circuit
         public function set id(val:String) {
             _id = val;
         }
+        
+        public function hotspot(in_pos:Point):Boolean {
+            return in_pos.x > position.x - 34 && in_pos.x < position.x + 34 &&
+                in_pos.y > position.y - 12 && in_pos.y < position.y + 12;
+        }
     }
 }

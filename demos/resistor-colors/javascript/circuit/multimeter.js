@@ -1,15 +1,17 @@
-function Multimeter()
+function Multimeter() {
+}
+Multimeter.prototype =
 {
-    this.redLeadConnection = null;
-    this.blackLeadConnection = null;
-    this.dialPosition = 'acv_750'
-    this.powerOn = false;
+    redLeadConnection : null,
+    blackLeadConnection : null,
+    dialPosition : 'acv_750',
+    powerOn : false,
     
-    this.update = function() {
+    update : function() {
         console.log('ENTER update powerOn=', this.powerOn + ' ' + (typeof this.powerOn));
         
         if (!this.powerOn) {
-            sendCommand('set_multimeter_display', '');
+            sendCommand('set_multimeter_display', '       ');
             return;
         }
         
@@ -31,7 +33,7 @@ function Multimeter()
                     text = ' 1   . ';
                 }
             }
-            else if (this.dialPosition == 'r_2000') {
+            else if (this.dialPosition == 'r_2000' || this.dialPosition == 'diode') {
                 if (value < 1999.5) {
                     text = Math.round(value).toString();
                     text = this.toDisplayString(text, 0);
@@ -67,6 +69,22 @@ function Multimeter()
                     text = ' 1     ';
                 }
             }
+            else if (this.dialPosition == 'dcv_200m' || this.dialPosition == 'dcv_200' ||
+                    this.dialPosition == 'acv_200' || this.dialPosition == 'p_9v' ||
+                    this.dialPosition == 'dca_200mc' || this.dialPosition == 'dca_200m') {
+                text = '  0 0.0';
+            }
+            else if (this.dialPosition == 'dcv_2000m' || this.dialPosition == 'dca_2000mc' ||
+                    this.dialPosition == 'hfe') {
+                text = '  0 0 0';
+            }
+            else if (this.dialPosition == 'dcv_20' || this.dialPosition == 'dca_20m' ||
+                    this.dialPosition == 'c_10a') {
+                text = '  0.0 0';
+            }
+            else if (this.dialPosition == 'dcv_1000' || this.dialPosition == 'acv_750') {
+                text = 'h 0 0 0';
+            }
             else {
                 text = '       ';
             }
@@ -75,7 +93,7 @@ function Multimeter()
             if (this.dialPosition == 'r_200') {
                 text = ' 1   . ';
             }
-            else if (this.dialPosition == 'r_2000') {
+            else if (this.dialPosition == 'r_2000' || this.dialPosition == 'diode') {
                 text = ' 1     ';
             }
             else if (this.dialPosition == 'r_20k') {
@@ -87,6 +105,22 @@ function Multimeter()
             else if (this.dialPosition == 'r_2000k') {
                 text = ' 1     ';
             }
+            else if (this.dialPosition == 'dcv_200m' || this.dialPosition == 'dcv_200' ||
+                    this.dialPosition == 'acv_200' || this.dialPosition == 'p_9v' ||
+                    this.dialPosition == 'dca_200mc' || this.dialPosition == 'dca_200m') {
+                text = '  0 0.0';
+            }
+            else if (this.dialPosition == 'dcv_2000m' || this.dialPosition == 'dca_2000mc' ||
+                    this.dialPosition == 'hfe') {
+                text = '  0 0 0';
+            }
+            else if (this.dialPosition == 'dcv_20' || this.dialPosition == 'dca_20m' ||
+                    this.dialPosition == 'c_10a') {
+                text = '  0.0 0';
+            }
+            else if (this.dialPosition == 'dcv_1000' || this.dialPosition == 'acv_750') {
+                text = 'h 0 0 0';
+            }
             else {
                 text = '       ';
             }
@@ -94,11 +128,11 @@ function Multimeter()
         console.log('text=' + text);
         sendCommand('set_multimeter_display', text);
         this.displayValue = this.getDisplayValue(resistor.realValue);
-    }
+    },
     
-    this.toDisplayString = function(s, dec) {
-        console.log('s1=' + s);
-        var sign = s[0] == '-' ? s[0] : ' ';
+    toDisplayString : function(s, dec) {
+        console.log('s1=' + s + ' dec=' + dec);
+        var sign = s.charAt(0) == '-' ? s.charAt(0) : ' ';
         s = s.replace('-', '');
         
         console.log('s2=' + s);
@@ -148,16 +182,16 @@ function Multimeter()
             console.log('ERROR: invalid dec ' + dec);
         }
         
-        s = sign + s.substring(0, 2) + dot1 + s[2] + dot2 + s[3];
+        s = sign + s.substring(0, 2) + dot1 + s.charAt(2) + dot2 + s.charAt(3);
         console.log('s7=' + s);
         return s;
         
-    }
+    },
     
     // Pad 0's to the number text
     // sig: number of significant digits
     // dec: number of digits after decimal points
-    this.formatDecimalString = function(s, dec) {
+    formatDecimalString : function(s, dec) {
         //console.log('s=' + s + ' dec=' + dec);
         var pointLoc = s.indexOf('.');
         //console.log('pointLoc=' + pointLoc);
@@ -176,15 +210,15 @@ function Multimeter()
         }
         //console.log('formatDecimalString: formatted=' + s);
         return s;
-    }
+    },
 
-      /*
+    /*
      * Return value to be shown under optimal setting.
      * This value is to be compared with the student answer for grading.
      *
      * Take three significant digits, four if the first digit is 1.
      */
-    this.getDisplayValue = function(value) {
+    getDisplayValue : function(value) {
         var text;
         if (value < 199.95) {
             text = (Math.round(value * 10) * 0.1).toString();
@@ -208,4 +242,4 @@ function Multimeter()
         }
         return parseFloat(text);
     }
-}
+};

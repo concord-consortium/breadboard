@@ -11,7 +11,9 @@ package org.concord.sparks.circuit
     import flash.events.MouseEvent;
     
     import org.concord.sparks.Activity;
+    import org.concord.sparks.JavaScript;
     import org.concord.sparks.util.Geom;
+    import org.concord.sparks.util.IK;
     
     public class Lead implements Node
     {
@@ -27,13 +29,17 @@ package org.concord.sparks.circuit
         private var _id:String;
         private var armature:IKArmature;
         
-        public function Lead(id:String, container:MovieClip, armatureName:String):void
+        private var javascript:JavaScript;
+        
+        public function Lead(id:String, activity:Activity, container:MovieClip, armatureName:String):void
         {
             this.id = id;
+            this.javascript = activity.getJavaScript();
             this.container = container;
 
             container.addEventListener(MouseEvent.MOUSE_DOWN, handleMouseDown);
             container.addEventListener(MouseEvent.MOUSE_UP, handleMouseUp);
+            container.addEventListener(MouseEvent.MOUSE_MOVE, handleMouseMove);
             
             armature = IKManager.getArmatureByName(armatureName);
         }
@@ -48,17 +54,17 @@ package org.concord.sparks.circuit
         
         // Position of the probing end of the lead
         public function get tip_position():Point {
-            return new Point(container.x, container.y).add(getTailJoint(armature.rootJoint).position);
+            return new Point(container.x, container.y).add(IK.getTailJoint(armature.rootJoint).position);
         }
         
         public function snapTo(target:Point):void {
             trace('ENTER Lead.snapTo');
             var localTargetPos:Point = target.subtract(new Point(container.x, container.y));
-            var tip:IKJoint = getTailJoint(armature.rootJoint);
-            var mover:IKMover  = new IKMover(tip, tip.position);;
+            var tip:IKJoint = IK.getTailJoint(armature.rootJoint);
+            var mover:IKMover  = new IKMover(tip, tip.position);
 
             // The IK armature doesn't seem to move to target at once!
-            for (var i = 0; i < 1000; ++i) {
+            for (var i = 0; i < 100; ++i) {
                 if (Geom.distance(tip.position, localTargetPos) < 2.0) {
                     break;
                 }
@@ -68,19 +74,27 @@ package org.concord.sparks.circuit
             trace('IK joint moved ' + i + ' times');
         }
         
-        private function getTailJoint(joint:IKJoint):IKJoint {
-            if (joint.numChildren < 1) {
-                return joint;
-            }
-            return getTailJoint(joint.getChildAt(0));
+        private function disconnect():void {
+            this.connected = false;
+            this.javascript.sendEvent('disconnect', this.id);
         }
         
         private function handleMouseDown(event:MouseEvent):void {
-            drag = true;
+            this.drag = true;
         }
 
-        private function handleMouseUp(event:Event):void {
-            drag = false;
+        private function handleMouseUp(event:MouseEvent):void {
+            trace('ENTER Lead.handleMouseUp');
+            this.drag = false;
+            trace('Lead.handleMouseUp drag=' + this.drag);
+        }
+        
+        private function handleMouseMove(event:MouseEvent) {
+            trace('ENTER Lead.handleMouseMove');
+            trace('Lead.handleMouseMove drag=' + this.drag);
+            if (this.drag && this.connected) {
+                disconnect();
+            }
         }
     }
 }

@@ -1,29 +1,32 @@
-function Resistor()
-{
-    this.nominalValue = 0.0; //resistance value specified by band colors;
-    this.realValue = 0.0; //real resistance value in Ohms
-    this.tolerance = 0.0; //tolerance value
-    
-    this.minValue = 0.1;
-    this.maxValue = 999500;
-    
-    this.colorMap = { 0 : 'black', 1 : 'brown', 2 : 'red', 3 : 'orange',
-        4 : 'yellow', 5 : 'green', 6 : 'blue', 7 : 'violet', 8 : 'gray',
-        9 : 'white' };
+function Resistor() {
     this.colorMap[-1] = 'gold';
-    this.colorMap[-2] = 'silver'
+    this.colorMap[-2] = 'silver';
+}
+Resistor.prototype =
+{
+    nominalValue : 0.0, //resistance value specified by band colors;
+    realValue : 0.0, //real resistance value in Ohms
+    tolerance : 0.0, //tolerance value
+    
+    minValue : 0.1,
+    maxValue : 999500,
+    
+    colorMap : { 0 : 'black', 1 : 'brown', 2 : 'red', 3 : 'orange',
+        4 : 'yellow', 5 : 'green', 6 : 'blue', 7 : 'violet', 8 : 'grey',
+        9 : 'white' },
         
-    this.toleranceColorMap = { 0.01 : 'brown', 0.02 : 'red', 5e-3 : 'green',
+    toleranceColorMap : { 0.01 : 'brown', 0.02 : 'red', 5e-3 : 'green',
         2.5e-3 : 'blue', 1e-3 : 'violet', 5e-4 : 'gray', 5e-2 : 'gold',
-        0.1 : 'silver', 0.2 : 'none' };
-    this.toleranceValues = [ 0.01, 0.02, 5e-3, 2.5e-3, 1e-3, 5e-4, 5e-2,
-        0.1, 0.2];
+        0.1 : 'silver', 0.2 : 'none' },
+    //toleranceValues : [ 0.01, 0.02, 5e-3, 2.5e-3, 1e-3, 5e-4, 5e-2,
+    //                    0.1, 0.2],
+    toleranceValues : [ 0.01, 0.02, 5e-2, 0.1 ],
     
-    this.show = function() {
+    show : function() {
         sendCommand('show_resistor');
-    }
+    },
     
-    this.randomize = function() {
+    randomize : function() {
         var colors = [];
         
         var band1 = this.randInt(1, 9);
@@ -37,18 +40,16 @@ function Resistor()
         // Multiplier: 10^-2..10^9
         var pwr;
         if (base > 19) {
-            pwr = this.randInt(-2, 4);
-        }
-        else if (base > 1) {
-            pwr = this.randInt(-2, 5);
+            pwr = this.randInt(-1, 4);
         }
         else {
-            pwr = this.randInt(-2, 6);
+            pwr = this.randInt(-1, 5);
         }
+        
         colors[2] = this.colorMap[pwr];
         this.nominalValue = base * Math.pow(10, pwr);
         
-        var ix = this.randInt(0, 8);
+        var ix = this.randInt(0, 3);
         this.tolerance = this.toleranceValues[ix];
         
         colors[3] = this.toleranceColorMap[this.tolerance];
@@ -57,9 +58,9 @@ function Resistor()
         
         console.log('sending colors=' + colors.join('|'));
         sendCommand('set_resistor_label', colors);
-    }
+    },
     
-    this.getRealValue = function(nominalValue, tolerance) {
+    getRealValue : function(nominalValue, tolerance) {
         var chance = Math.random();
         if (chance > 0.8) {
             var chance2 = Math.random();
@@ -74,21 +75,21 @@ function Resistor()
         // Multiply 0.9 just to be comfortably within tolerance
         var realTolerance = tolerance * 0.9;
         return nominalValue * this.randFloat(1 - realTolerance, 1 + realTolerance);
-    }
+    },
     
-    this.randInt = function(min, max) {
+    randInt : function(min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
+    },
     
-    this.randFloat = function(min, max) {
+    randFloat : function(min, max) {
         return this.randPseudoGaussian(3) * (max - min) + min;
-    }
+    },
     
-    this.randPseudoGaussian = function(n) {
+    randPseudoGaussian : function(n) {
         var r = 0.0;
         for (var i = 0; i < n; ++i) {
             r += Math.random();
         }
         return r / n;
     }
-}
+};

@@ -82,4 +82,4 @@ Reporter.prototype =
         t += this.log.formatDate(this.log.end_time) + ' - Activity End</pre>';
         return t;
     }
-}
+};
