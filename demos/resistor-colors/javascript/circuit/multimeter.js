@@ -2,8 +2,10 @@ function Multimeter() {
 }
 Multimeter.prototype =
 {
-    redLeadConnection : null,
-    blackLeadConnection : null,
+    redProbeConnection : null,
+    blackProbeConnection : null,
+    redPlugConnection : null,
+    blackPlugConnecton : null,
     dialPosition : 'acv_750',
     powerOn : false,
     
@@ -19,9 +21,7 @@ Multimeter.prototype =
         console.log('Multimeter.update: resistance=' + resistor.realValue + ' dialPosition=' + this.dialPosition);
         
         var text = '';
-        if (this.redLeadConnection != null && this.blackLeadConnection != null &&
-            this.redLeadConnection != this.blackLeadConnection)
-        {
+        if (this.allConnected()) {
             var value = resistor.realValue;
             console.log('pos=' + this.dialPosition + ' val=' + value);
             if (this.dialPosition == 'r_200') {
@@ -241,5 +241,13 @@ Multimeter.prototype =
             text = 'NaN';
         }
         return parseFloat(text);
+    },
+    
+    allConnected : function() {
+        return this.redProbeConnection != null && 
+            this.blackProbeConnection != null &&
+            this.redProbeConnection != this.blackProbeConnection &&
+            this.redPlugConnection == 'voma_port' &&
+            this.blackPlugConnection == 'common_port';
     }
 };

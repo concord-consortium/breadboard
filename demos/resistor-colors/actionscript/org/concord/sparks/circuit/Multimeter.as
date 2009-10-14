@@ -1,25 +1,39 @@
-package org.concord.sparks.circuit {
-
-    import fl.ik.IKArmature;
-    import fl.ik.IKBone;
-    import fl.ik.IKJoint;
-    import fl.ik.IKManager;
-
+package org.concord.sparks.circuit
+{
     import flash.display.Loader;
     import flash.display.MovieClip;
-    import flash.display.Sprite;
     import flash.events.MouseEvent;
     import flash.events.IOErrorEvent;
     import flash.geom.Point;
     import flash.net.URLRequest;
     
     import org.concord.sparks.Activity;
+    import org.concord.sparks.util.Assert;
     import org.concord.sparks.util.Geom;
     
     public class Multimeter
     {
-        public var redLead:Lead;
-        public var blackLead:Lead;
+        // Instance names in Flash movie
+        public static var names = {
+            container : 'dmm_mc',
+            display : 'dmm_display',
+            dial : 'dial',
+            power_switch : 'dmm_switch', 
+            redProbeMovieClip : 'probe_red',
+            blackProbeMovieClip : 'probe_black',
+            redProbeArmature : 'Armature_62',
+            blackProbeArmature : 'Armature_64',
+            redPlugMovieClip : 'plug_red',
+            blackPlugMovieClip : 'plug_black',
+            redPlugArmature : 'Armature_111',
+            blackPlugArmature : 'Armature_58',
+            plugIn1 : 'plug_IN1',
+            plugIn2 : 'plug_IN2',
+            plugIn3 : 'plug_IN3'
+        };
+        
+        public var redProbe:Probe;
+        public var blackProbe:Probe;
         
         public var redPlug:Plug;
         public var blackPlug:Plug;
@@ -57,35 +71,41 @@ package org.concord.sparks.circuit {
         private var dot2_loader:Loader = new Loader();
         private var digit4_loader:Loader = new Loader();
         
-        private var dialMouseDown:Boolean = false;
+        public var dialMouseDown:Boolean = false;
         
-        public function Multimeter(activity:Activity, container:MovieClip, root) {
+        public function Multimeter(activity:Activity, root) {
             trace('ENTER Multimeter');
 
             this.activity = activity;
-            this.container = container;
+            this.container = root[names.container];
             this.root = root;
             
-            dial = root['dial'];
+            checkNames();
+            
+            dial = root[names.dial];
             dial.addEventListener(MouseEvent.MOUSE_DOWN, handleDialMouseDown);
-            dial.addEventListener(MouseEvent.MOUSE_UP, handleDialMouseUp);
             dial.addEventListener(MouseEvent.MOUSE_MOVE, handleDialMouseMove);
             
             setDial('acv_750', false);
 
-            powerSwitch = root['dmm_switch'];
+            powerSwitch = root[names.power_switch];
             powerSwitch.addEventListener(MouseEvent.CLICK, togglePower);
             
-            display = root['dmm_display'];
+            display = root[names.display];
             display.text = '';
             
-            redLead = new Lead('red_lead', activity, root['probe_red'], 'Armature_62');
-            blackLead = new Lead('black_lead', activity, root['probe_black'], 'Armature_64');
-            
-            redPlug = new Plug('red_plug', root['plug_red'], 'Armature_81',
-                [root['plug_red_IN1'], root['plug_red_IN2'], root['plug_red_IN3']]);
-            blackPlug = new Plug('black_plug', root['plug_black'], 'Armature_58',
-                [root['plug_black_IN1'], root['plug_black_IN2'], root['plug_black_IN3']]);
+            redProbe = new Probe('red_probe', activity,
+                root[names.redProbeMovieClip], names.redProbeArmature);
+            blackProbe = new Probe('black_probe', activity,
+                root[names.blackProbeMovieClip], names.blackProbeArmature);
+                
+            var plugIns = [root[names.plugIn1], root[names.plugIn2], root[names.plugIn3]];
+            initGhostPlugs(plugIns);
+
+            redPlug = new Plug('red_plug', activity, root[names.redPlugMovieClip],
+                names.redPlugArmature, plugIns);
+            blackPlug = new Plug('black_plug', activity, root[names.blackPlugMovieClip],
+                names.blackPlugArmature, plugIns);
             
             tenaPort = new MultimeterPort('tena_port', new Point(270, 391));
             vomaPort = new MultimeterPort('voma_port', new Point(270, 436));
@@ -98,6 +118,24 @@ package org.concord.sparks.circuit {
             display.ten.addChild(digit3_loader);
             display.decimalPoint_two.addChild(dot2_loader);
             display.one.addChild(digit4_loader);
+        }
+        
+        private function checkNames():void {
+            for each (var name:String in names) {
+                if (name.match(/^Armature_/)) {
+                    Assert.assertArmature(name);
+                }
+                else {
+                    Assert.assertContains(this.root, name);
+                }
+            }
+        }
+        
+        private function initGhostPlugs(plugIns:Array):void {
+            for each (var plugIn:MovieClip in plugIns) {
+                plugIn.gotoAndStop('black');
+                plugIn.alpha = 0;
+            } 
         }
         
         public function setDisplayText(s:String) {
@@ -263,14 +301,10 @@ package org.concord.sparks.circuit {
         
         private function handleDialMouseDown(event:MouseEvent):void {
             dialMouseDown = true;
-        }
-        
-        private function handleDialMouseUp(event:MouseEvent):void {
-            dialMouseDown = false;
             var deg = angularPosition(event.stageX, event.stageY);
             setDial(getDialPositionFromAngle(deg));
         }
-    
+        
         private function handleDialMouseMove(event:MouseEvent):void {
             if (dialMouseDown) {
                 var deg = angularPosition(event.stageX, event.stageY);

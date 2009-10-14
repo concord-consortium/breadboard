@@ -20,7 +20,7 @@ Resistor.prototype =
         0.1 : 'silver', 0.2 : 'none' },
     //toleranceValues : [ 0.01, 0.02, 5e-3, 2.5e-3, 1e-3, 5e-4, 5e-2,
     //                    0.1, 0.2],
-    toleranceValues : [ 0.01, 0.02, 5e-2, 0.1 ],
+    toleranceValues : [ 0.01, 0.02 ],
     
     show : function() {
         sendCommand('show_resistor');
@@ -35,24 +35,25 @@ Resistor.prototype =
         var band2 = this.randInt(0, 9);
         colors[1] = this.colorMap[band2];
         
-        var base = band1 * 10 +  band2; // 10..99
+        var band3 = this.randInt(0, 9);
+        colors[2] = this.colorMap[band3];
         
-        // Multiplier: 10^-2..10^9
-        var pwr;
-        if (base > 19) {
-            pwr = this.randInt(-1, 4);
+        var base = band1 * 100 +  band2 * 10 + band3; // 100..999
+        var pwr; //Multiplier: 10^-2..10^9
+        if (base > 199) { //base in [200, 999]
+            pwr = this.randInt(-1, 3); 
         }
-        else {
-            pwr = this.randInt(-1, 5);
+        else { //base in [100, 199]
+            pwr = this.randInt(-1, 4); 
         }
         
-        colors[2] = this.colorMap[pwr];
+        colors[3] = this.colorMap[pwr];
         this.nominalValue = base * Math.pow(10, pwr);
         
-        var ix = this.randInt(0, 3);
+        var ix = this.randInt(0, 1);
         this.tolerance = this.toleranceValues[ix];
         
-        colors[3] = this.toleranceColorMap[this.tolerance];
+        colors[4] = this.toleranceColorMap[this.tolerance];
         
         this.realValue = this.getRealValue(this.nominalValue, this.tolerance);
         

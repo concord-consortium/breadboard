@@ -19,23 +19,35 @@ function receiveEvent(name, value, time) {
   var multimeter = activity.multimeter;
   
   if (name == 'connect') {
-	  var ids = value.split('|');
-	  if (ids[0] == 'red_lead') {
-		  multimeter.redLeadConnection = ids[1];
-	  }
-	  else if (ids[0] == 'black_lead') {
-		  multimeter.blackLeadConnection = ids[1];
-	  }
-	  multimeter.update();
+      var ids = value.split('|');
+      if (ids[0] == 'red_probe') {
+          multimeter.redProbeConnection = ids[1];
+      }
+      else if (ids[0] == 'black_probe') {
+          multimeter.blackProbeConnection = ids[1];
+      }
+      else if (ids[0] == 'red_plug') {
+          multimeter.redPlugConnection = ids[1];
+      }
+      else if (ids[0] == 'black_plug') {
+          multimeter.blackPlugConnection = ids[1];
+      }
+      multimeter.update();
   }
   else if (name == 'disconnect') {
-	  if (value == 'red_lead') {
-		  multimeter.redLeadConnection = null;
-	  }
-	  else if (value == 'black_lead') {
-		  multimeter.blackLeadConnection = null;
-	  }
-	  multimeter.update();
+      if (value == 'red_probe') {
+          multimeter.redProbeConnection = null;
+      }
+      else if (value == 'black_probe') {
+          multimeter.blackProbeConnection = null;
+      }
+      else if (value == 'red_plug') {
+          multimeter.redPlugConnection = null;
+      }
+      else if (value == 'black_plug') {
+          multimeter.blackPlugConnection = null;
+      }
+      multimeter.update();
   }
   else if (name == 'multimeter_dial') {
       multimeter.dialPosition = value;

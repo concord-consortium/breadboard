@@ -2,6 +2,8 @@ package org.concord.sparks.circuit
 {
     import flash.geom.Point;
     
+    import org.concord.sparks.util.Geom;
+    
     public class MultimeterPort implements Node
     {
         private var _id:String;
@@ -26,9 +28,12 @@ package org.concord.sparks.circuit
         
         // Return true if in_pos is in the hotspot of the port
         public function hotspot(in_pos:Point) {
-            var t = (in_pos.x > _position.x - 22 && in_pos.x < _position.x + 28 &&
-                in_pos.y > _position.y - 22 && in_pos.y < _position.y + 22);
+            /*
+            var t = (in_pos.x > _position.x - 20 && in_pos.x < _position.x + 20 &&
+                in_pos.y > _position.y - 20 && in_pos.y < _position.y + 20);
             return t;
+            */
+           return Geom.distance(_position, in_pos) < 20;
         }
     }
 }

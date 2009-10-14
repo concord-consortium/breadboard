@@ -9,29 +9,28 @@ package org.concord.sparks.circuit
     import flash.geom.Point;
     import flash.events.Event;
     import flash.events.MouseEvent;
+    import flash.media.Sound;
+    import flash.media.SoundChannel;
+    import flash.media.SoundTransform;
     
     import org.concord.sparks.Activity;
     import org.concord.sparks.JavaScript;
     import org.concord.sparks.util.Geom;
     import org.concord.sparks.util.IK;
     
-    public class Lead implements Node
+    public class Probe implements Node
     {
         public var container:MovieClip;
         
-        // Offset used to calculate global coordinates of the end point
-        var xOffset:Number;
-        var yOffset:Number;
-        
         public var drag:Boolean = false;
-        public var connected:Boolean = false;
         
         private var _id:String;
         private var armature:IKArmature;
+        private var connectedTo:Node = null;
         
         private var javascript:JavaScript;
         
-        public function Lead(id:String, activity:Activity, container:MovieClip, armatureName:String):void
+        public function Probe(id:String, activity:Activity, container:MovieClip, armatureName:String):void
         {
             this.id = id;
             this.javascript = activity.getJavaScript();
@@ -39,7 +38,6 @@ package org.concord.sparks.circuit
 
             container.addEventListener(MouseEvent.MOUSE_DOWN, handleMouseDown);
             container.addEventListener(MouseEvent.MOUSE_UP, handleMouseUp);
-            container.addEventListener(MouseEvent.MOUSE_MOVE, handleMouseMove);
             
             armature = IKManager.getArmatureByName(armatureName);
         }
@@ -47,7 +45,7 @@ package org.concord.sparks.circuit
         public function get id():String {
         	return _id;
         }
-        
+
         public function set id(val:String):void {
             _id = val;
         }
@@ -57,8 +55,29 @@ package org.concord.sparks.circuit
             return new Point(container.x, container.y).add(IK.getTailJoint(armature.rootJoint).position);
         }
         
+        public function get connected_to():Node {
+            return connectedTo;
+        }
+        
+        public function connect(node:Node):void {
+            // Play sound
+            var transform1:SoundTransform=new SoundTransform();
+            var sndClickIt = new clickit3();
+            var sndClickItChannel:SoundChannel =sndClickIt.play(); 
+            transform1.volume=.75;
+            sndClickItChannel.soundTransform=transform1;
+                
+            connectedTo = node;
+            javascript.sendEvent('connect', this.id, node.id);
+        }
+        
+        public function disconnect():void {
+            connectedTo = null;
+            javascript.sendEvent('disconnect', this.id);
+        }
+        
         public function snapTo(target:Point):void {
-            trace('ENTER Lead.snapTo');
+            //trace('ENTER Lead.snapTo');
             var localTargetPos:Point = target.subtract(new Point(container.x, container.y));
             var tip:IKJoint = IK.getTailJoint(armature.rootJoint);
             var mover:IKMover  = new IKMover(tip, tip.position);
@@ -74,27 +93,13 @@ package org.concord.sparks.circuit
             trace('IK joint moved ' + i + ' times');
         }
         
-        private function disconnect():void {
-            this.connected = false;
-            this.javascript.sendEvent('disconnect', this.id);
-        }
-        
         private function handleMouseDown(event:MouseEvent):void {
-            this.drag = true;
+            drag = true;
         }
 
         private function handleMouseUp(event:MouseEvent):void {
-            trace('ENTER Lead.handleMouseUp');
-            this.drag = false;
-            trace('Lead.handleMouseUp drag=' + this.drag);
-        }
-        
-        private function handleMouseMove(event:MouseEvent) {
-            trace('ENTER Lead.handleMouseMove');
-            trace('Lead.handleMouseMove drag=' + this.drag);
-            if (this.drag && this.connected) {
-                disconnect();
-            }
+            //trace('ENTER Lead.handleMouseUp');
+            drag = false;
         }
     }
 }
