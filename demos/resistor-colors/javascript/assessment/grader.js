@@ -6,6 +6,7 @@ function Grader(activity, activityLog)
 
 Grader.prototype =
 {
+    labels : { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' },
     activity : null,
     log : null,
     
@@ -38,8 +39,8 @@ Grader.prototype =
             return;
         }
         
-        var value_num = Number(formAnswer.value);
-        if (!this.validateNumber(value_num)) {
+        var valueNum = Number(formAnswer.value);
+        if (!this.validateNumber(valueNum)) {
             return;
         }
         
@@ -50,24 +51,17 @@ Grader.prototype =
         
         var multiplier = -1
         
-        switch (formAnswer.units) {
-        case '\u2126':
-            multiplier = 1;
-            break;
-        case 'K\u2126':
-            multiplier = 1000;
-            break;
-        case 'M\u2126':
-            multiplier = 1000000;
-            break;
-        default:
+        console.log('unit=' + formAnswer.units);
+        
+        if (!this.ohmCompatible(formAnswer.units)) {
             formAnswer.message = "Incorrect Unit";
             return;
-        }    
+        }   
+        var parsedValue = this.normalizeToOhms(valueNum, formAnswer.units);
         
-        parsed_value = value_num * multiplier;
+        console.log('parsedValue=' + parsedValue + ' correctValue=' + correctValue);
         
-        if(correctValue != parsed_value){
+        if(correctValue != parsedValue){
             formAnswer.message = "The entered value or unit is incorrect.";
             return;
         }
@@ -131,8 +125,18 @@ Grader.prototype =
         console.log('correct min=' + correctMin + ' max=' + correctMax);
         console.log('submitted min=' + min + ' max=' + max);
         
-        if (this.equalWithTolerance(min, correctMin, 1e-6) &&
-            this.equalWithTolerance(max, correctMax, 1e-6))
+        if (!this.ohmCompatible(answer.min_unit) ||
+            !this.ohmCompatible(answer.max_unit))
+        {
+            answer.message = "Incorrect Unit";
+            return;
+        }
+        
+        var parsedMin = this.normalizeToOhms(min, answer.min_unit);
+        var parsedMax = this.normalizeToOhms(max, answer.max_unit);
+        
+        if (this.equalWithTolerance(parsedMin, correctMin, 1e-6) &&
+            this.equalWithTolerance(parsedMax, correctMax, 1e-6))
         {
             answer.correct = true;
             answer.message = "Correct";
@@ -200,5 +204,26 @@ Grader.prototype =
             return false;
         }
         return true;
+    },
+    
+    normalizeToOhms : function(value, unit) {
+        switch (unit) {
+        case this.labels.ohms:
+            return value;
+        case this.labels.kilo_ohms:
+            return value * 1000;
+        case this.labels.mega_ohms:
+            return value * 1e6;
+        }
+        return null;
+    },
+    
+    ohmCompatible : function(unit) {
+        if (unit == this.labels.ohms || unit == this.labels.kilo_ohms ||
+            unit == this.labels.mega_ohms)
+        {
+            return true;
+        }
+        return false;
     }
 }
