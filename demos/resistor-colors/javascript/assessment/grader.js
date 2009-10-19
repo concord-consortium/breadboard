@@ -6,7 +6,6 @@ function Grader(activity, activityLog)
 
 Grader.prototype =
 {
-    labels : { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' },
     activity : null,
     log : null,
     
@@ -53,11 +52,11 @@ Grader.prototype =
         
         console.log('unit=' + formAnswer.units);
         
-        if (!this.ohmCompatible(formAnswer.units)) {
+        if (!Unit.ohmCompatible(formAnswer.units)) {
             formAnswer.message = "Incorrect Unit";
             return;
         }   
-        var parsedValue = this.normalizeToOhms(valueNum, formAnswer.units);
+        var parsedValue = Unit.normalizeToOhms(valueNum, formAnswer.units);
         
         console.log('parsedValue=' + parsedValue + ' correctValue=' + correctValue);
         
@@ -125,15 +124,15 @@ Grader.prototype =
         console.log('correct min=' + correctMin + ' max=' + correctMax);
         console.log('submitted min=' + min + ' max=' + max);
         
-        if (!this.ohmCompatible(answer.min_unit) ||
-            !this.ohmCompatible(answer.max_unit))
+        if (!Unit.ohmCompatible(answer.min_unit) ||
+            !Unit.ohmCompatible(answer.max_unit))
         {
             answer.message = "Incorrect Unit";
             return;
         }
         
-        var parsedMin = this.normalizeToOhms(min, answer.min_unit);
-        var parsedMax = this.normalizeToOhms(max, answer.max_unit);
+        var parsedMin = Unit.normalizeToOhms(min, answer.min_unit);
+        var parsedMax = Unit.normalizeToOhms(max, answer.max_unit);
         
         if (this.equalWithTolerance(parsedMin, correctMin, 1e-6) &&
             this.equalWithTolerance(parsedMax, correctMax, 1e-6))
@@ -204,26 +203,5 @@ Grader.prototype =
             return false;
         }
         return true;
-    },
-    
-    normalizeToOhms : function(value, unit) {
-        switch (unit) {
-        case this.labels.ohms:
-            return value;
-        case this.labels.kilo_ohms:
-            return value * 1000;
-        case this.labels.mega_ohms:
-            return value * 1e6;
-        }
-        return null;
-    },
-    
-    ohmCompatible : function(unit) {
-        if (unit == this.labels.ohms || unit == this.labels.kilo_ohms ||
-            unit == this.labels.mega_ohms)
-        {
-            return true;
-        }
-        return false;
     }
 }

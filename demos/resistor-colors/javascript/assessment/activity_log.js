@@ -10,11 +10,12 @@ Question.prototype = {
 };
 
 function Section() {
+    this.questions = [];
 }
 Section.prototype = {
     start_time : null,
     end_time : null,
-    questions : []
+    questions : null
 };
     
 function ActivityLog()

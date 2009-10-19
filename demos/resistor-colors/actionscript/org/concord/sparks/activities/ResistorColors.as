@@ -1,5 +1,6 @@
 package org.concord.sparks.activities
 {
+    import flash.events.Event;
     import flash.events.MouseEvent;
     import flash.external.ExternalInterface;
     import flash.geom.Point;
@@ -25,6 +26,8 @@ package org.concord.sparks.activities
         var probes:Array;
         var plugs:Array;
         var leads:Array;
+        
+        var circuitReady:Boolean = false;
         
         public function ResistorColors(name:String, parent, root):void {
             trace('ENTER ResistorColors');
@@ -66,6 +69,12 @@ package org.concord.sparks.activities
                 case 'reset_circuit':
                     resetCircuit();
                     return 'reset_circuit';
+                case 'enable_circuit':
+                    circuitReady = true;
+                    return 'enable_circuit';
+                case 'disable_circuit':
+                    circuitReady = false;
+                    return 'disable_circuit';
                 case 'set_debug_mode':
                     if (args[1] == 'multimeter') {
                          resistor.show();
@@ -94,6 +103,7 @@ package org.concord.sparks.activities
         private function setupEvents() {
             root.addEventListener(MouseEvent.MOUSE_DOWN, handleMouseDown);
             root.addEventListener(MouseEvent.MOUSE_UP, handleMouseUp);
+            root.addEventListener(MouseEvent.MOUSE_DOWN, handleClickCapture, true, 1000);
             root.addEventListener(MouseEvent.CLICK, handleClick);
             root.addEventListener(MouseEvent.MOUSE_MOVE, handleMouseMove);
         }
@@ -179,10 +189,17 @@ package org.concord.sparks.activities
             trace('Mouse up at ' + event.stageX + ',' + event.stageY);
         }
         
+        private function handleClickCapture(event:MouseEvent) {
+            if (!circuitReady) {
+                event.stopImmediatePropagation();
+                javascript.sendEvent('not_ready');
+            }
+        }
+        
         private function handleClick(event:MouseEvent) {
             trace('ENTER ResistorColors.handleClick');
             if (event.target == multimeter.powerSwitch) {
-                javascript.sendEvent("multimeter_power", multimeter.powerOn);
+                javascript.sendEvent('multimeter_power', multimeter.powerOn);
             }
         }
 

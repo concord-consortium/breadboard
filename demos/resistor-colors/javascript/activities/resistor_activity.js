@@ -17,6 +17,7 @@ ResistorActivity.prototype =
     resistor : null,
     
     current_section : 0,
+    current_question : 0,
     allResults : [],
 
     // Initial operation on document when it is loaded
@@ -67,6 +68,14 @@ ResistorActivity.prototype =
         this.multimeter.update();
     },
     
+    enableCircuit : function() {
+        sendCommand('enable_circuit');
+    },
+    
+    disableCircuit : function() {
+        sendCommand('disable_circuit');
+    },
+    
     completedTry : function() {
       var result = {};
       
@@ -115,6 +124,7 @@ ResistorActivity.prototype =
       }  
     },
     
+    // Start new section (set of questions)
     startTry : function() {
       // reset fields to their initial value
       $("form").each(function (i){ this.reset()})
@@ -141,8 +151,11 @@ ResistorActivity.prototype =
       
       form = $("form:first")
       this.enableForm(form)
-
+      
       ++ this.current_section;
+      this.current_question = 1;
+      this.disableCircuit();
+      
       console.log('current_section changed to: ' + this.current_section);
       switch(this.current_section)
       {
@@ -195,14 +208,22 @@ ResistorActivity.prototype =
     }
 }
 
+// Submit button for question
 function buttonClicked(event) {
+    var activity = jQuery.sparks.activity;
     var form = jQuery(event.target).parent();
-    jQuery.sparks.activity.disableForm(form);
+    activity.disableForm(form);
     var nextForm = form.nextAll("form:first");
+    
     if (nextForm.size() == 0) {
-      jQuery.sparks.activity.completedTry();
+        activity.completedTry();
     } else {
-      jQuery.sparks.activity.enableForm(nextForm);
+        activity.enableForm(nextForm);
+        ++activity.current_question;
+        console.log('current_question=' + activity.current_question);
+        if (activity.current_question == 3) {
+            activity.enableCircuit();
+        }
     }
 }
 

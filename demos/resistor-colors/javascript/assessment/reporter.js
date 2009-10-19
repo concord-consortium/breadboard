@@ -5,6 +5,7 @@ function Reporter(assessment)
     this.assessment = assessment;
     this.log = this.assessment.log;
     //console.log('assessment=' + this.assessment + ' log=' + this.log);
+
 }
 
 Reporter.prototype =
@@ -16,9 +17,7 @@ Reporter.prototype =
     report : function() {
         var date = new Date(this.log.start_time);
         $('#report_date').html(date.toLocaleDateString());
-        console.log('#report_link_1.html=' + $('#report_link_1').html());
-        console.log('#report_link_1=' + $('#report_link_1'));
-        $('#report_link_1').click(function() { alert('link_1'); });
+        //$('#report_link_1').click(function() { alert(this.msg1); });
         
         $('#report_questions').html(this.details());
         $('#report_log').html(this.reportLog());
@@ -52,13 +51,13 @@ Reporter.prototype =
     sectionRow : function(sectionNum) {
         var questions = this.log.sections[sectionNum-1].questions;
         var t = '<tr><td>' + sectionNum + '</td>';
-        t += '<td>' + questions[0].correct_answer + '\u2126</td>';
+        t += '<td>' + Unit.res_str(questions[0].correct_answer) + '</td>';
         t += this.coloredElem(questions[0].answer + questions[0].unit, questions[0]);
-        t += '<td>' + questions[1].correct_answer + '%</td>';
+        t += '<td>' + questions[1].correct_answer * 100 + '%</td>';
         t += this.coloredElem(questions[1].answer + questions[1].unit, questions[1]);
-        t += '<td>' + questions[2].correct_answer + '\u2126</td>';
+        t += '<td>' + Unit.res_str(questions[2].correct_answer) + '</td>';
         t += this.coloredElem(questions[2].answer + questions[2].unit, questions[2]);
-        t += '<td>' + questions[3].correct_answer[0] + ' .. ' + questions[3].correct_answer[1] + '</td>';
+        t += '<td>' + Unit.res_str(questions[3].correct_answer[0]) + ' .. ' + Unit.res_str(questions[3].correct_answer[1]) + '</td>';
         t += this.coloredElem(questions[3].answer[0] + questions[3].unit[0] + ' .. ' + questions[3].answer[1] + questions[3].unit[1], questions[3]);
         t += '<td>' + questions[4].correct_answer + '</td>';
         t += this.coloredElem(questions[4].answer, questions[4]);

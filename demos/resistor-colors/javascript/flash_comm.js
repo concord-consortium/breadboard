@@ -57,4 +57,7 @@ function receiveEvent(name, value, time) {
       multimeter.powerOn = value == 'true' ? true : false;
       multimeter.update();
   }
+  else if (name == 'not_ready') {
+      alert('Sorry, you can only access the circuit after you have answered question #1.');
+  }
 }
