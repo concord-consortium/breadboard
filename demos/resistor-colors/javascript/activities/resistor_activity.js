@@ -5,21 +5,18 @@ function ResistorActivity() {
     console.log('log=' + this.log);
     this.assessment = new Assessment(this, this.log);
     this.reporter = new Reporter(this.assessment);
+
+    this.circuit = null;
+    this.multimeter = null;
+    this.resistor = null;
+    
+    this.current_section = 0;
+    this.current_question = 0;
+    this.allResults = [];
 }
 
 ResistorActivity.prototype =
 {
-    log : null,
-    assessment : null,
-    reporter : null,
-    flash : null,
-    multimeter : null,
-    resistor : null,
-    
-    current_section : 0,
-    current_question : 0,
-    allResults : [],
-
     // Initial operation on document when it is loaded
     initDocument : function() {
         // Disable all form elements
@@ -45,7 +42,6 @@ ResistorActivity.prototype =
 
     // Initializations that can be done only when the flash movie is loaded
     onFlashDone : function() {
-        var flash = getFlashMovie('resistor_colors');
         this.multimeter = new Multimeter();
         this.resistor = new Resistor();
         
@@ -182,7 +178,7 @@ ResistorActivity.prototype =
           "Nominal Value: " + resistor.nominalValue + "<br/>" +
           "Tolerance: " + resistor.tolerance * 100.0 + "%<br/>" +
           "Real Value: " + resistor.realValue + "<br/>" +
-          "Display Value: " + this.multimeter.getDisplayValue(resistor.realValue) + "<br/>";
+          "Display Value: " + this.multimeter.makeDisplayText(resistor.realValue) + "<br/>";
         
         if (debug_div.length > 0) {
             debug_div.html(html);

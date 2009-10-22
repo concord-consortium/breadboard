@@ -20,7 +20,7 @@ Grader.prototype =
                 resistor.nominalValue);
         this.gradeTolerance(questions[1], resultObject.rated_tolerance, resistor.tolerance);
         this.gradeResistance(questions[2], resultObject.measured_resistance,
-                multimeter.getDisplayValue(resistor.realValue));
+                multimeter.makeDisplayText(resistor.realValue));
         this.gradeToleranceRange(questions[3], resultObject.measured_tolerance,
                 resistor.nominalValue, resistor.tolerance);
         this.gradeWithinTolerance(questions[4], resultObject.within_tolerance, resistor);

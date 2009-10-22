@@ -1,32 +1,42 @@
-function Multimeter() {
+/*
+ * Digital Multimeter
+ */
+function Multimeter()
+{
+    this.mode = this.modes.ohmmeter;
+    this.value = 0; //real value
+    this.displayText = '       ';
+    
+    this.redProbeConnection = null;
+    this.blackProbeConnection = null;
+    this.redPlugConnection = null;
+    this.blackPlugConnecton = null;
+    this.dialPosition = 'acv_750';
+    this.powerOn = false;
 }
 Multimeter.prototype =
 {
-    redProbeConnection : null,
-    blackProbeConnection : null,
-    redPlugConnection : null,
-    blackPlugConnecton : null,
-    dialPosition : 'acv_750',
-    powerOn : false,
+    modes : { ohmmeter : 0, voltmeter : 1, ammeter : 2 },
     
     update : function() {
         console.log('ENTER update powerOn=', this.powerOn + ' ' + (typeof this.powerOn));
-        
+        this.value = jQuery.sparks.activity.resistor.getRealValue();
+        this.updateDisplay();
+    },
+    
+    updateDisplay : function() {
         if (!this.powerOn) {
             sendCommand('set_multimeter_display', '       ');
             return;
         }
-        
-        var resistor = jQuery.sparks.activity.resistor;
-        console.log('Multimeter.update: resistance=' + resistor.realValue + ' dialPosition=' + this.dialPosition);
+        console.log('Multimeter.update: resistance=' + this.value + ' dialPosition=' + this.dialPosition);
         
         var text = '';
         if (this.allConnected()) {
-            var value = resistor.realValue;
-            console.log('pos=' + this.dialPosition + ' val=' + value);
+            console.log('pos=' + this.dialPosition + ' val=' + this.value);
             if (this.dialPosition == 'r_200') {
-                if (value < 199.95) {
-                    text = (Math.round(value * 10) * 0.1).toString();
+                if (this.value < 199.95) {
+                    text = (Math.round(this.value * 10) * 0.1).toString();
                     text = this.toDisplayString(text, 1);
                 }
                 else {
@@ -34,8 +44,8 @@ Multimeter.prototype =
                 }
             }
             else if (this.dialPosition == 'r_2000' || this.dialPosition == 'diode') {
-                if (value < 1999.5) {
-                    text = Math.round(value).toString();
+                if (this.value < 1999.5) {
+                    text = Math.round(this.value).toString();
                     text = this.toDisplayString(text, 0);
                 }
                 else {
@@ -43,8 +53,8 @@ Multimeter.prototype =
                 }
             }
             else if (this.dialPosition == 'r_20k') {
-                if (value < 19995) {
-                    text = (Math.round(value * 0.1) * 0.01).toString();
+                if (this.value < 19995) {
+                    text = (Math.round(this.value * 0.1) * 0.01).toString();
                     text = this.toDisplayString(text, 2);
                 }
                 else {
@@ -52,8 +62,8 @@ Multimeter.prototype =
                 }
             }
             else if (this.dialPosition == 'r_200k') {
-                if (value < 199950) {
-                    text = (Math.round(value * 0.01) * 0.1).toString();
+                if (this.value < 199950) {
+                    text = (Math.round(this.value * 0.01) * 0.1).toString();
                     text = this.toDisplayString(text, 1);
                 }
                 else {
@@ -61,8 +71,8 @@ Multimeter.prototype =
                 }
             }
             else if (this.dialPosition == 'r_2000k') {
-                if (value < 1999500) {
-                    text = Math.round(value * 0.001).toString();
+                if (this.value < 1999500) {
+                    text = Math.round(this.value * 0.001).toString();
                     text = this.toDisplayString(text, 0);
                 }
                 else {
@@ -127,7 +137,7 @@ Multimeter.prototype =
         }
         console.log('text=' + text);
         sendCommand('set_multimeter_display', text);
-        this.displayValue = this.getDisplayValue(resistor.realValue);
+        this.displayText = text;
     },
     
     toDisplayString : function(s, dec) {
@@ -211,6 +221,10 @@ Multimeter.prototype =
         //console.log('formatDecimalString: formatted=' + s);
         return s;
     },
+    
+    getDisplayText : function() {
+        return this.displayText;
+    },
 
     /*
      * Return value to be shown under optimal setting.
@@ -218,7 +232,7 @@ Multimeter.prototype =
      *
      * Take three significant digits, four if the first digit is 1.
      */
-    getDisplayValue : function(value) {
+    makeDisplayText : function(value) {
         var text;
         if (value < 199.95) {
             text = (Math.round(value * 10) * 0.1).toString();

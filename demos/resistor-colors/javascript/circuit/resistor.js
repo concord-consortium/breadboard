@@ -1,16 +1,15 @@
 function Resistor() {
     this.colorMap[-1] = 'gold';
     this.colorMap[-2] = 'silver';
+    
+    this.nominalValue = 0.0; //resistance value specified by band colors;
+    this.realValue = 0.0; //real resistance value in Ohms
+    this.tolerance = 0.0; //tolerance value
+    
+    this.colors = [];
 }
 Resistor.prototype =
 {
-    nominalValue : 0.0, //resistance value specified by band colors;
-    realValue : 0.0, //real resistance value in Ohms
-    tolerance : 0.0, //tolerance value
-    
-    minValue : 0.1,
-    maxValue : 999500,
-    
     colorMap : { 0 : 'black', 1 : 'brown', 2 : 'red', 3 : 'orange',
         4 : 'yellow', 5 : 'green', 6 : 'blue', 7 : 'violet', 8 : 'grey',
         9 : 'white' },
@@ -27,16 +26,14 @@ Resistor.prototype =
     },
     
     randomize : function() {
-        var colors = [];
-        
         var band1 = this.randInt(1, 9);
-        colors[0] = this.colorMap[band1];
+        this.colors[0] = this.colorMap[band1];
         
         var band2 = this.randInt(0, 9);
-        colors[1] = this.colorMap[band2];
+        this.colors[1] = this.colorMap[band2];
         
         var band3 = this.randInt(0, 9);
-        colors[2] = this.colorMap[band3];
+        this.colors[2] = this.colorMap[band3];
         
         var base = band1 * 100 +  band2 * 10 + band3; // 100..999
         var pwr; //Multiplier: 10^-2..10^9
@@ -47,21 +44,21 @@ Resistor.prototype =
             pwr = this.randInt(-1, 4); 
         }
         
-        colors[3] = this.colorMap[pwr];
+        this.colors[3] = this.colorMap[pwr];
         this.nominalValue = base * Math.pow(10, pwr);
         
         var ix = this.randInt(0, 1);
         this.tolerance = this.toleranceValues[ix];
         
-        colors[4] = this.toleranceColorMap[this.tolerance];
+        this.colors[4] = this.toleranceColorMap[this.tolerance];
         
-        this.realValue = this.getRealValue(this.nominalValue, this.tolerance);
+        this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
         
-        console.log('sending colors=' + colors.join('|'));
-        sendCommand('set_resistor_label', colors);
+        console.log('sending colors=' + this.colors.join('|'));
+        sendCommand('set_resistor_label', this.colors);
     },
     
-    getRealValue : function(nominalValue, tolerance) {
+    calcRealValue : function(nominalValue, tolerance) {
         var chance = Math.random();
         if (chance > 0.8) {
             var chance2 = Math.random();
@@ -76,6 +73,14 @@ Resistor.prototype =
         // Multiply 0.9 just to be comfortably within tolerance
         var realTolerance = tolerance * 0.9;
         return nominalValue * this.randFloat(1 - realTolerance, 1 + realTolerance);
+    },
+    
+    getRealValue : function() {
+        return this.realValue;
+    },
+    
+    setRealValue : function(value) {
+        this.realValue = value;
     },
     
     randInt : function(min, max) {
