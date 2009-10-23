@@ -5,17 +5,15 @@ describe 'Circuit'
         end
         
         it 'should randomize its values within ranges'
-        /*
             for (var i = 0; i < 20; ++i) {
                 resistor.randomize()
-                resistor.nominalValue.should.be_at_least 1.0 // min value: 1
-                resistor.nominalValue.should.be_less_than 2e6 // max value: 2,000k
-                resistor.colors.should.have_length 5 // 5 band resistor
+                resistor.getNominalValue().should.be_at_least 1.0
+                resistor.nominalValue.should.be_less_than 2e6
+                resistor.colors.should.have_length 5
                 for (var j = 0; j < resistor.colors.length; ++j) {
-                    jspec_sparks.objectValues(resistor.colorMap).should.include(resistor.colors[j]);
+                    jspec_sparks.objectValues(resistor.colorMap).should.include resistor.colors[j]
                 }
             }
-            */
         end
     end
     
