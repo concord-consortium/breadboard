@@ -26,6 +26,7 @@ Multimeter.prototype =
     
     updateDisplay : function() {
         if (!this.powerOn) {
+            this.displayText = '       ';
             sendCommand('set_multimeter_display', '       ');
             return;
         }
@@ -264,6 +265,7 @@ Multimeter.prototype =
             (this.redPlugConnection == 'voma_port' &&
              this.blackPlugConnection == 'common_port' ||
              this.redPlugConnection == 'common_port' &&
-             this.blackPlugConnection == 'voma_port');
+             this.blackPlugConnection == 'voma_port' &&
+             this.powerOn);
     }
 };
