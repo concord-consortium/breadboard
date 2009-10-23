@@ -21,6 +21,18 @@ Resistor.prototype =
     //                    0.1, 0.2],
     toleranceValues : [ 0.01, 0.02 ],
     
+    getRealValue : function() {
+        return this.realValue;
+    },
+    
+    setRealValue : function(value) {
+        this.realValue = value;
+    },
+    
+    getNominalValue : function() {
+        return this.nominalValue;
+    },
+    
     show : function() {
         sendCommand('show_resistor');
     },
@@ -73,14 +85,6 @@ Resistor.prototype =
         // Multiply 0.9 just to be comfortably within tolerance
         var realTolerance = tolerance * 0.9;
         return nominalValue * this.randFloat(1 - realTolerance, 1 + realTolerance);
-    },
-    
-    getRealValue : function() {
-        return this.realValue;
-    },
-    
-    setRealValue : function(value) {
-        this.realValue = value;
     },
     
     randInt : function(min, max) {
