@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+
+<project name="resistor_colors" default="export">
+  
+  <property name="src.root.dir" value = "../.."/>
+  <property name="tgt.root.dir" value = "export/sparks-content"/>
+  <property name="src.res.dir" value = "${src.root.dir}/demos/resistor-colors"/>
+  <property name="tgt.res.dir" value = "${tgt.root.dir}/demos/resistor-colors"/>
+  <tstamp>
+    <format property="today" pattern="yyyyMMdd"/>
+  </tstamp>
+  
+  <target name="export" depends="delete_export">
+    <copy todir="${tgt.root.dir}/css">
+      <fileset dir="${src.root.dir}/css"/>
+    </copy>
+    <copy todir="${tgt.root.dir}/icons">
+      <fileset dir="${src.root.dir}/icons"/>
+    </copy>
+    <copy todir="${tgt.root.dir}/js-libs">
+      <fileset dir="${src.root.dir}/js-libs"/>
+    </copy>
+    <copy todir="${tgt.res.dir}/images">
+      <fileset dir="${src.res.dir}/images"/>
+    </copy>
+    <copy todir="${tgt.res.dir}/fake-report">
+      <fileset dir="${src.res.dir}/fake-report"/>
+    </copy>
+    <copy todir="${tgt.res.dir}/javascript">
+      <fileset dir="${src.res.dir}/javascript"/>
+    </copy>
+    <copy todir="${tgt.res.dir}">
+      <fileset dir="${src.res.dir}"
+        includes="index.html, resistor_colors.swf, sparks.js"
+      />
+    </copy>
+    <zip destfile="export/sparks-content-${today}.zip"
+      basedir="export"
+      includes="sparks-content/**"
+    />
+  </target>
+
+  <target name="delete_export">
+    <delete dir="export"/>
+  </target>
+
+</project>
