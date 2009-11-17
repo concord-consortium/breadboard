@@ -1,14 +1,12 @@
-function Grader(activity, activityLog)
+function Grader(activity, activityLog, feedback)
 {
     this.activity = activity;
     this.log = activityLog;
+    this.feedback = feedback;
 }
 
 Grader.prototype =
 {
-    activity : null,
-    log : null,
-    
     grade : function(resultObject, sectionNum) {
         console.log('ENTER Grader.grade');
         var questions =  this.log.sections[sectionNum-1].questions;
@@ -24,6 +22,7 @@ Grader.prototype =
         this.gradeToleranceRange(questions[3], resultObject.measured_tolerance,
                 resistor.nominalValue, resistor.tolerance);
         this.gradeWithinTolerance(questions[4], resultObject.within_tolerance, resistor);
+        this.gradeTime();
     },
     
     gradeResistance : function(question, formAnswer, correctValue) {
@@ -180,6 +179,80 @@ Grader.prototype =
         answer.correct = true;
         answer.message = "Correct";
         question.correct = true;
+    },
+    
+    gradeTime : function() {
+        var rated_r_labels = ['rated_r1_time', 'rated_r2_time', 'rated_r3_time'];
+        
+        for (var i in this.log.sections) {
+            var question = this.log.sections[i].questions[0]
+            var seconds = (question.end_time - question.start_time) / 100;
+            var feedbackItem = this.feedback[rated_r_labels[i]];
+            if (seconds < 20) {
+                feedbackItem.label = 'Excellent';
+                feedbackItem.points = 10;
+            }
+            else if (seconds < 45) {
+                feedbackItem.label = 'Fast';
+                feedbackItem.points = 8;
+            }
+            else if (seconds < 120) {
+                feedbackItem.label = 'Learning';
+                feedbackItem.points = 6;
+            }
+            else {
+                feedbackItem.label = 'Too slow';
+                feedbackItem.points = 2;
+            }
+        }
+        
+        var rated_t_labels = ['rated_t1_time', 'rated_t2_time', 'rated_t3_time'];
+        
+        for (var i in this.log.sections) {
+            var question = this.log.sections[i].questions[1]
+            var seconds = (question.end_time - question.start_time) / 100;
+            var feedbackItem = this.feedback[rated_t_labels[i]];
+            if (seconds < 10) {
+                feedbackItem.label = 'Excellent';
+                feedbackItem.points = 10;
+            }
+            else if (seconds < 20) {
+                feedbackItem.label = 'Fast';
+                feedbackItem.points = 8;
+            }
+            else if (seconds < 50) {
+                feedbackItem.label = 'Learning';
+                feedbackItem.points = 6;
+            }
+            else {
+                feedbackItem.label = 'Too slow';
+                feedbackItem.points = 2;
+            }
+        }
+        
+        var measured_r_labels = ['measured_r1_time', 'measured_r2_time', 'measured_r3_time'];
+        
+        for (var i in this.log.sections) {
+            var question = this.log.sections[i].questions[2]
+            var seconds = (question.end_time - question.start_time) / 100;
+            var feedbackItem = this.feedback[measured_r_labels[i]];
+            if (seconds < 30) {
+                feedbackItem.label = 'Excellent';
+                feedbackItem.points = 10;
+            }
+            else if (seconds < 60) {
+                feedbackItem.label = 'Fast';
+                feedbackItem.points = 8;
+            }
+            else if (seconds < 120) {
+                feedbackItem.label = 'Learning';
+                feedbackItem.points = 6;
+            }
+            else {
+                feedbackItem.label = 'Too slow';
+                feedbackItem.points = 2;
+            }
+        }
     },
     
     equalWithTolerance : function(value1, value2, tolerance) {

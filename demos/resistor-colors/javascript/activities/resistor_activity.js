@@ -80,7 +80,7 @@ ResistorActivity.prototype =
         result[this.id] = serializeForm(form);
       });
     
-      if(jQuery.sparks.debug) {  
+      if (jQuery.sparks.debug) {  
         var resultString = jQuery.map(this.allResults, function(el, i){
           return jQuery.toJSON(el)
         }).join("<br\>")
@@ -165,6 +165,7 @@ ResistorActivity.prototype =
           this.log.add('start_resistor3');
           break;
       }
+      this.log.add('start_question', { section : this.current_section, question : 1 });
     },
     
     showRccDebugInfo : function() {
@@ -211,11 +212,16 @@ function buttonClicked(event) {
     activity.disableForm(form);
     var nextForm = form.nextAll("form:first");
     
+    activity.log.add('end_question', { section : activity.current_section,
+        question : activity.current_question });
+    
     if (nextForm.size() == 0) {
         activity.completedTry();
     } else {
         activity.enableForm(nextForm);
         ++activity.current_question;
+        activity.log.add('start_question', { section : activity.current_section,
+            question : activity.current_question });
         console.log('current_question=' + activity.current_question);
         if (activity.current_question == 3) {
             activity.enableCircuit();
@@ -244,7 +250,7 @@ function showReportClicked(event) {
         $("#report").dialog('open');
     });
     */
-    $("#report").load("fake-report/report.html", {}, function() {
+    $("#report").load("report-templates/report.html", {}, function() {
         jQuery.sparks.activity.reporter.report();
     }).show();
 }

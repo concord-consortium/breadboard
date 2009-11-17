@@ -1,26 +1,48 @@
 function Question(id) {
     this.id = id;
+    this.correct_answer = '';
+    this.answer = '';
+    this.unit = '';
+    this.correct = false;
+    this.start_time = null;
+    this.end_time = null;
 }
-Question.prototype = {
-    id : '',
-    correct_answer : '',
-    answer : '',
-    unit : '',
-    correct : false
-};
 
 function Section() {
     this.questions = [];
+    this.start_time = null;
+    this.end_time = null;
 }
-Section.prototype = {
-    start_time : null,
-    end_time : null,
-    questions : null
-};
-    
+
+/* Log object structure:
+ * ActivityLog:
+ *   start_time:
+ *   end_time:
+ *   sections:
+ *     - section 1
+ *         start_time:
+ *         end_time:
+ *         questions:
+ *           - question N
+ *               id:
+ *               correct_answer:
+ *               answer:
+ *               unit:
+ *               correct:
+ *               start_time:
+ *               end_time:
+ *     - section 2
+ *         [same as section 1]
+ *     - section 3
+ *         [same as section 1]
+ */
 function ActivityLog()
 {
     //console.log('ENTER ActivityLog');
+    this.start_time = null;
+    this.end_time = null;
+    this.sections = [];
+    
     this.sections = [new Section(), new Section(), new Section()];
     
     for (var i = 0; i < 3; ++i) {
@@ -34,11 +56,7 @@ function ActivityLog()
 }
 ActivityLog.prototype =
 {
-    start_time : null,
-    end_time : null,
-    sections : [],
-    
-    add : function(name, value) {
+    add : function(name, params) {
         var now = new Date().valueOf();
         switch (name)
         {
@@ -57,6 +75,12 @@ ActivityLog.prototype =
         case 'end_activity':
             this.sections[2].end_time = now;
             this.end_time = new Date().valueOf();
+            break;
+        case 'start_question':
+            this.sections[params.section-1].questions[params.question-1].start_time = now;
+            break;
+        case 'end_question':
+            this.sections[params.section-1].questions[params.question-1].end_time = now;
             break;
         default:
             console.log('ERROR: add: Unknown log event name ' + name);
