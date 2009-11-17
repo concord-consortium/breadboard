@@ -1,7 +1,9 @@
-package org.concord.sparks.circuit
+package org.concord.sparks.circuit.resistor.resistor_5band
 {
     import flash.display.MovieClip;
     import flash.geom.Point;
+    
+    import org.concord.sparks.circuit.Node;
     
     public class ResistorLead implements Node
     {

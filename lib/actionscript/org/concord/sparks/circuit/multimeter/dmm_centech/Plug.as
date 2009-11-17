@@ -1,4 +1,4 @@
-package org.concord.sparks.circuit
+package org.concord.sparks.circuit.multimeter.dmm_centech
 {
     import fl.ik.IKArmature;
     import fl.ik.IKManager;
@@ -9,6 +9,7 @@ package org.concord.sparks.circuit
     
     import org.concord.sparks.Activity;
     import org.concord.sparks.JavaScript;
+    import org.concord.sparks.circuit.Node;
     import org.concord.sparks.util.Assert;
     import org.concord.sparks.util.IK;
     

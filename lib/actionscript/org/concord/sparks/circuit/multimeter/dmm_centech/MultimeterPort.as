@@ -1,7 +1,9 @@
-package org.concord.sparks.circuit
+package org.concord.sparks.circuit.multimeter.dmm_centech
 {
     import flash.geom.Point;
     
+    import org.concord.sparks.Activity;
+    import org.concord.sparks.circuit.Node;
     import org.concord.sparks.util.Geom;
     
     public class MultimeterPort implements Node

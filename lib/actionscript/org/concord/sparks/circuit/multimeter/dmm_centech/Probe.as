@@ -1,4 +1,4 @@
-package org.concord.sparks.circuit
+package org.concord.sparks.circuit.multimeter.dmm_centech
 {
     import fl.ik.IKArmature;
     import fl.ik.IKJoint;
@@ -15,10 +15,11 @@ package org.concord.sparks.circuit
     
     import org.concord.sparks.Activity;
     import org.concord.sparks.JavaScript;
+    import org.concord.sparks.circuit.Node;
     import org.concord.sparks.util.Geom;
     import org.concord.sparks.util.IK;
     
-    public class Probe implements Node
+    public class Probe extends MovieClip implements Node
     {
         public var container:MovieClip;
         
@@ -30,16 +31,15 @@ package org.concord.sparks.circuit
         
         private var javascript:JavaScript;
         
-        public function Probe(id:String, activity:Activity, container:MovieClip, armatureName:String):void
+        public function Probe(id:String, activity:Activity, container:MovieClip, armature:IKArmature):void
         {
             this.id = id;
             this.javascript = activity.getJavaScript();
             this.container = container;
+            this.armature = armature;
 
             container.addEventListener(MouseEvent.MOUSE_DOWN, handleMouseDown);
             container.addEventListener(MouseEvent.MOUSE_UP, handleMouseUp);
-            
-            armature = IKManager.getArmatureByName(armatureName);
         }
         
         public function get id():String {

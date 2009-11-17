@@ -1,5 +1,8 @@
-package org.concord.sparks.circuit
+package org.concord.sparks.circuit.multimeter.dmm_centech
 {
+    import fl.ik.IKArmature;
+    import fl.ik.IKManager;
+    
     import flash.display.Loader;
     import flash.display.MovieClip;
     import flash.events.MouseEvent;
@@ -11,7 +14,7 @@ package org.concord.sparks.circuit
     import org.concord.sparks.util.Assert;
     import org.concord.sparks.util.Geom;
     
-    public class Multimeter
+    public class DmmCentech
     {
         // Instance names in Flash movie
         public static var names = {
@@ -73,8 +76,8 @@ package org.concord.sparks.circuit
         
         public var dialMouseDown:Boolean = false;
         
-        public function Multimeter(activity:Activity, root) {
-            trace('ENTER Multimeter');
+        public function DmmCentech(activity:Activity, root):void {
+            trace('ENTER DmmCentech');
 
             this.activity = activity;
             this.container = root[names.container];
@@ -93,15 +96,21 @@ package org.concord.sparks.circuit
             
             display = root[names.display];
             display.text = '';
-            
+
+            var redProbeArmature:IKArmature = IKManager.getArmatureByName(names.redProbeArmature);
+            trace('redProbeArmature: ' + redProbeArmature)
+            var blackProbeArmature:IKArmature = IKManager.getArmatureByName(names.blackProbeArmature);
+            trace('blackProbeArmature: ' + blackProbeArmature)
+                
             redProbe = new Probe('red_probe', activity,
-                root[names.redProbeMovieClip], names.redProbeArmature);
+                root[names.redProbeMovieClip], redProbeArmature);
             blackProbe = new Probe('black_probe', activity,
-                root[names.blackProbeMovieClip], names.blackProbeArmature);
+                root[names.blackProbeMovieClip], blackProbeArmature);
                 
             var plugIns = [root[names.plugIn1], root[names.plugIn2], root[names.plugIn3]];
             initGhostPlugs(plugIns);
 
+            
             redPlug = new Plug('red_plug', activity, root[names.redPlugMovieClip],
                 names.redPlugArmature, plugIns);
             blackPlug = new Plug('black_plug', activity, root[names.blackPlugMovieClip],
@@ -156,7 +165,7 @@ package org.concord.sparks.circuit
         }
         
         public function getDisplayText():String {
-        	return display.text;
+            return display.text;
         }
 
         public function turnOn():void {
@@ -212,7 +221,7 @@ package org.concord.sparks.circuit
             default:
                 fname = char + '.png';
             }
-            var path = 'images/multimeter/' + fname;
+            var path = '../../lib/images/multimeter/dmm_centech/' + fname;
             //trace('path=' + path);
             try {
                 var req:URLRequest = new URLRequest(path);

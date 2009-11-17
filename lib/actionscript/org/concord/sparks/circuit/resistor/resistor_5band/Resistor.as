@@ -1,4 +1,4 @@
-package org.concord.sparks.circuit
+package org.concord.sparks.circuit.resistor.resistor_5band
 {
     import flash.display.Graphics;
     import flash.display.Loader;

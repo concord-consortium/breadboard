@@ -6,17 +6,17 @@ package org.concord.sparks.activities
     import flash.geom.Point;
     
     import org.concord.sparks.Activity;
-    import org.concord.sparks.circuit.Multimeter;
-    import org.concord.sparks.circuit.MultimeterPort;
-    import org.concord.sparks.circuit.Plug;
-    import org.concord.sparks.circuit.Probe;
-    import org.concord.sparks.circuit.Resistor;
-    import org.concord.sparks.circuit.ResistorLead;
+    import org.concord.sparks.circuit.resistor.resistor_5band.Resistor;
+    import org.concord.sparks.circuit.resistor.resistor_5band.ResistorLead;
+    import org.concord.sparks.circuit.multimeter.dmm_centech.DmmCentech;
+    import org.concord.sparks.circuit.multimeter.dmm_centech.MultimeterPort;
+    import org.concord.sparks.circuit.multimeter.dmm_centech.Plug;
+    import org.concord.sparks.circuit.multimeter.dmm_centech.Probe;
     import org.concord.sparks.util.Geom;
     
     public class ResistorColors extends Activity
     {
-        public var multimeter:Multimeter;
+        public var multimeter:DmmCentech;
         public var resistor:Resistor;
         
         var redProbeDefaultPos:Point;
@@ -32,7 +32,7 @@ package org.concord.sparks.activities
         public function ResistorColors(name:String, parent, root):void {
             trace('ENTER ResistorColors');
             super(name, parent, root);
-            multimeter = new Multimeter(this, root);
+            multimeter = new DmmCentech(this, root);
             resistor = new Resistor(root);
             resistor.hide();
             setupEvents();
