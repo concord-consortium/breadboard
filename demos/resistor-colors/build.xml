@@ -11,14 +11,14 @@
   </tstamp>
   
   <target name="export" depends="delete_export">
-    <copy todir="${tgt.root.dir}/css">
-      <fileset dir="${src.root.dir}/css"/>
+    <copy todir="${tgt.root.dir}/common/stylesheets">
+      <fileset dir="${src.root.dir}/common/stylesheets"/>
     </copy>
-    <copy todir="${tgt.root.dir}/icons">
-      <fileset dir="${src.root.dir}/icons"/>
+    <copy todir="${tgt.root.dir}/common/icons">
+      <fileset dir="${src.root.dir}/common/icons"/>
     </copy>
-    <copy todir="${tgt.root.dir}/js-libs">
-      <fileset dir="${src.root.dir}/js-libs"/>
+    <copy todir="${tgt.root.dir}/lib/jquery">
+      <fileset dir="${src.root.dir}/lib/jquery"/>
     </copy>
     <copy todir="${tgt.root.dir}/common/images">
       <fileset dir="${src.root.dir}/common/images"/>
@@ -26,12 +26,12 @@
     <copy todir="${tgt.res.dir}/report-templates">
       <fileset dir="${src.res.dir}/report-templates"/>
     </copy>
-    <copy todir="${tgt.res.dir}/javascript">
-      <fileset dir="${src.res.dir}/javascript"/>
+    <copy todir="${tgt.root.dir}/common/javascript">
+      <fileset dir="${src.root.dir}/common/javascript"/>
     </copy>
     <copy todir="${tgt.res.dir}">
       <fileset dir="${src.res.dir}"
-        includes="index.html, resistor_colors.swf, sparks.js"
+        includes="index.html, resistor_colors.swf"
       />
     </copy>
     <zip destfile="export/sparks-content-${today}.zip"

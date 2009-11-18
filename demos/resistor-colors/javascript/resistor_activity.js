@@ -114,9 +114,9 @@ ResistorActivity.prototype =
       }
       
       if(result[name].correct){
-        itemForm.prepend("<img class='grade' src='../../icons/ok.png' " + titleText + "/>")    
+        itemForm.prepend("<img class='grade' src='../../common/icons/ok.png' " + titleText + "/>")    
       } else {
-        itemForm.prepend("<img class='grade' src='../../icons/cancel.png' " + titleText + "/>")
+        itemForm.prepend("<img class='grade' src='../../common/icons/cancel.png' " + titleText + "/>")
       }  
     },
     
