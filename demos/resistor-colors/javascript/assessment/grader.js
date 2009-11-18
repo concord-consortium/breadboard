@@ -38,7 +38,7 @@ Grader.prototype =
         }
         
         var valueNum = Number(formAnswer.value);
-        if (!this.validateNumber(valueNum)) {
+        if (!this.validateNumber(valueNum, formAnswer)) {
             return;
         }
         
@@ -82,7 +82,7 @@ Grader.prototype =
         }
 
         var value_num = Number(answer.value);
-        if (!this.validateNumber(value_num)) {
+        if (!this.validateNumber(value_num, answer)) {
             return;
         }
         
@@ -118,7 +118,7 @@ Grader.prototype =
         var min = Number(answer.min);
         var max = Number(answer.max);
         
-        if (!this.validateNumber(min) || !this.validateNumber(max)) {
+        if (!this.validateNumber(min, answer) || !this.validateNumber(max.answer)) {
             return;
         }
         
@@ -269,7 +269,7 @@ Grader.prototype =
         return true;;
     },
     
-    validateNumber : function(num) {
+    validateNumber : function(num, answer) {
         // I don't know if this works correctly IE
         // parseFloat will return all numbers before a non numeric char so 
         // parseFloat('3a') returns 3 which isn't really what we want
