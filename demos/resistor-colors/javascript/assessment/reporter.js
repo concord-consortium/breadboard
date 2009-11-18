@@ -57,6 +57,7 @@ Reporter.prototype =
         
         // Section 2
         questions = sections[1].questions;
+        
         $('#rated_r2_correct').text(Unit.res_str(questions[0].correct_answer));
         this.setAnswerTextWithColor('#rated_r2_answer', questions[0].answer + questions[0].unit, questions[0]);
         
@@ -71,13 +72,16 @@ Reporter.prototype =
         
         $('#within2_correct').text(questions[4].correct_answer);
         this.setAnswerTextWithColor('#within2_answer', questions[4].answer, questions[4]);
-        
+
+        feedback = this.assessment.feedback['rated_r2_time'];
         $('#rated_r2_time').text(util.timeLapseStr(questions[0].start_time, questions[0].end_time));
         $('#rated_r2_time_pts').text(feedback.points + ' (' + feedback.label + ')');
         
+        feedback = this.assessment.feedback['rated_t2_time'];
         $('#rated_t2_time').text(util.timeLapseStr(questions[1].start_time, questions[1].end_time));
         $('#rated_t2_time_pts').text(feedback.points + ' (' + feedback.label + ')');
 
+        feedback = this.assessment.feedback['measured_r2_time'];
         $('#measured_r2_time').text(util.timeLapseStr(questions[2].start_time, questions[2].end_time));
         $('#measured_r2_time_pts').text(feedback.points + ' (' + feedback.label + ')');
         
@@ -98,12 +102,15 @@ Reporter.prototype =
         $('#within3_correct').text(questions[4].correct_answer);
         this.setAnswerTextWithColor('#within3_answer', questions[4].answer, questions[4]);
         
+        feedback = this.assessment.feedback['rated_r3_time'];
         $('#rated_r3_time').text(util.timeLapseStr(questions[0].start_time, questions[0].end_time));
         $('#rated_r3_time_pts').text(feedback.points + ' (' + feedback.label + ')');
         
+        feedback = this.assessment.feedback['rated_t3_time'];
         $('#rated_t3_time').text(util.timeLapseStr(questions[1].start_time, questions[1].end_time));
         $('#rated_t3_time_pts').text(feedback.points + ' (' + feedback.label + ')');
         
+        feedback = this.assessment.feedback['measured_r3_time'];
         $('#measured_r3_time').text(util.timeLapseStr(questions[2].start_time, questions[2].end_time));
         $('#measured_r3_time_pts').text(feedback.points + ' (' + feedback.label + ')');
     },

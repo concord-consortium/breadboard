@@ -1,0 +1,9 @@
+h3. Running the specs with a server
+
+You should run spec from the "top" directory. For example,
+
+bc. cd sparks-content/tests/jspec
+jspec run --browsers firefox --server
+
+@spec/server.rb@ defines the routes.
+@spec/spec.server.html@ is the default html processed by the server.

@@ -102,6 +102,8 @@ Grader.prototype =
         var correctMin = nominalResistance * (1 - tolerance);
         var correctMax = nominalResistance * (1 + tolerance);
         
+        console.log('nom=' + nominalResistance + ' tol=' + tolerance + ' min=' + correctMin + ' max=' + correctMax);
+        
         answer.message = "Unknown Error";
         answer.correct = false;
         question.correct_answer = [correctMin, correctMax];
@@ -186,7 +188,7 @@ Grader.prototype =
         
         for (var i in this.log.sections) {
             var question = this.log.sections[i].questions[0]
-            var seconds = (question.end_time - question.start_time) / 100;
+            var seconds = (question.end_time - question.start_time) / 1000;
             var feedbackItem = this.feedback[rated_r_labels[i]];
             if (seconds < 20) {
                 feedbackItem.label = 'Excellent';
@@ -210,7 +212,7 @@ Grader.prototype =
         
         for (var i in this.log.sections) {
             var question = this.log.sections[i].questions[1]
-            var seconds = (question.end_time - question.start_time) / 100;
+            var seconds = (question.end_time - question.start_time) / 1000;
             var feedbackItem = this.feedback[rated_t_labels[i]];
             if (seconds < 10) {
                 feedbackItem.label = 'Excellent';
@@ -234,7 +236,7 @@ Grader.prototype =
         
         for (var i in this.log.sections) {
             var question = this.log.sections[i].questions[2]
-            var seconds = (question.end_time - question.start_time) / 100;
+            var seconds = (question.end_time - question.start_time) / 1000;
             var feedbackItem = this.feedback[measured_r_labels[i]];
             if (seconds < 30) {
                 feedbackItem.label = 'Excellent';

@@ -1,6 +1,5 @@
 <html>
   <head>
-    <script src="lib/jspec.js"></script>
     <script type="text/javascript" src="/js-libs/jquery-1.3.2.js"></script>
     <script type="text/javascript" src="/js-libs/jquery.url.packed.js"></script>
     <script type="text/javascript" src="/resistor-colors/sparks.js"></script>
@@ -9,6 +8,11 @@
     <script type="text/javascript" src="/resistor-colors/javascript/circuit/multimeter.js"></script>
     <script type="text/javascript" src="/resistor-colors/javascript/util/unit.js"></script>
     
+    <script src="lib/jspec.js"></script>
+    <script src="lib/jspec.timer.js"></script>
+    <script src="lib/jspec.jquery.js"></script>
+    <script src="lib/jspec.xhr.js"></script>
+    <script src="lib/jspec.shell.js"></script>
     <script type="text/javascript" src="/lib/common.js"></script>
     <script>
       function runSuites() {
@@ -22,5 +26,6 @@
   </head>
   <body class="jspec" onLoad="runSuites();">
     <div id="activity_body" class="my" style="display: block;">a</div>
+    <div id="messages"></div>
   </body>
 </html>

@@ -20,11 +20,11 @@
     <copy todir="${tgt.root.dir}/js-libs">
       <fileset dir="${src.root.dir}/js-libs"/>
     </copy>
-    <copy todir="${tgt.res.dir}/images">
-      <fileset dir="${src.res.dir}/images"/>
+    <copy todir="${tgt.root.dir}/lib/images">
+      <fileset dir="${src.root.dir}/lib/images"/>
     </copy>
-    <copy todir="${tgt.res.dir}/fake-report">
-      <fileset dir="${src.res.dir}/fake-report"/>
+    <copy todir="${tgt.res.dir}/report-templates">
+      <fileset dir="${src.res.dir}/report-templates"/>
     </copy>
     <copy todir="${tgt.res.dir}/javascript">
       <fileset dir="${src.res.dir}/javascript"/>
