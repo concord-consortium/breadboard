@@ -20,8 +20,8 @@
     <copy todir="${tgt.root.dir}/js-libs">
       <fileset dir="${src.root.dir}/js-libs"/>
     </copy>
-    <copy todir="${tgt.root.dir}/lib/images">
-      <fileset dir="${src.root.dir}/lib/images"/>
+    <copy todir="${tgt.root.dir}/common/images">
+      <fileset dir="${src.root.dir}/common/images"/>
     </copy>
     <copy todir="${tgt.res.dir}/report-templates">
       <fileset dir="${src.res.dir}/report-templates"/>
