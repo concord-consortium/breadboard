@@ -26,4 +26,36 @@ util.timeLapseStr = function(start, end) {
         str = minutes + (minutes == 1 ? ' minute ' : ' minutes ') + str
     }
     return str;
-}
+};
+
+/**
+The initial version of this was copied from the serializeArray method of jQuery
+this version returns a result object and uses the names of the input elements
+as the actual keys in the result object.  This requires more careful naming but it
+makes using the returned object easier.  It could be improved to handle dates and
+numbers perhaps using style classes to tag them as such.
+*/
+util.serializeForm = function(form) {
+    var result = {}
+    form.map(function(){
+     return this.elements ? jQuery.makeArray(this.elements) : this;
+    })
+    .filter(function(){
+     return this.name &&
+       (this.checked || /select|textarea/i.test(this.nodeName) ||
+        /text|hidden|password|search/i.test(this.type));
+    })
+    .each(function(i){
+     var val = jQuery(this).val();
+     if(val == null){
+       return;
+     }
+     
+     if(jQuery.isArray(val)){
+       result[this.name] = jQuery.makeArray(val)
+     } else {
+       result[this.name] = val;
+     }
+    })
+    return result;
+};

@@ -77,7 +77,7 @@ ResistorActivity.prototype =
       
       $("form").each(function(i) {
         var form = jQuery(this);
-        result[this.id] = serializeForm(form);
+        result[this.id] = util.serializeForm(form);
       });
     
       if (jQuery.sparks.debug) {  
@@ -114,7 +114,7 @@ ResistorActivity.prototype =
       }
       
       if(result[name].correct){
-        itemForm.prepend("<img class='grade' src='../../common/icons/ok.png' " + titleText + "/>")    
+        itemForm.prepend("<img class='grade' src='../../common/icons/ok.png' " + titleText + "/>")
       } else {
         itemForm.prepend("<img class='grade' src='../../common/icons/cancel.png' " + titleText + "/>")
       }  
