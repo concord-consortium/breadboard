@@ -1,0 +1,53 @@
+body {
+  font-family: Verdana, Arial;
+}
+
+form { 
+  display: block;
+  width: 40em;
+  padding: 3pt;
+}
+.score_item {
+  text-indent: 20px;
+  margin-bottom: 4px;
+}
+.mocassin {
+  background-color: #ffe4b5;
+}
+.tan {
+  background-color: #d2b48c;
+}
+.navaho_white {
+  background-color: #ffdead;
+}
+.burly_wood {
+  background-color: #deb887;
+}
+table {
+  border-collapse: collapse;
+}
+th {
+  border-right: 2px solid #fff;
+  border-left: 2px solid #fff;
+  padding-left: 6px;
+  padding-right: 6px;
+}
+td {
+  border-right: 2px solid #fff;
+  border-left: 2px solid #fff;
+  padding-left: 6px;
+  padding-right: 6px;
+  padding-top: 2px;
+  padding-bottom: 2px;
+}
+.row_a {
+  background: #f0f0d0;
+}
+.row_b {
+  background: #f0e0b0;
+}
+
+
+
+
+
