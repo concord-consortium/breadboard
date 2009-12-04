@@ -43,9 +43,11 @@ function ActivityLog()
     this.end_time = null;
     this.sections = [];
     
-    this.sections = [new Section(), new Section(), new Section()];
+    //this.sections = [new Section(), new Section(), new Section()];
+    this.sections = [new Section()];
     
-    for (var i = 0; i < 3; ++i) {
+    //for (var i = 0; i < 3; ++i) {
+    for (var i = 0; i < 1; ++i) {
         var questions = this.sections[i].questions;
         questions.push(new Question('rated_resistance'));
         questions.push(new Question('rated_tolerance'));
@@ -54,12 +56,19 @@ function ActivityLog()
         questions.push(new Question('within_tolerance'));
     }
 }
+
 ActivityLog.prototype =
 {
     add : function(name, params) {
         var now = new Date().valueOf();
         switch (name)
         {
+        case 'start_section':
+            this.sections[0].start_time = now;
+            break;
+        case 'end_section':
+            this.sections[0].end_time = now;
+            break;
         case 'start_activity':
             this.start_time = now; 
             this.sections[0].start_time = now;
@@ -77,10 +86,12 @@ ActivityLog.prototype =
             this.end_time = new Date().valueOf();
             break;
         case 'start_question':
-            this.sections[params.section-1].questions[params.question-1].start_time = now;
+            //this.sections[params.section-1].questions[params.question-1].start_time = now;
+            this.sections[0].questions[params.question-1].start_time = now;
             break;
         case 'end_question':
-            this.sections[params.section-1].questions[params.question-1].end_time = now;
+            //this.sections[params.section-1].questions[params.question-1].end_time = now;
+            this.sections[0].questions[params.question-1].end_time = now;
             break;
         default:
             console.log('ERROR: add: Unknown log event name ' + name);

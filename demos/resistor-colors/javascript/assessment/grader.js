@@ -9,7 +9,8 @@ Grader.prototype =
 {
     grade : function(resultObject, sectionNum) {
         console.log('ENTER Grader.grade');
-        var questions =  this.log.sections[sectionNum-1].questions;
+        //var questions =  this.log.sections[sectionNum-1].questions;
+        var questions =  this.log.sections[0].questions;
         
         var multimeter = this.activity.multimeter;
         var resistor = this.activity.resistor;
@@ -118,7 +119,7 @@ Grader.prototype =
         var min = Number(answer.min);
         var max = Number(answer.max);
         
-        if (!this.validateNumber(min, answer) || !this.validateNumber(max.answer)) {
+        if (!this.validateNumber(min, answer) || !this.validateNumber(max, answer)) {
             return;
         }
         
@@ -135,8 +136,8 @@ Grader.prototype =
         var parsedMin = Unit.normalizeToOhms(min, answer.min_unit);
         var parsedMax = Unit.normalizeToOhms(max, answer.max_unit);
         
-        if (this.equalWithTolerance(parsedMin, correctMin, 1e-6) &&
-            this.equalWithTolerance(parsedMax, correctMax, 1e-6))
+        if (this.equalWithTolerance(parsedMin, correctMin, 5e-2) &&
+            this.equalWithTolerance(parsedMax, correctMax, 5e-2))
         {
             answer.correct = true;
             answer.message = "Correct";
@@ -189,7 +190,8 @@ Grader.prototype =
         for (var i in this.log.sections) {
             var question = this.log.sections[i].questions[0]
             var seconds = (question.end_time - question.start_time) / 1000;
-            var feedbackItem = this.feedback[rated_r_labels[i]];
+            //var feedbackItem = this.feedback[rated_r_labels[i]];
+            var feedbackItem = this.feedback['rated_r_time'];
             if (seconds < 20) {
                 feedbackItem.label = 'Excellent';
                 feedbackItem.points = 10;
@@ -213,7 +215,8 @@ Grader.prototype =
         for (var i in this.log.sections) {
             var question = this.log.sections[i].questions[1]
             var seconds = (question.end_time - question.start_time) / 1000;
-            var feedbackItem = this.feedback[rated_t_labels[i]];
+            //var feedbackItem = this.feedback[rated_t_labels[i]];
+            var feedbackItem = this.feedback['rated_t_time'];
             if (seconds < 10) {
                 feedbackItem.label = 'Excellent';
                 feedbackItem.points = 10;
@@ -237,7 +240,8 @@ Grader.prototype =
         for (var i in this.log.sections) {
             var question = this.log.sections[i].questions[2]
             var seconds = (question.end_time - question.start_time) / 1000;
-            var feedbackItem = this.feedback[measured_r_labels[i]];
+            //var feedbackItem = this.feedback[measured_r_labels[i]];
+            var feedbackItem = this.feedback['measured_r_time'];
             if (seconds < 30) {
                 feedbackItem.label = 'Excellent';
                 feedbackItem.points = 10;

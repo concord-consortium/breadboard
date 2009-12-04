@@ -1,8 +1,8 @@
 function ResistorActivity() {
     console.log('ENTER ResistorActivity');
+    $('body').scrollTop(0); //scroll to top
     
     this.log = new ActivityLog();
-    console.log('log=' + this.log);
     this.assessment = new Assessment(this, this.log);
     this.reporter = new Reporter(this.assessment);
 
@@ -13,6 +13,9 @@ function ResistorActivity() {
     this.current_section = 0;
     this.current_question = 0;
     this.allResults = [];
+
+    this.sectionTitle = $('#section_title');
+    this.endSectionInstruction = $('#instruction_end_section')
 }
 
 ResistorActivity.prototype =
@@ -26,7 +29,7 @@ ResistorActivity.prototype =
         $(".next_button").hide().click(nextButtonClicked);
 
         // Hide the show report buttons
-        $(".show_report_button").hide().click(showReportClicked);
+        $(".show_report_button").hide().click(showReportButtonClicked);
       
         // Add start and stop times to all forms
         $("form").append(
@@ -34,10 +37,8 @@ ResistorActivity.prototype =
         
         $("#start_button").click(startButtonClicked);
         
-        /* skim: Ditching dialog for now due to problems attaching events
-         * to its elements
-        $("#report").dialog({ autoOpen: false, width: 600 });
-        */
+        $("#report").dialog({ autoOpen: false, width: 800,
+            height : $(window).height() * 0.8 });
     },
 
     // Initializations that can be done only when the flash movie is loaded
@@ -72,38 +73,43 @@ ResistorActivity.prototype =
         sendCommand('disable_circuit');
     },
     
+    // Completed a section (finished with one resistor)
     completedTry : function() {
-      var result = {};
+        var result = {};
       
-      $("form").each(function(i) {
-        var form = jQuery(this);
-        result[this.id] = util.serializeForm(form);
-      });
+        $("form").each(function(i) {
+            var form = jQuery(this);
+            result[this.id] = util.serializeForm(form);
+        });
     
-      if (jQuery.sparks.debug) {  
-        var resultString = jQuery.map(this.allResults, function(el, i){
-          return jQuery.toJSON(el)
-        }).join("<br\>")
-        $("#result").html("<pre>"+resultString+"</pre>")
-      }
+        if (jQuery.sparks.debug) {
+            var resultString = jQuery.map(this.allResults, function(el, i) {
+                return jQuery.toJSON(el)
+            }).join("<br\>")
+            $("#result").html("<pre>"+resultString+"</pre>")
+        }
     
-      this.assessment.grader.grade(result, this.current_section);
+        this.assessment.grader.grade(result, this.current_section);
 
-      // Update forms
-      for (var item in result) {  
-        this.updateItem(result, item); 
-      }  
-    
-      if (this.current_section < 3) {
-        $(".next_button").each(function() {
-          this.disabled = false;
-        }).show();
-      }
-      else {
-        $(".next_button").hide();
+        // Update forms
+        for (var item in result) {  
+            this.updateItem(result, item); 
+        }  
+      
         $(".show_report_button").show();
-        this.log.add('end_activity');
-      }
+    
+        $(".next_button").each(function() {
+            this.disabled = false;
+        }).show();
+        
+        this.updateEndInstruction();
+        this.endSectionInstruction.show();
+    },
+    
+    updateEndInstruction : function() {
+        t = 'You have completed resistor #' + this.current_section + '. ';
+        t += 'Click on Show Report to see the current result. Click on Next to try another resistor.';
+        this.endSectionInstruction.text(t);
     },
     
     updateItem : function(result, name) {
@@ -122,6 +128,12 @@ ResistorActivity.prototype =
     
     // Start new section (set of questions)
     startTry : function() {
+      ++ this.current_section;
+      this.current_question = 1;
+
+      this.endSectionInstruction.hide();
+      this.sectionTitle.html('<h3>Resistor #' + this.current_section + '</h3>');
+      
       // reset fields to their initial value
       $("form").each(function (i){ this.reset()})
       
@@ -148,11 +160,10 @@ ResistorActivity.prototype =
       form = $("form:first")
       this.enableForm(form)
       
-      ++ this.current_section;
-      this.current_question = 1;
       this.disableCircuit();
       
       console.log('current_section changed to: ' + this.current_section);
+      /*
       switch(this.current_section)
       {
       case 1:
@@ -165,7 +176,10 @@ ResistorActivity.prototype =
           this.log.add('start_resistor3');
           break;
       }
+      */
+      this.log.add('start_section');
       this.log.add('start_question', { section : this.current_section, question : 1 });
+      $('body').scrollTop(0); //scroll to top
     },
     
     showRccDebugInfo : function() {
@@ -191,7 +205,7 @@ ResistorActivity.prototype =
     
     enableForm : function(form) {
       form.append("<button>Submit</button>")
-      form.find("button").click(buttonClicked) 
+      form.find("button").click(submitButtonClicked) 
       form.find("input, select").removeAttr("disabled")
       form.css("background-color", "rgb(253,255,184)")
       form.find("input[name='start_time']").attr("value", "" + (new Date()).getTime())
@@ -206,7 +220,7 @@ ResistorActivity.prototype =
 }
 
 // Submit button for question
-function buttonClicked(event) {
+function submitButtonClicked(event) {
     var activity = jQuery.sparks.activity;
     var form = jQuery(event.target).parent();
     activity.disableForm(form);
@@ -215,7 +229,7 @@ function buttonClicked(event) {
     activity.log.add('end_question', { section : activity.current_section,
         question : activity.current_question });
     
-    if (nextForm.size() == 0) {
+    if (nextForm.size() == 0) { //all questions answered for current section
         activity.completedTry();
     } else {
         activity.enableForm(nextForm);
@@ -231,7 +245,8 @@ function buttonClicked(event) {
 
 function startButtonClicked(event) {
     console.log('EVENT: ' + (typeof event));
-    jQuery(event.target).hide();
+    //jQuery(event.target).hide();
+    $('#intro_area').hide();
     jQuery.sparks.activity.startTry();
 }
 
@@ -242,15 +257,18 @@ function nextButtonClicked(event) {
     jQuery.sparks.activity.startTry()
 }
 
-function showReportClicked(event) {
-    /* skim: Ditching dialog for now due to problems attaching events
-     * to its elements
-    $("#report").load("fake-report/report.html", {}, function() {
+function showReportButtonClicked(event) {
+    var activity = jQuery.sparks.activity;
+    activity.reporter.reportOnSection(activity.current_section);
+    /*
+    $("#report").load("report-templates/report.html", {}, function() {
         jQuery.sparks.activity.reporter.report();
         $("#report").dialog('open');
     });
     */
+    /*
     $("#report").load("report-templates/report.html", {}, function() {
         jQuery.sparks.activity.reporter.report();
     }).show();
+    */
 }

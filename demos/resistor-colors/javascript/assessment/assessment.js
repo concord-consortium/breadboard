@@ -17,6 +17,9 @@ function Assessment(activity, log)
 Assessment.prototype =
 {
     feedback_keys : [
+        'rated_r_time',
+        'rated_t_time',
+        'measured_r_time',
         'rated_r1_time', // Time taken answering 'rated resistance' question for resistor 1
         'rated_r2_time', // Time taken answering 'rated resistance' question for resistor 2
         'rated_r3_time',  // Time taken answering 'rated resistance' question for resistor 3
