@@ -21,6 +21,8 @@ jQuery.sparks.debug = jQuery.url.param("debug") != null;
 jQuery.sparks.debug_mode = jQuery.url.param("debug_mode");
 
 $(document).ready(function() {
+    //checkFlashVersion();
+
     // In some cases (e.g. IE) Flash is loaded before document ready,
     // making initActivity() fail because activity isn't set up.
     // So for now creating activity in initActivity
@@ -38,8 +40,23 @@ $(document).ready(function() {
 function initActivity() {
 //function onFlashLoad() {
     console.log('ENTER initActivity');
+    
     jQuery.sparks.activity = new ResistorActivity();
     jQuery.sparks.activity.initDocument();
     jQuery.sparks.activity.onFlashDone();
+}
+
+function checkFlashVersion() {
+    var major = 10;
+    var minor = 0;
+    var revision = 31;
+    
+    if (!DetectFlashVer(10, 0, 33)) {
+        var msg = 'This activity requires Flash version ';
+        msg += major + '.' + minor + '.' + revision + '. ';
+        
+        $('body').html('<p>' + msg + '</p>');
+    }
+    document.write('<p>Flash version: ' + GetSwfVer() + '</p>');
 }
 
