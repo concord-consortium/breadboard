@@ -29,6 +29,9 @@
     <copy todir="${tgt.root.dir}/common/javascript">
       <fileset dir="${src.root.dir}/common/javascript"/>
     </copy>
+    <copy todir="${tgt.res.dir}/javascript">
+      <fileset dir="${src.res.dir}/javascript"/>
+    </copy>
     <copy todir="${tgt.res.dir}">
       <fileset dir="${src.res.dir}"
         includes="index.html, resistor_colors.swf"
