@@ -1,7 +1,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Resistor Colors (Version 20091203)</title>
+    <title>Resistor Colors (Version 20091206-2)</title>
     
     <script type="text/javascript" src="../../lib/jquery/jquery-1.3.2.js"></script>
     <script type="text/javascript" src="../../lib/jquery/jquery.json-2.2.js"></script>
@@ -39,7 +39,7 @@
     </p>
     
     <div id="rcc_model">
-    <script language="JavaScript" type="text/javascript">
+      <script language="JavaScript" type="text/javascript">
         AC_FL_RunContent(
             'codebase', 'http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=10,0,0,0',
             'width', '1000',
@@ -62,16 +62,22 @@
             'movie', 'resistor_colors',
             'salign', ''
             ); //end AC code
-    </script>
-    <noscript>
-      <p>
-        This page requires javascript enabled.
-      </p>
-    </noscript>
+      </script>
+      <noscript>
+        <p>
+          This page requires javascript enabled.
+        </p>
+      </noscript>
     </div>
     
     <h3>Question 1</h3>
     <form id="rated_resistance">
+    <span id="rated_r_feedback">
+      <a class="no_deco" target="feedback"
+          href="../../common/resources/hint1_colorcode.html">
+        <img class="no_border" src="../../common/icons/paper.jpg"/>
+      </a>
+    </span>
     <span class='prompt'> What is the rated resistance:</span> 
     <input name="value"/> 
     <select name="units">
@@ -88,6 +94,12 @@
     </form>
     
     <form id="rated_tolerance">
+    <span id="rated_t_feedback">
+      <a class="no_deco" target="feedback"
+          href="../../common/resources/hint1_colorcode.html">
+        <img class="no_border" src="../../common/icons/paper.jpg"/>
+      </a>
+    </span>
     <span class='prompt'>What is the tolerance:</span> 
     <input name="value"/>%
     </form>

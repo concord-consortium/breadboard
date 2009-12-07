@@ -1,7 +1,12 @@
 body {
   font-family: Verdana, Arial;
 }
-
+a.no_deco {
+  text-decoration: none;
+}
+img.no_border {
+  border-style: none;
+}
 form { 
   display: block;
   width: 100%;

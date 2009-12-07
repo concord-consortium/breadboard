@@ -4,8 +4,6 @@ function Reporter(assessment)
     
     this.assessment = assessment;
     this.log = this.assessment.log;
-    //console.log('assessment=' + this.assessment + ' log=' + this.log);
-
 }
 
 Reporter.prototype =
@@ -35,14 +33,18 @@ Reporter.prototype =
         //var questions = this.log.sections[sectionNum-1].questions;
         var questions = this.log.sections[0].questions;
         
+        var feedback = this.assessment.feedback['rated_r_value'];
         $('#rated_r_correct').text(Unit.res_str(questions[0].correct_answer));
         this.setAnswerTextWithColor('#rated_r_answer', questions[0].answer + questions[0].unit, questions[0]);
+        $('#rated_r_pts').text(feedback.points + ' (' + feedback.label + ')');
         
         $('#rated_t_correct').text(questions[1].correct_answer * 100 + '%');
         this.setAnswerTextWithColor('#rated_t_answer', questions[1].answer + questions[1].unit, questions[1]);
         
+        feedback = this.assessment.feedback['rated_r_value'];
         $('#measured_r_correct').text(Unit.res_str(questions[2].correct_answer));
         this.setAnswerTextWithColor('#measured_r_answer', questions[2].answer + questions[2].unit, questions[2]);
+        $('#measured_r_pts').text(feedback.points + ' (' + feedback.label + ')');
         
         $('#t_range_correct').text(Unit.res_str(questions[3].correct_answer[0]) + ' .. ' + Unit.res_str(questions[3].correct_answer[1]));
         this.setAnswerTextWithColor('#t_range_answer', questions[3].answer[0] + questions[3].unit[0] + ' .. ' + questions[3].answer[1] + questions[3].unit[1], questions[3]);
@@ -51,7 +53,7 @@ Reporter.prototype =
         this.setAnswerTextWithColor('#within_answer', questions[4].answer, questions[4]);
 
         //var feedback = this.assessment.feedback['rated_r' + sectionNum + '_time'];
-        var feedback = this.assessment.feedback['rated_r_time'];
+        feedback = this.assessment.feedback['rated_r_time'];
         $('#rated_r_time').text(util.timeLapseStr(questions[0].start_time, questions[0].end_time));
         $('#rated_r_time_pts').text(feedback.points + ' (' + feedback.label + ')');
 
@@ -64,6 +66,31 @@ Reporter.prototype =
         feedback = this.assessment.feedback['measured_r_time'];
         $('#measured_r_time').text(util.timeLapseStr(questions[2].start_time, questions[2].end_time));
         $('#measured_r_time_pts').text(feedback.points + ' (' + feedback.label + ')');
+
+        /* The feedback link is shown next to the question instead
+        var ratedValuesFeedback = $('#rated_values_feedback');
+        
+        if (questions[0].correct && questions[1].correct) {
+            ratedValuesFeedback.hide();
+        }
+        else {
+            var t = '';
+            if (!questions[0].correct) {
+                if (!questions[1].correct) {
+                    t = 'Your submitted values of rated resistance and tolerance were incorrect. ';
+                }
+                else {
+                    t = 'Your submitted value of rated resistance was incorrect. '
+                }
+            }
+            else if (!questions[1].correct) {
+                t = 'Your submitted value of rated tolerance was incorrect. '
+            }
+            t += '<br/>Click <a target="feedback" href="../../common/resources/hint1_colorcode.html">here</a> to review the color code.';
+            ratedValuesFeedback.html(t);
+            ratedValuesFeedback.show();
+        }
+        */
     },
     
     // Populate the indicator table

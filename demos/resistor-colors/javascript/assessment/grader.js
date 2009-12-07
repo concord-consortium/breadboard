@@ -14,25 +14,28 @@ Grader.prototype =
         
         var multimeter = this.activity.multimeter;
         var resistor = this.activity.resistor;
-        
+
         this.gradeResistance(questions[0], resultObject.rated_resistance,
-                resistor.nominalValue);
+                resistor.nominalValue, this.feedback['rated_r_value']);
         this.gradeTolerance(questions[1], resultObject.rated_tolerance, resistor.tolerance);
         this.gradeResistance(questions[2], resultObject.measured_resistance,
-                multimeter.makeDisplayText(resistor.realValue));
+                multimeter.makeDisplayText(resistor.realValue),
+                this.feedback['measured_r_value']);
         this.gradeToleranceRange(questions[3], resultObject.measured_tolerance,
                 resistor.nominalValue, resistor.tolerance);
         this.gradeWithinTolerance(questions[4], resultObject.within_tolerance, resistor);
         this.gradeTime();
     },
     
-    gradeResistance : function(question, formAnswer, correctValue) {
+    gradeResistance : function(question, formAnswer, correctValue, feedback) {
         formAnswer.message = "Unknown Error";
         formAnswer.correct = false;
         question.correct_answer = String(correctValue);
         question.answer = formAnswer.value;
         question.unit = formAnswer.units;
         question.correct = false;
+        feedback.label = 'Lack of understanding';
+        feedback.points = 0;
         
         if (!this.validateNonEmpty(formAnswer.value, formAnswer)) {
             return;
@@ -62,11 +65,17 @@ Grader.prototype =
         
         if(correctValue != parsedValue){
             formAnswer.message = "The entered value or unit is incorrect.";
+            if (this.semiAcceptable(correctValue, parsedValue)) {
+                feedback.label = 'Learning';
+                feedback.points = 5;
+            }
             return;
         }
         
         formAnswer.correct = true;
-        formAnswer.message = "Correct";
+        formAnswer.message = 'Correct';
+        feedback.label = 'Excellent';
+        feedback.points = 10;
         question.correct = true;
     },
     
@@ -270,7 +279,7 @@ Grader.prototype =
             form.message = "No Value Entered";
             return false;
         }
-        return true;;
+        return true;
     },
     
     validateNumber : function(num, answer) {
@@ -282,5 +291,11 @@ Grader.prototype =
             return false;
         }
         return true;
+    },
+    
+    semiAcceptable : function(correctAnswer, answer) {
+        var a = correctAnswer.toString().replace('.', '');
+        var b = answer.toString().replace('.', '');
+        return a.substring(0, 3) == b.substring(0, 3);
     }
 }

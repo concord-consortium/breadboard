@@ -11,23 +11,14 @@
   </tstamp>
   
   <target name="export" depends="delete_export">
-    <copy todir="${tgt.root.dir}/common/stylesheets">
-      <fileset dir="${src.root.dir}/common/stylesheets"/>
-    </copy>
-    <copy todir="${tgt.root.dir}/common/icons">
-      <fileset dir="${src.root.dir}/common/icons"/>
+    <copy todir="${tgt.root.dir}/common">
+      <fileset dir="${src.root.dir}/common"/>
     </copy>
     <copy todir="${tgt.root.dir}/lib/jquery">
       <fileset dir="${src.root.dir}/lib/jquery"/>
     </copy>
-    <copy todir="${tgt.root.dir}/common/images">
-      <fileset dir="${src.root.dir}/common/images"/>
-    </copy>
     <copy todir="${tgt.res.dir}/report-templates">
       <fileset dir="${src.res.dir}/report-templates"/>
-    </copy>
-    <copy todir="${tgt.root.dir}/common/javascript">
-      <fileset dir="${src.root.dir}/common/javascript"/>
     </copy>
     <copy todir="${tgt.res.dir}/javascript">
       <fileset dir="${src.res.dir}/javascript"/>

@@ -16,6 +16,8 @@ function ResistorActivity() {
 
     this.sectionTitle = $('#section_title');
     this.endSectionInstruction = $('#instruction_end_section')
+    $('#rated_r_feedback').hide();
+    $('#rated_t_feedback').hide();
 }
 
 ResistorActivity.prototype =
@@ -94,7 +96,14 @@ ResistorActivity.prototype =
         // Update forms
         for (var item in result) {  
             this.updateItem(result, item); 
-        }  
+        }
+        
+        if (!this.log.sections[0].questions[0].correct) {
+            $('#rated_r_feedback').show();
+        }
+        if (!this.log.sections[0].questions[1].correct) {
+            $('#rated_t_feedback').show();
+        }
       
         $(".show_report_button").show();
     
@@ -133,6 +142,8 @@ ResistorActivity.prototype =
 
       this.endSectionInstruction.hide();
       this.sectionTitle.html('<h3>Resistor #' + this.current_section + '</h3>');
+      $('#rated_r_feedback').hide();
+      $('#rated_t_feedback').hide();
       
       // reset fields to their initial value
       $("form").each(function (i){ this.reset()})
