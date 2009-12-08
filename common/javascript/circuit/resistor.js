@@ -7,6 +7,9 @@ function Resistor() {
     this.tolerance = 0.0; //tolerance value
     
     this.colors = [];
+    
+    this.r_values1pct = this.filter(r_values1pct);
+    this.r_values2pct = this.filter(r_values2pct);
 }
 Resistor.prototype =
 {
@@ -38,36 +41,37 @@ Resistor.prototype =
     },
     
     randomize : function() {
-        var band1 = this.randInt(1, 9);
-        this.colors[0] = this.colorMap[band1];
-        
-        var band2 = this.randInt(0, 9);
-        this.colors[1] = this.colorMap[band2];
-        
-        var band3 = this.randInt(0, 9);
-        this.colors[2] = this.colorMap[band3];
-        
-        var base = band1 * 100 +  band2 * 10 + band3; // 100..999
-        var pwr; //Multiplier: 10^-2..10^9
-        if (base > 199) { //base in [200, 999]
-            pwr = this.randInt(-1, 3); 
-        }
-        else { //base in [100, 199]
-            pwr = this.randInt(-1, 4); 
-        }
-        
-        this.colors[3] = this.colorMap[pwr];
-        this.nominalValue = base * Math.pow(10, pwr);
-        
         var ix = this.randInt(0, 1);
         this.tolerance = this.toleranceValues[ix];
-        
-        this.colors[4] = this.toleranceColorMap[this.tolerance];
-        
+        if (this.tolerance == 0.01) {
+            var values = this.r_values1pct;
+        }
+        else {
+            var values = this.r_values2pct;
+        }
+        this.nominalValue = values[this.randInt(0, values.length-1)];
         this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
-        
-        console.log('sending colors=' + this.colors.join('|'));
+        this.colors = this.getColors(this.nominalValue, this.tolerance);
+        console.log('r=' + this.nominalValue + ' t=' + this.tolerance)
+        console.log('colors=' + this.colors);
+        console.log('Sending colors=' + this.colors.join('|'));
         sendCommand('set_resistor_label', this.colors);
+    },
+    
+    // rvalue: resistance value
+    getColors : function(rvalue, tolerance) {
+        for (var exp = 0; exp < 9; ++exp) {
+            if (Math.floor(rvalue / Math.pow(10, exp)) == 0) {
+                break;
+            }
+        }
+        var sig1 = Math.floor(rvalue / Math.pow(10, exp-1));
+        var tempValue = rvalue - sig1 * Math.pow(10, exp-1);
+        var sig2 = Math.floor(tempValue / Math.pow(10, exp-2));
+        tempValue = tempValue - sig2 * Math.pow(10, exp-2);
+        var sig3 = Math.floor(tempValue / Math.pow(10, exp-3));
+        return [this.colorMap[sig1], this.colorMap[sig2], this.colorMap[sig3],
+                this.colorMap[exp-3], this.toleranceColorMap[tolerance]];
     },
     
     calcRealValue : function(nominalValue, tolerance) {
@@ -101,5 +105,16 @@ Resistor.prototype =
             r += Math.random();
         }
         return r / n;
-    }
+    },
+    
+    // Filter resistance values according to the requirements of this resistor
+    filter : function(in_values) {
+        var values = [];
+        for (var i = 0; i < in_values.length; ++i) {
+            if (in_values[i] >= 10.0 && in_values[i] < 2e6) {
+                values.push(in_values[i]);
+            }
+        }
+        return values;
+    },
 };

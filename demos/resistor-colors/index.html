@@ -1,7 +1,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Resistor Colors (Version 20091206-2)</title>
+    <title>Resistor Colors (Version 20091207)</title>
     
     <script type="text/javascript" src="../../lib/jquery/jquery-1.3.2.js"></script>
     <script type="text/javascript" src="../../lib/jquery/jquery.json-2.2.js"></script>
@@ -11,6 +11,7 @@
     <script type="text/javascript" src="../../common/javascript/flash_version_detection.js"></script>
     <script type="text/javascript" src="../../common/javascript/sparks-init.js"></script>
     <script type="text/javascript" src="../../common/javascript/circuit/multimeter.js"></script>
+    <script type="text/javascript" src="../../common/javascript/circuit/r-values.js"></script>
     <script type="text/javascript" src="../../common/javascript/circuit/resistor.js"></script>
     <script type="text/javascript" src="../../common/javascript/util/unit.js"></script>
     <script type="text/javascript" src="../../common/javascript/util/util.js"></script>
@@ -136,7 +137,7 @@
       <option>mA</option>
       <option>A</option>
     </select>
-    (min) to 
+    to 
     <input name="max" size="12"/>
     <select name="max_unit">
       <option>&#x00b5;V</option>
@@ -149,7 +150,6 @@
       <option>mA</option>
       <option>A</option>
     </select>
-    (max)
     </form>
 
     <form id="within_tolerance">
