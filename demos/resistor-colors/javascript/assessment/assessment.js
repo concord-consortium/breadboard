@@ -19,6 +19,7 @@ Assessment.prototype =
     feedback_keys : [
         'rated_r_value',
         'rated_r_time',
+        'rated_t_value',
         'rated_t_time',
         'measured_r_value',
         'measured_r_time',

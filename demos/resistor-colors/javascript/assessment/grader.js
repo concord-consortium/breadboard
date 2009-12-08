@@ -17,7 +17,8 @@ Grader.prototype =
 
         this.gradeResistance(questions[0], resultObject.rated_resistance,
                 resistor.nominalValue, this.feedback['rated_r_value']);
-        this.gradeTolerance(questions[1], resultObject.rated_tolerance, resistor.tolerance);
+        this.gradeTolerance(questions[1], resultObject.rated_tolerance, 
+                resistor.tolerance, this.feedback['rated_t_value']);
         this.gradeResistance(questions[2], resultObject.measured_resistance,
                 multimeter.makeDisplayText(resistor.realValue),
                 this.feedback['measured_r_value']);
@@ -79,7 +80,7 @@ Grader.prototype =
         question.correct = true;
     },
     
-    gradeTolerance : function(question, answer, correctValue) {
+    gradeTolerance : function(question, answer, correctValue, feedback) {
         answer.message = "Unknown Error";
         answer.correct = false;
         question.correct_answer = String(correctValue);
@@ -146,7 +147,9 @@ Grader.prototype =
         var parsedMax = Unit.normalizeToOhms(max, answer.max_unit);
         
         if (this.equalWithTolerance(parsedMin, correctMin, 5e-2) &&
-            this.equalWithTolerance(parsedMax, correctMax, 5e-2))
+            this.equalWithTolerance(parsedMax, correctMax, 5e-2) ||
+            this.equalWithTolerance(parsedMin, correctMax, 5e-2) &&
+            this.equalWithTolerance(parsedMax, correctMin, 5e-2))
         {
             answer.correct = true;
             answer.message = "Correct";
