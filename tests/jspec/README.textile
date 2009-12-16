@@ -1,9 +1,28 @@
-h3. Running the specs with a server
+h1. Installing JSpec
+
+Download the zip file from http://visionmedia.github.com/jspec/, unzip it, and follow the instructions
+in readme.rdoc.
+
+h1. Running the specs
 
 You should run spec from the "top" directory. For example,
 
 bc. cd sparks-content/tests/jspec
-jspec run --browsers firefox --server
+jspec run --browsers firefox
+
+h3. Running it directly
+
+bc. jspec run --browsers ff
+
+@spec/spec.dom.html@ is the default html that is opened by the browsers.
+
+h3. Running with a server
+
+bc. jspec run --browsers ff --server
 
 @spec/server.rb@ defines the routes.
 @spec/spec.server.html@ is the default html processed by the server.
+
+h1. Links
+
+JSpec home: "http://visionmedia.github.com/jspec/":http://visionmedia.github.com/jspec/

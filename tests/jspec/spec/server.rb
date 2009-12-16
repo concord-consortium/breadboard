@@ -2,8 +2,8 @@ get '/lib/*' do |path|
   send_file File.dirname(__FILE__) + '/../lib/' + path
 end
 
-get '/js-libs/*' do |path|
-  send_file File.dirname(__FILE__) + '/../../../js-libs/' + path
+get '/sparks/*' do |path|
+  send_file File.dirname(__FILE__) + '/../../../' + path
 end
 
 get '/resistor-colors/*' do |path|
