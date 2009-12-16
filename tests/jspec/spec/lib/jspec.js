@@ -5,7 +5,7 @@
 
   JSpec = {
 
-    version   : '2.11.10',
+    version   : '2.11.13',
     cache     : {},
     suites    : [],
     modules   : [],
@@ -160,7 +160,9 @@
                       (spec.passed() && !failuresOnly) ?
                         '<td class="pass">' + escape(spec.description)+ '</td><td>' + spec.assertionsGraph() + '</td>' :
                           !spec.passed() ?
-                            '<td class="fail">' + escape(spec.description) + ' <em>' + escape(spec.failure().message) + '</em>' + '</td><td>' + spec.assertionsGraph() + '</td>' :
+                            '<td class="fail">' + escape(spec.description) + 
+  													map(spec.failures(), function(a){ return '<em>' + escape(a.message) + '</em>' }).join('') +
+ 														'</td><td>' + spec.assertionsGraph() + '</td>' :
                               '') +
                   '<tr class="body"><td colspan="2"><pre>' + bodyContents(spec.body) + '</pre></td></tr>'
               }).join('') + '</tr>'
@@ -196,7 +198,7 @@
                   print(color('  ' + spec.description, 'green') + assertionsGraph)
                 else if (!spec.passed())
                   print(color('  ' + spec.description, 'red') + assertionsGraph + 
-                        "\n" + indent(spec.failure().message) + "\n")
+                        "\n" + indent(map(spec.failures(), function(a){ return a.message }).join("\n")) + "\n")
               })
               print("")
             }
@@ -399,7 +401,7 @@
             this.message = methodString + ' to be called with ' + puts.apply(this, this.expectedArgs) +
              ' but was' + (negate ? '' : ' called with ' + puts.apply(this, this.failingArgs()))
 
-          if (negate ? !this.expectedResult && !this.expectedArgs && this.calls.length == this.times : this.calls.length != this.times)
+          if (negate ? !this.expectedResult && !this.expectedArgs && this.calls.length >= this.times : this.calls.length != this.times)
             this.message = methodString + ' to be called ' + times(this.times) + 
             ', but ' +  (this.calls.length == 0 ? ' was not called' : ' was called ' + times(this.calls.length))
                 
@@ -1340,8 +1342,9 @@
       if (typeof input != 'string') return
       input = hookImmutable('preprocessing', input)
       return input.
-        replace(/\t/gm, '  ').
-        replace(/\r\n|\n|\r/gm, '\n').
+        replace(/\t/g, '  ').
+        replace(/\r\n|\n|\r/g, '\n').
+        replace(/__END__[^]*/, '').
         replace(/([\w\.]+)\.(stub|destub)\((.*?)\)$/gm, '$2($1, $3)').
         replace(/describe\s+(.*?)$/gm, 'describe($1, function(){').
         replace(/^\s+it\s+(.*?)$/gm, ' it($1, function(){').
@@ -1351,9 +1354,8 @@
         replace(/(\d+)\.\.(\d+)/g, function(_, a, b){ return range(a, b) }).
         replace(/\.should([_\.]not)?[_\.](\w+)(?: |;|$)(.*)$/gm, '.should$1_$2($3)').
         replace(/([\/\s]*)(.+?)\.(should(?:[_\.]not)?)[_\.](\w+)\((.*)\)\s*;?$/gm, '$1 expect($2).$3($4, $5)').
-        replace(/, \)/gm, ')').
-        replace(/should\.not/gm, 'should_not').
-        replace(/__END__.*/m, '')
+        replace(/, \)/g, ')').
+        replace(/should\.not/g, 'should_not')
     },
 
     /**
