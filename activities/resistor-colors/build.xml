@@ -4,8 +4,8 @@
   
   <property name="src.root.dir" value = "../.."/>
   <property name="tgt.root.dir" value = "export/sparks-content"/>
-  <property name="src.res.dir" value = "${src.root.dir}/demos/resistor-colors"/>
-  <property name="tgt.res.dir" value = "${tgt.root.dir}/demos/resistor-colors"/>
+  <property name="src.res.dir" value = "${src.root.dir}/activities/resistor-colors"/>
+  <property name="tgt.res.dir" value = "${tgt.root.dir}/activities/resistor-colors"/>
   <tstamp>
     <format property="today" pattern="yyyyMMdd"/>
   </tstamp>
