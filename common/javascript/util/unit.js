@@ -1,4 +1,4 @@
-Unit = {};
+var Unit = {};
 
 Unit.labels = { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' };
 

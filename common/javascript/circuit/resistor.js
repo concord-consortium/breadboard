@@ -1,3 +1,6 @@
+/* The following line (global) is for JSLint */
+/*global console, Flash, r_values */
+
 function Resistor() {
     this.colorMap[-1] = 'gold';
     this.colorMap[-2] = 'silver';
@@ -8,8 +11,8 @@ function Resistor() {
     
     this.colors = [];
     
-    this.r_values1pct = this.filter(r_values1pct);
-    this.r_values2pct = this.filter(r_values2pct);
+    this.r_values1pct = this.filter(r_values.r_values1pct);
+    this.r_values2pct = this.filter(r_values.r_values2pct);
 }
 Resistor.prototype =
 {
@@ -37,31 +40,32 @@ Resistor.prototype =
     },
     
     show : function() {
-        sendCommand('show_resistor');
+        Flash.sendCommand('show_resistor');
     },
     
     randomize : function() {
         var ix = this.randInt(0, 1);
+        var values;
         this.tolerance = this.toleranceValues[ix];
         if (this.tolerance == 0.01) {
-            var values = this.r_values1pct;
+            values = this.r_values1pct;
         }
         else {
-            var values = this.r_values2pct;
+            values = this.r_values2pct;
         }
         this.nominalValue = values[this.randInt(0, values.length-1)];
         this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
         this.colors = this.getColors(this.nominalValue, this.tolerance);
-        console.log('r=' + this.nominalValue + ' t=' + this.tolerance)
+        console.log('r=' + this.nominalValue + ' t=' + this.tolerance);
         console.log('colors=' + this.colors);
         console.log('Sending colors=' + this.colors.join('|'));
-        sendCommand('set_resistor_label', this.colors);
+        Flash.sendCommand('set_resistor_label', this.colors);
     },
     
     // rvalue: resistance value
     getColors : function(rvalue, tolerance) {
         for (var exp = 0; exp < 9; ++exp) {
-            if (Math.floor(rvalue / Math.pow(10, exp)) == 0) {
+            if (Math.floor(rvalue / Math.pow(10, exp)) === 0) {
                 break;
             }
         }
@@ -116,5 +120,5 @@ Resistor.prototype =
             }
         }
         return values;
-    },
+    }
 };

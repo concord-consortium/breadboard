@@ -1,14 +1,17 @@
-util = {}
+/* The following line (global) is for JSLint */
+/*global jQuery */
+
+var Util = {};
 
 // The "next" function returns a different value each time
 // alternating between the two input values x, y.
-util.Alternator = function(x, y)
+Util.Alternator = function(x, y)
 {
     this.x = x;
     this.y = y;
     this.cnt = 0;
 };
-util.Alternator.prototype =
+Util.Alternator.prototype =
 {
     next : function() {
         ++this.cnt;
@@ -17,13 +20,13 @@ util.Alternator.prototype =
 };
 
 // Return a string representation of time lapsed between start and end
-util.timeLapseStr = function(start, end) {
+Util.timeLapseStr = function(start, end) {
     var seconds = Math.floor((end - start) / 1000);
     var minutes = Math.floor(seconds / 60);
     seconds = seconds % 60;
     var str = seconds + (seconds == 1 ? ' second' : ' seconds');
     if (minutes > 0) {
-        str = minutes + (minutes == 1 ? ' minute ' : ' minutes ') + str
+        str = minutes + (minutes == 1 ? ' minute ' : ' minutes ') + str;
     }
     return str;
 };
@@ -35,8 +38,8 @@ as the actual keys in the result object.  This requires more careful naming but 
 makes using the returned object easier.  It could be improved to handle dates and
 numbers perhaps using style classes to tag them as such.
 */
-util.serializeForm = function(form) {
-    var result = {}
+Util.serializeForm = function(form) {
+    var result = {};
     form.map(function(){
      return this.elements ? jQuery.makeArray(this.elements) : this;
     })
@@ -47,15 +50,15 @@ util.serializeForm = function(form) {
     })
     .each(function(i){
      var val = jQuery(this).val();
-     if(val == null){
+     if(val === null){
        return;
      }
      
      if(jQuery.isArray(val)){
-       result[this.name] = jQuery.makeArray(val)
+       result[this.name] = jQuery.makeArray(val);
      } else {
        result[this.name] = val;
      }
-    })
+    });
     return result;
 };

@@ -1,3 +1,6 @@
+/* The following line (global) is for JSLint */
+/*global console, Unit */
+
 function Grader(activity, activityLog, feedback)
 {
     this.activity = activity;
@@ -16,12 +19,12 @@ Grader.prototype =
         var resistor = this.activity.resistor;
 
         this.gradeResistance(questions[0], resultObject.rated_resistance,
-                resistor.nominalValue, this.feedback['rated_r_value']);
+                resistor.nominalValue, this.feedback.rated_r_value);
         this.gradeTolerance(questions[1], resultObject.rated_tolerance, 
-                resistor.tolerance, this.feedback['rated_t_value']);
+                resistor.tolerance, this.feedback.rated_t_value);
         this.gradeResistance(questions[2], resultObject.measured_resistance,
                 multimeter.makeDisplayText(resistor.realValue),
-                this.feedback['measured_r_value']);
+                this.feedback.measured_r_value);
         this.gradeToleranceRange(questions[3], resultObject.measured_tolerance,
                 resistor.nominalValue, resistor.tolerance);
         this.gradeWithinTolerance(questions[4], resultObject.within_tolerance, resistor);
@@ -47,15 +50,16 @@ Grader.prototype =
             return;
         }
         
-        if (formAnswer.units == null || formAnswer.units.length < 1) {
+        if (formAnswer.units === null ||
+            formAnswer.units === undefined ||
+            formAnswer.units.length < 1)
+        {
              formAnswer.message = "No Unit Entered";
              return;
         }
-        
-        var multiplier = -1
-        
+
         console.log('unit=' + formAnswer.units);
-        
+
         if (!Unit.ohmCompatible(formAnswer.units)) {
             formAnswer.message = "Incorrect Unit";
             return;
@@ -197,13 +201,16 @@ Grader.prototype =
     },
     
     gradeTime : function() {
-        var rated_r_labels = ['rated_r1_time', 'rated_r2_time', 'rated_r3_time'];
+        var i;
+        var question;
+        var seconds;
+        var feedbackItem;
         
-        for (var i in this.log.sections) {
-            var question = this.log.sections[i].questions[0]
-            var seconds = (question.end_time - question.start_time) / 1000;
+        for (i = 0; i < this.log.sections.length; ++i) {
+            question = this.log.sections[i].questions[0];
+            seconds = (question.end_time - question.start_time) / 1000;
             //var feedbackItem = this.feedback[rated_r_labels[i]];
-            var feedbackItem = this.feedback['rated_r_time'];
+            feedbackItem = this.feedback.rated_r_time;
             if (seconds < 20) {
                 feedbackItem.label = 'Excellent';
                 feedbackItem.points = 10;
@@ -222,13 +229,11 @@ Grader.prototype =
             }
         }
         
-        var rated_t_labels = ['rated_t1_time', 'rated_t2_time', 'rated_t3_time'];
-        
-        for (var i in this.log.sections) {
-            var question = this.log.sections[i].questions[1]
-            var seconds = (question.end_time - question.start_time) / 1000;
+        for (i = 0; i < this.log.sections.length; ++i) {
+            question = this.log.sections[i].questions[1];
+            seconds = (question.end_time - question.start_time) / 1000;
             //var feedbackItem = this.feedback[rated_t_labels[i]];
-            var feedbackItem = this.feedback['rated_t_time'];
+            feedbackItem = this.feedback.rated_t_time;
             if (seconds < 10) {
                 feedbackItem.label = 'Excellent';
                 feedbackItem.points = 10;
@@ -247,13 +252,11 @@ Grader.prototype =
             }
         }
         
-        var measured_r_labels = ['measured_r1_time', 'measured_r2_time', 'measured_r3_time'];
-        
-        for (var i in this.log.sections) {
-            var question = this.log.sections[i].questions[2]
-            var seconds = (question.end_time - question.start_time) / 1000;
+        for (i = 0; i < this.log.sections.length; ++i) {
+            question = this.log.sections[i].questions[2];
+            seconds = (question.end_time - question.start_time) / 1000;
             //var feedbackItem = this.feedback[measured_r_labels[i]];
-            var feedbackItem = this.feedback['measured_r_time'];
+            feedbackItem = this.feedback.measured_r_time;
             if (seconds < 30) {
                 feedbackItem.label = 'Excellent';
                 feedbackItem.points = 10;
@@ -278,7 +281,10 @@ Grader.prototype =
     },
     
     validateNonEmpty : function(inputField, form) {
-        if (inputField == null || inputField.length < 1) {
+        if (inputField === null ||
+            inputField == undefined ||
+            inputField.length < 1)
+        {
             form.message = "No Value Entered";
             return false;
         }
@@ -301,4 +307,4 @@ Grader.prototype =
         var b = answer.toString().replace('.', '');
         return a.substring(0, 3) == b.substring(0, 3);
     }
-}
+};

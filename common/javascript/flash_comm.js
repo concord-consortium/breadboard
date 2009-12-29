@@ -1,20 +1,25 @@
-function getFlashMovie(movieName) {
+/* The following line (global) is for JSLint */
+/*global console, alert, document, navigator, window, jQuery */
+
+var Flash = {};
+
+Flash.getFlashMovie = function(movieName) {
   var isIE = navigator.appName.indexOf("Microsoft") != -1;
   return (isIE) ? window[movieName] : document[movieName];
-}  
+};
 
-function sendCommand() {
+Flash.sendCommand = function() {
   var params = [];
   for (var i = 0; i < arguments.length; ++i) {
       params[i] = arguments[i];
   }
-  flash = getFlashMovie("resistor_colors");
-  retVal = flash.sendMessageToFlash.apply(flash, params);
+  var flash = Flash.getFlashMovie("resistor_colors");
+  var retVal = flash.sendMessageToFlash.apply(flash, params);
   console.log('Returned by flash: ' + retVal);
-}
+};
 
 function receiveEvent(name, value, time) {
-  console.log('received: ' + name + ', ' + value + ', ' + new Date(parseInt(time)));
+  console.log('received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
   var activity = jQuery.sparks.activity;
   var multimeter = activity.multimeter;
   

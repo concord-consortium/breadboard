@@ -1,3 +1,6 @@
+/* The following line (global) is for JSLint */
+/*global console, jQuery, Flash */
+
 /*
  * Digital Multimeter
  */
@@ -27,7 +30,7 @@ Multimeter.prototype =
     updateDisplay : function() {
         if (!this.powerOn) {
             this.displayText = '       ';
-            sendCommand('set_multimeter_display', '       ');
+            Flash.sendCommand('set_multimeter_display', '       ');
             return;
         }
         console.log('Multimeter.update: resistance=' + this.value + ' dialPosition=' + this.dialPosition);
@@ -137,19 +140,20 @@ Multimeter.prototype =
             }
         }
         console.log('text=' + text);
-        sendCommand('set_multimeter_display', text);
+        Flash.sendCommand('set_multimeter_display', text);
         this.displayText = text;
     },
     
     toDisplayString : function(s, dec) {
         console.log('s1=' + s + ' dec=' + dec);
+        var i;
         var sign = s.charAt(0) == '-' ? s.charAt(0) : ' ';
         s = s.replace('-', '');
         
         console.log('s2=' + s);
         var pointLoc = s.indexOf('.');
         var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
-        if (decLen == 0) {
+        if (decLen === 0) {
             s = s.concat('.');
         }
         console.log('s3=' + s);
@@ -157,7 +161,7 @@ Multimeter.prototype =
             s = s.substring(0, pointLoc + dec + 1);
         }
         else {
-            for (var i = 0; i < dec - decLen; ++i) {
+            for (i = 0; i < dec - decLen; ++i) {
                 s = s.concat('0');
             }
         }
@@ -166,7 +170,7 @@ Multimeter.prototype =
         console.log('s5=' + s);
         var len = s.length;
         if (len < 4) {
-            for (var i = 0; i < 3 - len; ++i) {
+            for (i = 0; i < 3 - len; ++i) {
                 s = '0' + s;
             }
             s = ' ' + s;
@@ -208,7 +212,7 @@ Multimeter.prototype =
         //console.log('pointLoc=' + pointLoc);
         var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
         //console.log('decLen=' + decLen);
-        if (decLen == 0) {
+        if (decLen === 0) {
             s = s.concat('.');
         }
         if (dec < decLen) {
@@ -259,9 +263,9 @@ Multimeter.prototype =
     },
     
     allConnected : function() {
-        return this.redProbeConnection != null && 
-            this.blackProbeConnection != null &&
-            this.redProbeConnection != this.blackProbeConnection &&
+        return this.redProbeConnection !== null && 
+            this.blackProbeConnection !== null &&
+            this.redProbeConnection !== this.blackProbeConnection &&
             (this.redPlugConnection == 'voma_port' &&
              this.blackPlugConnection == 'common_port' ||
              this.redPlugConnection == 'common_port' &&

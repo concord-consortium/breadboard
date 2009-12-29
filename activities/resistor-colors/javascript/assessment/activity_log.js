@@ -1,3 +1,6 @@
+/* The following line (global) is for JSLint */
+/*global console*/
+
 function Question(id) {
     this.id = id;
     this.correct_answer = '';

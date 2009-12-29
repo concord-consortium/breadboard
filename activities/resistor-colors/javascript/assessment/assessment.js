@@ -1,3 +1,6 @@
+/* The following line (global) is for JSLint */
+/*global console, Grader */
+
 function FeedbackItem()
 {
     this.label = '';
@@ -35,10 +38,10 @@ Assessment.prototype =
     ],
         
     defineFeedback : function() {
-        map = {}
-        for (var i in this.feedback_keys) {
+        var map = {};
+        for (var i = 0; i < this.feedback_keys.length; ++i) {
             map[this.feedback_keys[i]] = new FeedbackItem();
         }
         return map;
     }
-}
+};

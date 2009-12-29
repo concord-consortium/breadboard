@@ -1,3 +1,60 @@
+/* The following line (global) is for JSLint */
+/*global console, window, jQuery, $, ActivityLog, Assessment, Flash, Multimeter, Reporter, Resistor, Util */
+
+// Submit button for question
+function submitButtonClicked(event) {
+    var activity = jQuery.sparks.activity;
+    var form = jQuery(event.target).parent();
+    activity.disableForm(form);
+    var nextForm = form.nextAll("form:first");
+    
+    activity.log.add('end_question', { section : activity.current_section,
+        question : activity.current_question });
+    
+    if (nextForm.size() === 0) { //all questions answered for current section
+        activity.completedTry();
+    } else {
+        activity.enableForm(nextForm);
+        ++activity.current_question;
+        activity.log.add('start_question', { section : activity.current_section,
+            question : activity.current_question });
+        console.log('current_question=' + activity.current_question);
+        if (activity.current_question == 3) {
+            activity.enableCircuit();
+        }
+    }
+}
+
+function startButtonClicked(event) {
+    console.log('EVENT: ' + (typeof event));
+    //jQuery(event.target).hide();
+    $('#intro_area').hide();
+    jQuery.sparks.activity.startTry();
+}
+
+function nextButtonClicked(event) {
+    $(".next_button").each(function(i){
+      this.disabled = true;
+    });
+    jQuery.sparks.activity.startTry();
+}
+
+function showReportButtonClicked(event) {
+    var activity = jQuery.sparks.activity;
+    activity.reporter.reportOnSection(activity.current_section);
+    /*
+    $("#report").load("report-templates/report.html", {}, function() {
+        jQuery.sparks.activity.reporter.report();
+        $("#report").dialog('open');
+    });
+    */
+    /*
+    $("#report").load("report-templates/report.html", {}, function() {
+        jQuery.sparks.activity.reporter.report();
+    }).show();
+    */
+}
+
 function ResistorActivity() {
     console.log('ENTER ResistorActivity');
     $('body').scrollTop(0); //scroll to top
@@ -15,7 +72,7 @@ function ResistorActivity() {
     this.allResults = [];
 
     this.sectionTitle = $('#section_title');
-    this.endSectionInstruction = $('#instruction_end_section')
+    this.endSectionInstruction = $('#instruction_end_section');
     $('#rated_r_feedback').hide();
     $('#rated_t_feedback').hide();
 }
@@ -25,22 +82,24 @@ ResistorActivity.prototype =
     // Initial operation on document when it is loaded
     initDocument : function() {
         // Disable all form elements
-        $("input, select").attr("disabled", "true");
+        $('input, select').attr("disabled", "true");
 
         // Hide the next buttons and their listeners
-        $(".next_button").hide().click(nextButtonClicked);
+        $('.next_button').hide().click(nextButtonClicked);
 
         // Hide the show report buttons
-        $(".show_report_button").hide().click(showReportButtonClicked);
+        $('.show_report_button').hide().click(showReportButtonClicked);
       
         // Add start and stop times to all forms
-        $("form").append(
+        $('form').append(
           "<input name='start_time' type='hidden'></input><input name='stop_time' type='hidden'></input>");
         
-        $("#start_button").click(startButtonClicked);
+        $('#start_button').click(startButtonClicked);
         
-        $("#report").dialog({ autoOpen: false, width: 800,
+        $('#report').dialog({ autoOpen: false, width: 800,
             height : $(window).height() * 0.8 });
+        $('#report').css('zIndex', 10);
+        $('#report').bgiframe();
     },
 
     // Initializations that can be done only when the flash movie is loaded
@@ -53,7 +112,7 @@ ResistorActivity.prototype =
         console.log('Real Resistance=' + this.resistor.realValue);
         
         if (jQuery.sparks.debug_mode == 'multimeter') {
-            sendCommand('set_debug_mode', 'multimeter');
+            Flash.sendCommand('set_debug_mode', 'multimeter');
             this.resistor.randomize();
             this.showRccDebugInfo();
         }
@@ -63,16 +122,16 @@ ResistorActivity.prototype =
     resetCircuit : function() {
         console.log('ENTER ResistorActivity.resetCircuit');
         this.resistor.randomize();
-        sendCommand('reset_circuit');
+        Flash.sendCommand('reset_circuit');
         this.multimeter.update();
     },
     
     enableCircuit : function() {
-        sendCommand('enable_circuit');
+        Flash.sendCommand('enable_circuit');
     },
     
     disableCircuit : function() {
-        sendCommand('disable_circuit');
+        Flash.sendCommand('disable_circuit');
     },
     
     // Completed a section (finished with one resistor)
@@ -81,23 +140,23 @@ ResistorActivity.prototype =
       
         $("form").each(function(i) {
             var form = jQuery(this);
-            result[this.id] = util.serializeForm(form);
+            result[this.id] = Util.serializeForm(form);
         });
-    
+
         if (jQuery.sparks.debug) {
             var resultString = jQuery.map(this.allResults, function(el, i) {
-                return jQuery.toJSON(el)
-            }).join("<br\>")
-            $("#result").html("<pre>"+resultString+"</pre>")
+                return jQuery.toJSON(el);
+            }).join("<br/>");
+            $("#result").html("<pre>"+resultString+"</pre>");
         }
-    
+
         this.assessment.grader.grade(result, this.current_section);
 
         // Update forms
-        for (var item in result) {  
-            this.updateItem(result, item); 
+        for (var item in result) {
+            this.updateItem(result, item);
         }
-        
+
         if (!this.log.sections[0].questions[0].correct) {
             $('#rated_r_feedback').show();
         }
@@ -116,22 +175,22 @@ ResistorActivity.prototype =
     },
     
     updateEndInstruction : function() {
-        t = 'You have completed resistor #' + this.current_section + '. ';
+        var t = 'You have completed resistor #' + this.current_section + '. ';
         t += 'Click on Show Report to see the current result. Click on Next to try another resistor.';
         this.endSectionInstruction.text(t);
     },
     
     updateItem : function(result, name) {
       var itemForm = $("#" + name);
-      var titleText = ""
+      var titleText = "";
       if(result[name].message){
         titleText = "title='" + result[name].message + "' ";
       }
       
       if(result[name].correct){
-        itemForm.prepend("<img class='grade' src='../../common/icons/ok.png' " + titleText + "/>")
+        itemForm.prepend("<img class='grade' src='../../common/icons/ok.png' " + titleText + "/>");
       } else {
-        itemForm.prepend("<img class='grade' src='../../common/icons/cancel.png' " + titleText + "/>")
+        itemForm.prepend("<img class='grade' src='../../common/icons/cancel.png' " + titleText + "/>");
       }  
     },
     
@@ -146,7 +205,7 @@ ResistorActivity.prototype =
       $('#rated_t_feedback').hide();
       
       // reset fields to their initial value
-      $("form").each(function (i){ this.reset()})
+      $("form").each(function (i){ this.reset(); });
       
       // This is an alternative, but it doesn't do the right thing with some form input elements
       // $("form").map(function (){ return jQuery.makeArray(this.elements)})
@@ -154,7 +213,7 @@ ResistorActivity.prototype =
       // for a better example see: http://www.learningjquery.com/2007/08/clearing-form-data
       
       // clear the grading icons
-      $(".grade").remove()
+      $(".grade").remove();
       
       // hide the contextual help  
     
@@ -168,8 +227,8 @@ ResistorActivity.prototype =
         this.showRccDebugInfo();
       }
       
-      form = $("form:first")
-      this.enableForm(form)
+      var form = $("form:first");
+      this.enableForm(form);
       
       this.disableCircuit();
       
@@ -215,71 +274,17 @@ ResistorActivity.prototype =
     },
     
     enableForm : function(form) {
-      form.append("<button>Submit</button>")
-      form.find("button").click(submitButtonClicked) 
-      form.find("input, select").removeAttr("disabled")
-      form.css("background-color", "rgb(253,255,184)")
-      form.find("input[name='start_time']").attr("value", "" + (new Date()).getTime())
+      form.append("<button>Submit</button>");
+      form.find("button").click(submitButtonClicked); 
+      form.find("input, select").removeAttr("disabled");
+      form.css("background-color", "rgb(253,255,184)");
+      form.find("input[name='start_time']").attr("value", "" + (new Date()).getTime());
     },
     
     disableForm : function(form) {
-      form.find("input[name='stop_time']").attr("value", "" + (new Date()).getTime())
-      form.find("button").remove() 
-      form.find("input, select").attr("disabled", "true")
-      form.css("background-color", "")
+      form.find("input[name='stop_time']").attr("value", "" + (new Date()).getTime());
+      form.find("button").remove(); 
+      form.find("input, select").attr("disabled", "true");
+      form.css("background-color", "");
     }
-}
-
-// Submit button for question
-function submitButtonClicked(event) {
-    var activity = jQuery.sparks.activity;
-    var form = jQuery(event.target).parent();
-    activity.disableForm(form);
-    var nextForm = form.nextAll("form:first");
-    
-    activity.log.add('end_question', { section : activity.current_section,
-        question : activity.current_question });
-    
-    if (nextForm.size() == 0) { //all questions answered for current section
-        activity.completedTry();
-    } else {
-        activity.enableForm(nextForm);
-        ++activity.current_question;
-        activity.log.add('start_question', { section : activity.current_section,
-            question : activity.current_question });
-        console.log('current_question=' + activity.current_question);
-        if (activity.current_question == 3) {
-            activity.enableCircuit();
-        }
-    }
-}
-
-function startButtonClicked(event) {
-    console.log('EVENT: ' + (typeof event));
-    //jQuery(event.target).hide();
-    $('#intro_area').hide();
-    jQuery.sparks.activity.startTry();
-}
-
-function nextButtonClicked(event) {
-    $(".next_button").each(function(i){
-      this.disabled = true;
-    })
-    jQuery.sparks.activity.startTry()
-}
-
-function showReportButtonClicked(event) {
-    var activity = jQuery.sparks.activity;
-    activity.reporter.reportOnSection(activity.current_section);
-    /*
-    $("#report").load("report-templates/report.html", {}, function() {
-        jQuery.sparks.activity.reporter.report();
-        $("#report").dialog('open');
-    });
-    */
-    /*
-    $("#report").load("report-templates/report.html", {}, function() {
-        jQuery.sparks.activity.reporter.report();
-    }).show();
-    */
-}
+};
