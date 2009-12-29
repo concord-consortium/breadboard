@@ -2,7 +2,7 @@
 
 <project name="resistor_colors" default="export">
   
-  <property name="src.root.dir" value = "../.."/>
+  <property name="src.root.dir" value = "."/>
   <property name="tgt.root.dir" value = "export/sparks-content"/>
   <property name="src.res.dir" value = "${src.root.dir}/activities/resistor-colors"/>
   <property name="tgt.res.dir" value = "${tgt.root.dir}/activities/resistor-colors"/>
