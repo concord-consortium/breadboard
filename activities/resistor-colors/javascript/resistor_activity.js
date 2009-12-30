@@ -75,6 +75,8 @@ function ResistorActivity() {
     this.endSectionInstruction = $('#instruction_end_section');
     $('#rated_r_feedback').hide();
     $('#rated_t_feedback').hide();
+    $('#measured_r_feedback').hide();
+    $('#t_range_feedback').hide();
 }
 
 ResistorActivity.prototype =
@@ -163,6 +165,12 @@ ResistorActivity.prototype =
         if (!this.log.sections[0].questions[1].correct) {
             $('#rated_t_feedback').show();
         }
+        if (!this.log.sections[0].questions[2].correct) {
+            $('#measured_r_feedback').show();
+        }
+        if (!this.log.sections[0].questions[3].correct) {
+            $('#t_range_feedback').show();
+        }
       
         $(".show_report_button").show();
     
@@ -203,6 +211,8 @@ ResistorActivity.prototype =
       this.sectionTitle.html('<h3>Resistor #' + this.current_section + '</h3>');
       $('#rated_r_feedback').hide();
       $('#rated_t_feedback').hide();
+      $('#measured_r_feedback').hide();
+      $('#t_range_feedback').hide();
       
       // reset fields to their initial value
       $("form").each(function (i){ this.reset(); });
