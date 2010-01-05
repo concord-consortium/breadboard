@@ -1,5 +1,5 @@
 /* The following line (global) is for JSLint */
-/*global console, Unit */
+/*global console, $, Unit, Util */
 
 function Reporter(assessment)
 {

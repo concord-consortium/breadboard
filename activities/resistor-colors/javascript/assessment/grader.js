@@ -326,7 +326,7 @@ Grader.prototype =
     
     validateNonEmpty : function(inputField, form) {
         if (inputField === null ||
-            inputField == undefined ||
+            inputField === undefined ||
             inputField.length < 1)
         {
             form.message = "No Value Entered";
