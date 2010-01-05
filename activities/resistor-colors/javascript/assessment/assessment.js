@@ -3,6 +3,7 @@
 
 function FeedbackItem()
 {
+    this.correct = null;
     this.label = '';
     this.points = 0;
     this.maxPoints = 0;
@@ -26,15 +27,10 @@ Assessment.prototype =
         'rated_t_time',
         'measured_r_value',
         'measured_r_time',
-        'rated_r1_time', // Time taken answering 'rated resistance' question for resistor 1
-        'rated_r2_time', // Time taken answering 'rated resistance' question for resistor 2
-        'rated_r3_time',  // Time taken answering 'rated resistance' question for resistor 3
-        'rated_t1_time',
-        'rated_t2_time',
-        'rated_t3_time',
-        'measured_r1_time',
-        'measured_r2_time',
-        'measured_r3_time'
+        't_range_value',
+        'within_tolerance',
+        'probe_connection',
+        'plug_connection'
     ],
         
     defineFeedback : function() {

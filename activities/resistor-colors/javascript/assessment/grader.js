@@ -13,7 +13,7 @@ Grader.prototype =
     grade : function(resultObject, sectionNum) {
         console.log('ENTER Grader.grade');
         //var questions =  this.log.sections[sectionNum-1].questions;
-        var questions =  this.log.sections[0].questions;
+        var questions =  this.log.currentSection().questions;
         
         var multimeter = this.activity.multimeter;
         var resistor = this.activity.resistor;
@@ -26,9 +26,12 @@ Grader.prototype =
                 multimeter.makeDisplayText(resistor.realValue),
                 this.feedback.measured_r_value);
         this.gradeToleranceRange(questions[3], resultObject.measured_tolerance,
-                resistor.nominalValue, resistor.tolerance);
-        this.gradeWithinTolerance(questions[4], resultObject.within_tolerance, resistor);
+                resistor.nominalValue, resistor.tolerance,
+                this.feedback.t_range_value);
+        this.gradeWithinTolerance(questions[4], resultObject.within_tolerance,
+                resistor,this.feedback.within_tolerance);
         this.gradeTime();
+        this.gradeSettings();
     },
     
     gradeResistance : function(question, formAnswer, correctValue, feedback) {
@@ -111,8 +114,13 @@ Grader.prototype =
         question.correct = true;
     },
     
-    gradeToleranceRange : function(question, answer, nominalResistance, tolerance) {
+    gradeToleranceRange : function(question, answer, nominalResistance,
+        tolerance, feedback)
+    {
         console.log('ENTER Grader.gradeToleranceRange');
+        feedback.label = 'Lack of understanding';
+        feedback.points = 0;
+
         
         var correctMin = nominalResistance * (1 - tolerance);
         var correctMax = nominalResistance * (1 + tolerance);
@@ -158,13 +166,18 @@ Grader.prototype =
             answer.correct = true;
             answer.message = "Correct";
             question.correct = true;
+            feedback.label = 'Excellent';
+            feedback.points = 10;
         }
         return;
     },
     
-    gradeWithinTolerance : function(question, answer, resistor) {
+    gradeWithinTolerance : function(question, answer, resistor, feedback) {
         var correctAnswer;
         var tolerance = resistor.nominalValue * resistor.tolerance;
+        
+        feedback.label = 'Lack of understanding';
+        feedback.points = 0;
         
         /*
         console.log('nominal=' + resistor.nominalValue + 
@@ -198,6 +211,8 @@ Grader.prototype =
         answer.correct = true;
         answer.message = "Correct";
         question.correct = true;
+        feedback.label = 'Excellent';
+        feedback.points = 10;
     },
     
     gradeTime : function() {
@@ -273,6 +288,35 @@ Grader.prototype =
                 feedbackItem.label = 'Too slow';
                 feedbackItem.points = 2;
             }
+        }
+    },
+    
+    gradeSettings : function() {
+        var redProbeConn = this.activity.multimeter.redProbeConnection;
+        var blackProbeConn = this.activity.multimeter.blackProbeConnection;
+        var redPlugConn = this.activity.multimeter.redPlugConnection;
+        var blackPlugConn = this.activity.multimeter.blackPlugConnection;
+        
+        console.log('redProbe=' + redProbeConn + ' blackProbe=' + blackProbeConn + ' redPlug=' + redPlugConn + ' blackPlug=' + blackPlugConn);
+        
+        if ((redProbeConn == 'resistor_lead1' || redProbeConn == 'resistor_lead2') && 
+            (blackProbeConn == 'resistor_lead1' || blackProbeConn == 'resistor_lead2') &&
+            (redProbeConn != blackProbeConn))
+        {
+            this.feedback.probe_connection.correct = true;
+        }
+        else {
+            this.feedback.probe_connection.correct = false;
+        }
+        
+        if ((redPlugConn == 'voma_port' || redPlugConn == 'common_port') && 
+            (blackPlugConn == 'voma_port' || blackPlugConn == 'common_port') &&
+            (redPlugConn != blackPlugConn))
+        {
+            this.feedback.plug_connection.correct = true;
+        }
+        else {
+            this.feedback.plug_connection.correct = false;
         }
     },
     

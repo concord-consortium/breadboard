@@ -1,73 +1,48 @@
 <html>
   <head></head>
   <body>
+    <h3>1. Value interpreted from color bands</h3>
+    Correct answer: <span id="rated_r_correct"></span><br/>
+    Your answer: <span id="rated_r_answer"></span><br/>
+    Points: <span id="rated_r_pts"></span>
+    
+    <h3>2. Interpreting tolerance range from color bands and R-value</h3>
+    <p>
+      Correct tolerance value: <span id="rated_t_correct"></span><br/>
+      Your answer: <span id="rated_t_answer"></span>
+    </p>
+    <p>
+    Correct tolerance range: <span id="t_range_correct"></span><br/>
+    Your answer: <span id="t_range_answer"></span>
+    </p>
+    Points: <span id="t_range_pts"></span>
 
-    <div id='report_title'>Report</div>
-
-    <div id="report_questions">
-      <table>
-        <tr class="row_b">
-          <td></td>
-          <td>Correct Value</td>
-          <td>Your Answer</td>
-          <td>Points</td>
-        </tr>
-        <tr class="row_a">
-          <td>Rated Resistance</td>
-          <td id="rated_r_correct"></td>
-          <td id="rated_r_answer"></td>
-          <td id="rated_r_pts"></td>
-        </tr>
-        <tr class="row_b">
-          <td>Rated Tolerance</td>
-          <td id="rated_t_correct"></td>
-          <td id="rated_t_answer"></td>
-          <td id="rated_t_pts"></td>
-        </tr>
-        <tr class="row_a">
-          <td>Measured Resistance</td>
-          <td id="measured_r_correct"></td>
-          <td id="measured_r_answer"></td>
-          <td id="measured_r_pts"></td>
-        </tr>
-        <tr class="row_b">
-          <td>Tolerance Range</td>
-          <td id="t_range_correct"></td>
-          <td id="t_range_answer"></td>
-          <td id="t_range_pts"></td>
-        </tr>
-        <tr class="row_a">
-          <td>Within Tolerance?</td>
-          <td id="within_correct"></td>
-          <td id="within_answer"></td>
-          <td id="within_pts"></td>
-        </tr>
-        <tr class="row_b">
-          <td>Time to interpret color bands for R value</td>
-          <td></td>
-          <td id="rated_r_time"></td>
-          <td id="rated_r_time_pts"></td>
-        </tr>
-        <tr class="row_a">
-          <td>Time to interpret color bands for tolerance value</td>
-          <td></td>
-          <td id="rated_t_time"></td>
-          <td id="rated_t_time_pts"></td>
-        </tr>
-        <tr class="row_b">
-          <td>Time to measure R value with DMM</td>
-          <td></td>
-          <td id="measured_r_time"></td>
-          <td id="measured_r_time_pts"></td>
-        </tr>
-        <tr class="row_a">
-          <td>Use of Digital Multimeter</td>
-          <td></td>
-          <td id="using_dmm"></td>
-          <td></td>
-        </tr>
-      </table>
-    </div>
+    <h3>3. Measuring R-value with a DMM</h3>
+    Correct measured resistance: <span id="measured_r_correct"></span><br/>
+    Your answer: <span id="measured_r_answer"></span><br/>
+    Plugs connected to DMM correctly? <span id="plug_connection"></span><br/>
+    Probes connected to resistor correctly? <span id="probe_connection"></span><br/>
+    
+    <p>
+      Points: <span id="measured_r_pts"></span>
+    </p>
+    
+    <h3>4. Compare measured R-value with tolerance window of labeled value</h3>
+    Correct answer: <span id="within_correct"></span><br/>
+    Your answer: <span id="within_answer"></span><br/>
+    Points: <span id="within_pts"></span><br/>
+    
+    <h3>5. Time to interpret color bands for R Value</h3>
+    Time: <span id="rated_r_time"></span><br/>
+    Points: <span id="rated_r_time_pts"></span>
+    
+    <h3>6. Time to interpret color bands for tolerance value</h3>
+    Time: <span id="rated_t_time"></span><br/>
+    Points: <span id="rated_t_time_pts"></span>
+    
+    <h3>7. Time to measure R value with DMM</h3>
+    Time: <span id="measured_r_time"></span><br/>
+    Points: <span id="measured_r_time_pts"></span>
     
     <p id="rated_values_feedback">
     </p>

@@ -38,6 +38,7 @@ function receiveEvent(name, value, time) {
           multimeter.blackPlugConnection = ids[1];
       }
       multimeter.update();
+      activity.log.add(name, { conn1 : ids[0], conn2 : ids[1] });
   }
   else if (name == 'disconnect') {
       if (value == 'red_probe') {

@@ -1,6 +1,12 @@
 /* The following line (global) is for JSLint */
 /*global console*/
 
+function Event(name, value, time) {
+    this.name = name;
+    this.value = value;
+    this.time = time;
+}
+
 function Question(id) {
     this.id = id;
     this.correct_answer = '';
@@ -13,6 +19,7 @@ function Question(id) {
 
 function Section() {
     this.questions = [];
+    this.events = [];
     this.start_time = null;
     this.end_time = null;
 }
@@ -25,6 +32,11 @@ function Section() {
  *     - section 1
  *         start_time:
  *         end_time:
+ *         events:
+ *           - event
+ *               name:
+ *               value:
+ *               time:
  *         questions:
  *           - question N
  *               id:
@@ -46,59 +58,69 @@ function ActivityLog()
     this.end_time = null;
     this.sections = [];
     
-    //this.sections = [new Section(), new Section(), new Section()];
-    this.sections = [new Section()];
-    
-    //for (var i = 0; i < 3; ++i) {
-    for (var i = 0; i < 1; ++i) {
-        var questions = this.sections[i].questions;
+    this.sections = [];
+    this.numSections = 0;
+}
+
+ActivityLog.prototype =
+{
+    beginNextSection : function() {
+        var section = new Section();
+        var questions = section.questions;
+        
         questions.push(new Question('rated_resistance'));
         questions.push(new Question('rated_tolerance'));
         questions.push(new Question('measured_resistance'));
         questions.push(new Question('measured_tolerance'));
         questions.push(new Question('within_tolerance'));
-    }
-}
-
-ActivityLog.prototype =
-{
+        
+        this.sections.push(section);
+        this.numSections += 1;
+    },
+    
+    currentSection : function() {
+        return this.sections[this.numSections - 1];
+    },
+      
     add : function(name, params) {
         var now = new Date().valueOf();
         switch (name)
         {
+        case 'connect':
+            console.log('connect ' + params.conn1 + ' to ' + params.conn2);
+            this.currentSection().events.push(new Event('connect', params.conn1 + '|' + params.conn2, now));
+            break;
         case 'start_section':
-            this.sections[0].start_time = now;
+            this.currentSection().start_time = now;
             break;
         case 'end_section':
-            this.sections[0].end_time = now;
-            break;
-        case 'start_activity':
-            this.start_time = now; 
-            this.sections[0].start_time = now;
-            break;
-        case 'start_resistor2':
-            this.sections[0].end_time = now;
-            this.sections[1].start_time = now;
-            break;
-        case 'start_resistor3':
-            this.sections[1].end_time = now;
-            this.sections[2].start_time = now;
-            break;
-        case 'end_activity':
-            this.sections[2].end_time = now;
-            this.end_time = new Date().valueOf();
+            this.currentSection().end_time = now;
             break;
         case 'start_question':
-            //this.sections[params.section-1].questions[params.question-1].start_time = now;
-            this.sections[0].questions[params.question-1].start_time = now;
+            this.currentSection().questions[params.question-1].start_time = now;
             break;
         case 'end_question':
-            //this.sections[params.section-1].questions[params.question-1].end_time = now;
-            this.sections[0].questions[params.question-1].end_time = now;
+            this.currentSection().questions[params.question-1].end_time = now;
             break;
         default:
             console.log('ERROR: add: Unknown log event name ' + name);
         }
+    },
+    
+    getLastConnection : function(conn1) {
+        var events = this.currentSection().events;
+        var conn2 = null;
+        var values = null;
+        for (var i = 0; i < events.length; ++i) {
+            if (events[i].name == 'connect') {
+                values = events[i].value.split('|');
+                if (values[0] == conn1) {
+                    conn2 = values[1];
+                }
+            }
+        }
+        //console.log('conn1=' + conn1 + ' conn2=' + conn2);
+        return conn2;
     },
     
     formatDate : function(ms) {

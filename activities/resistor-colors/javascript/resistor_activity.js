@@ -99,9 +99,7 @@ ResistorActivity.prototype =
         $('#start_button').click(startButtonClicked);
         
         $('#report').dialog({ autoOpen: false, width: 800,
-            height : $(window).height() * 0.8 });
-        $('#report').css('zIndex', 10);
-        $('#report').bgiframe();
+            height : $(window).height() * 0.9 });
     },
 
     // Initializations that can be done only when the flash movie is loaded
@@ -159,16 +157,16 @@ ResistorActivity.prototype =
             this.updateItem(result, item);
         }
 
-        if (!this.log.sections[0].questions[0].correct) {
+        if (!this.log.currentSection().questions[0].correct) {
             $('#rated_r_feedback').show();
         }
-        if (!this.log.sections[0].questions[1].correct) {
+        if (!this.log.currentSection().questions[1].correct) {
             $('#rated_t_feedback').show();
         }
-        if (!this.log.sections[0].questions[2].correct) {
+        if (!this.log.currentSection().questions[2].correct) {
             $('#measured_r_feedback').show();
         }
-        if (!this.log.sections[0].questions[3].correct) {
+        if (!this.log.currentSection().questions[3].correct) {
             $('#t_range_feedback').show();
         }
       
@@ -205,6 +203,7 @@ ResistorActivity.prototype =
     // Start new section (set of questions)
     startTry : function() {
       ++ this.current_section;
+      this.log.beginNextSection();
       this.current_question = 1;
 
       this.endSectionInstruction.hide();
@@ -243,20 +242,6 @@ ResistorActivity.prototype =
       this.disableCircuit();
       
       console.log('current_section changed to: ' + this.current_section);
-      /*
-      switch(this.current_section)
-      {
-      case 1:
-          this.log.add('start_activity');
-          break;
-      case 2:
-          this.log.add('start_resistor2');
-          break;
-      case 3:
-          this.log.add('start_resistor3');
-          break;
-      }
-      */
       this.log.add('start_section');
       this.log.add('start_question', { section : this.current_section, question : 1 });
       $('body').scrollTop(0); //scroll to top
