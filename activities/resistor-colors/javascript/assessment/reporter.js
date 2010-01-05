@@ -108,7 +108,7 @@ Reporter.prototype =
             ratedValuesFeedback.show();
         }
         */
-        $('#report_log').html(this.reportLog());
+        //$('#report_log').html(this.reportLog());
     },
     
     setAnswerTextWithColor : function(elemId, text, question) {
