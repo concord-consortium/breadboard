@@ -86,9 +86,22 @@ ActivityLog.prototype =
         var now = new Date().valueOf();
         switch (name)
         {
+        case 'multimeter_dial':
+            console.log('multimeter_dial ' + params.value);
+            this.currentSection().events.push(new Event('multimeter_dial', params.value, now));
+            break;
         case 'connect':
             console.log('connect ' + params.conn1 + ' to ' + params.conn2);
             this.currentSection().events.push(new Event('connect', params.conn1 + '|' + params.conn2, now));
+            break;
+        case 'disconnect':
+            this.currentSection().events.push(new Event('disconnect', params.value, now));
+            break;
+        case 'make_circuit':
+            this.currentSection().events.push(new Event('make_circuit', '', now));
+            break;
+        case 'break_circuit':
+            this.currentSection().events.push(new Event('break_circuit', '', now));
             break;
         case 'start_section':
             this.currentSection().start_time = now;
@@ -101,6 +114,15 @@ ActivityLog.prototype =
             break;
         case 'end_question':
             this.currentSection().questions[params.question-1].end_time = now;
+            break;
+        case 'multimeter_power':
+            this.currentSection().events.push(new Event('multimeter_power', params.value, now));
+            break;
+        case 'start_session':
+            this.start_time = now;
+            break;
+        case 'end_session':
+            this.end_time = now;
             break;
         default:
             console.log('ERROR: add: Unknown log event name ' + name);
@@ -136,7 +158,32 @@ ActivityLog.prototype =
     
     fillZero : function(val) {
         return val < 10 ? '0' + val : String(val);
-    }
+    },
     
+    prettyPrint : function() {
+        return this.prettyPrint2('LOG', this, 0);
+    },
+    
+    prettyPrint2 : function(key, obj, indent) {
+        var t = '';
+        if (typeof obj === 'object') {
+            for (var key in obj) {
+                if (typeof obj[key] !== 'function') {
+                    for (var i = 0; i < indent; ++i) {
+                        t += ' ';
+                    }
+                    t += key + ': ';
+                    if (typeof obj[key] === 'object') {
+                        t += '\n';
+                    }
+                    t += this.prettyPrint2(key, obj[key], indent + 4);
+                }
+            }
+            return t;
+        }
+        else {
+            return obj + '\n';
+        }
+    }
 };
 

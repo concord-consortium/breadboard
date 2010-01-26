@@ -12,14 +12,15 @@ Grader.prototype =
 {
     grade : function(resultObject, sectionNum) {
         console.log('ENTER Grader.grade');
-        //var questions =  this.log.sections[sectionNum-1].questions;
         var questions =  this.log.currentSection().questions;
         
         var multimeter = this.activity.multimeter;
         var resistor = this.activity.resistor;
 
-        this.gradeResistance(questions[0], resultObject.rated_resistance,
-                resistor.nominalValue, this.feedback.rated_r_value);
+        this.gradeReadingColorBands(questions[0],
+                                    resultObject.rated_resistance,
+                                    resistor.nominalValue,
+                                    this.feedback.rated_r_value);
         this.gradeTolerance(questions[1], resultObject.rated_tolerance, 
                 resistor.tolerance, this.feedback.rated_t_value);
         this.gradeResistance(questions[2], resultObject.measured_resistance,
@@ -32,6 +33,68 @@ Grader.prototype =
                 resistor,this.feedback.within_tolerance);
         this.gradeTime();
         this.gradeSettings();
+    },
+
+    gradeReadingColorBands : function(question, formAnswer, correctValue,
+            feedback)
+    {
+        formAnswer.message = "Unknown Error";
+        formAnswer.correct = false;
+        question.correct_answer = String(correctValue);
+        question.answer = formAnswer.value;
+        question.unit = formAnswer.units;
+        question.correct = false;
+        //feedback.label = 'Lack of understanding';
+        feedback.points = 0;
+        
+        if (!this.validateNonEmpty(formAnswer.value, formAnswer)) {
+            return;
+        }
+        
+        var valueNum = Number(formAnswer.value);
+        if (!this.validateNumber(valueNum, formAnswer)) {
+            return;
+        }
+        
+        if (formAnswer.units === null ||
+            formAnswer.units === undefined ||
+            formAnswer.units.length < 1)
+        {
+             formAnswer.message = "No Unit Entered";
+             return;
+        }
+
+        console.log('unit=' + formAnswer.units);
+
+        if (!Unit.ohmCompatible(formAnswer.units)) {
+            formAnswer.message = "Incorrect Unit";
+            return;
+        }   
+        var parsedValue = Unit.normalizeToOhms(valueNum, formAnswer.units);
+        
+        console.log('parsedValue=' + parsedValue + ' correctValue=' + correctValue);
+        
+        if(correctValue != parsedValue){
+            if (this.sameBeforeDot(correctValue, parsedValue)) {
+                if (this.semiCorrectDigits(correctValue, parsedValue, 3)) {
+                    feedback.points = 2;
+                    return;
+                }
+            }
+            else if (this.sameFirstSigDigits(correctValue, parsedValue, 3)) {
+                feedback.points = 10;
+                return;
+            }
+            
+            //formAnswer.message = "The entered value or unit is incorrect.";
+            return;
+        }
+        
+        formAnswer.correct = true;
+        formAnswer.message = 'Correct';
+        //feedback.label = 'Excellent';
+        feedback.points = 20;
+        question.correct = true;
     },
     
     gradeResistance : function(question, formAnswer, correctValue, feedback) {
@@ -94,6 +157,7 @@ Grader.prototype =
         question.answer = answer.value;
         question.unit = '%';
         question.correct = false;
+        feedback.points = 0;
         
         if (!this.validateNonEmpty(answer.value, answer)) {
             return;
@@ -112,6 +176,7 @@ Grader.prototype =
         answer.correct = true;
         answer.message = "Correct";
         question.correct = true;
+        feedback.points = 5;
     },
     
     gradeToleranceRange : function(question, answer, nominalResistance,
@@ -145,6 +210,13 @@ Grader.prototype =
             return;
         }
         
+        // Allow answers in reverse order
+        if (min > max) {
+            var tmp = min;
+            min = max;
+            max = tmp;
+        }
+        
         console.log('correct min=' + correctMin + ' max=' + correctMax);
         console.log('submitted min=' + min + ' max=' + max);
         
@@ -158,16 +230,32 @@ Grader.prototype =
         var parsedMin = Unit.normalizeToOhms(min, answer.min_unit);
         var parsedMax = Unit.normalizeToOhms(max, answer.max_unit);
         
-        if (this.equalWithTolerance(parsedMin, correctMin, 5e-2) &&
-            this.equalWithTolerance(parsedMax, correctMax, 5e-2) ||
-            this.equalWithTolerance(parsedMin, correctMax, 5e-2) &&
-            this.equalWithTolerance(parsedMax, correctMin, 5e-2))
+        if (this.equalWithTolerance(parsedMin, correctMin, 1e-5) &&
+            this.equalWithTolerance(parsedMax, correctMax, 1e-5))
         {
             answer.correct = true;
             answer.message = "Correct";
             question.correct = true;
-            feedback.label = 'Excellent';
+            //feedback.label = 'Excellent';
+            feedback.points = 15;
+        }
+        
+        if (MyMath.roundToSigDigits(correctMin, 3) ===
+            MyMath.roundToSigDigits(parsedMin, 3) &&
+            MyMath.roundToSigDigits(correctMax, 3) ===
+            MyMath.roundToSigDigits(parsedMax, 3))
+        {
             feedback.points = 10;
+            return;
+        }
+        
+        if (Math.abs(MyMath.getRoundedSigDigits(correctMin, 3) - 
+                     MyMath.getRoundedSigDigits(parsedMin, 3)) <= 2 &&
+            Math.abs(MyMath.getRoundedSigDigits(correctMax, 3) - 
+                     MyMath.getRoundedSigDigits(parsedMax, 3)) <= 2)
+        {
+            feedback.points = 3;
+            return;
         }
         return;
     },
@@ -299,25 +387,41 @@ Grader.prototype =
         
         console.log('redProbe=' + redProbeConn + ' blackProbe=' + blackProbeConn + ' redPlug=' + redPlugConn + ' blackPlug=' + blackPlugConn);
         
+        // Connection to R
         if ((redProbeConn == 'resistor_lead1' || redProbeConn == 'resistor_lead2') && 
             (blackProbeConn == 'resistor_lead1' || blackProbeConn == 'resistor_lead2') &&
             (redProbeConn != blackProbeConn))
         {
             this.feedback.probe_connection.correct = true;
+            this.feedback.probe_connection.points = 2;
+            this.feedback.probe_connection.desc = 'Correct';
         }
         else {
             this.feedback.probe_connection.correct = false;
+            this.feedback.probe_connection.points = 0;
+            this.feedback.probe_connection.desc = 'Incorrect';
         }
         
-        if ((redPlugConn == 'voma_port' || redPlugConn == 'common_port') && 
-            (blackPlugConn == 'voma_port' || blackPlugConn == 'common_port') &&
-            (redPlugConn != blackPlugConn))
-        {
+        // Connectin to DMM
+        if (redPlugConn == 'voma_port' && blackPlugConn == 'common_port') {
             this.feedback.plug_connection.correct = true;
+            this.feedback.plug_connection.points = 5;
+            this.feedback.plug_connection.desc = 'Correct';
         }
         else {
             this.feedback.plug_connection.correct = false;
+            if (redPlugConn == 'common_port' && blackPlugConn == 'voma_port') {
+                this.feedback.plug_connection.points = 3;
+                this.feedback.plug_connection.desc = 'Reversed';
+            }
+            else {
+                this.feedback.plug_connection.points = 0;
+                this.feedback.plug_connection.desc = 'Incorrect';
+            }
         }
+        
+        // DMM knob
+        
     },
     
     equalWithTolerance : function(value1, value2, tolerance) {
@@ -350,5 +454,57 @@ Grader.prototype =
         var a = correctAnswer.toString().replace('.', '');
         var b = answer.toString().replace('.', '');
         return a.substring(0, 3) == b.substring(0, 3);
+    },
+    
+    sameFirstSigDigits : function(x, y, numSigDigits) {
+        var sx = String(x).replace('.', '').substring(0, numSigDigits);
+        var sy = String(y).replace('.', '').substring(0, numSigDigits);
+        return sx === sy;
+    },
+
+    // A kludge to determine if two number are of same power of 10 magnitude
+    // It only compares the number of digits before the decimal point
+    // because numbers less than 1 are not expected.
+    sameBeforeDot : function(x, y) {
+        var lx = String(x).split('.')[0].length;
+        var ly = String(y).split('.')[0].length;
+        return lx === ly;
+    },
+    
+    // True if the first numSigDigits digits of x, y are the same 
+    // or in reverse order of each other
+    // or the order is the same but only 1 digit is different
+    semiCorrectDigits : function(x, y, numSigDigits) {
+        var sx = String(x).replace('.', '').substring(0, numSigDigits);
+        var sy = String(y).replace('.', '').substring(0, numSigDigits);
+        if (sx === sy ||
+            sx === this.reverseString(sy) ||
+            this.onlyOneDigitDifferent(sx, sy))
+        {
+            return true;
+        }
+        return false;
+    },
+    
+    reverseString : function (s) {
+        return s.split('').reverse().join('');
+    },
+    
+    onlyOneDigitDifferent : function(x, y) {
+        var numDiff = 0;
+        for (var i = 0; i < x.length; ++i) {
+            if (x[i] !== y[i]) {
+                ++numDiff;
+            }
+        }
+        return numDiff == 1;
+    },
+    
+    optimalDial : function(r) {
+        if (r < 200) { return 'r_200'; }
+        if (r < 2000) { return 'r_2000'; }
+        if (r < 20e3) { return 'r_20k'; }
+        if (r < 200e3) { return 'r_200k'; }
+        return 'r_2000k';
     }
 };

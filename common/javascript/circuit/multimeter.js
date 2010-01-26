@@ -266,10 +266,10 @@ Multimeter.prototype =
         return this.redProbeConnection !== null && 
             this.blackProbeConnection !== null &&
             this.redProbeConnection !== this.blackProbeConnection &&
-            (this.redPlugConnection == 'voma_port' &&
-             this.blackPlugConnection == 'common_port' ||
-             this.redPlugConnection == 'common_port' &&
-             this.blackPlugConnection == 'voma_port' &&
-             this.powerOn);
+            (this.redPlugConnection === 'voma_port' &&
+             this.blackPlugConnection === 'common_port' ||
+             this.redPlugConnection === 'common_port' &&
+             this.blackPlugConnection === 'voma_port') &&
+            this.powerOn;
     }
 };

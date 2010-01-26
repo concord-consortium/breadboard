@@ -1,38 +1,51 @@
 <html>
   <head></head>
   <body>
-    <h3>1. Value interpreted from color bands</h3>
-    Correct answer: <span id="rated_r_correct"></span><br/>
-    Your answer: <span id="rated_r_answer"></span><br/>
-    Points: <span id="rated_r_pts"></span>
-    
-    <h3>2. Interpreting tolerance range from color bands and R-value</h3>
+    <h3>A. Reading resistor color bands</h3>
+    <p>
+      Correct Resistance value: <span id="rated_r_correct"></span><br/>
+      Your answer: <span id="rated_r_answer"></span><br/>
+    </p>
     <p>
       Correct tolerance value: <span id="rated_t_correct"></span><br/>
       Your answer: <span id="rated_t_answer"></span>
     </p>
+    
+    Points: <span id="reading_pts"></span> (out of 25)
+    
+    <h3>B. Calculating tolerance range</h3>
     <p>
     Correct tolerance range: <span id="t_range_correct"></span><br/>
     Your answer: <span id="t_range_answer"></span>
     </p>
-    Points: <span id="t_range_pts"></span>
+    Points: <span id="t_range_pts"></span> (out of 15)
 
-    <h3>3. Measuring R-value with a DMM</h3>
+    <h3>C. Measuring R-value with a DMM</h3>
+    <p>
+      Connections to DMM: <span id="plug_connection"></span>
+      (<span id="plug_connection_pts"></span> points out of 5)<br/>
+      Connections to R: <span id="probe_connection"></span>
+      (<span id="probe_connection_pts"></span> points out of 2)<br/>
+    </p>
+    <p>
+      Correct DMM knob setting: <span id="correct_knob"></span><br/>
+    </p>
+    
     Correct measured resistance: <span id="measured_r_correct"></span><br/>
     Your answer: <span id="measured_r_answer"></span><br/>
-    Plugs connected to DMM correctly? <span id="plug_connection"></span><br/>
-    Probes connected to resistor correctly? <span id="probe_connection"></span><br/>
+
+    
     
     <p>
       Points: <span id="measured_r_pts"></span>
     </p>
     
-    <h3>4. Compare measured R-value with tolerance window of labeled value</h3>
+    <h3>D. Compare measured R-value with tolerance window of labeled value</h3>
     Correct answer: <span id="within_correct"></span><br/>
     Your answer: <span id="within_answer"></span><br/>
     Points: <span id="within_pts"></span><br/>
     
-    <h3>5. Time to interpret color bands for R Value</h3>
+    <h3>E. Time to interpret color bands for R Value</h3>
     Time: <span id="rated_r_time"></span><br/>
     Points: <span id="rated_r_time_pts"></span>
     

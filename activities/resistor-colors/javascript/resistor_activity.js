@@ -36,6 +36,7 @@ function nextButtonClicked(event) {
     $(".next_button").each(function(i){
       this.disabled = true;
     });
+    $('.show_report_button').hide();
     jQuery.sparks.activity.startTry();
 }
 
@@ -59,6 +60,8 @@ function ResistorActivity() {
     console.log('ENTER ResistorActivity');
     $('body').scrollTop(0); //scroll to top
     
+    var activity = this;
+    
     this.log = new ActivityLog();
     this.assessment = new Assessment(this, this.log);
     this.reporter = new Reporter(this.assessment);
@@ -77,6 +80,15 @@ function ResistorActivity() {
     $('#rated_t_feedback').hide();
     $('#measured_r_feedback').hide();
     $('#t_range_feedback').hide();
+    
+    if (jQuery.sparks.debug) {
+        $('#json_button').click(function() {
+            $('#json_current_log').html('<pre>' + activity.log.prettyPrint() + '</pre>' + JSON.stringify(activity.log));
+        });
+    }
+    else {
+        $('#json').hide();
+    }
 }
 
 ResistorActivity.prototype =
@@ -178,6 +190,8 @@ ResistorActivity.prototype =
         
         this.updateEndInstruction();
         this.endSectionInstruction.show();
+        this.log.add('end_section');
+        this.log.add('end_session');
     },
     
     updateEndInstruction : function() {
@@ -242,6 +256,7 @@ ResistorActivity.prototype =
       this.disableCircuit();
       
       console.log('current_section changed to: ' + this.current_section);
+      this.log.add('start_session');
       this.log.add('start_section');
       this.log.add('start_question', { section : this.current_section, question : 1 });
       $('body').scrollTop(0); //scroll to top

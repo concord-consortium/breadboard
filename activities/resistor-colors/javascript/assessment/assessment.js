@@ -5,6 +5,7 @@ function FeedbackItem()
 {
     this.correct = null;
     this.label = '';
+    this.desc = '';
     this.points = 0;
     this.maxPoints = 0;
 }

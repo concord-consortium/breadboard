@@ -22,6 +22,7 @@ function receiveEvent(name, value, time) {
   console.log('received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
   var activity = jQuery.sparks.activity;
   var multimeter = activity.multimeter;
+  var wasConnected = multimeter.allConnected();
   
   if (name == 'connect') {
       var ids = value.split('|');
@@ -39,6 +40,9 @@ function receiveEvent(name, value, time) {
       }
       multimeter.update();
       activity.log.add(name, { conn1 : ids[0], conn2 : ids[1] });
+      if (multimeter.allConnected()) {
+          activity.log.add('make_circuit');
+      }
   }
   else if (name == 'disconnect') {
       if (value == 'red_probe') {
@@ -54,14 +58,26 @@ function receiveEvent(name, value, time) {
           multimeter.blackPlugConnection = null;
       }
       multimeter.update();
+      activity.log.add(name, { value: value});
+      if (wasConnected) {
+          activity.log.add('break_circuit');
+      }
   }
   else if (name == 'multimeter_dial') {
       multimeter.dialPosition = value;
       multimeter.update();
+      activity.log.add(name, { value: multimeter.dialPosition });
   }
   else if (name == 'multimeter_power') {
       multimeter.powerOn = value == 'true' ? true : false;
       multimeter.update();
+      activity.log.add(name, { value: multimeter.powerOn });
+      if (value === 'true' && multimeter.allConnected()) {
+          activity.log.add('make_circuit');
+      }
+      else if (value == 'false' && wasConnected) {
+          activity.log.add('break_circuit');
+      }
   }
   else if (name == 'not_ready') {
       alert('Sorry, you can only access the circuit after you have answered question #1.');

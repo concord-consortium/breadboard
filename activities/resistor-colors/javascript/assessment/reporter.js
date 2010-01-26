@@ -6,14 +6,13 @@ function Reporter(assessment)
     //console.log('ENTER Reporter');
     
     this.assessment = assessment;
-    this.log = this.assessment.log;
+    this.log = assessment.log;
+    this.grader = assessment.grader;
+    this.activity = assessment.activity;
 }
 
 Reporter.prototype =
 {
-    assessment : null,
-    log : null,
-    
     reportOnSection : function(sectionNum) {
         var reporter = this;
         $("#report").load("report-templates/report-section.html", {}, function() {
@@ -26,16 +25,20 @@ Reporter.prototype =
     sectionReport : function(sectionNum) {
         var text = '';
         var questions = this.log.currentSection().questions;
+        var points = 0;
         
         var feedback = this.assessment.feedback.rated_r_value;
         $('#rated_r_correct').text(Unit.res_str(questions[0].correct_answer));
         text = questions[0].answer ? questions[0].answer + questions[0].unit : 'No Answer';
         this.setAnswerTextWithColor('#rated_r_answer', text, questions[0]);
-        $('#rated_r_pts').text(feedback.points + ' (' + feedback.label + ')');
-        
+        points = feedback.points;
+                
+        feedback = this.assessment.feedback.rated_t_value;
         $('#rated_t_correct').text(questions[1].correct_answer * 100 + '%');
         text = questions[1].answer ? questions[1].answer + questions[1].unit : 'No Answer';
         this.setAnswerTextWithColor('#rated_t_answer', text, questions[1]);
+        
+        $('#reading_pts').text(points + feedback.points);
         
         feedback = this.assessment.feedback.measured_r_value;
         $('#measured_r_correct').text(Unit.res_str(questions[2].correct_answer));
@@ -47,7 +50,7 @@ Reporter.prototype =
         $('#t_range_correct').text(Unit.res_str(questions[3].correct_answer[0]) + ' .. ' + Unit.res_str(questions[3].correct_answer[1]));
         text = (questions[3].answer[0] || questions[3].answer[1]) ? questions[3].answer[0] + questions[3].unit[0] + ' .. ' + questions[3].answer[1] + questions[3].unit[1] : 'No Answer';
         this.setAnswerTextWithColor('#t_range_answer', text, questions[3]);
-        $('#t_range_pts').text(feedback.points + ' (' + feedback.label + ')');
+        $('#t_range_pts').text(feedback.points);
         
         feedback = this.assessment.feedback.within_tolerance;
         $('#within_correct').text(questions[4].correct_answer);
@@ -70,19 +73,25 @@ Reporter.prototype =
         $('#measured_r_time').text(Util.timeLapseStr(questions[2].start_time, questions[2].end_time));
         $('#measured_r_time_pts').text(feedback.points + ' (' + feedback.label + ')');
         
-        if (this.assessment.feedback.probe_connection.correct) {
-            this.setTextWithColor('#probe_connection', 'Yes', '#339933');
+        feedback = this.assessment.feedback.probe_connection;
+        if (feedback.correct) {
+            this.setTextWithColor('#probe_connection', feedback.desc , '#339933');
         }
         else {
-            this.setTextWithColor('#probe_connection', 'No', '#cc3300');
+            this.setTextWithColor('#probe_connection', feedback.desc, '#cc3300');
         }
+        $('#probe_connection_pts').text(feedback.points);
         
-        if (this.assessment.feedback.plug_connection.correct) {
-            this.setTextWithColor('#plug_connection', 'Yes', '#339933');
+        feedback = this.assessment.feedback.plug_connection;
+        if (feedback.correct) {
+            this.setTextWithColor('#plug_connection', feedback.desc, '#339933');
         }
         else {
-            this.setTextWithColor('#plug_connection', 'No', '#cc3300');
+            this.setTextWithColor('#plug_connection', feedback.desc, '#cc3300');
         }
+        $('#plug_connection_pts').text(feedback.points);
+        
+        $('#correct_knob').text(this.grader.optimalDial(this.activity.resistor.realValue));
         
         /* The feedback link is shown next to the question instead
         var ratedValuesFeedback = $('#rated_values_feedback');
