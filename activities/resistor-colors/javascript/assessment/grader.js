@@ -10,9 +10,9 @@ function Grader(activity, activityLog, feedback)
 
 Grader.prototype =
 {
-    grade : function(resultObject, sectionNum) {
+    grade : function(resultObject, sessionNum) {
         console.log('ENTER Grader.grade');
-        var questions =  this.log.currentSection().questions;
+        var questions =  this.log.currentSession().sections[0].questions;
         
         var multimeter = this.activity.multimeter;
         var resistor = this.activity.resistor;
@@ -300,82 +300,36 @@ Grader.prototype =
         answer.message = "Correct";
         question.correct = true;
         feedback.label = 'Excellent';
-        feedback.points = 10;
+        feedback.points = 5;
     },
     
     gradeTime : function() {
-        var i;
-        var question;
         var seconds;
         var feedbackItem;
+        var questions = this.log.currentSession().sections[0].questions;
         
-        for (i = 0; i < this.log.sections.length; ++i) {
-            question = this.log.sections[i].questions[0];
-            seconds = (question.end_time - question.start_time) / 1000;
-            //var feedbackItem = this.feedback[rated_r_labels[i]];
-            feedbackItem = this.feedback.rated_r_time;
-            if (seconds < 20) {
-                feedbackItem.label = 'Excellent';
-                feedbackItem.points = 10;
-            }
-            else if (seconds < 45) {
-                feedbackItem.label = 'Fast';
-                feedbackItem.points = 8;
-            }
-            else if (seconds < 120) {
-                feedbackItem.label = 'Learning';
-                feedbackItem.points = 6;
-            }
-            else {
-                feedbackItem.label = 'Too slow';
-                feedbackItem.points = 2;
-            }
+        seconds = (questions[1].end_time - questions[0].start_time) / 1000;
+        feedbackItem = this.feedback.reading_time;
+        if (seconds <= 20) {
+            feedbackItem.points = 5;
+        }
+        else if (seconds <= 40) {
+            feedbackItem.points = 2;
+        }
+        else {
+            feedbackItem.points = 0;
         }
         
-        for (i = 0; i < this.log.sections.length; ++i) {
-            question = this.log.sections[i].questions[1];
-            seconds = (question.end_time - question.start_time) / 1000;
-            //var feedbackItem = this.feedback[rated_t_labels[i]];
-            feedbackItem = this.feedback.rated_t_time;
-            if (seconds < 10) {
-                feedbackItem.label = 'Excellent';
-                feedbackItem.points = 10;
-            }
-            else if (seconds < 20) {
-                feedbackItem.label = 'Fast';
-                feedbackItem.points = 8;
-            }
-            else if (seconds < 50) {
-                feedbackItem.label = 'Learning';
-                feedbackItem.points = 6;
-            }
-            else {
-                feedbackItem.label = 'Too slow';
-                feedbackItem.points = 2;
-            }
+        seconds = (questions[2].end_time - questions[2].start_time) / 1000;
+        feedbackItem = this.feedback.measuring_time;
+        if (seconds <= 20) {
+            feedbackItem.points = 5;
         }
-        
-        for (i = 0; i < this.log.sections.length; ++i) {
-            question = this.log.sections[i].questions[2];
-            seconds = (question.end_time - question.start_time) / 1000;
-            //var feedbackItem = this.feedback[measured_r_labels[i]];
-            feedbackItem = this.feedback.measured_r_time;
-            if (seconds < 30) {
-                feedbackItem.label = 'Excellent';
-                feedbackItem.points = 10;
-            }
-            else if (seconds < 60) {
-                feedbackItem.label = 'Fast';
-                feedbackItem.points = 8;
-            }
-            else if (seconds < 120) {
-                feedbackItem.label = 'Learning';
-                feedbackItem.points = 6;
-            }
-            else {
-                feedbackItem.label = 'Too slow';
-                feedbackItem.points = 2;
-            }
+        else if (seconds <= 40) {
+            feedbackItem.points = 2;
+        }
+        else {
+            feedbackItem.points = 0;
         }
     },
     
@@ -421,7 +375,8 @@ Grader.prototype =
         }
         
         // DMM knob
-        
+        var initialKnob = this.log.getInitialDialSetting();
+        var finalKnob = this.log.getFinalDialSetting();
     },
     
     equalWithTolerance : function(value1, value2, tolerance) {

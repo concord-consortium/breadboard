@@ -8,16 +8,14 @@ function submitButtonClicked(event) {
     activity.disableForm(form);
     var nextForm = form.nextAll("form:first");
     
-    activity.log.add('end_question', { section : activity.current_section,
-        question : activity.current_question });
+    activity.log.add('end_question', { question : activity.current_question });
     
-    if (nextForm.size() === 0) { //all questions answered for current section
+    if (nextForm.size() === 0) { //all questions answered for current session
         activity.completedTry();
     } else {
         activity.enableForm(nextForm);
         ++activity.current_question;
-        activity.log.add('start_question', { section : activity.current_section,
-            question : activity.current_question });
+        activity.log.add('start_question', { question : activity.current_question });
         console.log('current_question=' + activity.current_question);
         if (activity.current_question == 3) {
             activity.enableCircuit();
@@ -42,7 +40,7 @@ function nextButtonClicked(event) {
 
 function showReportButtonClicked(event) {
     var activity = jQuery.sparks.activity;
-    activity.reporter.reportOnSection(activity.current_section);
+    activity.reporter.reportOnSession(activity.current_session);
     /*
     $("#report").load("report-templates/report.html", {}, function() {
         jQuery.sparks.activity.reporter.report();
@@ -70,12 +68,12 @@ function ResistorActivity() {
     this.multimeter = null;
     this.resistor = null;
     
-    this.current_section = 0;
+    this.current_session = 0;
     this.current_question = 0;
     this.allResults = [];
 
-    this.sectionTitle = $('#section_title');
-    this.endSectionInstruction = $('#instruction_end_section');
+    this.sessionTitle = $('#session_title');
+    this.endSessionInstruction = $('#instruction_end_session');
     $('#rated_r_feedback').hide();
     $('#rated_t_feedback').hide();
     $('#measured_r_feedback').hide();
@@ -146,7 +144,7 @@ ResistorActivity.prototype =
         Flash.sendCommand('disable_circuit');
     },
     
-    // Completed a section (finished with one resistor)
+    // Completed a session (finished with one resistor)
     completedTry : function() {
         var result = {};
       
@@ -162,23 +160,25 @@ ResistorActivity.prototype =
             $("#result").html("<pre>"+resultString+"</pre>");
         }
 
-        this.assessment.grader.grade(result, this.current_section);
+        this.assessment.grader.grade(result, this.current_session);
 
         // Update forms
         for (var item in result) {
             this.updateItem(result, item);
         }
+        
+        var questions = this.log.currentSession().sections[0].questions;
 
-        if (!this.log.currentSection().questions[0].correct) {
+        if (!questions[0].correct) {
             $('#rated_r_feedback').show();
         }
-        if (!this.log.currentSection().questions[1].correct) {
+        if (!questions[1].correct) {
             $('#rated_t_feedback').show();
         }
-        if (!this.log.currentSection().questions[2].correct) {
+        if (!questions[2].correct) {
             $('#measured_r_feedback').show();
         }
-        if (!this.log.currentSection().questions[3].correct) {
+        if (!questions[3].correct) {
             $('#t_range_feedback').show();
         }
       
@@ -189,15 +189,15 @@ ResistorActivity.prototype =
         }).show();
         
         this.updateEndInstruction();
-        this.endSectionInstruction.show();
+        this.endSessionInstruction.show();
         this.log.add('end_section');
         this.log.add('end_session');
     },
     
     updateEndInstruction : function() {
-        var t = 'You have completed resistor #' + this.current_section + '. ';
+        var t = 'You have completed resistor #' + this.current_session + '. ';
         t += 'Click on Show Report to see the current result. Click on Next to try another resistor.';
-        this.endSectionInstruction.text(t);
+        this.endSessionInstruction.text(t);
     },
     
     updateItem : function(result, name) {
@@ -214,14 +214,14 @@ ResistorActivity.prototype =
       }  
     },
     
-    // Start new section (set of questions)
+    // Start new session (new resistor)
     startTry : function() {
-      ++ this.current_section;
-      this.log.beginNextSection();
+      ++ this.current_session;
+      this.log.beginNextSession();
       this.current_question = 1;
 
-      this.endSectionInstruction.hide();
-      this.sectionTitle.html('<h3>Resistor #' + this.current_section + '</h3>');
+      this.endSessionInstruction.hide();
+      this.sessionTitle.html('<h3>Resistor #' + this.current_session + '</h3>');
       $('#rated_r_feedback').hide();
       $('#rated_t_feedback').hide();
       $('#measured_r_feedback').hide();
@@ -255,7 +255,7 @@ ResistorActivity.prototype =
       
       this.disableCircuit();
       
-      console.log('current_section changed to: ' + this.current_section);
+      console.log('current_session changed to: ' + this.current_session);
       this.log.add('start_session');
       this.log.add('start_section');
       this.log.add('start_question', { section : this.current_section, question : 1 });
