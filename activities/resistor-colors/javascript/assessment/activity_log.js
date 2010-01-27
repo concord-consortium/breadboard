@@ -152,32 +152,6 @@ ActivityLog.prototype =
         return conn2;
     },
     
-    prettyPrint : function() {
-        return this.prettyPrint2('LOG', this, 0);
-    },
-    
-    prettyPrint2 : function(key, obj, indent) {
-        var t = '';
-        if (typeof obj === 'object') {
-            for (var key in obj) {
-                if (typeof obj[key] !== 'function') {
-                    for (var i = 0; i < indent; ++i) {
-                        t += ' ';
-                    }
-                    t += key + ': ';
-                    if (typeof obj[key] === 'object') {
-                        t += '\n';
-                    }
-                    t += this.prettyPrint2(key, obj[key], indent + 4);
-                }
-            }
-            return t;
-        }
-        else {
-            return obj + '\n';
-        }
-    },
-    
     // DMM dial setting when the circuit is last made before 
     // measured resistance is submitted
     getInitialDialSetting: function() {
