@@ -4,11 +4,10 @@
 function Reporter(assessment)
 {
     //console.log('ENTER Reporter');
-    
-    this.assessment = assessment;
-    this.log = assessment.log;
-    this.grader = assessment.grader;
     this.activity = assessment.activity;
+    this.log = assessment.activity.log;
+    this.grader = assessment.grader;
+    this.feedback = assessment.feedback;
 }
 
 Reporter.prototype =
@@ -34,37 +33,37 @@ Reporter.prototype =
         var questions = this.log.currentSession().sections[0].questions;
         var points = 0;
         
-        var feedback = this.assessment.feedback.rated_r_value;
+        var feedback = this.feedback.rated_r_value;
         $('#rated_r_correct').text(Unit.res_str(questions[0].correct_answer));
         text = questions[0].answer ? questions[0].answer + questions[0].unit : 'No Answer';
         this.setAnswerTextWithColor('#rated_r_answer', text, questions[0]);
         points = feedback.points;
                 
-        feedback = this.assessment.feedback.rated_t_value;
+        feedback = this.feedback.rated_t_value;
         $('#rated_t_correct').text(questions[1].correct_answer * 100 + '%');
         text = questions[1].answer ? questions[1].answer + questions[1].unit : 'No Answer';
         this.setAnswerTextWithColor('#rated_t_answer', text, questions[1]);
         
         $('#reading_pts').text(points + feedback.points);
         
-        feedback = this.assessment.feedback.t_range_value;
+        feedback = this.feedback.t_range_value;
         $('#t_range_correct').text(Unit.res_str(questions[3].correct_answer[0]) + ' .. ' + Unit.res_str(questions[3].correct_answer[1]));
         text = (questions[3].answer[0] || questions[3].answer[1]) ? questions[3].answer[0] + questions[3].unit[0] + ' .. ' + questions[3].answer[1] + questions[3].unit[1] : 'No Answer';
         this.setAnswerTextWithColor('#t_range_answer', text, questions[3]);
         $('#t_range_pts').text(feedback.points);
         
-        feedback = this.assessment.feedback.within_tolerance;
+        feedback = this.feedback.within_tolerance;
         $('#within_correct').text(questions[4].correct_answer);
         text = questions[4].answer ? questions[4].answer : 'No Answer';
         this.setAnswerTextWithColor('#within_answer', text, questions[4]);
         $('#within_pts').text(feedback.points);
 
-        feedback = this.assessment.feedback.reading_time;
+        feedback = this.feedback.reading_time;
         points = feedback.points;
         $('#reading_time').text(Util.timeLapseStr(questions[0].start_time, questions[1].end_time));
         //$('#reading_time_pts').text(points);
 
-        feedback = this.assessment.feedback.measuring_time;
+        feedback = this.feedback.measuring_time;
         $('#measuring_time').text(Util.timeLapseStr(questions[2].start_time, questions[2].end_time));
         //$('#measuring_time_pts').text(feedback.points);
         
@@ -72,7 +71,7 @@ Reporter.prototype =
         
         var measuring_pts = 0;
         
-        feedback = this.assessment.feedback.probe_connection;
+        feedback = this.feedback.probe_connection;
         if (feedback.correct) {
             this.setTextWithColor('#probe_connection', feedback.desc , '#339933');
         }
@@ -82,7 +81,7 @@ Reporter.prototype =
         //$('#probe_connection_pts').text(feedback.points);
         measuring_pts += feedback.points;
         
-        feedback = this.assessment.feedback.plug_connection;
+        feedback = this.feedback.plug_connection;
         if (feedback.correct) {
             this.setTextWithColor('#plug_connection', feedback.desc, '#339933');
         }

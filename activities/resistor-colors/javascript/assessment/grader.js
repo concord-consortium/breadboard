@@ -1,10 +1,10 @@
 /* The following line (global) is for JSLint */
 /*global console, Unit */
 
-function Grader(activity, activityLog, feedback)
+function Grader(activity, feedback)
 {
     this.activity = activity;
-    this.log = activityLog;
+    this.log = activity.log;
     this.feedback = feedback;
 }
 

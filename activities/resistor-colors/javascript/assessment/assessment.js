@@ -1,6 +1,11 @@
 /* The following line (global) is for JSLint */
 /*global console, Grader */
 
+/*
+ * A FeedbackItem is contains derived information from the activity log:
+ * Grader parses the activity log and populates feedback items.
+ * Reporter uses feedback items to generate the report.
+ */
 function FeedbackItem()
 {
     this.correct = null;
@@ -10,14 +15,18 @@ function FeedbackItem()
     this.maxPoints = 0;
 }
 
-function Assessment(activity, log)
+/* 
+ * Meant to hold everything needed for grading, such as rubric and grading
+ * routines. Since there's no rubric objects defined yet, it may appear to
+ * offer little more than Grader.
+ */
+function Assessment(activity)
 {
     //console.log('ENTER Assessment');
     this.activity = activity;
-    this.log = log;
     this.feedback = this.defineFeedback();
 
-    this.grader = new Grader(activity, this.log, this.feedback);
+    this.grader = new Grader(activity, this.feedback);
 }
 Assessment.prototype =
 {

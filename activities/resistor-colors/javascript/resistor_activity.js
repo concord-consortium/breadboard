@@ -61,7 +61,7 @@ function ResistorActivity() {
     var activity = this;
     
     this.log = new ActivityLog();
-    this.assessment = new Assessment(this, this.log);
+    this.assessment = new Assessment(this);
     this.reporter = new Reporter(this.assessment);
 
     this.circuit = null;
