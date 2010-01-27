@@ -81,7 +81,7 @@ function ResistorActivity() {
     
     if (jQuery.sparks.debug) {
         $('#json_button').click(function() {
-            $('#json_current_log').html('<pre>' + activity.log.prettyPrint() + '</pre>' + JSON.stringify(activity.log));
+            $('#json_current_log').html('<pre>' + Util.prettyPrint(activity.log.sessions, 4) + '</pre>' + JSON.stringify(activity.log));
         });
     }
     else {

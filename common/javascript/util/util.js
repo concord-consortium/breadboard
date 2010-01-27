@@ -81,3 +81,26 @@ Util.formatDate = function(date) {
     s += fillZero(date.getSeconds()) + ' ';
     return s;
 };
+
+// Pretty print an object. Mainly intended for debugging JSON objects
+Util.prettyPrint = function(obj, indent) {
+    var t = '';
+    if (typeof obj === 'object') {
+        for (var key in obj) {
+            if (typeof obj[key] !== 'function') {
+                for (var i = 0; i < indent; ++i) {
+                    t += ' ';
+                }
+                t += key + ': ';
+                if (typeof obj[key] === 'object') {
+                    t += '\n';
+                }
+                t += Util.prettyPrint(obj[key], indent + 4);
+            }
+        }
+        return t;
+    }
+    else {
+        return obj + '\n';
+    }
+};
