@@ -62,3 +62,22 @@ Util.serializeForm = function(form) {
     });
     return result;
 };
+
+// Returns a string representation of the input date
+// date: either a Date or a number in milliseconds
+Util.formatDate = function(date) {
+    function fillZero(val) {
+        return val < 10 ? '0' + val : String(val);
+    }
+    if (typeof date === 'number') {
+        date = new Date(date);
+    }
+    var s = fillZero(date.getMonth() + 1) + '/';
+    
+    s += fillZero(date.getDate()) + '/';
+    s += String(date.getFullYear()) + ' ';
+    s += fillZero(date.getHours()) + ':';
+    s += fillZero(date.getMinutes()) + ':';
+    s += fillZero(date.getSeconds()) + ' ';
+    return s;
+};

@@ -152,21 +152,6 @@ ActivityLog.prototype =
         return conn2;
     },
     
-    formatDate : function(ms) {
-        var date = new Date(ms);
-        var s = this.fillZero(date.getMonth() + 1) + '/';
-        s += this.fillZero(date.getDate()) + '/';
-        s += String(date.getFullYear()) + ' ';
-        s += this.fillZero(date.getHours()) + ':';
-        s += this.fillZero(date.getMinutes()) + ':';
-        s += this.fillZero(date.getSeconds()) + ' ';
-        return s;
-    },
-    
-    fillZero : function(val) {
-        return val < 10 ? '0' + val : String(val);
-    },
-    
     prettyPrint : function() {
         return this.prettyPrint2('LOG', this, 0);
     },
