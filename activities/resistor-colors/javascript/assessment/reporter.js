@@ -103,8 +103,6 @@ Reporter.prototype =
         
         //$('#measuring_pts').text(measuring_pts);
         $('#measuring_pts').text('45');
-        
-        //$('#report_log').html(this.reportLog());
     },
     
     setAnswerTextWithColor : function(elemId, text, question) {
@@ -116,17 +114,5 @@ Reporter.prototype =
     setTextWithColor : function(elemId, text, color) {
         $(elemId).text(text);
         $(elemId).attr('style', 'color: ' + color + ';');
-    },
-    
-    reportLog : function() {
-        var t = '<h4>Activity Log</h4><pre>';
-        var events = this.log.currentSession().events;
-        
-        t += this.log.formatDate(this.log.currentSession().start_time) + ' - Resistor 1 Start<br/>';
-        for (var i = 0; i < events.length; ++i) {
-            t += this.log.formatDate(events[i].time) + ' - ' + events[i].name + ': ' + events[i].value.split('|').join(', ') + '<br/>';
-        }
-        t += this.log.formatDate(this.log.currentSession().end_time) + ' - Resistor 1 End<br/>';
-        return t;
     }
 };
