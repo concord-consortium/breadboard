@@ -1,212 +1,129 @@
 /* The following line (global) is for JSLint */
 /*global console, Unit */
 
-function Grader(activity, feedback)
+
+function Grader(session)
 {
-    this.activity = activity;
-    this.log = activity.log;
-    this.feedback = feedback;
+    this.session = session;
+    this.section = this.session.sections[0];
+    this.questions =  this.section.questions;
+    
+    this.feedback = new Feedback();
+    this.parser = new LogParser(session);
 }
 
 Grader.prototype =
 {
-    grade : function(resultObject, sessionNum) {
-        console.log('ENTER Grader.grade');
-        var questions =  this.log.currentSession().sections[0].questions;
-        
-        var multimeter = this.activity.multimeter;
-        var resistor = this.activity.resistor;
-
-        this.gradeReadingColorBands(questions[0],
-                                    resultObject.rated_resistance,
-                                    resistor.nominalValue,
-                                    this.feedback.rated_r_value);
-        this.gradeTolerance(questions[1], resultObject.rated_tolerance, 
-                resistor.tolerance, this.feedback.rated_t_value);
-        this.gradeResistance(questions[2], resultObject.measured_resistance,
-                multimeter.makeDisplayText(resistor.realValue),
-                this.feedback.measured_r_value);
-        this.gradeToleranceRange(questions[3], resultObject.measured_tolerance,
-                resistor.nominalValue, resistor.tolerance,
-                this.feedback.t_range_value);
-        this.gradeWithinTolerance(questions[4], resultObject.within_tolerance,
-                resistor,this.feedback.within_tolerance);
+    grade : function() {
+        //console.log('ENTER Grader.grade');
+        this.gradeReadingColorBands();
+        this.gradeTolerance();
+        this.gradeResistance();
+        this.gradeToleranceRange();
+        this.gradeWithinTolerance();
         this.gradeTime();
         this.gradeSettings();
+        this.feedback.optimal_dial_setting = this.optimalDial(this.section.real_resistance);
+        return this.feedback;
     },
 
-    gradeReadingColorBands : function(question, formAnswer, correctValue,
-            feedback)
+    gradeReadingColorBands : function()
     {
-        formAnswer.message = "Unknown Error";
-        formAnswer.correct = false;
-        question.correct_answer = String(correctValue);
-        question.answer = formAnswer.value;
-        question.unit = formAnswer.units;
-        question.correct = false;
-        //feedback.label = 'Lack of understanding';
+        var question = this.questions[0];
+        var feedback = this.feedback.rated_r_value;
+        
+        feedback.correct = false;
         feedback.points = 0;
         
-        if (!this.validateNonEmpty(formAnswer.value, formAnswer)) {
-            return;
-        }
+        if (question.answer === null || isNaN(question.answer)) { return; }
+        if (!Unit.ohmCompatible(question.unit)) { return; }
         
-        var valueNum = Number(formAnswer.value);
-        if (!this.validateNumber(valueNum, formAnswer)) {
-            return;
-        }
+        var parsedValue = Unit.normalizeToOhms(question.answer, question.unit);
         
-        if (formAnswer.units === null ||
-            formAnswer.units === undefined ||
-            formAnswer.units.length < 1)
-        {
-             formAnswer.message = "No Unit Entered";
-             return;
-        }
-
-        console.log('unit=' + formAnswer.units);
-
-        if (!Unit.ohmCompatible(formAnswer.units)) {
-            formAnswer.message = "Incorrect Unit";
-            return;
-        }   
-        var parsedValue = Unit.normalizeToOhms(valueNum, formAnswer.units);
+        console.log('parsedValue=' + parsedValue + ' correctValue=' + question.correct_answer);
         
-        console.log('parsedValue=' + parsedValue + ' correctValue=' + correctValue);
-        
-        if(correctValue != parsedValue){
-            if (this.sameBeforeDot(correctValue, parsedValue)) {
-                if (this.semiCorrectDigits(correctValue, parsedValue, 3)) {
+        if(question.correct_answer != parsedValue){
+            if (this.sameBeforeDot(question.correct_answer, parsedValue)) {
+                if (this.semiCorrectDigits(question.correct_answer, parsedValue, 3)) {
                     feedback.points = 2;
                     return;
                 }
             }
-            else if (this.sameFirstSigDigits(correctValue, parsedValue, 3)) {
+            else if (this.sameFirstSigDigits(question.correct_answer, parsedValue, 3)) {
                 feedback.points = 10;
                 return;
             }
-            
-            //formAnswer.message = "The entered value or unit is incorrect.";
             return;
         }
-        
-        formAnswer.correct = true;
-        formAnswer.message = 'Correct';
-        //feedback.label = 'Excellent';
         feedback.points = 20;
-        question.correct = true;
+        feedback.correct = true;
     },
     
-    gradeResistance : function(question, formAnswer, correctValue, feedback) {
-        formAnswer.message = "Unknown Error";
-        formAnswer.correct = false;
-        question.correct_answer = String(correctValue);
-        question.answer = formAnswer.value;
-        question.unit = formAnswer.units;
-        question.correct = false;
-        feedback.label = 'Lack of understanding';
+    gradeResistance : function() {
+        var question = this.questions[2];
+        var feedback = this.feedback.measured_r_value;
+        
+        feedback.correct = false;
         feedback.points = 0;
         
-        if (!this.validateNonEmpty(formAnswer.value, formAnswer)) {
-            return;
-        }
+        if (question.answer === null || isNaN(question.answer)) { return; }
+        if (!Unit.ohmCompatible(question.unit)) { return; }
         
-        var valueNum = Number(formAnswer.value);
-        if (!this.validateNumber(valueNum, formAnswer)) {
-            return;
-        }
+        var parsedValue = Unit.normalizeToOhms(question.correct_answer, question.unit);
         
-        if (formAnswer.units === null ||
-            formAnswer.units === undefined ||
-            formAnswer.units.length < 1)
-        {
-             formAnswer.message = "No Unit Entered";
-             return;
-        }
-
-        console.log('unit=' + formAnswer.units);
-
-        if (!Unit.ohmCompatible(formAnswer.units)) {
-            formAnswer.message = "Incorrect Unit";
-            return;
-        }   
-        var parsedValue = Unit.normalizeToOhms(valueNum, formAnswer.units);
+        console.log('parsedValue=' + parsedValue + ' correctValue=' + question.correct_answer);
         
-        console.log('parsedValue=' + parsedValue + ' correctValue=' + correctValue);
-        
-        if(correctValue != parsedValue){
-            formAnswer.message = "The entered value or unit is incorrect.";
-            if (this.semiAcceptable(correctValue, parsedValue)) {
-                feedback.label = 'Learning';
+        if(question.correct_answer != parsedValue){
+            if (this.semiAcceptable(question.correct_answer, parsedValue)) {
                 feedback.points = 5;
             }
             return;
         }
         
-        formAnswer.correct = true;
-        formAnswer.message = 'Correct';
-        feedback.label = 'Excellent';
+        feedback.correct = true;
         feedback.points = 10;
-        question.correct = true;
     },
     
-    gradeTolerance : function(question, answer, correctValue, feedback) {
-        answer.message = "Unknown Error";
-        answer.correct = false;
-        question.correct_answer = String(correctValue);
-        question.answer = answer.value;
-        question.unit = '%';
-        question.correct = false;
+    gradeTolerance : function() {
+        var question = this.questions[1];
+        var feedback = this.feedback.rated_t_value;
+        
+        feedback.correct =false;
         feedback.points = 0;
         
-        if (!this.validateNonEmpty(answer.value, answer)) {
+        if (question.answer === null || isNaN(question.answer)) {
             return;
         }
-
-        var value_num = Number(answer.value);
-        if (!this.validateNumber(value_num, answer)) {
-            return;
-        }
-        
-        if(correctValue != value_num / 100.0){
-            answer.message = "The entered value is incorrect.";
+        if (question.correct_answer != question.answer / 100.0){
             return;
         }
         
-        answer.correct = true;
-        answer.message = "Correct";
-        question.correct = true;
+        feedback.correct = true;
         feedback.points = 5;
     },
     
-    gradeToleranceRange : function(question, answer, nominalResistance,
-        tolerance, feedback)
+    gradeToleranceRange : function()
     {
-        console.log('ENTER Grader.gradeToleranceRange');
-        feedback.label = 'Lack of understanding';
+        //console.log('ENTER Grader.gradeToleranceRange');
+        var question = this.questions[3];
+        var feedback = this.feedback.t_range_value;
+        var nominalResistance = this.section.nominal_resistance;
+        var tolerance = this.section.tolerance;
+
+        feedback.correct = false;
         feedback.points = 0;
 
-        
         var correctMin = nominalResistance * (1 - tolerance);
         var correctMax = nominalResistance * (1 + tolerance);
         
-        console.log('nom=' + nominalResistance + ' tol=' + tolerance + ' min=' + correctMin + ' max=' + correctMax);
+        //console.log('nom=' + nominalResistance + ' tol=' + tolerance + ' min=' + correctMin + ' max=' + correctMax);
         
-        answer.message = "Unknown Error";
-        answer.correct = false;
         question.correct_answer = [correctMin, correctMax];
-        question.answer = [answer.min, answer.max];
-        question.unit = [answer.min_unit, answer.max_unit];
-        question.correct = false;
 
-        if (!this.validateNonEmpty(answer.min, answer) || !this.validateNonEmpty(answer.max, answer)) {
-            return;
-        }
-
-        var min = Number(answer.min);
-        var max = Number(answer.max);
+        var min = question.answer[0];
+        var max = question.answer[1];
         
-        if (!this.validateNumber(min, answer) || !this.validateNumber(max, answer)) {
+        if (min === null || isNaN(min) || max === null || isNaN(max)) {
             return;
         }
         
@@ -217,26 +134,22 @@ Grader.prototype =
             max = tmp;
         }
         
-        console.log('correct min=' + correctMin + ' max=' + correctMax);
-        console.log('submitted min=' + min + ' max=' + max);
+        //console.log('correct min=' + correctMin + ' max=' + correctMax);
+        //console.log('submitted min=' + min + ' max=' + max);
         
-        if (!Unit.ohmCompatible(answer.min_unit) ||
-            !Unit.ohmCompatible(answer.max_unit))
+        if (!Unit.ohmCompatible(question.unit[0]) ||
+            !Unit.ohmCompatible(question.unit[1]))
         {
-            answer.message = "Incorrect Unit";
             return;
         }
         
-        var parsedMin = Unit.normalizeToOhms(min, answer.min_unit);
-        var parsedMax = Unit.normalizeToOhms(max, answer.max_unit);
+        var parsedMin = Unit.normalizeToOhms(min, question.unit[0]);
+        var parsedMax = Unit.normalizeToOhms(max, question.unit[1]);
         
         if (this.equalWithTolerance(parsedMin, correctMin, 1e-5) &&
             this.equalWithTolerance(parsedMax, correctMax, 1e-5))
         {
-            answer.correct = true;
-            answer.message = "Correct";
-            question.correct = true;
-            //feedback.label = 'Excellent';
+            feedback.correct = true;
             feedback.points = 15;
         }
         
@@ -260,22 +173,20 @@ Grader.prototype =
         return;
     },
     
-    gradeWithinTolerance : function(question, answer, resistor, feedback) {
+    gradeWithinTolerance : function() {
+        var question = this.questions[4];
+        var feedback = this.feedback.within_tolerance;
         var correctAnswer;
-        var tolerance = resistor.nominalValue * resistor.tolerance;
+        var nominalValue = this.section.nominal_resistance;
+        var tolerance = this.section.tolerance;
+        var displayValue = this.section.displayed_resistance;
+        var allowance = nominalValue * tolerance;
         
-        feedback.label = 'Lack of understanding';
+        feedback.correct = false;
         feedback.points = 0;
         
-        /*
-        console.log('nominal=' + resistor.nominalValue + 
-         ' tolerance=' + resistor.tolerance + ' real=' + resistor.realValue);
-        console.log('min=' + (resistor.nominalValue - tolerance));
-        console.log('max=' + (resistor.nominalValue + tolerance));
-        */
-        
-        if (resistor.realValue < resistor.nominalValue - tolerance ||
-            resistor.realValue > resistor.nominalValue + tolerance)
+        if (displayValue < nominalValue - allowance ||
+            displayValue > nominalValue + allowance)
         {
             correctAnswer = 'no';
         }
@@ -283,63 +194,50 @@ Grader.prototype =
             correctAnswer = 'yes';
         }
         
-        answer.message = "Unknown Error";
-        answer.correct = false;
         question.correct_answer = correctAnswer;
-        question.answer = answer.value;
-        question.correct = false;
-        
-        if (!this.validateNonEmpty(answer.value, answer)) {
+        if (question.answer != correctAnswer) {
             return;
         }
-
-        if (answer.value != correctAnswer) {
-            return;
-        }
-        answer.correct = true;
-        answer.message = "Correct";
-        question.correct = true;
-        feedback.label = 'Excellent';
+        feedback.correct = true;
         feedback.points = 5;
     },
     
     gradeTime : function() {
         var seconds;
         var feedbackItem;
-        var questions = this.log.currentSession().sections[0].questions;
         
-        seconds = (questions[1].end_time - questions[0].start_time) / 1000;
-        feedbackItem = this.feedback.reading_time;
+        seconds = (this.questions[1].end_time - this.questions[0].start_time) / 1000;
+        feedback = this.feedback.reading_time;
         if (seconds <= 20) {
-            feedbackItem.points = 5;
+            feedback.points = 5;
         }
         else if (seconds <= 40) {
-            feedbackItem.points = 2;
+            feedback.points = 2;
         }
         else {
-            feedbackItem.points = 0;
+            feedback.points = 0;
         }
         
-        seconds = (questions[2].end_time - questions[2].start_time) / 1000;
-        feedbackItem = this.feedback.measuring_time;
+        seconds = (this.questions[2].end_time - this.questions[2].start_time) / 1000;
+        feedback = this.feedback.measuring_time;
         if (seconds <= 20) {
-            feedbackItem.points = 5;
+            feedback.points = 5;
         }
         else if (seconds <= 40) {
-            feedbackItem.points = 2;
+            feedback.points = 2;
         }
         else {
-            feedbackItem.points = 0;
+            feedback.points = 0;
         }
     },
     
     gradeSettings : function() {
-        var redProbeConn = this.activity.multimeter.redProbeConnection;
-        var blackProbeConn = this.activity.multimeter.blackProbeConnection;
-        var redPlugConn = this.activity.multimeter.redPlugConnection;
-        var blackPlugConn = this.activity.multimeter.blackPlugConnection;
+        var redProbeConn = this.parser.last_red_probe_conn;
+        var blackProbeConn = this.parser.last_black_probe_conn;
+        var redPlugConn = this.parser.last_red_plug_conn;
+        var blackPlugConn = this.parser.last_black_plug_conn;
         
-        console.log('redProbe=' + redProbeConn + ' blackProbe=' + blackProbeConn + ' redPlug=' + redPlugConn + ' blackPlug=' + blackPlugConn);
+        //console.log('redProbe=' + redProbeConn + ' blackProbe=' + blackProbeConn + ' redPlug=' + redPlugConn + ' blackPlug=' + blackPlugConn);
         
         // Connection to R
         if ((redProbeConn == 'resistor_lead1' || redProbeConn == 'resistor_lead2') && 
@@ -375,8 +273,8 @@ Grader.prototype =
         }
         
         // DMM knob
-        var initialKnob = this.log.getInitialDialSetting();
-        var finalKnob = this.log.getFinalDialSetting();
+        var initialKnob = this.parser.getInitialDialSetting();
+        var finalKnob = this.parser.getFinalDialSetting();
     },
     
     equalWithTolerance : function(value1, value2, tolerance) {

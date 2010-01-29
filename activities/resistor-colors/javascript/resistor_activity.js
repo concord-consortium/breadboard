@@ -16,7 +16,7 @@ function submitButtonClicked(event) {
         activity.enableForm(nextForm);
         ++activity.current_question;
         activity.log.add('start_question', { question : activity.current_question });
-        console.log('current_question=' + activity.current_question);
+        //console.log('current_question=' + activity.current_question);
         if (activity.current_question == 3) {
             activity.enableCircuit();
         }
@@ -24,7 +24,7 @@ function submitButtonClicked(event) {
 }
 
 function startButtonClicked(event) {
-    console.log('EVENT: ' + (typeof event));
+    //console.log('EVENT: ' + (typeof event));
     //jQuery(event.target).hide();
     $('#intro_area').hide();
     jQuery.sparks.activity.startTry();
@@ -40,7 +40,7 @@ function nextButtonClicked(event) {
 
 function showReportButtonClicked(event) {
     var activity = jQuery.sparks.activity;
-    activity.reporter.reportOnSession(activity.current_session);
+    activity.reporter.reportOnSession(activity.log.currentSession(), activity.current_session, activity.feedback);
     /*
     $("#report").load("report-templates/report.html", {}, function() {
         jQuery.sparks.activity.reporter.report();
@@ -55,7 +55,7 @@ function showReportButtonClicked(event) {
 }
 
 function ResistorActivity() {
-    console.log('ENTER ResistorActivity');
+    //console.log('ENTER ResistorActivity');
     $('body').scrollTop(0); //scroll to top
     
     var activity = this;
@@ -117,21 +117,23 @@ ResistorActivity.prototype =
         this.multimeter = new Multimeter();
         this.resistor = new Resistor();
         
-        console.log('Nominal Resistance=' + this.resistor.nominalValue);
-        console.log('Tolerance=' + this.resistor.tolerance * 100 + '%');
-        console.log('Real Resistance=' + this.resistor.realValue);
+        //console.log('Nominal Resistance=' + this.resistor.nominalValue);
+        //console.log('Tolerance=' + this.resistor.tolerance * 100 + '%');
+        //console.log('Real Resistance=' + this.resistor.realValue);
         
         if (jQuery.sparks.debug_mode == 'multimeter') {
             Flash.sendCommand('set_debug_mode', 'multimeter');
             this.resistor.randomize();
+            this.logResistorState();
             this.showRccDebugInfo();
         }
     },
     
     // Re-initialize the circuit settings for a new set of questions
     resetCircuit : function() {
-        console.log('ENTER ResistorActivity.resetCircuit');
+        //console.log('ENTER ResistorActivity.resetCircuit');
         this.resistor.randomize();
+        this.logResistorState();
         Flash.sendCommand('reset_circuit');
         this.multimeter.update();
     },
@@ -160,7 +162,9 @@ ResistorActivity.prototype =
             $("#result").html("<pre>"+resultString+"</pre>");
         }
 
-        this.assessment.grader.grade(result, this.current_session);
+        this.assessment.receiveResultFromHTML(result);
+        this.feedback = this.assessment.grade(this.log.currentSession());
+        this.assessment.sendResultToHTML(result, this.feedback);
 
         // Update forms
         for (var item in result) {
@@ -169,16 +173,16 @@ ResistorActivity.prototype =
         
         var questions = this.log.currentSession().sections[0].questions;
 
-        if (!questions[0].correct) {
+        if (!this.feedback.rated_r_value.correct) {
             $('#rated_r_feedback').show();
         }
-        if (!questions[1].correct) {
+        if (!this.feedback.rated_t_value.correct) {
             $('#rated_t_feedback').show();
         }
-        if (!questions[2].correct) {
+        if (!this.feedback.measured_r_value.correct) {
             $('#measured_r_feedback').show();
         }
-        if (!questions[3].correct) {
+        if (!this.feedback.t_range_value.correct) {
             $('#t_range_feedback').show();
         }
       
@@ -255,7 +259,7 @@ ResistorActivity.prototype =
       
       this.disableCircuit();
       
-      console.log('current_session changed to: ' + this.current_session);
+      //console.log('current_session changed to: ' + this.current_session);
       this.log.add('start_session');
       this.log.add('start_section');
       this.log.add('start_question', { section : this.current_section, question : 1 });
@@ -267,13 +271,15 @@ ResistorActivity.prototype =
         var model = $("#rcc_model");
         var debug_div = $("#rcc_debug");
         
-        console.log('debug_div=' + debug_div.length);
+        //console.log('debug_div=' + debug_div.length);
         
         var html =
-          "Nominal Value: " + resistor.nominalValue + "<br/>" +
-          "Tolerance: " + resistor.tolerance * 100.0 + "%<br/>" +
-          "Real Value: " + resistor.realValue + "<br/>" +
-          "Display Value: " + this.multimeter.makeDisplayText(resistor.realValue) + "<br/>";
+          'Nominal Value: ' + resistor.nominalValue + '<br/>' +
+          'Tolerance: ' + resistor.tolerance * 100.0 + '%<br/>' +
+          'Range: [' + resistor.nominalValue * (1 - resistor.tolerance) + ', ' +
+          resistor.nominalValue * (1 + resistor.tolerance) + ']<br/>' + 
+          'Real Value: ' + resistor.realValue + '<br/>' +
+          'Display Value: ' + this.multimeter.makeDisplayText(resistor.realValue) + '<br/>';
         
         if (debug_div.length > 0) {
             debug_div.html(html);
@@ -296,5 +302,13 @@ ResistorActivity.prototype =
       form.find("button").remove(); 
       form.find("input, select").attr("disabled", "true");
       form.css("background-color", "");
+    },
+    
+    logResistorState : function() {
+        this.log.setValue('nominal_resistance', this.resistor.nominalValue);
+        this.log.setValue('tolerance', this.resistor.tolerance);
+        this.log.setValue('real_resistance', this.resistor.realValue);
+        this.log.setValue('displayed_resistance',
+                          this.multimeter.makeDisplayText(this.resistor.realValue));
     }
 };

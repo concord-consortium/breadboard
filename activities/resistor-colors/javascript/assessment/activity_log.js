@@ -9,10 +9,10 @@ function Event(name, value, time) {
 
 function Question(id) {
     this.id = id;
+    this.prompt = '';
     this.correct_answer = '';
     this.answer = '';
     this.unit = '';
-    this.correct = false;
     this.start_time = null;
     this.end_time = null;
 }
@@ -24,39 +24,37 @@ function Section() {
     this.end_time = null;
 }
 
+/* Log object structure
+ * - session is the unit of upload to server
+ * 
+ *   SESSION
+ *     start_time:
+ *     end_time:
+ *     sections:
+ *       - section
+ *           start_time:
+ *           end_time:
+ *           events:
+ *             - event
+ *                 name:
+ *                 value:
+ *                 time:
+ *           questions:
+ *             - question
+ *                 id:
+ *                 correct_answer:
+ *                 answer:
+ *                 unit:
+ *                 correct:
+ *                 start_time:
+ *                 end_time:
+ */
 function Session() {
     this.sections = [];
     this.start_time = null;
     this.end_time = null;
 }
 
-/* Log object structure
- * - session is the unit of upload to server
- * 
- * ActivityLog:
- *   sessions:
- *     - session
- *         start_time:
- *         end_time:
- *         sections:
- *           - section
- *               start_time:
- *               end_time:
- *               events:
- *                 - event
- *                     name:
- *                     value:
- *                     time:
- *               questions:
- *                 - question
- *                     id:
- *                     correct_answer:
- *                     answer:
- *                     unit:
- *                     correct:
- *                     start_time:
- *                     end_time:
- */
 function ActivityLog()
 {
     //console.log('ENTER ActivityLog');
@@ -67,6 +65,27 @@ function ActivityLog()
 
 ActivityLog.prototype =
 {
+    eventNames : { start_session: 1,
+                   end_session: 1,
+                   start_section: 1,
+                   end_section: 1,
+                   start_question: 1,
+                   end_question: 1,
+                   connect: 1,
+                   disconnect: 1,
+                   make_circuit: 1,
+                   break_circuit: 1,
+                   multimeter_dial: 1,
+                   multimeter_power: 1,
+                   resistor_nominal_value: 1,
+                   resistor_real_value: 1,
+                   resistor_display_value: 1 },
+    
+    valueNames : { nominal_resistance: 1,
+                   tolerance: 1,
+                   real_resistance: 1,
+                   displayed_resistance: 1 },
+    
     beginNextSession : function() {
         var session = new Session();
         var section = new Section();
@@ -86,23 +105,32 @@ ActivityLog.prototype =
     currentSession : function() {
         return this.sessions[this.numSessions - 1];
     },
-      
+ 
+    setValue : function(name, value) {
+        if (this.valueNames[name]) {
+            this.currentSession().sections[0][name] = value;
+        }
+        else {
+            this.currentSession().sections[0].UNREGISTERED_NAME = name;
+        }
+    },
+
+    // Add event
     add : function(name, params) {
         var now = new Date().valueOf();
         var section = this.currentSession().sections[0];
+
+        if (!this.eventNames[name]) { 
+            console.log('ERROR: add: Unknown log event name ' + name);
+            section.events.push(new Event('UNREGISTERED_NAME', name, now));
+            return;
+        }
         
         switch (name)
         {
-        case 'multimeter_dial':
-            console.log('multimeter_dial ' + params.value);
-            section.events.push(new Event('multimeter_dial', params.value, now));
-            break;
         case 'connect':
             console.log('connect ' + params.conn1 + ' to ' + params.conn2);
             section.events.push(new Event('connect', params.conn1 + '|' + params.conn2, now));
-            break;
-        case 'disconnect':
-            section.events.push(new Event('disconnect', params.value, now));
             break;
         case 'make_circuit':
             section.events.push(new Event('make_circuit', '', now));
@@ -122,9 +150,6 @@ ActivityLog.prototype =
         case 'end_question':
             section.questions[params.question-1].end_time = now;
             break;
-        case 'multimeter_power':
-            section.events.push(new Event('multimeter_power', params.value, now));
-            break;
         case 'start_session':
             this.currentSession().start_time = now;
             break;
@@ -132,88 +157,8 @@ ActivityLog.prototype =
             this.currentSession().end_time = now;
             break;
         default:
-            console.log('ERROR: add: Unknown log event name ' + name);
+            section.events.push(new Event(name, params.value, now));
         }
     },
     
-    getLastConnection : function(conn1) {
-        var events = this.currentSession().sections[0].events;
-        var conn2 = null;
-        var values = null;
-        for (var i = 0; i < events.length; ++i) {
-            if (events[i].name == 'connect') {
-                values = events[i].value.split('|');
-                if (values[0] == conn1) {
-                    conn2 = values[1];
-                }
-            }
-        }
-        //console.log('conn1=' + conn1 + ' conn2=' + conn2);
-        return conn2;
-    },
-    
-    // DMM dial setting when the circuit is last made before 
-    // measured resistance is submitted
-    getInitialDialSetting: function() {
-        var end_time = this.currentSession().sections[0].questions[2].end_time;
-        var setting = null;
-        var last_make = this.getLastCircuitMakeTime();
-        if (last_make === null) {
-            return null; // circuit is not connected so dial setting is meaningless
-        }
-        var events = this.currentSession().sections[0].events;
-        for (var i = 0; i < events.length && events[i].time < end_time; ++i) {
-            if (events[i].name == 'multimeter_dial' && events[i].time <= last_make) {
-                setting = events[i].value;
-                break;
-            }
-        }
-        return setting;
-    },
-    
-    getFinalDialSetting: function() {
-        var end_time = this.currentSession().sections[0].questions[2].end_time;
-        var setting = null;
-        var last_break = this.getLastCircuitBreakTime();
-        if (last_break > -Infinity) {
-            end_time = last_break;
-        }
-        var events = this.currentSession().sections[0].events;
-        for (var i = 0; i < events.length && events[i].time < end_time; ++i) {
-            if (events[i].name == 'multimeter_dial') {
-                setting = events[i].value;
-            }
-        }
-        return setting;
-    },
-    
-    /*
-     * Last time before measured resistance is submitted that the circuit is 
-     * all connected.
-     * 
-     * Returns +Infinity if there's no 'make_circuit' events.
-     */
-    getLastCircuitMakeTime : function() {
-        var end_time = this.currentSession().sections[0].questions[2].end_time;
-        var make_time = Infinity;
-        var events = this.currentSession().sections[0].events;
-        for (var i = 0; i < events.length && events[i].time < end_time; ++i) {
-            if (events[i].name === 'make_circuit') {
-                make_time = events[i].time;
-            }
-        }
-        return make_time;
-    },
-    
-    getLastCircuitBreakTime : function() {
-        var end_time = this.currentSession().sections[0].questions[2].end_time;
-        var break_time = -Infinity;
-        var events = this.currentSession().sections[0].events;
-        for (var i = 0; i < events.length && events[i].time < end_time; ++i) {
-            if (events[i].name === 'break_circuit') {
-                break_time = events[i].time;
-            }
-        }
-        return break_time;
-    }
 };

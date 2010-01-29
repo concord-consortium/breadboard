@@ -6,8 +6,6 @@ function Reporter(assessment)
     //console.log('ENTER Reporter');
     this.activity = assessment.activity;
     this.log = assessment.activity.log;
-    this.grader = assessment.grader;
-    this.feedback = assessment.feedback;
 }
 
 Reporter.prototype =
@@ -19,94 +17,94 @@ Reporter.prototype =
         r_200: '\u2126 - 200'
     },
     
-    reportOnSession : function(sessionNum) {
+    reportOnSession : function(session, sessionNum, feedback) {
         var reporter = this;
         $("#report").load("report-templates/report-section.html", {}, function() {
-            reporter.sessionReport(sessionNum);
+            reporter.sessionReport(session, feedback);
             $('#report').data('title.dialog', 'Report for Resistor #' + sessionNum);
             $('#report').dialog('open');
         });
     },
     
-    sessionReport : function(sessionNum) {
+    sessionReport : function(session, feedback) {
         var text = '';
-        var questions = this.log.currentSession().sections[0].questions;
+        var questions = session.sections[0].questions;
         var points = 0;
         
-        var feedback = this.feedback.rated_r_value;
+        var fb = feedback.rated_r_value;
         $('#rated_r_correct').text(Unit.res_str(questions[0].correct_answer));
         text = questions[0].answer ? questions[0].answer + questions[0].unit : 'No Answer';
-        this.setAnswerTextWithColor('#rated_r_answer', text, questions[0]);
-        points = feedback.points;
+        this.setAnswerTextWithColor('#rated_r_answer', text, fb);
+        points = fb.points;
                 
-        feedback = this.feedback.rated_t_value;
+        fb = feedback.rated_t_value;
         $('#rated_t_correct').text(questions[1].correct_answer * 100 + '%');
         text = questions[1].answer ? questions[1].answer + questions[1].unit : 'No Answer';
-        this.setAnswerTextWithColor('#rated_t_answer', text, questions[1]);
+        this.setAnswerTextWithColor('#rated_t_answer', text, fb);
         
-        $('#reading_pts').text(points + feedback.points);
+        $('#reading_pts').text(points + fb.points);
         
-        feedback = this.feedback.t_range_value;
+        fb = feedback.t_range_value;
         $('#t_range_correct').text(Unit.res_str(questions[3].correct_answer[0]) + ' .. ' + Unit.res_str(questions[3].correct_answer[1]));
-        text = (questions[3].answer[0] || questions[3].answer[1]) ? questions[3].answer[0] + questions[3].unit[0] + ' .. ' + questions[3].answer[1] + questions[3].unit[1] : 'No Answer';
-        this.setAnswerTextWithColor('#t_range_answer', text, questions[3]);
-        $('#t_range_pts').text(feedback.points);
+        text = (questions[3].answer[0] || questions[3].answer[1]) ? String(questions[3].answer[0]) + questions[3].unit[0] + ' .. ' + questions[3].answer[1] + questions[3].unit[1] : 'No Answer';
+        this.setAnswerTextWithColor('#t_range_answer', text, fb);
+        $('#t_range_pts').text(fb.points);
         
-        feedback = this.feedback.within_tolerance;
+        fb = feedback.within_tolerance;
         $('#within_correct').text(questions[4].correct_answer);
         text = questions[4].answer ? questions[4].answer : 'No Answer';
-        this.setAnswerTextWithColor('#within_answer', text, questions[4]);
-        $('#within_pts').text(feedback.points);
+        this.setAnswerTextWithColor('#within_answer', text, fb);
+        $('#within_pts').text(fb.points);
 
-        feedback = this.feedback.reading_time;
-        points = feedback.points;
+        fb = feedback.reading_time;
+        points = fb.points;
         $('#reading_time').text(Util.timeLapseStr(questions[0].start_time, questions[1].end_time));
         //$('#reading_time_pts').text(points);
 
-        feedback = this.feedback.measuring_time;
+        fb = feedback.measuring_time;
         $('#measuring_time').text(Util.timeLapseStr(questions[2].start_time, questions[2].end_time));
-        //$('#measuring_time_pts').text(feedback.points);
+        //$('#measuring_time_pts').text(fb.points);
         
-        $('#time_pts').text(points + feedback.points);
+        $('#time_pts').text(points + fb.points);
         
         var measuring_pts = 0;
         
-        feedback = this.feedback.probe_connection;
-        if (feedback.correct) {
-            this.setTextWithColor('#probe_connection', feedback.desc , '#339933');
+        fb = feedback.probe_connection;
+        if (fb.correct) {
+            this.setTextWithColor('#probe_connection', fb.desc , '#339933');
         }
         else {
-            this.setTextWithColor('#probe_connection', feedback.desc, '#cc3300');
+            this.setTextWithColor('#probe_connection', fb.desc, '#cc3300');
         }
-        //$('#probe_connection_pts').text(feedback.points);
-        measuring_pts += feedback.points;
+        //$('#probe_connection_pts').text(fb.points);
+        measuring_pts += fb.points;
         
-        feedback = this.feedback.plug_connection;
-        if (feedback.correct) {
-            this.setTextWithColor('#plug_connection', feedback.desc, '#339933');
+        fb = feedback.plug_connection;
+        if (fb.correct) {
+            this.setTextWithColor('#plug_connection', fb.desc, '#339933');
         }
         else {
-            this.setTextWithColor('#plug_connection', feedback.desc, '#cc3300');
+            this.setTextWithColor('#plug_connection', fb.desc, '#cc3300');
         }
-        //$('#plug_connection_pts').text(feedback.points);
-        measuring_pts += feedback.points;
+        //$('#plug_connection_pts').text(fb.points);
+        measuring_pts += fb.points;
         
-        $('#correct_knob').text(this.dialLabels[this.grader.optimalDial(this.activity.resistor.realValue)]);
+        $('#correct_knob').text(this.dialLabels[feedback.optimal_dial_setting]);
         
-        console.log('initial=' + this.log.getInitialDialSetting());
-        console.log('final=' + this.log.getFinalDialSetting());
+        //console.log('initial=' + this.log.getInitialDialSetting());
+        //console.log('final=' + this.log.getFinalDialSetting());
         
+        fb = feedback.measured_r_value;
         $('#measured_r_correct').text(Unit.res_str(questions[2].correct_answer));
         text = questions[2].answer ? questions[2].answer + questions[2].unit : 'No Answer';
-        this.setAnswerTextWithColor('#measured_r_answer', text, questions[2]);
+        this.setAnswerTextWithColor('#measured_r_answer', text, fb);
         
         //$('#measuring_pts').text(measuring_pts);
         $('#measuring_pts').text('45');
     },
     
-    setAnswerTextWithColor : function(elemId, text, question) {
-        var color = question.correct ? '#339933' : '#cc3300';
-        console.log('TEXT=' + text + '   !!!!!!!!!!!!!!!!!!!!!!!!');
+    setAnswerTextWithColor : function(elemId, text, feedback) {
+        var color = feedback.correct ? '#339933' : '#cc3300';
         this.setTextWithColor(elemId, text, color);
     },
 
