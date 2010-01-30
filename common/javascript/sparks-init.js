@@ -11,6 +11,8 @@ if (typeof console == 'undefined') {
     //var console = { log: alert };
 }
 
+var debug = console.log;
+
 // Setup a global namespace to store page variables
 jQuery.sparks = {};
 
@@ -45,9 +47,14 @@ function initActivity() {
 //function onFlashLoad() {
     console.log('ENTER initActivity');
     
-    jQuery.sparks.activity = new ResistorActivity();
-    jQuery.sparks.activity.initDocument();
-    jQuery.sparks.activity.onFlashDone();
+    var activity = new ResistorActivity();
+    activity.initDocument();
+    activity.onFlashDone();
+
+    var dataService = new RestDS(null, null, '/sparks_models/');
+    activity.setDataService(dataService);
+    
+    jQuery.sparks.activity = activity;
 }
 
 function checkFlashVersion() {

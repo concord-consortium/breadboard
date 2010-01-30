@@ -60,6 +60,7 @@ function ResistorActivity() {
     
     var activity = this;
     
+    this.dataService = null;
     this.log = new ActivityLog();
     this.assessment = new Assessment(this);
     this.reporter = new Reporter(this.assessment);
@@ -91,6 +92,10 @@ function ResistorActivity() {
 
 ResistorActivity.prototype =
 {
+    setDataService : function(ds) {
+        this.dataService = ds;
+    },
+
     // Initial operation on document when it is loaded
     initDocument : function() {
         // Disable all form elements
@@ -196,6 +201,8 @@ ResistorActivity.prototype =
         this.endSessionInstruction.show();
         this.log.add('end_section');
         this.log.add('end_session');
+        
+        this.saveStudentData();
     },
     
     updateEndInstruction : function() {
@@ -310,5 +317,14 @@ ResistorActivity.prototype =
         this.log.setValue('real_resistance', this.resistor.realValue);
         this.log.setValue('displayed_resistance',
                           this.multimeter.makeDisplayText(this.resistor.realValue));
+    },
+    
+    saveStudentData : function() {
+        if (this.dataService) {
+          this.dataService.save(JSON.stringify(this.log.sessions));
+        }
+        else {
+          console.log("saveStudentData: No Data Service defined");
+        }
     }
 };
