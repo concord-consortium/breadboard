@@ -50,10 +50,22 @@ function initActivity() {
     activity.initDocument();
     activity.onFlashDone();
 
-    var dataService = new RestDS(null, null, '/sparks_models/');
+    var put_path = readCookie('put_path') ||  '/sparks_models/';
+    var dataService = new RestDS(null, null, put_path);
     activity.setDataService(dataService);
     
     jQuery.sparks.activity = activity;
+}
+
+function readCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
 }
 
 function checkFlashVersion() {
