@@ -10,8 +10,7 @@ if (typeof console == 'undefined') {
     var console = { log: function() {} };
     //var console = { log: alert };
 }
-
-var debug = console.log;
+var debug = function(x) { console.log(x); };
 
 // Setup a global namespace to store page variables
 jQuery.sparks = {};

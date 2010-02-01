@@ -27,21 +27,21 @@
     <script type="text/javascript" src="javascript/assessment/log_parser.js"></script>
     <script type="text/javascript" src="javascript/server-reporter.js"></script>
     <script type="text/javascript">
+       if (typeof console == 'undefined') {
+            var console = { log: function() {} };
+        }
+        var debug = function(x) { console.log(x); };
         $(document).ready(function() {
-            debug = console.log;
             var ds = new RestDS(null, null, '/sparks_models/');
         
             $('#load_button').click(function() {
-                alert('about to load');
                 ds.readKey = true;
                 ds.load(this, function(data) {
                      var grader = new Grader(data[0]);
                      var feedback = grader.grade();
                      var reporter = new ServerReporter();
                      reporter.sessionReport(data[0], feedback);
-                     alert(data);
                  }); 
-                //var my_key = $('#my_key').attr('value');
             });
         });
     </script>
