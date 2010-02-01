@@ -86,6 +86,9 @@ package org.concord.sparks.activities
                          javascript.sendEvent("multimeter_power", true);
                     }
                     return 'set_debug_mode';
+                case 'set_root_path':
+                    setRootPath(args[1]);
+                    return args[1];
             }
             return 'UNKNOWN';
         }

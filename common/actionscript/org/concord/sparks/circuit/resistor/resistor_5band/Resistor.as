@@ -97,11 +97,11 @@ package org.concord.sparks.circuit.resistor.resistor_5band
         
         private function loadBandImage(loader:Loader, fname:String):void {
             var s = '/sparks-content/common/images/resistor/' + fname;
-            //trace('path=' + s);
+            trace('path=' + s);
             try {
                 var req:URLRequest = new URLRequest(s);
                 loader.load(req);
-                //trace('Loaded ' + s);
+                trace('Loaded ' + s);
             }
             catch (e:IOErrorEvent) {
                 trace("Failed to load " + s);

@@ -221,12 +221,13 @@ package org.concord.sparks.circuit.multimeter.dmm_centech
             default:
                 fname = char + '.png';
             }
-            var path = '../../common/images/multimeter/dmm_centech/' + fname;
-            //trace('path=' + path);
+            //var path = '../../common/images/multimeter/dmm_centech/' + fname;
+            var path = '/sparks-content/common/images/multimeter/dmm_centech/' + fname;
+            trace('path=' + path);
             try {
                 var req:URLRequest = new URLRequest(path);
                 loader.load(req);
-                //trace('Loaded ' + path);
+                trace('Loaded ' + path);
             }
             catch (e:IOErrorEvent) {
                 trace("Failed to load " + path);

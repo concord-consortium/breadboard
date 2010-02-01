@@ -8,6 +8,7 @@ package org.concord.sparks
         protected var parent;
         protected var root;
         protected var javascript;
+        protected var rootPath = ''; //prepended to path before accessing an external file
         
         public function Activity(name:String, parent, root):void {
             trace("\nActivity: " + name + ' - ' + new Date());
@@ -23,6 +24,14 @@ package org.concord.sparks
         
         public function getJavaScript():JavaScript {
             return javascript;
+        }
+        
+        public function getRootPath() {
+        	return this.rootPath;
+        }
+        
+        public function setRootPath(path:String) {
+        	this.rootPath = path;
         }
     }
 }
