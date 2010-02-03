@@ -8,22 +8,20 @@
 // Create a dummy console.log when not run in Firebug
 if (typeof console == 'undefined') {
     var console = { log: function() {} };
-    //var console = { log: alert };
 }
 var debug = function(x) { console.log(x); };
 
-// Setup a global namespace to store page variables
+// Setup a global namespace
 jQuery.sparks = {};
 
 // Parse the page params so things can be customized
-var value = null;
-
-value = jQuery.url.param("model_height");
-console.log('value=' + value);
+var value = jQuery.url.param("model_height");
 jQuery.sparks.modelHeight = value != undefined ? value : '635';
 
 jQuery.sparks.debug = jQuery.url.param("debug") != undefined;
 jQuery.sparks.debug_mode = jQuery.url.param("debug_mode");
+
+jQuery.sparks.root_dir = '/sparks-content';
 
 $(document).ready(function() {
     //checkFlashVersion();

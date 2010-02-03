@@ -60,6 +60,8 @@ function ResistorActivity() {
     
     var activity = this;
     
+    this.root_dir = jQuery.sparks.root_dir + '/activities/resistor-colors';
+    
     this.dataService = null;
     this.log = new ActivityLog();
     this.assessment = new Assessment(this);
@@ -219,9 +221,9 @@ ResistorActivity.prototype =
       }
       
       if(result[name].correct){
-        itemForm.prepend("<img class='grade' src='../../common/icons/ok.png' " + titleText + "/>");
+        itemForm.prepend('<img class="grade" src="' + jQuery.sparks.root_dir + '/common/icons/ok.png"'  + titleText + "/>");
       } else {
-        itemForm.prepend("<img class='grade' src='../../common/icons/cancel.png' " + titleText + "/>");
+        itemForm.prepend('<img class="grade" src="' + jQuery.sparks.root_dir + '/common/icons/cancel.png"' + titleText + "/>");
       }  
     },
     
@@ -321,7 +323,7 @@ ResistorActivity.prototype =
     
     saveStudentData : function() {
         if (this.dataService) {
-          this.dataService.save(JSON.stringify(this.log.sessions));
+          //this.dataService.save(JSON.stringify(this.log.sessions));
         }
         else {
           console.log("saveStudentData: No Data Service defined");
