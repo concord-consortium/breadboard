@@ -21,7 +21,7 @@ Reporter.prototype =
         var reporter = this;
         var template = this.activity.root_dir +
         	'/report-templates/report-section.html';
-        $("#report").load(template, {}, function() {
+        $("#report").load(template, '', function() {
             reporter.sessionReport(session, feedback);
             $('#report').data('title.dialog', 'Report for Resistor #' + sessionNum);
             $('#report').dialog('open');
