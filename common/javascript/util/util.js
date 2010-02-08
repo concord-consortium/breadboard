@@ -3,6 +3,32 @@
 
 var Util = {};
 
+Util.readCookie = function(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+};
+
+/*
+Util.checkFlashVersion = function() {
+    var major = 10;
+    var minor = 0;
+    var revision = 31;
+    
+    if (!DetectFlashVer(10, 0, 33)) {
+        var msg = 'This activity requires Flash version ';
+        msg += major + '.' + minor + '.' + revision + '. ';
+        
+        $('body').html('<p>' + msg + '</p>');
+    }
+    document.write('<p>Flash version: ' + GetSwfVer() + '</p>');
+};
+*/
 // The "next" function returns a different value each time
 // alternating between the two input values x, y.
 Util.Alternator = function(x, y)

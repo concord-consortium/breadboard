@@ -24,7 +24,7 @@ jQuery.sparks.debug_mode = jQuery.url.param("debug_mode");
 jQuery.sparks.root_dir = '/sparks-content';
 
 $(document).ready(function() {
-    //checkFlashVersion();
+    //Util.checkFlashVersion();
 
     // In some cases (e.g. IE) Flash is loaded before document ready,
     // making initActivity() fail because activity isn't set up.
@@ -42,41 +42,17 @@ $(document).ready(function() {
  */
 function initActivity() {
 //function onFlashLoad() {
-    console.log('ENTER initActivity');
+    //debug('ENTER initActivity');
     
     var activity = new ResistorActivity();
     activity.initDocument();
     activity.onFlashDone();
-
-    var put_path = readCookie('put_path') ||  '/sparks_models/';
-    var dataService = new RestDS(null, null, put_path);
-    activity.setDataService(dataService);
     
+    activity.learner_id = Util.readCookie('learner_id');
+    if (activity.learner_id) {
+        var put_path = unescape(Util.readCookie('put_path')) || 'undefined_path';
+        debug('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
+        activity.setDataService(new RestDS(null, null, put_path));
+    }
     jQuery.sparks.activity = activity;
 }
-
-function readCookie(name) {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0;i < ca.length;i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-    }
-    return null;
-}
-
-function checkFlashVersion() {
-    var major = 10;
-    var minor = 0;
-    var revision = 31;
-    
-    if (!DetectFlashVer(10, 0, 33)) {
-        var msg = 'This activity requires Flash version ';
-        msg += major + '.' + minor + '.' + revision + '. ';
-        
-        $('body').html('<p>' + msg + '</p>');
-    }
-    document.write('<p>Flash version: ' + GetSwfVer() + '</p>');
-}
-

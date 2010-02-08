@@ -323,10 +323,12 @@ ResistorActivity.prototype =
     
     saveStudentData : function() {
         if (this.dataService) {
-          //this.dataService.save(JSON.stringify(this.log.sessions));
+            var obj = { learner_id: this.learner_id,
+                        content: JSON.stringify(this.log.sessions) };
+            this.dataService.save(obj);
         }
         else {
-          console.log("saveStudentData: No Data Service defined");
+            debug("saveStudentData: No Data Service defined");
         }
     }
 };
