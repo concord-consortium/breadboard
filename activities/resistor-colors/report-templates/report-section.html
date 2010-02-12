@@ -1,6 +1,7 @@
 <html>
   <head></head>
   <body>
+    <div class="popup_report">
     <h3>A. Reading resistor color bands</h3>
     <p>
       Correct Resistance value: <span id="rated_r_correct"></span><br/>
@@ -10,17 +11,23 @@
       Correct tolerance value: <span id="rated_t_correct"></span><br/>
       Your answer: <span id="rated_t_answer"></span>
     </p>
-    
-    Points: <span id="reading_pts"></span> (out of 25)
-    
+    <p>
+      Points: <span id="reading_pts"></span> (out of 25)
+    </p>
     <h3>B. Calculating tolerance range</h3>
     <p>
     Correct tolerance range: <span id="t_range_correct"></span><br/>
     Your answer: <span id="t_range_answer"></span>
     </p>
+    <p>
     Points: <span id="t_range_pts"></span> (out of 15)
-
+    </p>
     <h3>C. Measuring R-value with a DMM</h3>
+    <p>
+      Correct measured resistance: <span id="measured_r_correct"></span><br/>
+      Your answer: <span id="measured_r_answer"></span><br/>
+    </p>
+    
     <p>
       Connections to DMM: <span id="plug_connection"></span><br/>
       Connections to R: <span id="probe_connection"></span>
@@ -30,31 +37,34 @@
       Your initial setting: <span id="initial_knob"></span><br/>
       Your final setting: <span id="final_knob"></span>
     </p>
-    
-    Correct measured resistance: <span id="measured_r_correct"></span><br/>
-    Your answer: <span id="measured_r_answer"></span><br/>
-
-    
     <p>
-      Points: <span id="measuring_pts"></span> (out of 45)
+      DMM power switch: <span id="power_switch"></span><br/>
+      Order of tasks: <span id="task_order"></span>
+    </p>
+
+    <p>
+      Points: <span id="measuring_pts"></span> (out of <span id="measuring_max_pts"></span>)
     </p>
     
     <h3>D. Discerning in/out of tolerance</h3>
-    Correct answer: <span id="within_correct"></span><br/>
-    Your answer: <span id="within_answer"></span><br/>
-    Points: <span id="within_pts"></span> (out of 5)<br/>
-    
+    <p>
+      Correct answer: <span id="within_correct"></span><br/>
+      Your answer: <span id="within_answer"></span><br/>
+      Points: <span id="within_pts"></span> (out of 5)<br/>
+    </p>
     <h3>E. Time/efficiency</h3>
     <p>
       Interpreting color bands: <span id="reading_time"></span><br/>
       Measuring resistance with the DMM: <span id="measuring_time"></span>
     </p>
-    Points: <span id="time_pts"></span> (out of 10)
-    
+    <p>
+      Points: <span id="time_pts"></span> (out of 10)
+    </p>
     <p id="rated_values_feedback">
     </p>
     
+    <h3>Total points: <span id="total_pts"></span> (out of <span id="total_max_pts"></span>)</h3>
     <div id="report_log"></div>
-
+    </div>
   </body>
 </html>

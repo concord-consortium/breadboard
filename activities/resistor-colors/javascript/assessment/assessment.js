@@ -2,32 +2,6 @@
 
 /*global console, Grader */
 
-/*
- * A FeedbackItem is contains derived information from the activity log:
- * Grader parses the activity log and populates feedback items.
- * Reporter uses feedback items to generate the report.
- */
-function FeedbackItem()
-{
-    this.correct = null;
-    this.label = '';
-    this.desc = '';
-    this.points = 0;
-    this.maxPoints = 0;
-}
-
-function Feedback() {
-    this.rated_r_value = new FeedbackItem();
-    this.rated_t_value = new FeedbackItem();
-    this.reading_time = new FeedbackItem();
-    this.measured_r_value = new FeedbackItem();
-    this.measuring_time = new FeedbackItem();
-    this.t_range_value = new FeedbackItem();
-    this.within_tolerance = new FeedbackItem();
-    this.probe_connection = new FeedbackItem();
-    this.plug_connection = new FeedbackItem();
-}
-
 /* 
  * Meant to hold everything needed for grading, such as rubric and grading
  * routines. Since there's no rubric objects defined yet, it may appear to
@@ -90,11 +64,12 @@ Assessment.prototype =
     },
     
     sendResultToHTML : function(resultObj, feedback) {
-        resultObj.rated_resistance.correct = feedback.rated_r_value.correct;
-        resultObj.rated_tolerance.correct = feedback.rated_t_value.correct;
-        resultObj.measured_resistance.correct = feedback.measured_r_value.correct;
-        resultObj.measured_tolerance.correct = feedback.t_range_value.correct;
-        resultObj.within_tolerance.correct = feedback.within_tolerance.correct;
+    	var fb = feedback.root;
+        resultObj.rated_resistance.correct = fb.reading.rated_r_value.correct;
+        resultObj.rated_tolerance.correct = fb.reading.rated_t_value.correct;
+        resultObj.measured_resistance.correct = fb.measuring.measured_r_value.correct;
+        resultObj.measured_tolerance.correct = fb.t_range_value.correct;
+        resultObj.within_tolerance.correct = fb.within_tolerance.correct;
     },
 
     fieldIsEmpty : function(formInput) {

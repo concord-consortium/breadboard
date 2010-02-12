@@ -19,37 +19,37 @@ ServerReporter.prototype =
         var questions = session.sections[0].questions;
         var points = 0;
         
-        var fb = feedback.rated_r_value;
+        var fb = feedback.root.reading.rated_r_value;
         $('#rated_r_correct').text(Unit.res_str(questions[0].correct_answer));
         text = questions[0].answer ? questions[0].answer + questions[0].unit : 'No Answer';
         this.setAnswerTextWithColor('#rated_r_answer', text, fb);
         points = fb.points;
                 
-        fb = feedback.rated_t_value;
+        fb = feedback.root.reading.rated_t_value;
         $('#rated_t_correct').text(questions[1].correct_answer * 100 + '%');
         text = questions[1].answer ? questions[1].answer + questions[1].unit : 'No Answer';
         this.setAnswerTextWithColor('#rated_t_answer', text, fb);
         
         $('#reading_pts').text(points + fb.points);
         
-        fb = feedback.t_range_value;
+        fb = feedback.root.t_range_value;
         $('#t_range_correct').text(Unit.res_str(questions[3].correct_answer[0]) + ' .. ' + Unit.res_str(questions[3].correct_answer[1]));
         text = (questions[3].answer[0] || questions[3].answer[1]) ? String(questions[3].answer[0]) + questions[3].unit[0] + ' .. ' + questions[3].answer[1] + questions[3].unit[1] : 'No Answer';
         this.setAnswerTextWithColor('#t_range_answer', text, fb);
         $('#t_range_pts').text(fb.points);
         
-        fb = feedback.within_tolerance;
+        fb = feedback.root.within_tolerance;
         $('#within_correct').text(questions[4].correct_answer);
         text = questions[4].answer ? questions[4].answer : 'No Answer';
         this.setAnswerTextWithColor('#within_answer', text, fb);
         $('#within_pts').text(fb.points);
 
-        fb = feedback.reading_time;
+        fb = feedback.root.time.reading_time;
         points = fb.points;
         $('#reading_time').text(Util.timeLapseStr(questions[0].start_time, questions[1].end_time));
         //$('#reading_time_pts').text(points);
 
-        fb = feedback.measuring_time;
+        fb = feedback.root.time.measuring_time;
         $('#measuring_time').text(Util.timeLapseStr(questions[2].start_time, questions[2].end_time));
         //$('#measuring_time_pts').text(fb.points);
         

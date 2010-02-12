@@ -179,17 +179,19 @@ ResistorActivity.prototype =
         }
         
         var questions = this.log.currentSession().sections[0].questions;
+        
+        var fb = this.feedback.root;
 
-        if (!this.feedback.rated_r_value.correct) {
+        if (!fb.reading.rated_r_value.correct) {
             $('#rated_r_feedback').show();
         }
-        if (!this.feedback.rated_t_value.correct) {
+        if (!fb.reading.rated_t_value.correct) {
             $('#rated_t_feedback').show();
         }
-        if (!this.feedback.measured_r_value.correct) {
+        if (!fb.measuring.measured_r_value.correct) {
             $('#measured_r_feedback').show();
         }
-        if (!this.feedback.t_range_value.correct) {
+        if (!fb.t_range_value.correct) {
             $('#t_range_feedback').show();
         }
       

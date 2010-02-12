@@ -3,23 +3,48 @@ function LogParser(session) {
     this.section = session.sections[0];
     this.events = this.section.events;
     this.questions = this.section.questions;
+    
+    this.measure_submit_time = this.questions[2].end_time;
 
-    this.last_red_probe_conn = null;
-    this.last_black_probe_conn = null;
-    this.last_red_plug_conn = null;
-    this.last_black_plug_conn = null;
+    this.submit_red_probe_conn = null;
+    this.submit_black_probe_conn = null;
+    this.submit_red_plug_conn = null;
+    this.submit_black_plug_conn = null;
+    this.initial_dial_setting = 'acv_750'; //DMM dial setting when the swith is first turned on
+    this.submit_dial_setting = 'acv_750'; //DMM dial setting when the user submits the 3rd question
+    this.power_on = false; //Power switch when the user submits the 3rd question
+    this.correct_order = false;
+    
+    // The following variables prefixed with temp_ are meant to be used
+    // by parseEvents(), updated as it scans the list of events
+    this.temp_power_on = false;
+    this.temp_red_plug_conn = null;
+    this.temp_black_plug_conn = null;
+    this.temp_dial_setting = null;
+
+    this.initial_dial_setting_set = false;
+    this.correct_order_set = false;
+    
     this.parseEvents();
 }
 
 LogParser.prototype = 
 {
+    // Scan the events once to produce derived data
     parseEvents : function() {
         for (var i = 0; i < this.events.length; ++i) {
+        	debug('event name=' + this.events[i].name + ' value=' + this.events[i].value);
             if (this.events[i].name === 'connect') {
                 this.parseConnect(this.events[i]);
             }
             else if (this.events[i].name === 'disconnect') {
                 this.parseDisconnect(this.events[i]);
+            }
+            else if (this.events[i].name === 'multimeter_power') {
+                this.parseMultimeterPower(this.events[i]);
+            }
+            else if (this.events[i].name === 'multimeter_dial') {
+                this.parseMultimeterDial(this.events[i]);
             }
         }
     },
@@ -28,21 +53,83 @@ LogParser.prototype =
         var comps = event.value.split('|');
         switch (comps[0]) {
         case 'red_probe':
-            this.last_red_probe_conn = comps[1];
+            this.parseProbeConnection(event);
+            this.parseRedProbeConnection(comps[1], event.time);
             break;
         case 'black_probe':
-            this.last_black_probe_conn = comps[1];
+            this.parseProbeConnection(event);
+            this.parseBlackProbeConnection(comps[1], event.time);
             break;
         case 'red_plug':
-            this.last_red_plug_conn = comps[1];
+        	this.parseRedPlugConnection(comps[1], event.time);
             break;
         case 'black_plug':
-            this.last_black_plug_conn = comps[1];
+        	this.parseBlackPlugConnection(comps[1], event.time);
             break;
         }
     },
     
     parseDisconnect : function(event) {
+    },
+    
+    parseMultimeterPower : function(event) {
+    	this.temp_power_on = event.value;
+    	if (event.time < this.measure_submit_time) {
+    		this.power_on = event.value;
+    	    if (event.value === true && !this.initial_dial_setting_set) {
+    	    	this.initial_dial_setting = this.submit_dial_setting;
+    	    	this.initial_dial_setting_set = true;
+    	    }
+        }
+    },
+    
+    parseMultimeterDial : function(event) {
+    	this.temp_dial_setting = event.value;
+    	if (event.time < this.measure_submit_time) {
+    		this.submit_dial_setting = event.value;
+    	}
+    },
+    
+    parseProbeConnection : function(event) {
+    	debug('this.correct_order_set=' + this.correct_order_set);
+    	debug('event.time=' + event.time);
+    	debug('this.measure.submit.time=' + this.measure_submit_time);
+    	if (!this.correct_order_set && event.time < this.measure_submit_time) {
+    		if (this.temp_power_on &&
+    			this.temp_red_plug_conn &&
+    			this.temp_black_plug_conn &&
+    			this.temp_dial_setting)
+    		{
+    			this.correct_order = true;
+    			this.correct_order_set = true;
+    		}
+    	}
+    },
+    
+    parseRedProbeConnection : function(connectedTo, time) {
+    	if (time < this.measure_submit_time) {
+    		this.submit_red_probe_conn = connectedTo;
+    	}
+    },
+    
+    parseBlackProbeConnection : function(connectedTo, time) {
+    	if (time < this.measure_submit_time) {
+    		this.submit_black_probe_conn = connectedTo;
+    	}
+    },
+    
+    parseRedPlugConnection : function(connectedTo, time) {
+    	this.temp_red_plug_conn = connectedTo;
+    	if (time < this.measure_submit_time) {
+    		this.submit_red_plug_conn = connectedTo;
+    	}
+    },
+    
+    parseBlackPlugConnection : function(connectedTo, time) {
+    	this.temp_black_plug_conn = connectedTo;
+    	if (time < this.measure_submit_time) {
+    		this.submit_black_plug_conn = connectedTo;
+    	}
     },
     
     getLastConnection : function(conn1) {
@@ -60,39 +147,6 @@ LogParser.prototype =
         return conn2;
     },
     
-    // DMM dial setting when the circuit is last made before 
-    // measured resistance is submitted
-    getInitialDialSetting: function() {
-        var end_time = this.questions[2].end_time;
-        var setting = null;
-        var last_make = this.getLastCircuitMakeTime();
-        if (last_make === null) {
-            return null; // circuit is not connected so dial setting is meaningless
-        }
-        for (var i = 0; i < this.events.length && this.events[i].time < end_time; ++i) {
-            if (this.events[i].name == 'multimeter_dial' && this.events[i].time <= last_make) {
-                setting = this.events[i].value;
-                break;
-            }
-        }
-        return setting;
-    },
-    
-    getFinalDialSetting: function() {
-        var end_time = this.questions[2].end_time;
-        var setting = null;
-        var last_break = this.getLastCircuitBreakTime();
-        if (last_break > -Infinity) {
-            end_time = last_break;
-        }
-        for (var i = 0; i < this.events.length && this.events[i].time < end_time; ++i) {
-            if (this.events[i].name == 'multimeter_dial') {
-                setting = this.events[i].value;
-            }
-        }
-        return setting;
-    },
-    
     /*
      * Last time before measured resistance is submitted that the circuit is 
      * all connected.
@@ -100,7 +154,7 @@ LogParser.prototype =
      * Returns +Infinity if there's no 'make_circuit' events.
      */
     getLastCircuitMakeTime : function() {
-        var end_time = this.questions[2].end_time;
+        var end_time = this.measure_submit_time;
         var make_time = Infinity;
         for (var i = 0; i < this.events.length && this.events[i].time < end_time; ++i) {
             if (this.events[i].name === 'make_circuit') {
@@ -111,7 +165,7 @@ LogParser.prototype =
     },
     
     getLastCircuitBreakTime : function() {
-        var end_time = this.questions[2].end_time;
+        var end_time = this.measure_submit_time;
         var break_time = -Infinity;
         for (var i = 0; i < this.events.length && this.events[i].time < end_time; ++i) {
             if (this.events[i].name === 'break_circuit') {
