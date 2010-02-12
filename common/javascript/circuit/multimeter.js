@@ -17,6 +17,7 @@ function Multimeter()
     this.dialPosition = 'acv_750';
     this.powerOn = false;
 }
+
 Multimeter.prototype =
 {
     modes : { ohmmeter : 0, voltmeter : 1, ammeter : 2 },
@@ -145,18 +146,18 @@ Multimeter.prototype =
     },
     
     toDisplayString : function(s, dec) {
-        console.log('s1=' + s + ' dec=' + dec);
+        //debug('s1=' + s + ' dec=' + dec);
         var i;
         var sign = s.charAt(0) == '-' ? s.charAt(0) : ' ';
         s = s.replace('-', '');
         
-        console.log('s2=' + s);
+        //debug('s2=' + s);
         var pointLoc = s.indexOf('.');
         var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
         if (decLen === 0) {
             s = s.concat('.');
         }
-        console.log('s3=' + s);
+        //debug('s3=' + s);
         if (dec < decLen) {
             s = s.substring(0, pointLoc + dec + 1);
         }
@@ -165,9 +166,9 @@ Multimeter.prototype =
                 s = s.concat('0');
             }
         }
-        console.log('s4=' + s);
+        //debug('s4=' + s);
         s = s.replace('.', '');
-        console.log('s5=' + s);
+        //debug('s5=' + s);
         var len = s.length;
         if (len < 4) {
             for (i = 0; i < 3 - len; ++i) {
@@ -175,7 +176,7 @@ Multimeter.prototype =
             }
             s = ' ' + s;
         }
-        console.log('s6=' + s);
+        //debug('s6=' + s);
         
         var dot1;
         var dot2;
@@ -198,7 +199,7 @@ Multimeter.prototype =
         }
         
         s = sign + s.substring(0, 2) + dot1 + s.charAt(2) + dot2 + s.charAt(3);
-        console.log('s7=' + s);
+        //debug('s7=' + s);
         return s;
         
     },
