@@ -1,0 +1,73 @@
+{   
+    "sections": [
+        {
+            "start_time": 100e3,
+            "end_time": 900e3,
+            "nominal_resistance": 10200,
+            "tolerance": 0.01,
+            "real_resistance": 10418.71,
+            "displayed_resistance": 10400,
+            "events": [
+                {
+                    "name": "connect",
+                    "value": "red_plug|voma_port",
+                    "time": 235e3
+                },
+                {
+                    "name": "connect",
+                    "value": "black_plug|common_port",
+                    "time": 238e3
+                },
+                {
+                    "name": "multimeter_dial",
+                    "value": "r_20k",
+                    "time": 240e3
+                },
+                {
+                    "name": "multimeter_power",
+                    "value": true,
+                    "time": 242e3
+                },
+                {
+                    "name": "connect",
+                    "value": "red_probe|resistor_lead2",
+                    "time": 245e3
+                },
+                {
+                    "name": "connect",
+                    "value": "black_probe|resistor_lead1",
+                    "time": 248e3
+                }
+            ],
+            "questions": [
+                {
+                    "correct_answer": 10200,
+                    "answer": 10200,
+                    "unit": "\u2126",
+                    "start_time": 200e3,
+                    "end_time": 210e3
+                },
+                {
+                    "correct_answer": 0.01,
+                    "answer": 1,
+                    "start_time": 210e3,
+                    "end_time": 219e3
+                },
+                {
+                    "correct_answer": 10400,
+                    "answer": 10.4,
+                    "unit": "k\u2126",
+                    "start_time": 230e3,
+                    "end_time": 249e3
+                },
+                {
+                    "answer": [10302, 10.098],
+                    "unit": ["\u2126", "k\u2126"]
+                },
+                {
+                    "answer": "no"
+                }
+            ]
+        }
+    ]
+}
