@@ -1,6 +1,10 @@
 body {
   font-family: Verdana, Arial;
 }
+.popup_report p {
+  margin-left: 15px;
+  font-size: 12pt;
+}
 a.no_deco {
   text-decoration: none;
 }
