@@ -40,7 +40,7 @@ function nextButtonClicked(event) {
 
 function showReportButtonClicked(event) {
     var activity = jQuery.sparks.activity;
-    activity.reporter.reportOnSession(activity.log.currentSession(), activity.current_session, activity.feedback);
+    activity.reporter.reportOnSession(activity.log.currentSession(), activity.feedback);
     /*
     $("#report").load("report-templates/report.html", {}, function() {
         jQuery.sparks.activity.reporter.report();

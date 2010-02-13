@@ -5,11 +5,16 @@ function Reporter(assessment)
 {
     //console.log('ENTER Reporter');
     this.activity = assessment.activity;
-    this.log = assessment.activity.log;
 }
 
 Reporter.prototype =
 {
+    red : '#cc3300',
+    red2 : '#cc9933',
+    orange : '#ff6600',
+    blue : '#0099cc',
+    green :'#339933',
+
     dialLabels : { r_2000k: '\u2126 - 2000k',
         r_200k: '\u2126 - 200k',
         r_20k: '\u2126 - 20k',
@@ -32,7 +37,7 @@ Reporter.prototype =
         diode: 'Diode'
     },
     
-    reportOnSession : function(session, sessionNum, feedback) {
+    reportOnSession : function(session, feedback) {
         var reporter = this;
         var template = this.activity.root_dir +
         	'/report-templates/report-section.html';
@@ -47,6 +52,7 @@ Reporter.prototype =
         var text = '';
         var questions = session.sections[0].questions;
         var points = 0;
+        var color;
         
         var fb = feedback.root.reading.rated_r_value;
         $('#rated_r_correct').text(Unit.res_str(questions[0].correct_answer));
@@ -75,41 +81,69 @@ Reporter.prototype =
 
         fb = feedback.root.time.reading_time;
         points = fb.points;
-        $('#reading_time').text(Util.timeLapseStr(questions[0].start_time, questions[1].end_time));
-        //$('#reading_time_pts').text(points);
+        this.setAnswerTextWithColor('#reading_time', Util.timeLapseStr(questions[0].start_time, questions[1].end_time), fb);
 
         fb = feedback.root.time.measuring_time;
-        $('#measuring_time').text(Util.timeLapseStr(questions[2].start_time, questions[2].end_time));
-        //$('#measuring_time_pts').text(fb.points);
+        this.setAnswerTextWithColor('#measuring_time', Util.timeLapseStr(questions[2].start_time, questions[2].end_time), fb);
         
         $('#time_pts').text(points + fb.points);
         
         var measuring_pts = 0;
         
         fb = feedback.root.measuring.probe_connection;
-        if (fb.correct) {
-            this.setTextWithColor('#probe_connection', fb.desc , '#339933');
+        if (fb.correct == 4) {
+            this.setTextWithColor('#probe_connection', fb.desc , this.green);
         }
         else {
-            this.setTextWithColor('#probe_connection', fb.desc, '#cc3300');
+            this.setTextWithColor('#probe_connection', fb.desc, this.red);
         }
         //$('#probe_connection_pts').text(fb.points);
         measuring_pts += fb.points;
         
         fb = feedback.root.measuring.plug_connection;
         if (fb.correct) {
-            this.setTextWithColor('#plug_connection', fb.desc, '#339933');
+            this.setTextWithColor('#plug_connection', fb.desc, this.green);
         }
         else {
-            this.setTextWithColor('#plug_connection', fb.desc, '#cc3300');
+            this.setTextWithColor('#plug_connection', fb.desc, this.red);
         }
         //$('#plug_connection_pts').text(fb.points);
         measuring_pts += fb.points;
+
+        var i_knob = feedback.initial_dial_setting;
+        var f_knob = feedback.submit_dial_setting;
+        var o_knob = feedback.optimal_dial_setting;
         
         $('#correct_knob').text(this.dialLabels[feedback.optimal_dial_setting]);
-        $('#initial_knob').text(this.dialLabels[feedback.initial_dial_setting]);
-        $('#final_knob').text(this.dialLabels[feedback.submit_dial_setting]);
-        $('#power_switch').text(feedback.root.measuring.power_switch.correct ? 'On' : 'Off')
+        
+        if (i_knob == o_knob) {
+        	color = this.green;
+        }
+        else if (Grader.prototype.isResistanceKnob(i_knob)) {
+        	color = this.orange;
+        }
+        else {
+        	color = this.red;
+        }
+        this.setTextWithColor('#initial_knob', this.dialLabels[feedback.initial_dial_setting], color);
+        
+        if (f_knob == o_knob) {
+        	color = this.green;
+        }
+        else if (Grader.prototype.isResistanceKnob(f_knob)) {
+        	color = this.orange;
+        }
+        else {
+        	color = this.red;
+        }
+        this.setTextWithColor('#final_knob', this.dialLabels[feedback.submit_dial_setting], color);
+        
+        if (feedback.root.measuring.power_switch.correct == 4) {
+        	this.setTextWithColor('#power_switch', 'On', this.green);
+        }
+        else {
+        	this.setTextWithColor('#power_switch', 'Off', this.red);
+        }
         
         //console.log('initial=' + this.log.getInitialDialSetting());
         //console.log('final=' + this.log.getFinalDialSetting());
@@ -120,7 +154,12 @@ Reporter.prototype =
         this.setAnswerTextWithColor('#measured_r_answer', text, fb);
         
         fb = feedback.root.measuring.task_order;
-        $('#task_order').text(fb.correct ? 'Correct' : 'Incorrect');
+        if (fb.correct == 4) {
+        	this.setTextWithColor('#task_order', 'Correct', this.green);
+        }
+        else {
+        	this.setTextWithColor('#task_order', 'Incorrect', this.red);
+        }
         
         //$('#measuring_pts').text(measuring_pts);
         $('#measuring_pts').text(feedback.root.measuring.getPoints());
@@ -131,7 +170,15 @@ Reporter.prototype =
     },
     
     setAnswerTextWithColor : function(elemId, text, feedback) {
-        var color = feedback.correct ? '#339933' : '#cc3300';
+        var color;
+        switch (feedback.correct)
+        {
+        case 0: color = this.red; break;
+        case 1: color = this.red2; break;
+        case 2: color = this.orange; break;
+        case 3: color = this.blue; break;
+        case 4: color = this.green; break;
+        }
         this.setTextWithColor(elemId, text, color);
     },
 

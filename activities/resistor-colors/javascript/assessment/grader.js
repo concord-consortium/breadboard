@@ -55,13 +55,13 @@ Grader.prototype =
             }
             else if (this.sameFirstSigDigits(question.correct_answer, parsedValue, 3)) {
                 feedback.points = 10;
-                feedback.correct = 3;
+                feedback.correct = 2;
                 return;
             }
             return;
         }
         feedback.points = 20;
-        feedback.correct = 5;
+        feedback.correct = 4;
     },
     
     gradeResistance : function() {
@@ -81,20 +81,20 @@ Grader.prototype =
         if(question.correct_answer != parsedValue){
             if (this.semiAcceptable(question.correct_answer, parsedValue)) {
                 feedback.points = 5;
-                feedback.correct = 3;
+                feedback.correct = 2;
             }
             return;
         }
         
         feedback.points = 10;
-        feedback.correct = 5;
+        feedback.correct = 4;
     },
     
     gradeTolerance : function() {
         var question = this.questions[1];
         var feedback = this.feedback.root.reading.rated_t_value;
         
-        feedback.correct =false;
+        feedback.correct = 0;
         feedback.points = 0;
         
         if (question.answer === null || isNaN(question.answer)) {
@@ -105,7 +105,7 @@ Grader.prototype =
         }
         
         feedback.correct = true;
-        feedback.points = 5;
+        feedback.points = 4;
     },
     
     gradeToleranceRange : function()
@@ -156,7 +156,7 @@ Grader.prototype =
             this.equalWithTolerance(parsedMax, correctMax, 1e-5))
         {
             feedback.points = 15;
-            feedback.correct = 5;
+            feedback.correct = 4;
             return;
         }
         
@@ -166,7 +166,7 @@ Grader.prototype =
             MyMath.roundToSigDigits(parsedMax, 3))
         {
             feedback.points = 10;
-            feedback.correct = 4;
+            feedback.correct = 3;
             return;
         }
         
@@ -176,7 +176,7 @@ Grader.prototype =
                      MyMath.getRoundedSigDigits(parsedMax, 3)) <= 2)
         {
             feedback.points = 3;
-            feedback.correct = 3;
+            feedback.correct = 2;
             return;
         }
         return;
@@ -191,7 +191,7 @@ Grader.prototype =
         var displayValue = this.section.displayed_resistance;
         var allowance = nominalValue * tolerance;
         
-        feedback.correct = false;
+        feedback.correct = 0;
         feedback.points = 0;
         
         if (displayValue < nominalValue - allowance ||
@@ -207,8 +207,8 @@ Grader.prototype =
         if (question.answer != correctAnswer) {
             return;
         }
-        feedback.correct = true;
         feedback.points = 5;
+        feedback.correct = 4;
     },
     
     gradeTime : function() {
@@ -219,24 +219,30 @@ Grader.prototype =
         feedback = this.feedback.root.time.reading_time;
         if (seconds <= 20) {
             feedback.points = 5;
+            feedback.correct = 4;
         }
         else if (seconds <= 40) {
             feedback.points = 2;
+            feedback.correct = 2;
         }
         else {
             feedback.points = 0;
+            feedback.correct = 0;
         }
         
         seconds = (this.questions[2].end_time - this.questions[2].start_time) / 1000;
         feedback = this.feedback.root.time.measuring_time;
         if (seconds <= 20) {
             feedback.points = 5;
+            feedback.correct = 4;
         }
         else if (seconds <= 40) {
             feedback.points = 2;
+            feedback.correct = 2;
         }
         else {
             feedback.points = 0;
+            feedback.correct = 0;
         }
     },
     
@@ -254,12 +260,12 @@ Grader.prototype =
             (blackProbeConn == 'resistor_lead1' || blackProbeConn == 'resistor_lead2') &&
             (redProbeConn != blackProbeConn))
         {
-            fb.probe_connection.correct = true;
+            fb.probe_connection.correct = 4;
             fb.probe_connection.points = 2;
             fb.probe_connection.desc = 'Correct';
         }
         else {
-            fb.probe_connection.correct = false;
+            fb.probe_connection.correct = 0;
             fb.probe_connection.points = 0;
             fb.probe_connection.desc = 'Incorrect';
         }
@@ -267,18 +273,20 @@ Grader.prototype =
         
         // Connectin to DMM
         if (redPlugConn == 'voma_port' && blackPlugConn == 'common_port') {
-            fb.plug_connection.correct = true;
             fb.plug_connection.points = 5;
+            fb.plug_connection.correct = 4;
             fb.plug_connection.desc = 'Correct';
         }
         else {
-            fb.plug_connection.correct = false;
+            fb.plug_connection.correct = 0;
             if (redPlugConn == 'common_port' && blackPlugConn == 'voma_port') {
-                fb.plug_connection.points = 3;
+            	fb.plug_connection.points = 3;
+            	fb.plug_connection.correct = 3;
                 fb.feedback.plug_connection.desc = 'Reversed';
             }
             else {
-                fb.plug_connection.points = 0;
+            	fb.plug_connection.points = 0;
+            	fb.plug_connection.correct = 0;
                 fb.plug_connection.desc = 'Incorrect';
             }
         }
@@ -296,16 +304,20 @@ Grader.prototype =
         if (f_knob === o_knob) {
         	if (i_knob === o_knob) {
         		fb.knob_setting.points = 20;
+        		fb.knob_setting.correct = 4;
         	}
         	else {
         		fb.knob_setting.points = 15;
+        		fb.knob_setting.correct = 3;
         	}
         }
         else if (this.isResistanceKnob(f_knob)){
         	fb.knob_setting.points = 10;
+        	fb.knob_setting.correct = 2;
         }
         else {
         	fb.knob_setting.points = 0;
+        	fb.knob_setting.correct = 0;
         }
         debug('knob_setting.points=' + fb.knob_setting.points);
     

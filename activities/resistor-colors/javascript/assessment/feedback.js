@@ -5,8 +5,8 @@
  */
 function FeedbackItem(maxPoints)
 {
-	// "correctness" on the scale of 0 to 5 for the purpose of labeling/coloring
-	// 0 means incorrect, 5 correct, 1 thru 4 partially correct
+	// "correctness" on the scale of 0 to 4 for the purpose of labeling/coloring
+	// 0 means incorrect, 4 correct, 1 thru 3 partially correct
     this.correct = 0; 
     
     this.label = '';
