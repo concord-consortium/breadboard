@@ -1,5 +1,5 @@
 /* The following line (global) is for JSLint */
-/*global console, document, DetectFlashVer, GetSwfVer, ResistorActivity */
+/*global console, document, unescape, jQuery, $, DetectFlashVer, GetSwfVer, RestDS, Util, ResistorActivity */
 
 /*
  * Common initial setup for SPARKS activities
@@ -16,9 +16,9 @@ jQuery.sparks = {};
 
 // Parse the page params so things can be customized
 var value = jQuery.url.param("model_height");
-jQuery.sparks.modelHeight = value != undefined ? value : '635';
+jQuery.sparks.modelHeight = value !== undefined ? value : '635';
 
-jQuery.sparks.debug = jQuery.url.param("debug") != undefined;
+jQuery.sparks.debug = jQuery.url.param("debug") !== undefined;
 jQuery.sparks.debug_mode = jQuery.url.param("debug_mode");
 
 jQuery.sparks.root_dir = '/sparks-content';
