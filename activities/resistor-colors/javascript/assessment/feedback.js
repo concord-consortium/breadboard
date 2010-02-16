@@ -19,7 +19,7 @@ FeedbackItem.prototype =
 {
 	getPoints : function() {
 		var points = 0;
-		for (key in this) {
+		for (var key in this) {
 			if (this[key] instanceof FeedbackItem) {
 				points += this[key].getPoints();
 			}
@@ -29,13 +29,13 @@ FeedbackItem.prototype =
 	
 	getMaxPoints: function() {
 		var maxPoints = 0;
-		for (key in this) {
+		for (var key in this) {
 			if (this[key] instanceof FeedbackItem) {
 				maxPoints += this[key].getMaxPoints();
 			}
 		}
 		return maxPoints + this.maxPoints;
-	},
+	}
 };
 
 function Feedback() {
