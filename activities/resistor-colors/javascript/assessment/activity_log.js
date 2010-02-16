@@ -159,6 +159,5 @@ ActivityLog.prototype =
         default:
             section.events.push(new Event(name, params.value, now));
         }
-    },
-    
+    }
 };
