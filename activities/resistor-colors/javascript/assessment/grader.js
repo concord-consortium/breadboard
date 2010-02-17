@@ -323,7 +323,7 @@ Grader.prototype =
     
         if (this.parser.power_on) {
         	fb.power_switch.points = 2;
-        	fb.power_switch.correct = 5;;
+        	fb.power_switch.correct = 4;;
         }
         else {
         	fb.power_switch.points = 0;
@@ -333,7 +333,7 @@ Grader.prototype =
         
         if (this.parser.correct_order) {
         	fb.task_order.points = 6;
-        	fb.task_order.correct = 5;
+        	fb.task_order.correct = 4;
         }
         else {
         	fb.task_order.points = 0;
