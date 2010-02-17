@@ -104,8 +104,8 @@ Grader.prototype =
             return;
         }
         
-        feedback.correct = true;
-        feedback.points = 4;
+        feedback.correct = 4;
+        feedback.points = 5;
     },
     
     gradeToleranceRange : function()
