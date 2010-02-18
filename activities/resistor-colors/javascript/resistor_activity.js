@@ -271,7 +271,14 @@ ResistorActivity.prototype =
       this.disableCircuit();
       
       //console.log('current_session changed to: ' + this.current_session);
+      // Logging initial conditions
       this.log.add('start_session');
+      if (this.multimeter.redPlugConnection) {
+        this.log.add('connect', { conn1: 'red_plug', conn2: this.multimeter.redPlugConnection });
+      }
+      if (this.multimeter.blackPlugConnection) {
+        this.log.add('connect', { conn1: 'black_plug', conn2: this.multimeter.blackPlugConnection });
+      }
       this.log.add('start_section');
       this.log.add('start_question', { section : this.current_section, question : 1 });
       $('body').scrollTop(0); //scroll to top
