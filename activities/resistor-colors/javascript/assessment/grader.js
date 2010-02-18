@@ -280,13 +280,13 @@ Grader.prototype =
         else {
             fb.plug_connection.correct = 0;
             if (redPlugConn == 'common_port' && blackPlugConn == 'voma_port') {
-            	fb.plug_connection.points = 3;
-            	fb.plug_connection.correct = 3;
-                fb.feedback.plug_connection.desc = 'Reversed';
+                fb.plug_connection.points = 3;
+                fb.plug_connection.correct = 3;
+                fb.plug_connection.desc = 'Reversed';
             }
             else {
-            	fb.plug_connection.points = 0;
-            	fb.plug_connection.correct = 0;
+                fb.plug_connection.points = 0;
+                fb.plug_connection.correct = 0;
                 fb.plug_connection.desc = 'Incorrect';
             }
         }
