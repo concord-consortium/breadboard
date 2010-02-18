@@ -333,7 +333,7 @@ ResistorActivity.prototype =
     saveStudentData : function() {
         if (this.dataService) {
             var obj = { learner_id: this.learner_id,
-                        content: JSON.stringify(this.log.sessions) };
+                        content: JSON.stringify([this.log.currentSession()]) };
             this.dataService.save(obj);
         }
         else {
