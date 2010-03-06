@@ -65,6 +65,7 @@ package org.concord.sparks.circuit.multimeter.dmm_centech
         private var activity:Activity;
         private var root;
         private var display; //display for dmm
+        private var imagePath:String;
 
         private var minus_hv_loader:Loader = new Loader();
         private var digit1_loader:Loader = new Loader();
@@ -82,6 +83,8 @@ package org.concord.sparks.circuit.multimeter.dmm_centech
             this.activity = activity;
             this.container = root[names.container];
             this.root = root;
+            
+            imagePath = activity.getRootPath() + '/common/images/multimeter/dmm_centech'
             
             checkNames();
             
@@ -120,6 +123,11 @@ package org.concord.sparks.circuit.multimeter.dmm_centech
             vomaPort = new MultimeterPort('voma_port', new Point(270, 436));
             commonPort = new MultimeterPort('common_port', new Point(264, 480));
             
+            trace('display=' + display);
+            trace('display.ten=' + display.ten);
+            trace('display.decimalPoint_two=' + display.decimalPoint_two);
+            trace('display.one=' + display.one);
+            
             display.minus_hv.addChild(minus_hv_loader);
             display.thousand.addChild(digit1_loader);
             display.hundred.addChild(digit2_loader);
@@ -148,12 +156,13 @@ package org.concord.sparks.circuit.multimeter.dmm_centech
         }
         
         public function setDisplayText(s:String) {
+            trace('ENTER setDisplayText');
             var origLen = s.length;
             for (var i = 0; i < 7 - origLen; ++i) {
                 s = ' ' + s;
             }
             var symbols = s.split('');
-            trace('symbols=' + symbols);
+            trace('setDisplayText: symbols=' + symbols);
             
             loadDisplayImage(minus_hv_loader, symbols[0]);
             loadDisplayImage(digit1_loader, symbols[1]);
@@ -221,8 +230,7 @@ package org.concord.sparks.circuit.multimeter.dmm_centech
             default:
                 fname = char + '.png';
             }
-            //var path = '../../common/images/multimeter/dmm_centech/' + fname;
-            var path = '/sparks-content/common/images/multimeter/dmm_centech/' + fname;
+            var path = this.imagePath + '/' + fname;
             trace('path=' + path);
             try {
                 var req:URLRequest = new URLRequest(path);

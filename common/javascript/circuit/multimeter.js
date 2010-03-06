@@ -24,7 +24,7 @@ Multimeter.prototype =
     
     update : function() {
         console.log('ENTER update powerOn=', this.powerOn + ' ' + (typeof this.powerOn));
-        this.value = jQuery.sparks.activity.resistor.getRealValue();
+        this.value = jQuery.sparks.activity.currentResistor.getRealValue();
         this.updateDisplay();
     },
     

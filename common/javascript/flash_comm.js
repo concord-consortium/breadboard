@@ -9,13 +9,21 @@ Flash.getFlashMovie = function(movieName) {
 };
 
 Flash.sendCommand = function() {
-  var params = [];
-  for (var i = 0; i < arguments.length; ++i) {
+  try {
+    var params = [];
+    for (var i = 0; i < arguments.length; ++i) {
       params[i] = arguments[i];
+    }
+    var flash = Flash.getFlashMovie("resistor_colors");
+    var retVal = flash.sendMessageToFlash.apply(flash, params).split('|');
+    debug('Returned by flash: ' + retVal);
+    if (retVal[0] == 'flash_error') {
+      alert('Flash error:\n' + retVal[1]);
+    }
   }
-  var flash = Flash.getFlashMovie("resistor_colors");
-  var retVal = flash.sendMessageToFlash.apply(flash, params);
-  console.log('Returned by flash: ' + retVal);
+  catch (e) {
+    alert('Error sending command to Flash:\n' + e.toString());
+  }
 };
 
 function receiveEvent(name, value, time) {

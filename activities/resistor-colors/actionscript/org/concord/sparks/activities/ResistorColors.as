@@ -6,8 +6,9 @@ package org.concord.sparks.activities
     import flash.geom.Point;
     
     import org.concord.sparks.Activity;
-    import org.concord.sparks.circuit.resistor.resistor_5band.Resistor;
-    import org.concord.sparks.circuit.resistor.resistor_5band.ResistorLead;
+    import org.concord.sparks.circuit.resistor.IResistor;
+    import org.concord.sparks.circuit.resistor.ResistorFactory;
+    import org.concord.sparks.circuit.resistor.ResistorLead;
     import org.concord.sparks.circuit.multimeter.dmm_centech.DmmCentech;
     import org.concord.sparks.circuit.multimeter.dmm_centech.MultimeterPort;
     import org.concord.sparks.circuit.multimeter.dmm_centech.Plug;
@@ -17,7 +18,10 @@ package org.concord.sparks.activities
     public class ResistorColors extends Activity
     {
         public var multimeter:DmmCentech;
-        public var resistor:Resistor;
+
+        public var resistor4band:IResistor;
+        public var resistor5band:IResistor;
+        public var currentResistor:IResistor;
         
         var redProbeDefaultPos:Point;
         var blackProbeDefaultPos:Point;
@@ -29,12 +33,14 @@ package org.concord.sparks.activities
         
         var circuitReady:Boolean = false;
         
-        public function ResistorColors(name:String, parent, root):void {
-            trace('ENTER ResistorColors');
-            super(name, parent, root);
+        public function ResistorColors(name:String, root, topDir):void {
+            trace('ENTER ResistorColors ' + new Date());
+            super(name, root, topDir);
             multimeter = new DmmCentech(this, root);
-            resistor = new Resistor(root);
-            resistor.hide();
+            resistor4band = ResistorFactory.create4bandResistor(this);
+            resistor5band = ResistorFactory.create5bandResistor(this);
+            //resistor4band.hide();
+            //resistor5band.hide();
             setupEvents();
 
             //redProbeDefaultPos = multimeter.redProbe.tip_position;
@@ -45,7 +51,6 @@ package org.concord.sparks.activities
             ports = [multimeter.tenaPort, multimeter.vomaPort, multimeter.commonPort];
             probes = [multimeter.redProbe, multimeter.blackProbe];
             plugs = [multimeter.redPlug, multimeter.blackPlug];
-            leads = [resistor.lead1, resistor.lead2];
             
             // initActivity must be called after the ExternalInterface is 
             // ready to communicate with JavaScript.
@@ -54,17 +59,17 @@ package org.concord.sparks.activities
         
         public override function processMessageFromJavaScript(args) {
             trace('processMessageFromJavaScript args=' + args);
+            trace('currentResistor=' + currentResistor);
             var command:String = args[0];
             switch (command) {
                 case 'set_resistor_label':
-                    resistor.setLabel(args[1][0], args[1][1], args[1][2],
-                        args[1][3], args[1][4]);
-                    return resistor.getColors().join('|');
+                    currentResistor.setColors(args[1]);
+                    return currentResistor.getColors().join('|');
                 case 'set_multimeter_display':
                     multimeter.setDisplayText(args[1]);
                     return multimeter.getDisplayText();
                 case 'show_resistor':
-                    resistor.show();
+                    currentResistor.show();
                     return 'show_resistor';
                 case 'reset_circuit':
                     resetCircuit();
@@ -75,25 +80,25 @@ package org.concord.sparks.activities
                 case 'disable_circuit':
                     circuitReady = false;
                     return 'disable_circuit';
-                case 'set_debug_mode':
-                    if (args[1] == 'multimeter') {
-                         resistor.show();
-                         multimeter.redProbe.snapTo(resistor.lead1.position);
-                         multimeter.blackProbe.snapTo(resistor.lead2.position);
-                         multimeter.redProbe.connect(resistor.lead1);
-                         multimeter.blackProbe.connect(resistor.lead2);
-                         multimeter.turnOn();
-                         javascript.sendEvent("multimeter_power", true);
+                case 'set_current_resistor':
+                    if (args[1] == 'resistor_4band') {
+                        resistor5band.hide();
+                        currentResistor = resistor4band;
+                        currentResistor.show();
                     }
-                    return 'set_debug_mode';
-                case 'set_root_path':
-                    setRootPath(args[1]);
-                    return args[1];
+                    else {
+                        resistor4band.hide();
+                        currentResistor = resistor5band;
+                        currentResistor.show();
+                    }
+                    leads = currentResistor.getLeads();
+                    return 'set_current_resistor'
             }
             return 'UNKNOWN';
         }
         
         private function resetCircuit() {
+            trace('ENTER resetCircuit');
             multimeter.setDial('acv_750');
             multimeter.turnOff();
             multimeter.redProbe.snapTo(redProbeDefaultPos);
@@ -152,7 +157,7 @@ package org.concord.sparks.activities
                 lead.hideEngaged();
             }
         }
-        
+
         private function handleMouseDown(event:MouseEvent):void {
             //trace('ENTER ResistorColors.handleMouseDown');
             

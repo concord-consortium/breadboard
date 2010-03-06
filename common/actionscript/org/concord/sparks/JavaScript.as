@@ -1,6 +1,8 @@
 package org.concord.sparks
 {
+    import flash.events.ErrorEvent;
     import flash.external.ExternalInterface;
+    
     import org.concord.sparks.Activity;
     
     // Interface with external JavaScript
@@ -34,7 +36,16 @@ package org.concord.sparks
         }
 
         private function getMessageFromJavaScript(... Arguments):String {
-            return activity.processMessageFromJavaScript(Arguments);
+            try {
+                return activity.processMessageFromJavaScript(Arguments);
+            }
+            catch (e:ErrorEvent) {
+                return 'flash_error|' + e.toString();
+            }
+            catch (e:Error) {
+                return 'flash_error|' + e.name + '\n' + e.message + '\n' + e.getStackTrace();
+            }
+            return 'flash_error|this point should be unreachable';
         }
     }
 }

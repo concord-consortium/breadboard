@@ -6,15 +6,15 @@ package org.concord.sparks
     {
         protected var name:String;
         protected var parent;
-        protected var root;
+        protected var root; //the root of the stage. rootPath doesn't have to do anything with it
         protected var javascript;
         protected var rootPath = ''; //prepended to path before accessing an external file
         
-        public function Activity(name:String, parent, root):void {
+        public function Activity(name:String, root, topDir):void {
             trace("\nActivity: " + name + ' - ' + new Date());
             this.name = name;
-            this.parent = parent;
             this.root = root;
+            rootPath = topDir;
             this.javascript = new JavaScript(this);
         }
         
@@ -22,16 +22,20 @@ package org.concord.sparks
             trace("Overrided method shouldn't be called");
         }
         
+        public function getRoot() {
+            return root;
+        }
+        
         public function getJavaScript():JavaScript {
             return javascript;
         }
         
         public function getRootPath() {
-        	return this.rootPath;
+        	return rootPath;
         }
         
         public function setRootPath(path:String) {
-        	this.rootPath = path;
+        	rootPath = path;
         }
     }
 }

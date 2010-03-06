@@ -122,30 +122,49 @@ ResistorActivity.prototype =
     // Initializations that can be done only when the flash movie is loaded
     onFlashDone : function() {
         this.multimeter = new Multimeter();
-        this.resistor = new Resistor();
+        //this.resistor = new Resistor();
+        this.resistor4band = new Resistor4band();
+        this.resistor5band = new Resistor5band();
         
         //console.log('Nominal Resistance=' + this.resistor.nominalValue);
         //console.log('Tolerance=' + this.resistor.tolerance * 100 + '%');
         //console.log('Real Resistance=' + this.resistor.realValue);
         
+        /*
         if (jQuery.sparks.debug_mode == 'multimeter') {
             Flash.sendCommand('set_debug_mode', 'multimeter');
             this.resistor.randomize();
             this.logResistorState();
             this.showRccDebugInfo();
         }
+        */
     },
     
     // Re-initialize the circuit settings for a new set of questions
-    resetCircuit : function() {
-        //console.log('ENTER ResistorActivity.resetCircuit');
-        this.resistor.randomize();
-        this.logResistorState();
+    resetCircuit: function() {
+        debug('ENTER ResistorActivity.resetCircuit');
+        if (Math.random() < 0.75) {
+          debug('4-BAND!!');
+          this.setCurrentResistor(this.resistor4band);
+        }
+        else {
+          debug('5-BAND!!');
+          this.setCurrentResistor(this.resistor5band);
+        }
+        Flash.sendCommand('set_current_resistor', this.currentResistor.id);
+        this.currentResistor.randomize();
         Flash.sendCommand('reset_circuit');
+        this.logResistorState();
+        debug('currentResistor=' + jQuery.sparks.activity.currentResistor);
         this.multimeter.update();
     },
     
-    enableCircuit : function() {
+    setCurrentResistor: function(resistor) {
+      this.currentResistor = resistor;
+      Flash.sendCommand('set_current_resistor', resistor.id);
+    },
+    
+    enableCircuit: function() {
         Flash.sendCommand('enable_circuit');
     },
     
@@ -259,7 +278,6 @@ ResistorActivity.prototype =
       // display them on the page so people can see it working
       // this is defined in javascript/resistor_activity.js
       this.resetCircuit();
-      this.resistor.show();
     
       if(jQuery.sparks.debug){
         this.showRccDebugInfo();
@@ -285,7 +303,7 @@ ResistorActivity.prototype =
     },
     
     showRccDebugInfo : function() {
-        var resistor = this.resistor;
+        var resistor = this.currentResistor;
         var model = $("#rcc_model");
         var debug_div = $("#rcc_debug");
         
@@ -323,11 +341,11 @@ ResistorActivity.prototype =
     },
     
     logResistorState : function() {
-        this.log.setValue('nominal_resistance', this.resistor.nominalValue);
-        this.log.setValue('tolerance', this.resistor.tolerance);
-        this.log.setValue('real_resistance', this.resistor.realValue);
+        this.log.setValue('nominal_resistance', this.currentResistor.nominalValue);
+        this.log.setValue('tolerance', this.currentResistor.tolerance);
+        this.log.setValue('real_resistance', this.currentResistor.realValue);
         this.log.setValue('displayed_resistance',
-                          this.multimeter.makeDisplayText(this.resistor.realValue));
+                          this.multimeter.makeDisplayText(this.currentResistor.realValue));
     },
     
     saveStudentData : function() {

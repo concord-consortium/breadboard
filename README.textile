@@ -1,0 +1,24 @@
+h2. Check list for importing Kathy's work on Flash
+
+h3. Flash Publish Settings for the main FLA file
+
+# Go to File -> Publish Settings -> Flash
+# Set Script to ActionScript 3.0 and click Settings.
+# Add the following to Source path:
+** ./actionscript
+** ../../common/actionscript
+ 
+h3. Actions for the main FLA
+
+Open Actions of the frame #1 of the "actions" laye and make sure the script instantiates the activity. 
+e.g. 
+ <code>
+ import org.concord.sparks.Activity;
+ import org.concord.sparks.activities.ResistorColors;
+ 
+ var topDir = '/sparks-content'; //for rails
+ //var topDir = '../..'; //for standalone testing
+ 
+ var activity:Activity = new ResistorColors('Resistor Colors', root, topDir);
+ </code>
+ 

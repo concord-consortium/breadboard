@@ -217,11 +217,11 @@ Grader.prototype =
         
         seconds = (this.questions[1].end_time - this.questions[0].start_time) / 1000;
         feedback = this.feedback.root.time.reading_time;
-        if (seconds <= 20) {
+        if (seconds <= 30) {
             feedback.points = 5;
             feedback.correct = 4;
         }
-        else if (seconds <= 40) {
+        else if (seconds <= 60) {
             feedback.points = 2;
             feedback.correct = 2;
         }
@@ -232,11 +232,11 @@ Grader.prototype =
         
         seconds = (this.questions[2].end_time - this.questions[2].start_time) / 1000;
         feedback = this.feedback.root.time.measuring_time;
-        if (seconds <= 20) {
+        if (seconds <= 30) {
             feedback.points = 5;
             feedback.correct = 4;
         }
-        else if (seconds <= 40) {
+        else if (seconds <= 60) {
             feedback.points = 2;
             feedback.correct = 2;
         }
