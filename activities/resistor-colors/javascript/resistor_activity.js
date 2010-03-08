@@ -197,8 +197,6 @@ ResistorActivity.prototype =
             this.updateItem(result, item);
         }
         
-        var questions = this.log.currentSession().sections[0].questions;
-        
         var fb = this.feedback.root;
 
         if (!fb.reading.rated_r_value.correct) {
