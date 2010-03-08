@@ -1,5 +1,5 @@
 var Resistor4band = function() {
-  Resistor5band.uber.init.apply(this);
+  Resistor4band.uber.init.apply(this);
   this.id = 'resistor_4band';
   
   this.r_values5pct = this.filter(r_values.r_values4band5pct);
