@@ -234,16 +234,24 @@ ResistorActivity.prototype =
     
     updateItem : function(result, name) {
       var itemForm = $("#" + name);
-      var titleText = "";
+      var titleText = '';
+      var image = '';
+      
       if(result[name].message){
         titleText = "title='" + result[name].message + "' ";
       }
       
-      if(result[name].correct){
-        itemForm.prepend('<img class="grade" src="' + jQuery.sparks.root_dir + '/common/icons/ok.png"'  + titleText + "/>");
-      } else {
-        itemForm.prepend('<img class="grade" src="' + jQuery.sparks.root_dir + '/common/icons/cancel.png"' + titleText + "/>");
-      }  
+      if (result[name].correct == 4) {
+        image = 'ok.png';
+      }
+      else if (result[name].correct > 0) {
+        image = 'yellow-circle.png';
+      }
+      else {
+        image = 'cancel.png';
+      }
+      
+      itemForm.prepend('<img class="grade" src="' + jQuery.sparks.root_dir + '/common/icons/' + image + '"'  + titleText + "/>");
     },
     
     // Start new session (new resistor)
