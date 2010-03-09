@@ -327,6 +327,11 @@ ResistorActivity.prototype =
       form.append("<button>Submit</button>");
       form.find("button").click(submitButtonClicked); 
       form.find("input, select").removeAttr("disabled");
+      form.find("input, select").keypress(function(event) {
+          if (event.keyCode == '13') { //13: Enter key
+            return false; //to prevent IE from reloading the page
+          }
+      });
       form.css("background-color", "rgb(253,255,184)");
       form.find("input[name='start_time']").attr("value", "" + (new Date()).getTime());
     },
