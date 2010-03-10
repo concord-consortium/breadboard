@@ -199,16 +199,16 @@ ResistorActivity.prototype =
         
         var fb = this.feedback.root;
 
-        if (!fb.reading.rated_r_value.correct) {
+        if (fb.reading.rated_r_value.correct < 4) {
             $('#rated_r_feedback').show();
         }
-        if (!fb.reading.rated_t_value.correct) {
+        if (fb.reading.rated_t_value.correct < 4) {
             $('#rated_t_feedback').show();
         }
-        if (!fb.measuring.measured_r_value.correct) {
+        if (fb.measuring.measured_r_value.correct < 4) {
             $('#measured_r_feedback').show();
         }
-        if (!fb.t_range_value.correct) {
+        if (fb.t_range_value.correct < 4) {
             $('#t_range_feedback').show();
         }
       
