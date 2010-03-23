@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+ <testsuite name="Unit" tests="0" assertions="0" failures="0" specs="0">
+ </testsuite>
+ <testsuite name="Circuit" tests="0" assertions="0" failures="0" specs="0">
+ </testsuite>
+ <testsuite name="Activity 1: Resistor Colors" tests="3" assertions="30" failures="0" specs="3">
+ <testcase name="should correctly enable/disable elements" assertions="0"> 
+ </testcase> 
+ <testcase name="should calculate max points correctly" assertions="15"> 
+ </testcase> 
+ <testcase name="should grade a session correctly" assertions="15"> 
+ </testcase> 
+ </testsuite>
+ <testsuite name="Unit nomalize" tests="1" assertions="5" failures="0" specs="1">
+ <testcase name="should normalize resistance values correctly" assertions="5"> 
+ </testcase> 
+ </testsuite>
+ <testsuite name="Unit compatibility" tests="1" assertions="3" failures="0" specs="1">
+ <testcase name="should determine compatibility of units" assertions="3"> 
+ </testcase> 
+ </testsuite>
+ <testsuite name="Circuit Resistor" tests="1" assertions="160" failures="0" specs="1">
+ <testcase name="should randomize its values within ranges" assertions="160"> 
+ </testcase> 
+ </testsuite>
+ <testsuite name="Circuit Multimeter" tests="1" assertions="6" failures="0" specs="1">
+ <testcase name="should display the number correctly" assertions="6"> 
+ </testcase> 
+ </testsuite>
+</testsuites>

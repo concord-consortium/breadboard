@@ -1,7 +1,7 @@
 describe 'Circuit'
     describe 'Resistor'
         before
-            resistor = new Resistor
+            resistor = new Resistor5band
         end
         
         it 'should randomize its values within ranges'
