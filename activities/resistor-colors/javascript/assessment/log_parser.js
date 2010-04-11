@@ -18,6 +18,8 @@ function LogParser(session) {
     // The following variables prefixed with temp_ are meant to be used
     // by parseEvents(), updated as it scans the list of events
     this.temp_power_on = false;
+    this.temp_red_probe_conn = null;
+    this.temp_black_probe_conn = null;
     this.temp_red_plug_conn = null;
     this.temp_black_plug_conn = null;
     this.temp_dial_setting = null;
@@ -33,7 +35,7 @@ LogParser.prototype =
     // Scan the events once to produce derived data
     parseEvents : function() {
         for (var i = 0; i < this.events.length; ++i) {
-        	debug('event name=' + this.events[i].name + ' value=' + this.events[i].value);
+            debug('event name=' + this.events[i].name + ' value=' + this.events[i].value);
             if (this.events[i].name === 'connect') {
                 this.parseConnect(this.events[i]);
             }
@@ -61,10 +63,10 @@ LogParser.prototype =
             this.parseBlackProbeConnection(comps[1], event.time);
             break;
         case 'red_plug':
-        	this.parseRedPlugConnection(comps[1], event.time);
+            this.parseRedPlugConnection(comps[1], event.time);
             break;
         case 'black_plug':
-        	this.parseBlackPlugConnection(comps[1], event.time);
+            this.parseBlackPlugConnection(comps[1], event.time);
             break;
         }
     },
@@ -73,63 +75,72 @@ LogParser.prototype =
     },
     
     parseMultimeterPower : function(event) {
-    	this.temp_power_on = event.value;
-    	if (event.time < this.measure_submit_time) {
-    		this.power_on = event.value;
-    	    if (event.value === true && !this.initial_dial_setting_set) {
-    	    	this.initial_dial_setting = this.submit_dial_setting;
-    	    	this.initial_dial_setting_set = true;
-    	    }
+        this.temp_power_on = event.value;
+        if (event.time < this.measure_submit_time) {
+            this.power_on = event.value;
+            if (event.value === true && !this.initial_dial_setting_set) {
+                this.initial_dial_setting = this.submit_dial_setting;
+                this.initial_dial_setting_set = true;
+            }
+        }
+        if (this.temp_power_on &&
+            !this.correct_order_set &&
+            event.time < this.measure_submit_time)
+        {
+            print('red_probe=' + this.temp_red_probe_conn);
+            print('black_probe=' + this.temp_black_probe_conn);
+            print('red_plug=' + this.temp_red_plug_conn);
+            print('black_plug=' + this.temp_black_plug_conn);
+            print('dial=' + this.temp_dial_setting);
+            
+            if (this.temp_red_probe_conn &&
+                this.temp_black_probe_conn &&
+                this.temp_red_plug_conn &&
+                this.temp_black_plug_conn &&
+                this.temp_dial_setting)
+            {
+                this.correct_order = true;
+                this.correct_order_set = true;
+            }
         }
     },
     
     parseMultimeterDial : function(event) {
-    	this.temp_dial_setting = event.value;
-    	if (event.time < this.measure_submit_time) {
-    		this.submit_dial_setting = event.value;
-    	}
+        this.temp_dial_setting = event.value;
+        if (event.time < this.measure_submit_time) {
+            this.submit_dial_setting = event.value;
+        }
     },
     
     parseProbeConnection : function(event) {
-    	debug('this.correct_order_set=' + this.correct_order_set);
-    	debug('event.time=' + event.time);
-    	debug('this.measure.submit.time=' + this.measure_submit_time);
-    	if (!this.correct_order_set && event.time < this.measure_submit_time) {
-    		if (this.temp_power_on &&
-    			this.temp_red_plug_conn &&
-    			this.temp_black_plug_conn &&
-    			this.temp_dial_setting)
-    		{
-    			this.correct_order = true;
-    			this.correct_order_set = true;
-    		}
-    	}
     },
     
     parseRedProbeConnection : function(connectedTo, time) {
-    	if (time < this.measure_submit_time) {
-    		this.submit_red_probe_conn = connectedTo;
-    	}
+        this.temp_red_probe_conn = connectedTo;
+        if (time < this.measure_submit_time) {
+            this.submit_red_probe_conn = connectedTo;
+        }
     },
     
     parseBlackProbeConnection : function(connectedTo, time) {
-    	if (time < this.measure_submit_time) {
-    		this.submit_black_probe_conn = connectedTo;
-    	}
+        this.temp_black_probe_conn = connectedTo;
+        if (time < this.measure_submit_time) {
+            this.submit_black_probe_conn = connectedTo;
+        }
     },
     
     parseRedPlugConnection : function(connectedTo, time) {
-    	this.temp_red_plug_conn = connectedTo;
-    	if (time < this.measure_submit_time) {
-    		this.submit_red_plug_conn = connectedTo;
-    	}
+        this.temp_red_plug_conn = connectedTo;
+        if (time < this.measure_submit_time) {
+            this.submit_red_plug_conn = connectedTo;
+        }
     },
     
     parseBlackPlugConnection : function(connectedTo, time) {
-    	this.temp_black_plug_conn = connectedTo;
-    	if (time < this.measure_submit_time) {
-    		this.submit_black_plug_conn = connectedTo;
-    	}
+        this.temp_black_plug_conn = connectedTo;
+        if (time < this.measure_submit_time) {
+            this.submit_black_plug_conn = connectedTo;
+        }
     },
     
     getLastConnection : function(conn1) {

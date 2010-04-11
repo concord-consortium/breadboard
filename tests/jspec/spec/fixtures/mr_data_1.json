@@ -24,20 +24,20 @@
                     "time": 240e3
                 },
                 {
-                    "name": "multimeter_power",
-                    "value": true,
+                    "name": "connect",
+                    "value": "red_probe|resistor_lead2",
                     "time": 242e3
                 },
                 {
                     "name": "connect",
-                    "value": "red_probe|resistor_lead2",
+                    "value": "black_probe|resistor_lead1",
                     "time": 245e3
                 },
                 {
-                    "name": "connect",
-                    "value": "black_probe|resistor_lead1",
-                    "time": 248e3
-                }
+                  "name": "multimeter_power",
+                  "value": true,
+                  "time": 248e3
+              }
             ],
             "questions": [
                 {

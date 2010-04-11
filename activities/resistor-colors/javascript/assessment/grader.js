@@ -16,7 +16,7 @@ Grader.prototype =
 {
     grade : function() {
         //console.log('ENTER Grader.grade');
-	
+    
         this.gradeReadingColorBands();
         this.gradeTolerance();
         this.gradeResistance();
@@ -247,7 +247,7 @@ Grader.prototype =
     },
     
     gradeSettings : function() {
-    	var fb = this.feedback.root.measuring;
+        var fb = this.feedback.root.measuring;
         var redProbeConn = this.parser.submit_red_probe_conn;
         var blackProbeConn = this.parser.submit_black_probe_conn;
         var redPlugConn = this.parser.submit_red_plug_conn;
@@ -302,42 +302,42 @@ Grader.prototype =
         this.feedback.optimal_dial_setting = o_knob;
         
         if (f_knob === o_knob) {
-        	if (i_knob === o_knob) {
-        		fb.knob_setting.points = 20;
-        		fb.knob_setting.correct = 4;
-        	}
-        	else {
-        		fb.knob_setting.points = 15;
-        		fb.knob_setting.correct = 3;
-        	}
+            if (i_knob === o_knob) {
+                fb.knob_setting.points = 20;
+                fb.knob_setting.correct = 4;
+            }
+            else {
+                fb.knob_setting.points = 15;
+                fb.knob_setting.correct = 3;
+            }
         }
         else if (this.isResistanceKnob(f_knob)){
-        	fb.knob_setting.points = 10;
-        	fb.knob_setting.correct = 2;
+            fb.knob_setting.points = 10;
+            fb.knob_setting.correct = 2;
         }
         else {
-        	fb.knob_setting.points = 0;
-        	fb.knob_setting.correct = 0;
+            fb.knob_setting.points = 0;
+            fb.knob_setting.correct = 0;
         }
         debug('knob_setting.points=' + fb.knob_setting.points);
     
         if (this.parser.power_on) {
-        	fb.power_switch.points = 2;
-        	fb.power_switch.correct = 4;;
+            fb.power_switch.points = 2;
+            fb.power_switch.correct = 4;
         }
         else {
-        	fb.power_switch.points = 0;
-        	fb.power_switch.correct = 0;
+            fb.power_switch.points = 0;
+            fb.power_switch.correct = 0;
         }
         debug('power_switch.points=' + fb.power_switch.points);
         
         if (this.parser.correct_order) {
-        	fb.task_order.points = 6;
-        	fb.task_order.correct = 4;
+            fb.task_order.points = 6;
+            fb.task_order.correct = 4;
         }
         else {
-        	fb.task_order.points = 0;
-        	fb.task_order.correct = 0;
+            fb.task_order.points = 0;
+            fb.task_order.correct = 0;
         }
         debug('task_order.points=' + fb.task_order.points);
     },
@@ -427,9 +427,9 @@ Grader.prototype =
     },
     
     isResistanceKnob : function(setting) {
-    	return setting === 'r_200' ||
-    		setting === 'r_2000' ||
-    		setting === 'r_20k' ||
-    		setting === 'r_200k';
+        return setting === 'r_200' ||
+            setting === 'r_2000' ||
+            setting === 'r_20k' ||
+            setting === 'r_200k';
     }
 };

@@ -1,8 +1,9 @@
 body {
   font-family: Verdana, Arial;
 }
-.popup_report p {
+.popup_report div {
   margin-left: 15px;
+  margin-bottom: 8px;
   font-size: 12pt;
 }
 a.no_deco {
