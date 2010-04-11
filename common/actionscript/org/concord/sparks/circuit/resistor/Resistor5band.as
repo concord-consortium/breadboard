@@ -1,6 +1,6 @@
 package org.concord.sparks.circuit.resistor
 {
-    import flash.display.Graphics;
+      import flash.display.Graphics;
 
     import flash.display.Loader;
     import flash.display.MovieClip;
@@ -9,8 +9,11 @@ package org.concord.sparks.circuit.resistor
     import flash.events.MouseEvent;
     import flash.events.IOErrorEvent;
     import flash.geom.Point;
-    
     import org.concord.sparks.util.Assert;
+    import flash.text.TextField;
+    import flash.text.TextFormat;
+    import flash.text.TextFieldAutoSize;
+    import flash.display.Sprite;
     
     public class Resistor5band extends Resistor
     {
@@ -38,6 +41,14 @@ package org.concord.sparks.circuit.resistor
         var band3Loader:Loader = new Loader();
         var band4Loader:Loader = new Loader();
         var band5Loader:Loader = new Loader();
+		
+		var printColor1:TextField = new TextField();
+        var printColor2:TextField = new TextField();
+        var printColor3:TextField = new TextField();
+        var printColor4:TextField = new TextField();
+        var printColor5:TextField = new TextField();
+		
+        var format:TextFormat = new TextFormat();
         
         public function Resistor5band(activity) {
             super(activity,
@@ -74,8 +85,173 @@ package org.concord.sparks.circuit.resistor
             container.band5.addChild(band5Loader);
             
             setColors(['red', 'white', 'blue', 'black', 'silver']);
+			
+			container.band1.addEventListener(MouseEvent.MOUSE_OVER, zoomBand1);
+            container.band1.addEventListener(MouseEvent.MOUSE_OUT, unzoomBand1);
+            container.band2.addEventListener(MouseEvent.MOUSE_OVER, zoomBand2);
+ 	 		container.band2.addEventListener(MouseEvent.MOUSE_OUT, unzoomBand2);
+            container.band3.addEventListener(MouseEvent.MOUSE_OVER, zoomBand3);
+ 	 		container.band3.addEventListener(MouseEvent.MOUSE_OUT, unzoomBand3);
+            container.band4.addEventListener(MouseEvent.MOUSE_OVER, zoomBand4);
+ 	 		container.band4.addEventListener(MouseEvent.MOUSE_OUT, unzoomBand4);
+            container.band5.addEventListener(MouseEvent.MOUSE_OVER, zoomBand5);
+ 	 		container.band5.addEventListener(MouseEvent.MOUSE_OUT, unzoomBand5);			
+ 	 		
+ 	 		format.font = "Verdana";
+        	format.color = 0xFFFFFF;
+        	format.size = 14;
+        	format.bold = true;
+        	
+        	printColor1.defaultTextFormat = format;
+        	printColor2.defaultTextFormat = format;
+        	printColor3.defaultTextFormat = format;
+        	printColor4.defaultTextFormat = format;
+			printColor5.defaultTextFormat = format;
+			
             hide();
         }
+		
+		
+	  private function zoomBand1 (event:MouseEvent):void
+		{
+			//sendEvent('ENTER zoomBand1');
+			var band = container.band1;
+			var printColor = printColor1;
+			band.scaleX = 1.75;
+			band.scaleY = 2.5;
+			band.x -=6;
+			band.y -=50;
+					
+			printColor.x = (band.x - 5);
+			printColor.y = (band.y - 25);
+			printColor.text = colors[0];
+
+			container.addChild(printColor);
+			
+		
+			
+		}
+		
+		private function unzoomBand1 (event:MouseEvent):void
+		{
+			var band = container.band1;
+			var printColor = printColor1;
+			band.scaleX = 1;
+			band.scaleY = 1;
+			band.x +=6;
+			band.y +=50;
+			container.removeChild(printColor);
+		}
+		
+		private function zoomBand2 (event:MouseEvent):void
+		{
+			var band = container.band2;
+			var printColor = printColor2;
+			band.scaleX = 1.75;
+			band.scaleY = 3;
+			band.x -=6;
+			band.y -=50;	
+        	
+			printColor.x = (band.x - 5);
+			printColor.y = (band.y - 25);
+			printColor.text = colors[1];
+
+			container.addChild(printColor);
+
+		}
+
+		private function unzoomBand2 (event:MouseEvent):void
+		{
+			var band = container.band2;
+			var printColor = printColor2;
+			band.scaleX = 1;
+			band.scaleY = 1;
+			band.x +=6;
+			band.y +=50;
+			container.removeChild(printColor);
+		}
+
+   		private function zoomBand3 (event:MouseEvent):void
+		{
+			var band = container.band3;
+			var printColor = printColor3;
+			band.scaleX = 1.75;
+			band.scaleY = 3;
+			band.x -=6;
+			band.y -=50;
+			
+			printColor.x = (band.x - 5);
+			printColor.y = (band.y - 25);
+			printColor.text = colors[2];
+
+			container.addChild(printColor);
+		}
+
+		private function unzoomBand3 (event:MouseEvent):void
+		{
+			var band = container.band3;
+			var printColor = printColor3;
+			band.scaleX = 1;
+			band.scaleY = 1;
+			band.x +=6;
+			band.y +=50;
+			container.removeChild(printColor);
+		}
+		
+		private function zoomBand4 (event:MouseEvent):void
+		{
+			var band = container.band4;
+			var printColor = printColor4;
+			band.scaleX = 1.75;
+			band.scaleY = 3;
+			band.x -=6;
+			band.y -=50;
+			
+			printColor.x = (band.x - 5);
+			printColor.y = (band.y - 25);
+			printColor.text = colors[3];
+
+			container.addChild(printColor);
+		}
+
+		private function unzoomBand4 (event:MouseEvent):void
+		{
+			var band = container.band4;
+			var printColor = printColor4;
+			band.scaleX = 1;
+			band.scaleY = 1;
+			band.x +=6;
+			band.y +=50;
+			container.removeChild(printColor);
+		}
+		
+			private function zoomBand5 (event:MouseEvent):void
+		{
+			var band = container.band5;
+			var printColor = printColor5;
+			band.scaleX = 1.75;
+			band.scaleY = 3;
+			band.x -=6;
+			band.y -=50;
+			
+			printColor.x = (band.x - 5);
+			printColor.y = (band.y - 25);
+			printColor.text = colors[4];
+
+			container.addChild(printColor);
+		}
+
+		private function unzoomBand5 (event:MouseEvent):void
+		{
+			var band = container.band5;
+			var printColor = printColor5;
+			band.scaleX = 1;
+			band.scaleY = 1;
+			band.x +=6;
+			band.y +=50;
+			container.removeChild(printColor);
+		}
+
         
         public override function setColors(colors:Array):void {
             trace('Enter setColors');
