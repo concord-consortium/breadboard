@@ -180,7 +180,7 @@ Reporter.prototype =
       if (fb.getPoints() != fb.getMaxPoints()) {
         this.imageLink($('#t_range_feedback'),
             '../../common/icons/sparkshelp.jpg',
-            '../../common/resources/calctolerance.html');
+            '../../common/resources/hint1_calctolerance.html');
       }
     },
     
