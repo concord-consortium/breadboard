@@ -23,7 +23,9 @@ Util.readCookie = function(name) {
     for(var i=0;i < ca.length;i++) {
         var c = ca[i];
         while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        if (c.indexOf(nameEQ) === 0) {
+            return c.substring(nameEQ.length,c.length);
+        }
     }
     return null;
 };
@@ -80,23 +82,23 @@ numbers perhaps using style classes to tag them as such.
 */
 Util.serializeForm = function(form) {
     var result = {};
-    form.map(function(){
+    form.map(function() {
      return this.elements ? jQuery.makeArray(this.elements) : this;
-    })
-    .filter(function(){
+    }).filter(function(){
      return this.name &&
-       (this.checked || /select|textarea/i.test(this.nodeName) ||
-        /text|hidden|password|search/i.test(this.type));
-    })
-    .each(function(i){
+       (this.checked || (/select|textarea/i).test(this.nodeName) ||
+        (/text|hidden|password|search/i).test(this.type));
+    }).each(function(i) {
      var val = jQuery(this).val();
-     if(val === null){
+     
+     if(val === null) {
        return;
      }
      
-     if(jQuery.isArray(val)){
+     if(jQuery.isArray(val)) {
        result[this.name] = jQuery.makeArray(val);
-     } else {
+     }
+     else {
        result[this.name] = val;
      }
     });

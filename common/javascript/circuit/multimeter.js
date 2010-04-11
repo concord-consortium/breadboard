@@ -22,13 +22,13 @@ Multimeter.prototype =
 {
     modes : { ohmmeter : 0, voltmeter : 1, ammeter : 2 },
     
-    update : function() {
+    update : function () {
         console.log('ENTER update powerOn=', this.powerOn + ' ' + (typeof this.powerOn));
         this.value = jQuery.sparks.activity.currentResistor.getRealValue();
         this.updateDisplay();
     },
     
-    updateDisplay : function() {
+    updateDisplay : function () {
         if (!this.powerOn) {
             this.displayText = '       ';
             Flash.sendCommand('set_multimeter_display', '       ');
@@ -39,7 +39,7 @@ Multimeter.prototype =
         var text = '';
         if (this.allConnected()) {
             console.log('pos=' + this.dialPosition + ' val=' + this.value);
-            if (this.dialPosition == 'r_200') {
+            if (this.dialPosition === 'r_200') {
                 if (this.value < 199.95) {
                     text = (Math.round(this.value * 10) * 0.1).toString();
                     text = this.toDisplayString(text, 1);
@@ -48,7 +48,7 @@ Multimeter.prototype =
                     text = ' 1   . ';
                 }
             }
-            else if (this.dialPosition == 'r_2000' || this.dialPosition == 'diode') {
+            else if (this.dialPosition === 'r_2000' || this.dialPosition === 'diode') {
                 if (this.value < 1999.5) {
                     text = Math.round(this.value).toString();
                     text = this.toDisplayString(text, 0);
@@ -57,7 +57,7 @@ Multimeter.prototype =
                     text = ' 1     ';
                 }
             }
-            else if (this.dialPosition == 'r_20k') {
+            else if (this.dialPosition === 'r_20k') {
                 if (this.value < 19995) {
                     text = (Math.round(this.value * 0.1) * 0.01).toString();
                     text = this.toDisplayString(text, 2);
@@ -66,7 +66,7 @@ Multimeter.prototype =
                     text = ' 1 .   ';
                 }
             }
-            else if (this.dialPosition == 'r_200k') {
+            else if (this.dialPosition === 'r_200k') {
                 if (this.value < 199950) {
                     text = (Math.round(this.value * 0.01) * 0.1).toString();
                     text = this.toDisplayString(text, 1);
@@ -75,7 +75,7 @@ Multimeter.prototype =
                     text = ' 1   . ';
                 }
             }
-            else if (this.dialPosition == 'r_2000k') {
+            else if (this.dialPosition === 'r_2000k') {
                 if (this.value < 1999500) {
                     text = Math.round(this.value * 0.001).toString();
                     text = this.toDisplayString(text, 0);
@@ -84,20 +84,20 @@ Multimeter.prototype =
                     text = ' 1     ';
                 }
             }
-            else if (this.dialPosition == 'dcv_200m' || this.dialPosition == 'dcv_200' ||
-                    this.dialPosition == 'acv_200' || this.dialPosition == 'p_9v' ||
-                    this.dialPosition == 'dca_200mc' || this.dialPosition == 'dca_200m') {
+            else if (this.dialPosition === 'dcv_200m' || this.dialPosition === 'dcv_200' ||
+                    this.dialPosition === 'acv_200' || this.dialPosition === 'p_9v' ||
+                    this.dialPosition === 'dca_200mc' || this.dialPosition === 'dca_200m') {
                 text = '  0 0.0';
             }
-            else if (this.dialPosition == 'dcv_2000m' || this.dialPosition == 'dca_2000mc' ||
-                    this.dialPosition == 'hfe') {
+            else if (this.dialPosition === 'dcv_2000m' || this.dialPosition === 'dca_2000mc' ||
+                    this.dialPosition === 'hfe') {
                 text = '  0 0 0';
             }
-            else if (this.dialPosition == 'dcv_20' || this.dialPosition == 'dca_20m' ||
-                    this.dialPosition == 'c_10a') {
+            else if (this.dialPosition === 'dcv_20' || this.dialPosition === 'dca_20m' ||
+                    this.dialPosition === 'c_10a') {
                 text = '  0.0 0';
             }
-            else if (this.dialPosition == 'dcv_1000' || this.dialPosition == 'acv_750') {
+            else if (this.dialPosition === 'dcv_1000' || this.dialPosition === 'acv_750') {
                 text = 'h 0 0 0';
             }
             else {
@@ -105,35 +105,35 @@ Multimeter.prototype =
             }
         }
         else {
-            if (this.dialPosition == 'r_200') {
+            if (this.dialPosition === 'r_200') {
                 text = ' 1   . ';
             }
-            else if (this.dialPosition == 'r_2000' || this.dialPosition == 'diode') {
+            else if (this.dialPosition === 'r_2000' || this.dialPosition === 'diode') {
                 text = ' 1     ';
             }
-            else if (this.dialPosition == 'r_20k') {
+            else if (this.dialPosition === 'r_20k') {
                 text = ' 1 .   ';
             }
-            else if (this.dialPosition == 'r_200k') {
+            else if (this.dialPosition === 'r_200k') {
                 text = ' 1   . ';
             }
-            else if (this.dialPosition == 'r_2000k') {
+            else if (this.dialPosition === 'r_2000k') {
                 text = ' 1     ';
             }
-            else if (this.dialPosition == 'dcv_200m' || this.dialPosition == 'dcv_200' ||
-                    this.dialPosition == 'acv_200' || this.dialPosition == 'p_9v' ||
-                    this.dialPosition == 'dca_200mc' || this.dialPosition == 'dca_200m') {
+            else if (this.dialPosition === 'dcv_200m' || this.dialPosition === 'dcv_200' ||
+                    this.dialPosition === 'acv_200' || this.dialPosition === 'p_9v' ||
+                    this.dialPosition === 'dca_200mc' || this.dialPosition === 'dca_200m') {
                 text = '  0 0.0';
             }
-            else if (this.dialPosition == 'dcv_2000m' || this.dialPosition == 'dca_2000mc' ||
-                    this.dialPosition == 'hfe') {
+            else if (this.dialPosition === 'dcv_2000m' || this.dialPosition === 'dca_2000mc' ||
+                    this.dialPosition === 'hfe') {
                 text = '  0 0 0';
             }
-            else if (this.dialPosition == 'dcv_20' || this.dialPosition == 'dca_20m' ||
-                    this.dialPosition == 'c_10a') {
+            else if (this.dialPosition === 'dcv_20' || this.dialPosition === 'dca_20m' ||
+                    this.dialPosition === 'c_10a') {
                 text = '  0.0 0';
             }
-            else if (this.dialPosition == 'dcv_1000' || this.dialPosition == 'acv_750') {
+            else if (this.dialPosition === 'dcv_1000' || this.dialPosition === 'acv_750') {
                 text = 'h 0 0 0';
             }
             else {
@@ -145,10 +145,10 @@ Multimeter.prototype =
         this.displayText = text;
     },
     
-    toDisplayString : function(s, dec) {
+    toDisplayString : function (s, dec) {
         //debug('s1=' + s + ' dec=' + dec);
         var i;
-        var sign = s.charAt(0) == '-' ? s.charAt(0) : ' ';
+        var sign = s.charAt(0) === '-' ? s.charAt(0) : ' ';
         s = s.replace('-', '');
         
         //debug('s2=' + s);
@@ -207,7 +207,7 @@ Multimeter.prototype =
     // Pad 0's to the number text
     // sig: number of significant digits
     // dec: number of digits after decimal points
-    formatDecimalString : function(s, dec) {
+    formatDecimalString : function (s, dec) {
         //console.log('s=' + s + ' dec=' + dec);
         var pointLoc = s.indexOf('.');
         //console.log('pointLoc=' + pointLoc);
@@ -228,7 +228,7 @@ Multimeter.prototype =
         return s;
     },
     
-    getDisplayText : function() {
+    getDisplayText : function () {
         return this.displayText;
     },
 
@@ -238,7 +238,7 @@ Multimeter.prototype =
      *
      * Take three significant digits, four if the first digit is 1.
      */
-    makeDisplayText : function(value) {
+    makeDisplayText : function (value) {
         var text;
         if (value < 199.95) {
             text = (Math.round(value * 10) * 0.1).toString();
@@ -263,7 +263,7 @@ Multimeter.prototype =
         return parseFloat(text);
     },
     
-    allConnected : function() {
+    allConnected : function () {
         return this.redProbeConnection !== null && 
             this.blackProbeConnection !== null &&
             this.redProbeConnection !== this.blackProbeConnection &&

@@ -39,7 +39,7 @@ Unit.res_str = function(value) {
     }
     
     var n = vstr.match('.') ?  4 : 3;
-    if (vstr.charAt(0) == '1') { ++n };
+    if (vstr.charAt(0) == '1') { ++n; }
     if (vstr.length > n) {
         vstr = vstr.substring(0, n);
     }
