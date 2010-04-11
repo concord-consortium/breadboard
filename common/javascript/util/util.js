@@ -83,24 +83,23 @@ numbers perhaps using style classes to tag them as such.
 Util.serializeForm = function(form) {
     var result = {};
     form.map(function() {
-     return this.elements ? jQuery.makeArray(this.elements) : this;
-    }).filter(function(){
-     return this.name &&
-       (this.checked || (/select|textarea/i).test(this.nodeName) ||
-        (/text|hidden|password|search/i).test(this.type));
+        return this.elements ? jQuery.makeArray(this.elements) : this;
+    }).filter(function() {
+        return this.name &&
+        (this.checked || /select|textarea/i.test(this.nodeName) ||
+        /text|hidden|password|search/i.test(this.type));
     }).each(function(i) {
-     var val = jQuery(this).val();
+        var val = jQuery(this).val();
+        if(val === null){
+            return;
+        }
      
-     if(val === null) {
-       return;
-     }
-     
-     if(jQuery.isArray(val)) {
-       result[this.name] = jQuery.makeArray(val);
-     }
-     else {
-       result[this.name] = val;
-     }
+        if(jQuery.isArray(val)){
+            result[this.name] = jQuery.makeArray(val);
+        }
+        else {
+            result[this.name] = val;
+        }
     });
     return result;
 };
