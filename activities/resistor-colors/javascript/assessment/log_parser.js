@@ -87,12 +87,6 @@ LogParser.prototype =
             !this.correct_order_set &&
             event.time < this.measure_submit_time)
         {
-            print('red_probe=' + this.temp_red_probe_conn);
-            print('black_probe=' + this.temp_black_probe_conn);
-            print('red_plug=' + this.temp_red_plug_conn);
-            print('black_plug=' + this.temp_black_plug_conn);
-            print('dial=' + this.temp_dial_setting);
-            
             if (this.temp_red_probe_conn &&
                 this.temp_black_probe_conn &&
                 this.temp_red_plug_conn &&
