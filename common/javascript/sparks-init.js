@@ -6,8 +6,11 @@
  */
 
 // Create a dummy console.log when not run in Firebug
-if (typeof console == 'undefined') {
-    var console = { log: function() {} };
+if (!console) {
+    var console = {};
+}
+if (!console.log) {
+    console.log = function() {};
 }
 var debug = function(x) { console.log(x); };
 
