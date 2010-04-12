@@ -243,15 +243,18 @@ ResistorActivity.prototype =
       
       if (result[name].correct == 4) {
         image = 'ok.png';
+        label = 'Correct!';
       }
       else if (result[name].correct > 0) {
         image = 'yellow-circle.png';
+        label = 'Partially correct, Click Help in the report!'
       }
       else {
         image = 'cancel.png';
+        label = 'Incorrect, Click Help in the report!';
       }
       
-      itemForm.prepend('<img class="grade" src="' + jQuery.sparks.root_dir + '/common/icons/' + image + '"'  + titleText + "/>");
+      itemForm.prepend('<img title="' + label + '" class="grade" src="' + jQuery.sparks.root_dir + '/common/icons/' + image + '"'  + titleText + "/>");
     },
     
     // Start new session (new resistor)
