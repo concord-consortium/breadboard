@@ -19,6 +19,7 @@ load('../../common/javascript/sparks-init.js');
 load('../../common/javascript/flash_comm.js');
 load('../../common/javascript/circuit/r-values.js');
 load('../../common/javascript/circuit/resistor.js');
+load('../../common/javascript/circuit/resistor-4band.js');
 load('../../common/javascript/circuit/resistor-5band.js');
 load('../../common/javascript/circuit/multimeter.js');
 load('../../common/javascript/util/mymath.js');

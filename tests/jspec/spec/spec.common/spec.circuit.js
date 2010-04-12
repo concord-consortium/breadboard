@@ -1,10 +1,24 @@
 describe 'Circuit'
     describe 'Resistor'
-        before
-            resistor = new Resistor5band
+        function listEqual(a, b) {
+            if (a.length !== b.length) {
+                return false;
+            }
+            for (var i = 0; i < a.length; ++a) {
+                if (a[i] !== b[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        before_each
+            resistor4 = new Resistor4band
+            resistor5 = new Resistor5band
         end
         
         it 'should randomize its values within ranges'
+            resistor = resistor5
             for (var i = 0; i < 20; ++i) {
                 resistor.randomize()
                 resistor.getNominalValue().should.be_at_least 1.0
@@ -14,6 +28,22 @@ describe 'Circuit'
                     jspec_sparks.objectValues(resistor.colorMap).should.include resistor.colors[j]
                 }
             }
+        end
+        
+        it 'should produce correct color bands given a resistance/tolerance value'
+            colors = resistor5.getColors(16.2, 0.01)
+            colors[0].should.be 'brown'
+            colors[1].should.be 'blue'
+            colors[2].should.be 'red'
+            colors[3].should.be 'gold'
+            colors[4].should.be 'brown'
+
+            colors = resistor5.getColors(12.1, 0.02)
+            colors[0].should.be 'brown'
+            colors[1].should.be 'red'
+            colors[2].should.be 'brown'
+            colors[3].should.be 'gold'
+            colors[4].should.be 'red'
         end
     end
     
