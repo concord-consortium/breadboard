@@ -57,7 +57,7 @@ Util.extend(Resistor5band, Resistor, {
         var iohms = '';
         
         for (var i = 0; i < ohmsStr.length; ++i) {
-          iohms = ohmsStr[i];
+          iohms = ohmsStr.charAt(i);
           
           switch(iohms)
           {
