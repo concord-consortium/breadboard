@@ -247,7 +247,7 @@ ResistorActivity.prototype =
       }
       else if (result[name].correct > 0) {
         image = 'yellow-circle.png';
-        label = 'Partially correct, Click Help in the report!'
+        label = 'Partially correct, Click Help in the report!';
       }
       else {
         image = 'cancel.png';
