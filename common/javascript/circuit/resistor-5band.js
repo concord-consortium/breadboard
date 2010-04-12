@@ -67,8 +67,8 @@ Util.extend(Resistor5band, Resistor, {
           }
         }
         var mult = ohmsStr.indexOf('.') > -1 ? 9 + ohmsStr.split('.')[1].length : pwr;
-        return [ this.colMap[sigfigs[0]], this.colMap[sigfigs[1]],
-                 this.colMap[sigfigs[2]], this.colMap[mult],
+        return [ this.colMap[sigfigs.charAt(0)], this.colMap[sigfigs.charAt(1)],
+                 this.colMap[sigfigs.charAt(2)], this.colMap[mult],
                  this.tolMap['_' + ('' + tolerance).split(".")[1]] ];
     }
 });
