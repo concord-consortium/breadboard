@@ -99,13 +99,16 @@ ResistorActivity.prototype =
     // Re-initialize the circuit settings for a new set of questions
     resetCircuit: function() {
         debug('ENTER ResistorActivity.resetCircuit');
-        if (Math.random() < 0.75) {
-          debug('4-BAND!!');
-          this.setCurrentResistor(this.resistor4band);
+        if (jQuery.sparks.debug_nbands) {
+            this.setCurrentResistor(jQuery.sparks.debug_nbands == 4 ? this.resistor4band : this.resistor5band);
         }
         else {
-          debug('5-BAND!!');
-          this.setCurrentResistor(this.resistor5band);
+            if (Math.random() < 0.75) {
+                this.setCurrentResistor(this.resistor4band);
+            }
+            else {
+                this.setCurrentResistor(this.resistor5band);
+            }
         }
         Flash.sendCommand('set_current_resistor', this.currentResistor.id);
         this.currentResistor.randomize();

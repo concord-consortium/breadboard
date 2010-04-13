@@ -13,14 +13,24 @@ Util.extend(Resistor4band, Resistor, {
     randomize: function() {
       var ix = this.randInt(0, 1);
       var values;
-      this.tolerance = this.toleranceValues[ix];
+      if (jQuery.sparks.debug_tvalue) {
+          this.tolerance = jQuery.sparks.debug_tvalue;
+      }
+      else {
+          this.tolerance = this.toleranceValues[ix];
+      }
       if (this.tolerance == 0.05) {
           values = this.r_values5pct;
       }
       else {
           values = this.r_values10pct;
       }
-      this.nominalValue = values[this.randInt(0, values.length-1)];
+      if (jQuery.sparks.debug_rvalue) {
+          this.nominalValue = jQuery.sparks.debug_rvalue;
+      }
+      else {
+          this.nominalValue = values[this.randInt(0, values.length-1)];
+      }
       this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
       this.colors = this.getColors(this.nominalValue, this.tolerance);
       //console.log('r=' + this.nominalValue + ' t=' + this.tolerance);

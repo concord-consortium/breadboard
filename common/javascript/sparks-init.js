@@ -24,6 +24,9 @@ var value = jQuery.url.param("model_height");
 jQuery.sparks.modelHeight = value !== undefined ? value : '635';
 
 jQuery.sparks.debug = jQuery.url.param("debug") !== undefined;
+jQuery.sparks.debug_nbands = jQuery.url.param("n");
+jQuery.sparks.debug_rvalue = jQuery.url.param("r");
+jQuery.sparks.debug_tvalue = jQuery.url.param("t");
 
 $(document).ready(function() {
     //Util.checkFlashVersion();
