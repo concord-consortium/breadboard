@@ -1,58 +1,6 @@
+
 /* The following line (global) is for JSLint */
 /*global console, window, jQuery, $, ActivityLog, Assessment, Flash, Multimeter, Reporter, Resistor, Util */
-
-// Submit button for question
-function submitButtonClicked(event) {
-    var activity = jQuery.sparks.activity;
-    var form = jQuery(event.target).parent();
-    activity.disableForm(form);
-    var nextForm = form.nextAll("form:first");
-    
-    activity.log.add('end_question', { question : activity.current_question });
-    
-    if (nextForm.size() === 0) { //all questions answered for current session
-        activity.completedTry();
-    } else {
-        activity.enableForm(nextForm);
-        ++activity.current_question;
-        activity.log.add('start_question', { question : activity.current_question });
-        //console.log('current_question=' + activity.current_question);
-        if (activity.current_question == 3) {
-            activity.enableCircuit();
-        }
-    }
-}
-
-function startButtonClicked(event) {
-    //console.log('EVENT: ' + (typeof event));
-    //jQuery(event.target).hide();
-    $('#intro_area').hide();
-    jQuery.sparks.activity.startTry();
-}
-
-function nextButtonClicked(event) {
-    $(".next_button").each(function(i){
-      this.disabled = true;
-    });
-    $('.show_report_button').hide();
-    jQuery.sparks.activity.startTry();
-}
-
-function showReportButtonClicked(event) {
-    var activity = jQuery.sparks.activity;
-    activity.reporter.reportOnSession(activity.log.currentSession(), activity.feedback);
-    /*
-    $("#report").load("report-templates/report.html", {}, function() {
-        jQuery.sparks.activity.reporter.report();
-        $("#report").dialog('open');
-    });
-    */
-    /*
-    $("#report").load("report-templates/report.html", {}, function() {
-        jQuery.sparks.activity.reporter.report();
-    }).show();
-    */
-}
 
 function ResistorActivity() {
     //console.log('ENTER ResistorActivity');
@@ -100,20 +48,28 @@ ResistorActivity.prototype =
 
     // Initial operation on document when it is loaded
     initDocument : function() {
+        var self = this;
+        
         // Disable all form elements
         $('input, select').attr("disabled", "true");
 
         // Hide the next buttons and their listeners
-        $('.next_button').hide().click(nextButtonClicked);
+        $('.next_button').hide().click(function(event) {
+            self.nextButtonClicked(self, event);
+        });
 
         // Hide the show report buttons
-        $('.show_report_button').hide().click(showReportButtonClicked);
+        $('.show_report_button').hide().click(function(event) {
+            self.showReportButtonClicked(self, event);
+        });
       
         // Add start and stop times to all forms
         $('form').append(
           "<input name='start_time' type='hidden'></input><input name='stop_time' type='hidden'></input>");
         
-        $('#start_button').click(startButtonClicked);
+        $('#start_button').click(function(event) {
+            self.startButtonClicked(self, event);
+        });
         
         $('#report').dialog({ autoOpen: false, width: 800,
             height : $(window).height() * 0.9 });
@@ -197,21 +153,6 @@ ResistorActivity.prototype =
             this.updateItem(result, item);
         }
         
-        var fb = this.feedback.root;
-
-        if (fb.reading.rated_r_value.correct < 4) {
-            $('#rated_r_feedback').show();
-        }
-        if (fb.reading.rated_t_value.correct < 4) {
-            $('#rated_t_feedback').show();
-        }
-        if (fb.measuring.measured_r_value.correct < 4) {
-            $('#measured_r_feedback').show();
-        }
-        if (fb.t_range_value.correct < 4) {
-            $('#t_range_feedback').show();
-        }
-      
         $(".show_report_button").show();
     
         $(".next_button").each(function() {
@@ -288,8 +229,8 @@ ResistorActivity.prototype =
       // this is defined in javascript/resistor_activity.js
       this.resetCircuit();
     
-      if(jQuery.sparks.debug){
-        this.showRccDebugInfo();
+      if (jQuery.sparks.debug) {
+          this.showRccDebugInfo();
       }
       
       var form = $("form:first");
@@ -321,6 +262,7 @@ ResistorActivity.prototype =
         var html =
           'Nominal Value: ' + resistor.nominalValue + '<br/>' +
           'Tolerance: ' + resistor.tolerance * 100.0 + '%<br/>' +
+          'Calculated colors: ' + resistor.getColors(resistor.nominalValue, resistor.tolerance) + '<br/>' +
           'Range: [' + resistor.nominalValue * (1 - resistor.tolerance) + ', ' +
           resistor.nominalValue * (1 + resistor.tolerance) + ']<br/>' + 
           'Real Value: ' + resistor.realValue + '<br/>' +
@@ -335,8 +277,11 @@ ResistorActivity.prototype =
     },
     
     enableForm : function(form) {
+      var self = this;
       form.append("<button>Submit</button>");
-      form.find("button").click(submitButtonClicked); 
+      form.find("button").click(function(event) {
+          self.submitButtonClicked(self, event);
+      }); 
       form.find("input, select").removeAttr("disabled");
       form.find("input, select").keypress(function(event) {
           if (event.keyCode == '13') { //13: Enter key
@@ -369,7 +314,47 @@ ResistorActivity.prototype =
             this.dataService.save(obj);
         }
         else {
-            debug("saveStudentData: No Data Service defined");
+            alert('Not saving the data:\neither not logged in and/or no data service defined');
         }
+    },
+    
+    // Submit button for question
+    submitButtonClicked: function(activity, event) {
+        var form = jQuery(event.target).parent();
+        activity.disableForm(form);
+        var nextForm = form.nextAll("form:first");
+        
+        activity.log.add('end_question', { question : activity.current_question });
+        
+        if (nextForm.size() === 0) { //all questions answered for current session
+            activity.completedTry();
+        } else {
+            activity.enableForm(nextForm);
+            ++activity.current_question;
+            activity.log.add('start_question', { question : activity.current_question });
+            //console.log('current_question=' + activity.current_question);
+            if (activity.current_question == 3) {
+                activity.enableCircuit();
+            }
+        }
+    },
+
+    startButtonClicked: function(activity, event) {
+        //console.log('EVENT: ' + (typeof event));
+        $('#intro_area').hide();
+        activity.startTry();
+    },
+
+    nextButtonClicked: function(activity, event) {
+        $(".next_button").each(function(i){
+          this.disabled = true;
+        });
+        $('.show_report_button').hide();
+        activity.startTry();
+    },
+
+    showReportButtonClicked: function(event) {
+        var activity = jQuery.sparks.activity;
+        activity.reporter.reportOnSession(activity.log.currentSession(), activity.feedback);
     }
 };
