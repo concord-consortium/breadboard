@@ -45,6 +45,7 @@ Util.checkFlashVersion = function() {
     document.write('<p>Flash version: ' + GetSwfVer() + '</p>');
 };
 */
+
 // The "next" function returns a different value each time
 // alternating between the two input values x, y.
 Util.Alternator = function(x, y)
@@ -86,8 +87,8 @@ Util.serializeForm = function(form) {
         return this.elements ? jQuery.makeArray(this.elements) : this;
     }).filter(function() {
         return this.name &&
-        (this.checked || /select|textarea/i.test(this.nodeName) ||
-        /text|hidden|password|search/i.test(this.type));
+        (this.checked || (/select|textarea/i).test(this.nodeName) ||
+        (/text|hidden|password|search/i).test(this.type));
     }).each(function(i) {
         var val = jQuery(this).val();
         if(val === null){
