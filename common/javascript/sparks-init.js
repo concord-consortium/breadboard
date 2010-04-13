@@ -17,14 +17,13 @@ var debug = function(x) { console.log(x); };
 // Setup a global namespace
 jQuery.sparks = {};
 
+jQuery.sparks.root_dir = '../..';
+
 // Parse the page params so things can be customized
 var value = jQuery.url.param("model_height");
 jQuery.sparks.modelHeight = value !== undefined ? value : '635';
 
 jQuery.sparks.debug = jQuery.url.param("debug") !== undefined;
-jQuery.sparks.debug_mode = jQuery.url.param("debug_mode");
-
-jQuery.sparks.root_dir = '/sparks-content';
 
 $(document).ready(function() {
     //Util.checkFlashVersion();
