@@ -1,48 +1,78 @@
 describe 'Circuit'
     describe 'Resistor'
-        function listEqual(a, b) {
-            if (a.length !== b.length) {
-                return false;
-            }
-            for (var i = 0; i < a.length; ++a) {
-                if (a[i] !== b[i]) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
         before_each
             resistor4 = new Resistor4band
             resistor5 = new Resistor5band
         end
         
-        it 'should randomize its values within ranges'
-            resistor = resistor5
-            for (var i = 0; i < 20; ++i) {
-                resistor.randomize()
-                resistor.getNominalValue().should.be_at_least 1.0
-                resistor.nominalValue.should.be_less_than 2e6
-                resistor.colors.should.have_length 5
-                for (var j = 0; j < resistor.colors.length; ++j) {
-                    jspec_sparks.objectValues(resistor.colorMap).should.include resistor.colors[j]
-                }
-            }
+        it 'should produce correct color bands for 4-band given a resistance/tolerance value'
+            colors = resistor4.getColors(1, 0.1)
+            colors[0].should.be 'brown'
+            colors[1].should.be 'black'
+            colors[2].should.be 'gold'
+            colors[3].should.be 'silver'
+            
+            colors = resistor4.getColors(16, 0.05) //don't remove. failed before
+            colors[0].should.be 'brown'
+            colors[1].should.be 'blue'
+            colors[2].should.be 'black'
+            colors[3].should.be 'gold'
+            
+            colors = resistor4.getColors(680e3, 0.1) //don't remove. failed before
+            colors[0].should.be 'blue'
+            colors[1].should.be 'grey'
+            colors[2].should.be 'yellow'
+            colors[3].should.be 'silver'
+            
+            colors = resistor4.getColors(10e6, 0.05) //don't remove. failed before
+            colors[0].should.be 'brown'
+            colors[1].should.be 'black'
+            colors[2].should.be 'blue'
+            colors[3].should.be 'gold'
+
         end
         
-        it 'should produce correct color bands given a resistance/tolerance value'
-            colors = resistor5.getColors(16.2, 0.01)
+        it 'should produce correct color bands for 5-band given a resistance/tolerance value'
+            colors = resistor5.getColors(16.2, 0.01) //don't remove. failed before
             colors[0].should.be 'brown'
             colors[1].should.be 'blue'
             colors[2].should.be 'red'
             colors[3].should.be 'gold'
             colors[4].should.be 'brown'
 
-            colors = resistor5.getColors(12.1, 0.02)
+            colors = resistor5.getColors(12.1, 0.02) //don't remove. failed before
             colors[0].should.be 'brown'
             colors[1].should.be 'red'
             colors[2].should.be 'brown'
             colors[3].should.be 'gold'
+            colors[4].should.be 'red'
+            
+            colors = resistor5.getColors(14.0, 0.01) //don't remove. failed before
+            colors[0].should.be 'brown'
+            colors[1].should.be 'yellow'
+            colors[2].should.be 'black'
+            colors[3].should.be 'gold'
+            colors[4].should.be 'brown'
+            
+            colors = resistor5.getColors(1, 0.01)
+            colors[0].should.be 'brown'
+            colors[1].should.be 'black'
+            colors[2].should.be 'black'
+            colors[3].should.be 'silver'
+            colors[4].should.be 'brown'
+
+            colors = resistor5.getColors(487e3, 0.02)
+            colors[0].should.be 'yellow'
+            colors[1].should.be 'grey'
+            colors[2].should.be 'violet'
+            colors[3].should.be 'orange'
+            colors[4].should.be 'red'
+            
+            colors = resistor5.getColors(100e6, 0.02)
+            colors[0].should.be 'brown'
+            colors[1].should.be 'black'
+            colors[2].should.be 'black'
+            colors[3].should.be 'blue'
             colors[4].should.be 'red'
         end
     end
