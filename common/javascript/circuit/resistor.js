@@ -14,8 +14,7 @@ Resistor.prototype =
     toleranceColorMap : { 0.01 : 'brown', 0.02 : 'red', 5e-3 : 'green',
         2.5e-3 : 'blue', 1e-3 : 'violet', 5e-4 : 'gray', 5e-2 : 'gold',
         0.1 : 'silver', 0.2 : 'none' },
-    //toleranceValues : [ 0.01, 0.02, 5e-3, 2.5e-3, 1e-3, 5e-4, 5e-2,
-    //                    0.1, 0.2],
+
     toleranceValues : [ 0.01, 0.02 ],
     
     init: function() {
