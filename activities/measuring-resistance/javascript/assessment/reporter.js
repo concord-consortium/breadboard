@@ -43,8 +43,9 @@ Reporter.prototype =
         $("#report").load(this.template, '', function() {
             reporter.sessionReport(session, feedback);
             $('#report').data('title.dialog', 'Performance Report');
-            $('#report').dialog('open');
+            //$('#report').dialog('open');
         });
+        $('#report').append($('<h3>HELLO</h3>'));
     },
     
     sessionReport : function(session, feedback) {

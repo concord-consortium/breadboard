@@ -1,0 +1,195 @@
+<html lang='en' xml:lang='en' xmlns='http://www.w3.org/1999/xhtml'>
+  <head>
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type' />
+    <title>SPARKS Module 1: Measuring Resistance</title>
+
+    <link href='../../common/stylesheets/sparks.css' rel='stylesheet'
+          type='text/css' />
+    <link href='../../lib/jquery/ui-lightness/jquery-ui-1.7.2.custom.css'
+          rel='stylesheet' type='text/css' />
+
+    <script src='../../lib/data-service/RestDS-jQuery.js'
+            type='text/javascript'></script>
+    <script src='../../lib/http.js'
+            type='text/javascript'></script>
+    <script src='../../lib/jquery/jquery-1.3.2.js'
+            type='text/javascript'></script>
+    <script src='../../lib/jquery/jquery.json-2.2.js'
+            type='text/javascript'></script>
+    <script src='../../lib/jquery/jquery-ui-1.7.2.custom.min.js'
+            type='text/javascript'></script>
+    <script src='../../lib/jquery/jquery.url.packed.js'
+            type='text/javascript'></script>
+    <script src='../../lib/json2.js' type='text/javascript'></script>
+    <script src='../../lib/jquery/plugins/jquery.bgiframe.min.js'
+            type='text/javascript'></script>
+    <script src='../../common/javascript/util/util.js'
+            type='text/javascript'></script>
+    <script src='../../common/javascript/flash_comm.js'
+            type='text/javascript'></script>
+    <script src='../../common/javascript/flash_version_detection.js'
+            type='text/javascript'></script>
+    <script src='../../common/javascript/sparks-init.js'
+            type='text/javascript'></script>
+    <script src='../../common/javascript/circuit/multimeter.js'
+            type='text/javascript'></script>
+    <script src='../../common/javascript/circuit/r-values.js'
+            type='text/javascript'></script>
+    <script src='../../common/javascript/circuit/resistor.js'
+            type='text/javascript'></script>
+    <script src='../../common/javascript/circuit/resistor-4band.js'
+            type='text/javascript'></script>
+    <script src='../../common/javascript/circuit/resistor-5band.js'
+            type='text/javascript'></script>
+    <script src='../../common/javascript/util/mymath.js'
+            type='text/javascript'></script>
+    <script src='../../common/javascript/util/unit.js'
+            type='text/javascript'></script>
+    <script src='../../activities/measuring-resistance/javascript/activity.js'
+            type='text/javascript'></script>
+    <script src='../../activities/measuring-resistance/javascript/assessment/activity_log.js'
+            type='text/javascript'></script>
+    <script src='../../activities/measuring-resistance/javascript/assessment/assessment.js'
+            type='text/javascript'></script>
+    <script src='../../activities/measuring-resistance/javascript/assessment/feedback.js' type='text/javascript'></script>
+    <script src='../../activities/measuring-resistance/javascript/assessment/grader.js'
+            type='text/javascript'></script>
+    <script src='../../activities/measuring-resistance/javascript/assessment/log_parser.js'
+            type='text/javascript'></script>
+    <script src='../../activities/measuring-resistance/javascript/assessment/reporter.js'
+            type='text/javascript'></script>
+    <script type='text/javascript'>
+      sparks.config.Activity = sparks.activities.mr.Activity;
+    </script>
+  </head>
+  <body>
+    <h2>
+      <img class='no_border' src='../../common/icons/rgirl.png' />
+      Module 1: Measuring Resistance
+    </h2>
+    <div id='session_title'></div>
+    <p id='intro_area'>
+      In this module, you will calculate the value of a resistor first using the color code and then using a digital multimeter. You will be given a random resistor and must answer the questions below. After each resistor, you will receive feedback and hints. Make sure to view the report after each resistor. You can try as many resistors as you want by clicking Next. Click on Start to begin the module.
+      <button id='start_button'>Start</button>
+    </p>
+    <div id='rcc_model'>
+      <script language='JavaScript' type='text/javascript'>
+        AC_FL_RunContent(
+        'codebase', 'http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=10,0,0,0',
+        'width', '1000',
+        'height', '635',
+        'src', '../../activities/measuring-resistance/resistor_colors',
+        'movie', '../../activities/measuring-resistance/resistor_colors',
+        'quality', 'high',
+        'pluginspage', 'http://www.adobe.com/go/getflashplayer',
+        'align', 'middle',
+        'play', 'true',
+        'loop', 'true',
+        'scale', 'showall',
+        'wmode', 'transparent',
+        'devicefont', 'false',
+        'id', 'resistor_colors',
+        'bgcolor', '#ffffff',
+        'name', 'resistor_colors',
+        'menu', 'true',
+        'allowFullScreen', 'false',
+        'allowScriptAccess','sameDomain',
+        'salign', ''
+        ); //end AC code
+      </script>
+      <noscript>
+        <p></p>
+        <h1>This page requires javascript enabled.</h1>
+      </noscript>
+    </div>
+
+    <div id="question_area">
+      <h3>Question 1</h3>
+      <form id='rated_resistance'>
+        <span class='prompt'>What is the rated resistance:</span>
+        <input name='value' />
+        <select name='units'>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select>
+      </form>
+      <form id='rated_tolerance'>
+        <span class='prompt'>What is the tolerance:</span>
+        <input name='value' />
+        %
+      </form>
+
+      <h3>Question 2</h3>
+      <form id='measured_resistance'>
+        <span class='prompt'>What is the measured resistance:</span>
+        <input name='value' />
+        <select name='units'>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select>
+      </form>
+
+      <h3>Question 3</h3>
+      <form id='measured_tolerance'>
+        <span class='prompt'>What is the tolerance range?</span>
+        <input name='min' size='12' />
+        <select name='min_unit'>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select>
+        to
+        <input name='max' size='12' />
+        <select name='max_unit'>
+        <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select>
+      </form>
+      <form id='within_tolerance'>
+        <span class='prompt'>Is the resistor within the tolerance?</span>
+        <input name='value' type='radio' value='yes' />
+        Yes
+        <input name='value' type='radio' value='no' />
+        No
+      </form>
+
+      <div id='instruction_end_session'></div>
+        <button class='show_report_button'>Show Report</button>
+        <button class='next_button'>Next</button>
+        <div id='result'></div>
+        <div id='json'>
+        <hr />
+        <button id='json_button'>Current Log Content (JSON)</button>
+        <div id='json_current_log'></div>
+      </div>
+    </div>
+    <div id='report'></div>
+  </body>
+</html>

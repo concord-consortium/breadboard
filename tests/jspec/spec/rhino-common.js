@@ -11,9 +11,9 @@ load('spec/lib/jspec.xhr.js');
 load('spec/lib/jspec.shell.js');
 load('spec/support/junit.xml.js');
 
-load('../../activities/resistor-colors/javascript/assessment/feedback.js');
-load('../../activities/resistor-colors/javascript/assessment/grader.js');
-load('../../activities/resistor-colors/javascript/assessment/log_parser.js');
+load('../../activities/measuring-resistance/javascript/assessment/feedback.js');
+load('../../activities/measuring-resistance/javascript/assessment/grader.js');
+load('../../activities/measuring-resistance/javascript/assessment/log_parser.js');
 load('../../common/javascript/util/util.js');
 load('../../common/javascript/sparks-init.js');
 load('../../common/javascript/flash_comm.js');

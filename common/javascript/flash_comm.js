@@ -28,7 +28,7 @@ Flash.sendCommand = function() {
 
 function receiveEvent(name, value, time) {
   console.log('received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
-  var activity = jQuery.sparks.activity;
+  var activity = sparks.activity;
   var multimeter = activity.multimeter;
   var wasConnected = multimeter.allConnected();
   

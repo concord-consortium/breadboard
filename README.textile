@@ -1,3 +1,52 @@
+h1. Activities
+
+h2. Measuring Resistance
+
+Main: activities/measuring-resistance/index.html
+
+<hr/>
+
+h1. JSpec Testing
+
+h3. Installing JSpec
+
+Download the zip file from http://visionmedia.github.com/jspec/, unzip it, and follow the instructions
+in readme.rdoc.
+
+h3. Running the specs
+
+You should run spec from the "top" directory. For example,
+
+bc. cd sparks-content/tests/jspec
+jspec run --browsers firefox
+
+h5. Running it with rhino in terminal
+
+Because of the jspec bug in optimization you can't do "jspec run --rhino ...".
+
+bc. java -jar spec/support/js.jar -opt -1 spec/rhino-terminal.js
+
+h5. Running it in browsers
+
+bc. jspec run --browsers ff
+
+@spec/spec.dom.html@ is the default html that is opened by the browsers.
+
+h5. Running with a server
+
+bc. jspec run --browsers ff --server
+
+@spec/server.rb@ defines the routes.
+@spec/spec.server.html@ is the default html processed by the server.
+
+h3. Links
+
+JSpec home: "http://visionmedia.github.com/jspec/":http://visionmedia.github.com/jspec/
+
+<hr/>
+
+h1. Notes
+
 h2. Check list for importing Kathy's work on Flash
 
 h3. Flash Publish Settings for the main FLA file

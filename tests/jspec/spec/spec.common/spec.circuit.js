@@ -1,8 +1,9 @@
 describe 'Circuit'
     describe 'Resistor'
+        
         before_each
-            resistor4 = new Resistor4band
-            resistor5 = new Resistor5band
+            resistor4 = new sparks.circuit.Resistor4band
+            resistor5 = new sparks.circuit.Resistor5band
         end
         
         it 'should produce correct color bands for 4-band given a resistance/tolerance value'
@@ -79,7 +80,7 @@ describe 'Circuit'
     
     describe 'Multimeter'
         before
-            multimeter = new Multimeter
+            multimeter = new sparks.circuit.Multimeter
         end
 
         it 'should display the number correctly'

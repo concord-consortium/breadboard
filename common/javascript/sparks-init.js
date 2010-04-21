@@ -1,63 +1,80 @@
 /* The following line (global) is for JSLint */
 /*global console, document, unescape, jQuery, $, DetectFlashVer, GetSwfVer, RestDS, Util, ResistorActivity */
 
-/*
- * Common initial setup for SPARKS activities
- */
+(function () {
 
-// Create a dummy console.log when not run in Firebug
-if (!console) {
-    var console = {};
-}
-if (!console.log) {
-    console.log = function() {};
-}
-var debug = function(x) { console.log(x); };
+    /*
+     * Common initial setup for SPARKS activities
+     */
 
-// Setup a global namespace
-jQuery.sparks = {};
-
-jQuery.sparks.root_dir = '../..';
-
-// Parse the page params so things can be customized
-var value = jQuery.url.param("model_height");
-jQuery.sparks.modelHeight = value !== undefined ? value : '635';
-
-jQuery.sparks.debug = jQuery.url.param("debug") !== undefined;
-jQuery.sparks.debug_nbands = jQuery.url.param("n");
-jQuery.sparks.debug_rvalue = jQuery.url.param("r");
-jQuery.sparks.debug_tvalue = jQuery.url.param("t");
-
-$(document).ready(function() {
-    //Util.checkFlashVersion();
-
-    // In some cases (e.g. IE) Flash is loaded before document ready,
-    // making initActivity() fail because activity isn't set up.
-    // So for now creating activity in initActivity
-    
-    //jQuery.sparks.activity = new ResistorActivity();
-    //jQuery.sparks.activity.initDocument();
-});
-
-
-/* 
- * This function gets called from Flash after Flash has set up the external
- * interface. Therefore all code that sends messages to Flash should be
- * initiated from this function.
- */
-function initActivity() {
-//function onFlashLoad() {
-    //debug('ENTER initActivity');
-    
-    var activity = new ResistorActivity();
-    activity.initDocument();
-    activity.onFlashDone();
-    
-    activity.learner_id = Util.readCookie('learner_id');
-    if (activity.learner_id) {
-        var put_path = unescape(Util.readCookie('put_path')) || 'undefined_path';
-        debug('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
-        activity.setDataService(new RestDS(null, null, put_path));
+    // Create a dummy console.log if it's not implemented
+    if (typeof console === 'undefined' || !console) {
+        this.console = {};
     }
-    jQuery.sparks.activity = activity;
-}
+    if (!console.log) {
+        console.log = function () {};
+    }
+    
+    if (typeof debug === 'undefined' || !debug) {
+        this.debug = function (x) { console.log(x); };
+    }
+    
+    // Setup namespaces
+    if (typeof sparks === 'undefined' || !sparks) {
+        this.sparks = {};
+    }
+    
+    if (!sparks.config) {
+        sparks.config = {};
+    }
+    
+    if (!sparks.circuit) {
+        sparks.circuit = {};
+    }
+    
+    if (!sparks.activities) {
+        sparks.activities = {};
+    }
+
+    sparks.config.root_dir = '../..';
+
+    sparks.config.debug = jQuery.url.param("debug") !== undefined;
+    sparks.config.debug_nbands = jQuery.url.param("n");
+    sparks.config.debug_rvalue = jQuery.url.param("r");
+    sparks.config.debug_tvalue = jQuery.url.param("t");
+
+    $(document).ready(function() {
+        //Util.checkFlashVersion();
+
+        // In some cases (e.g. IE) Flash is loaded before document ready,
+        // making initActivity() fail because activity isn't set up.
+        // So for now creating activity in initActivity
+
+        //sparks.activity = new ResistorActivity();
+        //sparks.activity.initDocument();
+    });
+
+
+    /* 
+     * This function gets called from Flash after Flash has set up the external
+     * interface. Therefore all code that sends messages to Flash should be
+     * initiated from this function.
+     */
+    initActivity = function () {
+    //function onFlashLoad() {
+        //debug('ENTER initActivity');
+        
+        var activity = new sparks.config.Activity();
+        activity.initDocument();
+        activity.onFlashDone();
+
+        activity.learner_id = Util.readCookie('learner_id');
+        if (activity.learner_id) {
+            var put_path = unescape(Util.readCookie('put_path')) || 'undefined_path';
+            debug('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
+            activity.setDataService(new RestDS(null, null, put_path));
+        }
+        sparks.activity = activity;
+    };
+
+})();
