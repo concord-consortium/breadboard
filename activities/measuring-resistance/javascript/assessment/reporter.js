@@ -286,23 +286,20 @@ Reporter.prototype =
     
     addFeedback: function (elem, fb) {
         var fbs = fb.feedbacks;
-        var t = '';
-        var a = null;
-        var ddiv = null;
-        var dialogs = [];
         for (var i = 0; i < fbs.length; ++i) {
             elem.append(this.getFeedbackLine(fbs[i]).append($('<br />')));
         }
     },
     
     getFeedbackLine: function (fb) {
-        var img = $('<img></img>').addClass('no_border');
-        img.attr('src', sparks.config.root_dir + '/common/icons/spark.png');
+        var imgPath = sparks.config.root_dir + '/common/icons/spark.png';
+        var img = $('<img></img>').addClass('no_border').attr('src', imgPath);
         
         var a = $('<a></a>').attr('href', '').append(img);
         a.append(fb[0]);
         
         var div = $('<div></div>').html(fb[1]);
+        div.attr('title', '<img src="' + imgPath + '" /> SPARKS Feedback');
         var dialog = div.dialog({ autoOpen: false });
         
         a.click(function (event) {
