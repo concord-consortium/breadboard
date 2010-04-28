@@ -4,6 +4,7 @@
         var superclass = sparks.circuit.Resistor4band.uber;
         superclass.init.apply(this);
         this.id = 'resistor_4band';
+        this.numBands = 4;
 
         this.r_values5pct = this.filter(r_values.r_values4band5pct);
         this.r_values10pct = this.filter(r_values.r_values4band10pct);

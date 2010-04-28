@@ -81,7 +81,9 @@ ActivityLog.prototype =
                    resistor_real_value: 1,
                    resistor_display_value: 1 },
     
-    valueNames : { nominal_resistance: 1,
+    valueNames : {
+                   resistor_num_bands: 1,
+                   nominal_resistance: 1,
                    tolerance: 1,
                    real_resistance: 1,
                    displayed_resistance: 1 },

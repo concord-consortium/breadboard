@@ -309,6 +309,7 @@
         },
 
         logResistorState : function() {
+            this.log.setValue('resistor_num_bands', this.currentResistor.numBands);
             this.log.setValue('nominal_resistance', this.currentResistor.nominalValue);
             this.log.setValue('tolerance', this.currentResistor.tolerance);
             this.log.setValue('real_resistance', this.currentResistor.realValue);

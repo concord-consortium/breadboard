@@ -71,7 +71,9 @@ Grader.prototype =
                 else if (this.sameFirstSigDigits(question.correct_answer, parsedValue, 3)) {
                     fb.points = 10;
                     fb.correct = 2;
-                    fb.addFeedback('power_ten');
+                    fb.addFeedback('power_ten',
+                            this.section.resistor_num_bands - 1,
+                            this.section.resistor_num_bands - 2);
                     return;
                 }
             }
@@ -118,16 +120,19 @@ Grader.prototype =
         var question = this.questions[1];
         var fb = this.feedback.root.reading.rated_t_value;
         
+        var correctStr = (question.correct_answer * 100) + '%';
+        var answerStr = question.answer + '%';
+        
         fb.correct = 0;
         fb.points = 0;
         
         if (question.answer === null || isNaN(question.answer)) {
-            fb.addFeedback('incorrect');
+            fb.addFeedback('incorrect', correctStr, answerStr);
             return;
         }
         this.toleranceAnswer = question.answer / 100.0;
         if (question.correct_answer != question.answer / 100.0){
-            fb.addFeedback('incorrect');
+            fb.addFeedback('incorrect', correctStr, answerStr);
             return;
         }
         
