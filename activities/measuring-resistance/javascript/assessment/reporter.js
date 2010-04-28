@@ -46,6 +46,20 @@ Reporter.prototype =
     },
     
     sessionReport : function(session, feedback) {
+        var studentName = jQuery.cookie('student_name').replace('+', ' ');
+        if (studentName) {
+            $('#student_name').text(studentName);
+        }
+        var activityName = jQuery.cookie('activity_name').replace('+', ' ');
+        if (activityName) {
+            $('#activity_name').text(activityName);
+        }
+        var attemptNum = jQuery.cookie('attempt_num');
+        if (attemptNum) {
+            $('#attempt_num').text(attemptNum);
+        }
+        $('#date').text(new Date().toString().slice(0, 15));
+        
         var text = '';
         var questions = session.sections[0].questions;
         var color;
