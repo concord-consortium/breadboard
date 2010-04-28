@@ -124,6 +124,7 @@ package org.concord.sparks.circuit.resistor
 			printColor.x = (band.x - 5);
 			printColor.y = (band.y - 25);
 			printColor.text = colors[0];
+			printColor.height=20;
 
 			container.addChild(printColor);
 			
@@ -154,6 +155,7 @@ package org.concord.sparks.circuit.resistor
 			printColor.x = (band.x - 5);
 			printColor.y = (band.y - 25);
 			printColor.text = colors[1];
+			printColor.height=20;
 
 			container.addChild(printColor);
 
@@ -182,6 +184,7 @@ package org.concord.sparks.circuit.resistor
 			printColor.x = (band.x - 5);
 			printColor.y = (band.y - 25);
 			printColor.text = colors[2];
+			printColor.height=20;
 
 			container.addChild(printColor);
 		}
@@ -209,6 +212,7 @@ package org.concord.sparks.circuit.resistor
 			printColor.x = (band.x - 5);
 			printColor.y = (band.y - 25);
 			printColor.text = colors[3];
+			printColor.height=20;
 
 			container.addChild(printColor);
 		}
