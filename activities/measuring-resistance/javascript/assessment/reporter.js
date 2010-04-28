@@ -46,20 +46,20 @@ Reporter.prototype =
     },
     
     sessionReport : function(session, feedback) {
-        var studentName = jQuery.cookie('student_name').replace('+', ' ');
+        var studentName = jQuery.cookie('student_name');
         if (studentName) {
-            $('#student_name').text(studentName);
+            $('#student_name').text(studentName.replace('+', ' '));
         }
-        var activityName = jQuery.cookie('activity_name').replace('+', ' ');
+        var activityName = jQuery.cookie('activity_name');
         if (activityName) {
-            $('#activity_name').text(activityName);
+            $('#activity_name').text(activityName.replace('+', ' '));
         }
         var attemptNum = jQuery.cookie('attempt_num');
         if (attemptNum) {
             $('#attempt_num').text(attemptNum);
         }
         $('#date').text(new Date().toString().slice(0, 15));
-        
+
         var text = '';
         var questions = session.sections[0].questions;
         var color;
