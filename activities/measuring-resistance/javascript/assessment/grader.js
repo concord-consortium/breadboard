@@ -10,6 +10,10 @@ function Grader(session)
     
     this.feedback = new Feedback();
     this.parser = new LogParser(session);
+    
+    // Values used by gradeToleranceRange()
+    this.resistanceAnswer = null;
+    this.toleranceAnswer = null;
 }
 
 Grader.prototype =
@@ -30,48 +34,66 @@ Grader.prototype =
         return this.feedback;
     },
 
-    gradeReadingColorBands : function()
-    {
+    gradeReadingColorBands : function() {
         var question = this.questions[0];
-        var feedback = this.feedback.root.reading.rated_r_value;
+        var fb = this.feedback.root.reading.rated_r_value;
+        var unitCorrect = true;
         
-        feedback.correct = 0;
-        feedback.points = 0;
+        fb.correct = 0;
+        fb.points = 0;
         
-        if (question.answer === null || isNaN(question.answer)) { return; }
-        if (!Unit.ohmCompatible(question.unit)) { return; }
+        if (!Unit.ohmCompatible(question.unit)) {
+            unitCorrect = false;
+            fb.addFeedback('unit', question.unit);
+            return;
+        }
+        
+        if (question.answer === null || isNaN(question.answer)) {
+            fb.addFeedback('incorrect');
+            return;
+        }
         
         var parsedValue = Unit.normalizeToOhms(question.answer, question.unit);
+        this.resistanceAnswer = parsedValue;
         
         console.log('parsedValue=' + parsedValue + ' correctValue=' + question.correct_answer);
         
-        if(question.correct_answer != parsedValue){
-            if (this.sameBeforeDot(question.correct_answer, parsedValue)) {
-                if (this.semiCorrectDigits(question.correct_answer, parsedValue, 3)) {
-                    feedback.points = 2;
-                    feedback.correct = 1;
+        if (question.correct_answer != parsedValue) {
+            if (unitCorrect) {
+                if (this.sameBeforeDot(question.correct_answer, parsedValue)) {
+                    if (this.semiCorrectDigits(question.correct_answer, parsedValue, 3)) {
+                        fb.points = 2;
+                        fb.correct = 1;
+                        fb.addFeedback('difficulty');
+                        return;
+                    }
+                }
+                else if (this.sameFirstSigDigits(question.correct_answer, parsedValue, 3)) {
+                    fb.points = 10;
+                    fb.correct = 2;
+                    fb.addFeedback('power_ten');
                     return;
                 }
             }
-            else if (this.sameFirstSigDigits(question.correct_answer, parsedValue, 3)) {
-                feedback.points = 10;
-                feedback.correct = 2;
-                return;
-            }
+            fb.addFeedback('incorrect');
             return;
         }
-        feedback.points = 20;
-        feedback.correct = 4;
+        fb.points = 20;
+        fb.correct = 4;
+        fb.addFeedback('correct');
     },
     
     gradeResistance : function() {
         var question = this.questions[2];
-        var feedback = this.feedback.root.measuring.measured_r_value;
+        var fb = this.feedback.root.measuring.measured_r_value;
         
-        feedback.points = 0;
-        feedback.correct = 0;
+        fb.points = 0;
+        fb.correct = 0;
         
-        if (question.answer === null || isNaN(question.answer)) { return; }
+        if (question.answer === null || isNaN(question.answer)) {
+            fb.addFeedback('incorrect');
+            return;
+        }
         if (!Unit.ohmCompatible(question.unit)) { return; }
         
         var parsedValue = Unit.normalizeToOhms(question.answer, question.unit);
@@ -80,44 +102,51 @@ Grader.prototype =
         
         if(question.correct_answer != parsedValue){
             if (this.semiAcceptable(question.correct_answer, parsedValue)) {
-                feedback.points = 5;
-                feedback.correct = 2;
+                fb.points = 5;
+                fb.correct = 2;
+                fb.addFeedback('power_ten');
             }
             return;
         }
         
-        feedback.points = 10;
-        feedback.correct = 4;
+        fb.points = 10;
+        fb.correct = 4;
+        fb.addFeedback('correct');
     },
     
     gradeTolerance : function() {
         var question = this.questions[1];
-        var feedback = this.feedback.root.reading.rated_t_value;
+        var fb = this.feedback.root.reading.rated_t_value;
         
-        feedback.correct = 0;
-        feedback.points = 0;
+        fb.correct = 0;
+        fb.points = 0;
         
         if (question.answer === null || isNaN(question.answer)) {
+            fb.addFeedback('incorrect');
             return;
         }
+        this.toleranceAnswer = question.answer / 100.0;
         if (question.correct_answer != question.answer / 100.0){
+            fb.addFeedback('incorrect');
             return;
         }
         
-        feedback.correct = 4;
-        feedback.points = 5;
+        fb.correct = 4;
+        fb.points = 5;
+        fb.addFeedback('correct');
     },
     
-    gradeToleranceRange : function()
-    {
+    gradeToleranceRange : function () {
         //console.log('ENTER Grader.gradeToleranceRange');
         var question = this.questions[3];
-        var feedback = this.feedback.root.t_range_value;
-        var nominalResistance = this.section.nominal_resistance;
-        var tolerance = this.section.tolerance;
+        var fb = this.feedback.root.t_range_value;
+        //var nominalResistance = this.section.nominal_resistance;
+        //var tolerance = this.section.tolerance;
+        var nominalResistance = this.resistanceAnswer;
+        var tolerance = this.toleranceAnswer;
 
-        feedback.points = 0;
-        feedback.correct = 0;
+        fb.points = 0;
+        fb.correct = 0;
 
         var correctMin = nominalResistance * (1 - tolerance);
         var correctMax = nominalResistance * (1 + tolerance);
@@ -129,7 +158,13 @@ Grader.prototype =
         var min = question.answer[0];
         var max = question.answer[1];
         
+        var correctStr = '[' + Unit.res_str(correctMin) + ', ' +
+            Unit.res_str(correctMax) + ']';
+        var answerStr = '[' + min + question.unit[0] + ', ' +
+            max + question.unit[1] + ']';
+        
         if (min === null || isNaN(min) || max === null || isNaN(max)) {
+            fb.addFeedback('wrong', correctStr, answerStr);
             return;
         }
         
@@ -139,6 +174,7 @@ Grader.prototype =
         if (!Unit.ohmCompatible(question.unit[0]) ||
             !Unit.ohmCompatible(question.unit[1]))
         {
+            fb.addFeedback('wrong');
             return;
         }
         
@@ -155,8 +191,9 @@ Grader.prototype =
         if (this.equalWithTolerance(parsedMin, correctMin, 1e-5) &&
             this.equalWithTolerance(parsedMax, correctMax, 1e-5))
         {
-            feedback.points = 15;
-            feedback.correct = 4;
+            fb.points = 15;
+            fb.correct = 4;
+            fb.addFeedback('correct');
             return;
         }
         
@@ -165,8 +202,9 @@ Grader.prototype =
             MyMath.roundToSigDigits(correctMax, 3) ===
             MyMath.roundToSigDigits(parsedMax, 3))
         {
-            feedback.points = 10;
-            feedback.correct = 3;
+            fb.points = 10;
+            fb.correct = 3;
+            fb.addFeedback('rounded');
             return;
         }
         
@@ -175,8 +213,9 @@ Grader.prototype =
             Math.abs(MyMath.getRoundedSigDigits(correctMax, 3) - 
                      MyMath.getRoundedSigDigits(parsedMax, 3)) <= 2)
         {
-            feedback.points = 3;
-            feedback.correct = 2;
+            fb.points = 3;
+            fb.correct = 2;
+            fb.addFeedback('inaccurate');
             return;
         }
         return;
@@ -184,15 +223,15 @@ Grader.prototype =
     
     gradeWithinTolerance : function() {
         var question = this.questions[4];
-        var feedback = this.feedback.root.within_tolerance;
+        var fb = this.feedback.root.within_tolerance;
         var correctAnswer;
         var nominalValue = this.section.nominal_resistance;
         var tolerance = this.section.tolerance;
         var displayValue = this.section.displayed_resistance;
         var allowance = nominalValue * tolerance;
         
-        feedback.correct = 0;
-        feedback.points = 0;
+        fb.correct = 0;
+        fb.points = 0;
         
         if (displayValue < nominalValue - allowance ||
             displayValue > nominalValue + allowance)
@@ -205,44 +244,52 @@ Grader.prototype =
         
         question.correct_answer = correctAnswer;
         if (question.answer != correctAnswer) {
+            fb.addFeedback('incorrect');
             return;
         }
-        feedback.points = 5;
-        feedback.correct = 4;
+        fb.points = 5;
+        fb.correct = 4;
+        fb.addFeedback('correct');
     },
     
     gradeTime : function() {
         var seconds;
-        var feedback;
+        var fb;
         
         seconds = (this.questions[1].end_time - this.questions[0].start_time) / 1000;
-        feedback = this.feedback.root.time.reading_time;
+        fb = this.feedback.root.time.reading_time;
         if (seconds <= 30) {
-            feedback.points = 5;
-            feedback.correct = 4;
+            fb.points = 5;
+            fb.correct = 4;
+            fb.addFeedback('efficient');
         }
         else if (seconds <= 60) {
-            feedback.points = 2;
-            feedback.correct = 2;
+            fb.points = 2;
+            fb.correct = 2;
+            fb.addFeedback('semi');
         }
         else {
-            feedback.points = 0;
-            feedback.correct = 0;
+            fb.points = 0;
+            fb.correct = 0;
+            fb.addFeedback('slow');
         }
         
         seconds = (this.questions[2].end_time - this.questions[2].start_time) / 1000;
-        feedback = this.feedback.root.time.measuring_time;
+        fb = this.feedback.root.time.measuring_time;
         if (seconds <= 30) {
-            feedback.points = 5;
-            feedback.correct = 4;
+            fb.points = 5;
+            fb.correct = 4;
+            fb.addFeedback('efficient');
         }
         else if (seconds <= 60) {
-            feedback.points = 2;
-            feedback.correct = 2;
+            fb.points = 2;
+            fb.correct = 2;
+            fb.addFeedback('semi');
         }
         else {
-            feedback.points = 0;
-            feedback.correct = 0;
+            fb.points = 0;
+            fb.correct = 0;
+            fb.addFeedback('slow');
         }
     },
     
@@ -263,11 +310,13 @@ Grader.prototype =
             fb.probe_connection.correct = 4;
             fb.probe_connection.points = 2;
             fb.probe_connection.desc = 'Correct';
+            fb.probe_connection.addFeedback('correct');
         }
         else {
             fb.probe_connection.correct = 0;
             fb.probe_connection.points = 0;
             fb.probe_connection.desc = 'Incorrect';
+            fb.probe_connection.addFeedback('incorrect');
         }
         debug('probe_connection.points=' + fb.probe_connection.points);
         
@@ -276,6 +325,7 @@ Grader.prototype =
             fb.plug_connection.points = 5;
             fb.plug_connection.correct = 4;
             fb.plug_connection.desc = 'Correct';
+            fb.plug_connection.addFeedback('correct');
         }
         else {
             fb.plug_connection.correct = 0;
@@ -283,11 +333,13 @@ Grader.prototype =
                 fb.plug_connection.points = 3;
                 fb.plug_connection.correct = 3;
                 fb.plug_connection.desc = 'Reversed';
+                fb.plug_connection.addFeedback('reverse');
             }
             else {
                 fb.plug_connection.points = 0;
                 fb.plug_connection.correct = 0;
                 fb.plug_connection.desc = 'Incorrect';
+                fb.plug_connection.addFeedback('incorrect');
             }
         }
         debug('plug_connection.points=' + fb.plug_connection.points);
@@ -302,42 +354,42 @@ Grader.prototype =
         this.feedback.optimal_dial_setting = o_knob;
         
         if (f_knob === o_knob) {
-            if (i_knob === o_knob) {
-                fb.knob_setting.points = 20;
-                fb.knob_setting.correct = 4;
-            }
-            else {
-                fb.knob_setting.points = 15;
-                fb.knob_setting.correct = 3;
-            }
+            fb.knob_setting.points = 20;
+            fb.knob_setting.correct = 4;
+            fb.knob_setting.addFeedback('correct');
         }
         else if (this.isResistanceKnob(f_knob)){
             fb.knob_setting.points = 10;
             fb.knob_setting.correct = 2;
+            fb.knob_setting.addFeedback('suboptimal');
         }
         else {
             fb.knob_setting.points = 0;
             fb.knob_setting.correct = 0;
+            fb.knob_setting.addFeedback('incorrect');
         }
-        debug('knob_setting.points=' + fb.knob_setting.points);
     
         if (this.parser.power_on) {
             fb.power_switch.points = 2;
             fb.power_switch.correct = 4;
+            fb.power_switch.addFeedback('correct');
         }
         else {
             fb.power_switch.points = 0;
             fb.power_switch.correct = 0;
+            fb.power_switch.addFeedback('incorrect');
         }
         debug('power_switch.points=' + fb.power_switch.points);
         
         if (this.parser.correct_order) {
             fb.task_order.points = 6;
             fb.task_order.correct = 4;
+            fb.task_order.addFeedback('correct');
         }
         else {
             fb.task_order.points = 0;
             fb.task_order.correct = 0;
+            fb.task_order.addFeedback('incorrect');
         }
         debug('task_order.points=' + fb.task_order.points);
     },

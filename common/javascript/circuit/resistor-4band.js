@@ -9,7 +9,7 @@
         this.r_values10pct = this.filter(r_values.r_values4band10pct);
     };
     
-    Util.extend(sparks.circuit.Resistor4band, Resistor, {
+    sparks.util.extend(sparks.circuit.Resistor4band, Resistor, {
 
         toleranceValues: [0.05, 0.1],
 

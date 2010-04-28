@@ -1,6 +1,3 @@
-/* The following line (global) is for JSLint */
-/*global console, $, Unit, Util */
-
 function SessionReporter()
 {
 }
@@ -35,7 +32,13 @@ SessionReporter.prototype =
         diode: 'Diode'
     },
     
+    report2: function(session, feedback) {
+        
+    },
+    
     report : function(session, feedback) {
+        this.report2(session, feedback);
+        
         var text = '';
         var questions = session.sections[0].questions;
         var points = 0;
@@ -45,7 +48,8 @@ SessionReporter.prototype =
         $('#rated_r_correct').text(Unit.res_str(questions[0].correct_answer));
         text = questions[0].answer ? questions[0].answer + questions[0].unit : 'No Answer';
         this.setAnswerTextWithColor('#rated_r_answer', text, fb);
-        points = fb.points;
+        $('#rated_r_points').text(fb.getPoints() + ' out of ' + fb.getMaxPoints());
+        points = fb.getPoints();
                 
         fb = feedback.root.reading.rated_t_value;
         $('#rated_t_correct').text(questions[1].correct_answer * 100 + '%');
@@ -68,10 +72,10 @@ SessionReporter.prototype =
 
         fb = feedback.root.time.reading_time;
         points = fb.points;
-        this.setAnswerTextWithColor('#reading_time', Util.timeLapseStr(questions[0].start_time, questions[1].end_time), fb);
+        this.setAnswerTextWithColor('#reading_time', sparks.util.timeLapseStr(questions[0].start_time, questions[1].end_time), fb);
 
         fb = feedback.root.time.measuring_time;
-        this.setAnswerTextWithColor('#measuring_time', Util.timeLapseStr(questions[2].start_time, questions[2].end_time), fb);
+        this.setAnswerTextWithColor('#measuring_time', sparks.util.timeLapseStr(questions[2].start_time, questions[2].end_time), fb);
         
         $('#time_pts').text(points + fb.points);
         

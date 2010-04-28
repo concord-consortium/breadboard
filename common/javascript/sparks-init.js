@@ -1,6 +1,3 @@
-/* The following line (global) is for JSLint */
-/*global console, document, unescape, jQuery, $, DetectFlashVer, GetSwfVer, RestDS, Util, ResistorActivity */
-
 (function () {
 
     /*
@@ -32,6 +29,10 @@
         sparks.circuit = {};
     }
     
+    if (!sparks.util) {
+        sparks.util = {};
+    }
+    
     if (!sparks.activities) {
         sparks.activities = {};
     }
@@ -43,8 +44,8 @@
     sparks.config.debug_rvalue = jQuery.url.param("r");
     sparks.config.debug_tvalue = jQuery.url.param("t");
 
-    $(document).ready(function() {
-        //Util.checkFlashVersion();
+    $(document).ready(function () {
+        //sparks.util.checkFlashVersion();
 
         // In some cases (e.g. IE) Flash is loaded before document ready,
         // making initActivity() fail because activity isn't set up.
@@ -68,9 +69,9 @@
         activity.initDocument();
         activity.onFlashDone();
 
-        activity.learner_id = Util.readCookie('learner_id');
+        activity.learner_id = sparks.util.readCookie('learner_id');
         if (activity.learner_id) {
-            var put_path = unescape(Util.readCookie('put_path')) || 'undefined_path';
+            var put_path = unescape(sparks.util.readCookie('put_path')) || 'undefined_path';
             debug('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
             activity.setDataService(new RestDS(null, null, put_path));
         }

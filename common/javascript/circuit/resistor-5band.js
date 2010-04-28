@@ -9,7 +9,7 @@
         this.r_values2pct = this.filter(r_values.r_values5band2pct);
     };
 
-    Util.extend(sparks.circuit.Resistor5band, Resistor, {
+    sparks.util.extend(sparks.circuit.Resistor5band, Resistor, {
 
         randomize : function() {
           var ix = this.randInt(0, 1);

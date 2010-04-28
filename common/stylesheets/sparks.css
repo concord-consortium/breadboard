@@ -1,11 +1,6 @@
 body {
   font-family: Verdana, Arial;
 }
-.popup_report div {
-  margin-left: 15px;
-  margin-bottom: 8px;
-  font-size: 12pt;
-}
 a.no_deco {
   text-decoration: none;
 }
@@ -37,14 +32,12 @@ table {
   border-collapse: collapse;
 }
 th {
-  border-right: 2px solid #fff;
-  border-left: 2px solid #fff;
+  border: 1px solid #fff;
   padding-left: 6px;
   padding-right: 6px;
 }
 td {
-  border-right: 2px solid #fff;
-  border-left: 2px solid #fff;
+  border: 1px solid #fff;
   padding-left: 6px;
   padding-right: 6px;
   padding-top: 2px;
@@ -56,3 +49,14 @@ td {
 .row_b {
   background: #f0e0b0;
 }
+
+#rcc_model {
+  border: 4px #ffbb7d solid;
+}
+
+#questions_area, .report_area {
+  font-size: 10pt;
+  border: 4px #ffbb7d solid;
+  padding-left: 10px;
+}
+

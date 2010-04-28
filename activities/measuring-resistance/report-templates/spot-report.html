@@ -1,82 +1,138 @@
 <html>
   <head></head>
   <body>
-    <div class="popup_report">
-    <h3>
-      Question 1: Reading resistor color bands
-      <span id="reading_feedback"></span>
-    </h3>
-    <div>
-      Correct Resistance value: <span id="rated_r_correct"></span><br/> 
-      Your answer: <span id="rated_r_answer"></span>
-    </div>
-    <div>
-      Correct tolerance value: <span id="rated_t_correct"></span><br/>
-      Your answer: <span id="rated_t_answer"></span>
-    </div>
-    <div>
-      Points: <span id="reading_pts"></span>  (out of 25)
-    </div>
-
-    <h3>
-      Question 2: Measuring R-value with a DMM
-      <span id="measuring_feedback"></span>
-    </h3>
-    <div>
-      Correct measured resistance: <span id="measured_r_correct"></span><br/> 
-      Your answer: <span id="measured_r_answer"></span>
-    </div>
-    <div>
-      Connections to DMM: <span id="plug_connection"></span><br/> 
-      Connections to R: <span id="probe_connection"></span>
-    </div>
-    <div>
-      Correct DMM knob setting: <span id="correct_knob"></span><br/>
-      Your initial setting: <span id="initial_knob"></span><br/>
-      Your final setting: <span id="final_knob"></span>
-    </div>
-    <div>
-      DMM power switch: <span id="power_switch"></span><br/>
-      Order of tasks: <span id="task_order"></span>
-    </div>
-    <div>
-      Points: <span id="measuring_pts"></span>  (out of <span id="measuring_max_pts"></span>)
-    </div>
+  
+    <h1>Report</h1>
+    <span id="student_name">Student name unknown</span><br/>
+    <span id="activity_name">Activity name unknown</span><br/>
+    Attempt <span id="attempt_num">number unknonwn</span><br/>
+    <span id="date">Date unknown</span><br/>
     
-    <h3>
-      Question 3: Tolerance range
-      <span id="t_range_feedback"></span>
-    </h3>
-    <div>
-
-    Correct tolerance range: <span id="t_range_correct"></span><br/>
-    Your answer: <span id="t_range_answer"></span>
-    </div>
-    <div>
-    Points: <span id="t_range_pts"></span>  (out of 15)
-    </div>
-    <div>
-      Within tolerance?<br/>
-      Correct answer: <span id="within_correct"></span><br/>
-      Your answer: <span id="within_answer"></span><br/>
-    </div>
-    <div>
-      Points: <span id="within_pts"></span>  (out of 5)<br/>
-    </div>
-    
-    <h3>Module Time Score</h3>
-    <div>
-      Interpreting color bands: <span id="reading_time"></span><br/>
-      Measuring resistance with the DMM: <span id="measuring_time"></span>
-    </div>
-    <div>
-      Points: <span id="time_pts"></span>  (out of 10)
-    </div>
-    <div id="rated_values_feedback">
-    </div>
-    
-    <h3>Total points: <span id="total_pts"></span> (out of <span id="total_max_pts"></span>)</h3>
-    <div id="report_log"></div>
-    </div>
+    <table id="report_table">
+      <tr class="row_a">
+        <td></td><td>Task</td><td>Correct Value</td><td>Your Answer</td>
+        <td>Points</td><td>Feedback</td>
+      </tr>
+      <tr class="row_b">
+        <td rowspan="3">
+          Step 1<br/>
+          <span id="reading_tutorial_link"></span>
+        </td>
+        <td>Resistor value</td>
+        <td><span id="rated_r_correct"></span></td>
+        <td><span id="rated_r_answer"></span></td>
+        <td><span id="rated_r_points"></span></td>
+        <td><span id="rated_r_feedback"></span></td>
+      </tr>
+      <tr class="row_b">
+        <td>Tolerance value</td>
+        <td><span id="rated_t_correct"></span></td>
+        <td><span id="rated_t_answer"></span></td>
+        <td><span id="rated_t_points"></span></td>
+        <td><span id="rated_t_feedback"></span></td>
+      </tr>
+      <tr class="row_b">
+        <td></td><td></td><td></td>
+        <td><span id="reading_points"></span></td><td></td>
+      </tr>
+      <tr class="row_a">
+        <td rowspan="7">
+          Step 2<br/>
+          <span id="measuring_tutorial_link"></span>
+        </td>
+        <td>Measuring resistance</td>
+        <td><span id="measured_r_correct"></span></td>
+        <td><span id="measured_r_answer"></span></td>
+        <td><span id="measured_r_points"></span></td>
+        <td><span id="measured_r_feedback"></span></td>
+      </tr>
+      <tr class="row_a">
+        <td>Connections to DMM</td>
+        <td></td>
+        <td><span id="plug_connection_answer"></span></td>
+        <td><span id="plug_connection_points"></span></td>
+        <td><span id="plug_connection_feedback"></span></td>
+      </tr>
+      <tr class="row_a">
+        <td>Connections to Resistor</td>
+        <td></td>
+        <td><span id="probe_connection_answer"></span></td>
+        <td><span id="probe_connection_points"></span></td>
+        <td><span id="probe_connection_feedback"></span></td>
+      </tr>
+      <tr class="row_a">
+        <td>DMM knob setting</td>
+        <td><span id="knob_setting_correct"></span></td>
+        <td><span id="knob_setting_answer"></span></td>
+        <td><span id="knob_setting_points"></span></td>
+        <td><span id="knob_setting_feedback"></span></td>
+      </tr>
+      <tr class="row_a">
+        <td>DMM power switch</td>
+        <td></td>
+        <td><span id="power_switch_answer"></span></td>
+        <td><span id="power_switch_points"></span></td>
+        <td><span id="power_switch_feedback"></span></td>
+      </tr>
+      <tr class="row_a">
+        <td>Order of tasks</td>
+        <td></td>
+        <td><span id="task_order_answer"></span></td>
+        <td><span id="task_order_points"></span></td>
+        <td><span id="task_order_feedback"></span></td>
+      </tr>
+      <tr class="row_a">
+        <td></td><td></td><td></td>
+        <td><span id="measuring_points"></span></td>
+        <td></td>
+      </tr>
+      <tr class="row_b">
+        <td rowspan="3">
+          Step 3<br/>
+          <span id="t_range_tutorial_link"></span>
+        </td>
+      </tr>
+      <tr class="row_b">
+        <td>Tolerance range</td>
+        <td><span id="t_range_correct"></span></td>
+        <td><span id="t_range_answer"></span></td>
+        <td><span id="t_range_points"></span></td>
+        <td><span id="t_range_feedback"></span></td>
+      </tr> 
+      <tr class="row_b">
+        <td>Within tolerance</td>
+        <td><span id="within_correct"></span></td>
+        <td><span id="within_answer"></span></td>
+        <td><span id="within_points"></span></td>
+        <td><span id="within_feedback"></span></td>
+      </tr> 
+      <tr class="row_a">
+        <td rowspan="3">
+          Time<br/>
+          <span id="time_tutorial_link"></span>
+        </td>
+      </tr>
+      <tr class="row_a">
+        <td>Interpreting color bands</td>
+        <td></td>
+        <td><span id="reading_time"></span></td>
+        <td><span id="reading_time_points"></span></td>
+        <td><span id="reading_time_feedback"></span></td>
+      </tr> 
+      <tr class="row_a">
+        <td>Measuring R with the DMM</td>
+        <td></td>
+        <td><span id="measuring_time"></span></td>
+        <td><span id="measuring_time_points"></span></td>
+        <td><span id="measuring_time_feedback"></span></td>
+      </tr> 
+      <tr class="row_b">
+        <td>Total</td>
+        <td></td><td></td><td></td>
+        <td><span id="total_points"></span></td>
+        <td><span id="total_feedback"></span></td>
+      </tr>
+    </table>
+    <p/>
   </body>
 </html>

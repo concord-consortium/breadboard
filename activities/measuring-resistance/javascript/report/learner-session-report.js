@@ -4,7 +4,7 @@ if (typeof console == 'undefined') {
 var debug = function(x) { console.log(x); };
 
 $(document).ready(function() {
-    var reportId = Util.readCookie('report_id');
+    var reportId = sparks.util.readCookie('report_id');
     var ds = new RestDS(null, null, '/sparks_report/get_report/' + reportId);
     ds.readKey = true;
     ds.load(this, function(data) {

@@ -1,6 +1,3 @@
-/* The following line (global) is for JSLint */
-/*global console, $, Unit, Util */
-
 function ServerReporter()
 {
 }
@@ -46,11 +43,11 @@ ServerReporter.prototype =
 
         fb = feedback.root.time.reading_time;
         points = fb.points;
-        $('#reading_time').text(Util.timeLapseStr(questions[0].start_time, questions[1].end_time));
+        $('#reading_time').text(sparks.util.timeLapseStr(questions[0].start_time, questions[1].end_time));
         //$('#reading_time_pts').text(points);
 
         fb = feedback.root.time.measuring_time;
-        $('#measuring_time').text(Util.timeLapseStr(questions[2].start_time, questions[2].end_time));
+        $('#measuring_time').text(sparks.util.timeLapseStr(questions[2].start_time, questions[2].end_time));
         //$('#measuring_time_pts').text(fb.points);
         
         $('#time_pts').text(points + fb.points);

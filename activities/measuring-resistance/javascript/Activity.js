@@ -6,13 +6,17 @@
     var mr = sparks.activities.mr;
 
     mr.Activity = function () {
-        //console.log('ENTER ResistorActivity');
+        mr.Activity.uber.init.apply(this);
+        
+        this.root_dir = sparks.config.root_dir + '/activities/measuring-resistance';
+        this.sessionTitle = $('#session_title');
+        this.endSessionInstruction = $('.instruction_end_session');
+        this.questionsElem = $('#questions_area');
+        this.reportElem = $('#report_area').hide();
+        
         $('body').scrollTop(0); //scroll to top
 
         var activity = this;
-
-        this.root_dir = sparks.config.root_dir + '/activities/measuring-resistance';
-
         this.dataService = null;
         this.log = new ActivityLog();
         this.assessment = new Assessment(this);
@@ -26,8 +30,6 @@
         this.current_question = 0;
         this.allResults = [];
 
-        this.sessionTitle = $('#session_title');
-        this.endSessionInstruction = $('#instruction_end_session');
         $('#rated_r_feedback').hide();
         $('#rated_t_feedback').hide();
         $('#measured_r_feedback').hide();
@@ -35,16 +37,18 @@
 
         if (sparks.config.debug) {
             $('#json_button').click(function() {
-                $('#json_current_log').html('<pre>' + Util.prettyPrint(activity.log.sessions, 4) + '</pre>' + JSON.stringify(activity.log));
+                $('#json_current_log').html('<pre>' + sparks.util.prettyPrint(activity.log.sessions, 4) + '</pre>' + JSON.stringify(activity.log));
             });
         }
         else {
             $('#json').hide();
         }
+        
+        this.buttonize();
     };
+    
+    sparks.util.extend(mr.Activity, sparks.Activity, {
 
-    mr.Activity.prototype =
-    {
         setDataService : function(ds) {
             this.dataService = ds;
         },
@@ -74,7 +78,7 @@
                 self.startButtonClicked(self, event);
             });
             /*
-            $('#report').dialog({ autoOpen: false, width: 800,
+            this.reportElem.dialog({ autoOpen: false, width: 800,
                 height : $(window).height() * 0.9 });
             */
         },
@@ -132,7 +136,7 @@
 
             $("form").each(function(i) {
                 var form = jQuery(this);
-                result[this.id] = Util.serializeForm(form);
+                result[this.id] = sparks.util.serializeForm(form);
             });
 
             if (sparks.config.debug) {
@@ -152,10 +156,10 @@
             }
 
             //$(".show_report_button").show();
-            $('#question_area').hide();
-            $('#report').show();
+            this.questionsElem.hide();
+            this.reportElem.show();
             this.reporter.reportOnSession(this.log.currentSession(), this.feedback);
-
+            
             $(".next_button").each(function() {
                 this.disabled = false;
             }).show();
@@ -166,11 +170,11 @@
             this.log.add('end_session');
 
             this.saveStudentData();
+            $('body').scrollTop(this.reportElem.offset().top);
         },
 
         updateEndInstruction : function() {
-            var t = 'You have completed resistor #' + this.current_session + '. ';
-            t += 'Click on Show Report to see the current result. Click on Next to try another resistor.';
+            var t = 'Click on Next to try another resistor.';
             this.endSessionInstruction.text(t);
         },
 
@@ -205,7 +209,9 @@
           this.log.beginNextSession();
           this.current_question = 1;
 
+          this.reportElem.hide();
           this.endSessionInstruction.hide();
+          this.questionsElem.show();
           this.sessionTitle.html('<h3>Resistor #' + this.current_session + '</h3>');
           $('#rated_r_feedback').hide();
           $('#rated_t_feedback').hide();
@@ -251,6 +257,7 @@
           this.log.add('start_section');
           this.log.add('start_question', { section : this.current_section, question : 1 });
           $('body').scrollTop(0); //scroll to top
+          this.buttonize();
         },
 
         showRccDebugInfo : function() {
@@ -280,6 +287,7 @@
         enableForm : function(form) {
           var self = this;
           form.append("<button>Submit</button>");
+          this.buttonize();
           form.find("button").click(function(event) {
               self.submitButtonClicked(self, event);
           }); 
@@ -358,5 +366,6 @@
             var activity = sparks.activity;
             activity.reporter.reportOnSession(activity.log.currentSession(), activity.feedback);
         }
-    };
+    });
+    
 })();

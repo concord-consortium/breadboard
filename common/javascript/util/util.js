@@ -1,10 +1,5 @@
-/* The following line (global) is for JSLint */
-/*global jQuery */
-
-var Util = {};
-
 // YUI-style inheritance
-Util.extend = function(Child, Parent, properties) {
+sparks.util.extend = function(Child, Parent, properties) {
   var F = function() {};
   F.prototype = Parent.prototype;
   Child.prototype = new F();
@@ -17,7 +12,7 @@ Util.extend = function(Child, Parent, properties) {
   Child.uber = Parent.prototype;
 };
 
-Util.readCookie = function(name) {
+sparks.util.readCookie = function(name) {
     var nameEQ = name + "=";
     var ca = document.cookie.split(';');
     for(var i=0;i < ca.length;i++) {
@@ -31,7 +26,7 @@ Util.readCookie = function(name) {
 };
 
 /*
-Util.checkFlashVersion = function() {
+sparks.util.checkFlashVersion = function() {
     var major = 10;
     var minor = 0;
     var revision = 31;
@@ -48,13 +43,13 @@ Util.checkFlashVersion = function() {
 
 // The "next" function returns a different value each time
 // alternating between the two input values x, y.
-Util.Alternator = function(x, y)
+sparks.util.Alternator = function(x, y)
 {
     this.x = x;
     this.y = y;
     this.cnt = 0;
 };
-Util.Alternator.prototype =
+sparks.util.Alternator.prototype =
 {
     next : function() {
         ++this.cnt;
@@ -63,7 +58,7 @@ Util.Alternator.prototype =
 };
 
 // Return a string representation of time lapsed between start and end
-Util.timeLapseStr = function(start, end) {
+sparks.util.timeLapseStr = function(start, end) {
     var seconds = Math.floor((end - start) / 1000);
     var minutes = Math.floor(seconds / 60);
     seconds = seconds % 60;
@@ -81,7 +76,7 @@ as the actual keys in the result object.  This requires more careful naming but 
 makes using the returned object easier.  It could be improved to handle dates and
 numbers perhaps using style classes to tag them as such.
 */
-Util.serializeForm = function(form) {
+sparks.util.serializeForm = function(form) {
     var result = {};
     form.map(function() {
         return this.elements ? jQuery.makeArray(this.elements) : this;
@@ -107,7 +102,7 @@ Util.serializeForm = function(form) {
 
 // Returns a string representation of the input date
 // date: either a Date or a number in milliseconds
-Util.formatDate = function(date) {
+sparks.util.formatDate = function(date) {
     function fillZero(val) {
         return val < 10 ? '0' + val : String(val);
     }
@@ -125,7 +120,7 @@ Util.formatDate = function(date) {
 };
 
 // Pretty print an object. Mainly intended for debugging JSON objects
-Util.prettyPrint = function(obj, indent) {
+sparks.util.prettyPrint = function(obj, indent) {
     var t = '';
     if (typeof obj === 'object') {
         for (var key in obj) {
@@ -137,7 +132,7 @@ Util.prettyPrint = function(obj, indent) {
                 if (typeof obj[key] === 'object') {
                     t += '\n';
                 }
-                t += Util.prettyPrint(obj[key], indent + 4);
+                t += sparks.util.prettyPrint(obj[key], indent + 4);
             }
         }
         return t;
