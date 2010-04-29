@@ -286,6 +286,7 @@ Reporter.prototype =
       a.attr({ href: linkUrl, title: 'Click for SPARKS Help!', target: 'feedback' });
       var img = $('<img></img>').addClass('no_border');
       img.attr({ src: imageUrl, align: 'ABSMIDDLE' });
+      img.css({ margin: '4px' });
       a.append(img);
       container.html(a);
     },
