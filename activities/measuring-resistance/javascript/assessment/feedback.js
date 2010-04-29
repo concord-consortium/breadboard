@@ -80,7 +80,7 @@ function Feedback() {
         ],
         power_ten: [
             'Power-of-ten error',
-            'Although you got the digits correct, based on the first ${number of bands} bands, you seemed to have trouble interpreting the power-of-ten band. This band determines the power of ten to multiply the digits from the first ${number of bands – 1} bands.. See the Color Band tutorial for additional help.'
+            'Although you got the digits correct, based on the first ${number of bands} bands, you seemed to have trouble interpreting the power-of-ten band. This band determines the power of ten to multiply the digits from the first ${number of bands – 1} bands. See the Color Band tutorial for additional help.'
         ],
         difficulty: [
             'Apparent difficulty interpreting color bands',
@@ -135,11 +135,11 @@ function Feedback() {
         ],
         incomplete: [
             'Did not record complete value from DMM display.',
-            'You should record all the digits displayed by the digital multimeter —don’t round the results. While the DMM displayed <dmm-display>, your answer was <your answer-value>.'
+            'You should record all the digits displayed by the digital multimeter —don’t round the results. While the DMM displayed ${dmm-display}, your answer was ${your answer-value}.'
         ],
         power_ten: [
             'Power-of-ten error.',
-            'While the digits you submitted from the digital multimeter display appear to be correct, the power of ten implied by the units you chose were incorrect. Your answer was <your answer-value> <your answer-units>, but the correct answer was <answer-ohms>, <answer-k-ohms>, or <answer meg-ohms>.'
+            'While the digits you submitted from the digital multimeter display appear to be correct, the power of ten implied by the units you chose were incorrect. Your answer was ${your answer-value} ${your answer-units}, but the correct answer was <answer-ohms>, <answer-k-ohms>, or <answer meg-ohms>.'
         ],
         incorrect: [
             'Not a measured value.',
@@ -147,8 +147,17 @@ function Feedback() {
         ],
         unit: [
             'Incorrect type of units.',
-            'The result of a resistance measurement should be a resistance unit, such as Ω, kΩ, or MΩ, not <your answer-unit>.'
+            'The result of a resistance measurement should be a resistance unit, such as Ω, kΩ, or MΩ, not ${your answer-unit}.'
         ]
+    };
+    
+    this.root.measuring.measured_r_value.processPatterns = function (key, messages, subs) {
+        if (key === 'incomplete') {
+            messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
+                    '$1<font color="blue">' + subs[0] +
+                    '</font>$2<font color="red">' + subs[1] + '</font>$3');
+        }
+        return messages;
     };
     
     this.root.measuring.plug_connection.feedbackSpace = {
@@ -184,7 +193,7 @@ function Feedback() {
         ],
         suboptimal: [
             'DMM knob set to incorrect resistance scale',
-            'While the digital multimeter knob was set to measure resistance, it was not set to display the optimal scale for this resistance measurement. You chose <your-knob-setting>, but the best scale setting for your resistor would have been <optimum-knob-setting>. See the Using the DMM tutorial for additional help.'
+            'While the digital multimeter knob was set to measure resistance, it was not set to display the optimal scale for this resistance measurement. You chose ${your-knob-setting}, but the best scale setting for your resistor would have been <optimum-knob-setting>. See the Using the DMM tutorial for additional help.'
         ],
         incorrect: [
             'DMM knob not set to a resistance scale',
@@ -217,15 +226,15 @@ function Feedback() {
     this.root.t_range_value.feedbackSpace = {
         correct: [
             'Correct calculation',
-            'You correctly applied the <tolerance-band-number> tolerance band to the <resistor-value> resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer. Good work.'
+            'You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer. Good work.'
         ],
         rounded: [
             'Rounded result',
-            'You appeared to correctly apply the <tolerance-band-number> tolerance band to the <resistor-value> resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer. For this activity, we recommend you report as many digits as the rated value of the resistance has. For instance, if the rated resistance is 12,300 ohms, based on a reading of a five color band resistor, you should report the minimum and maximum values of the tolerance range to three significant digits.'
+            'You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer. For this activity, we recommend you report as many digits as the rated value of the resistance has. For instance, if the rated resistance is 12,300 ohms, based on a reading of a five color band resistor, you should report the minimum and maximum values of the tolerance range to three significant digits.'
         ],
         inaccuate: [
             'Inaccurate tolerance',
-            'The tolerance range that you specified is close but incorrect. You reported <student’s-tolerance-range> but the correct answer was <correct-tolerance-range>. See the Calculating Tolerance tutorial for additional help.'
+            'The tolerance range that you specified is close but incorrect. You reported ${student’s-tolerance-range} but the correct answer was ${correct-tolerance-range}. See the Calculating Tolerance tutorial for additional help.'
         ],
         wrong: [
             'Wrong tolerance',
@@ -245,11 +254,11 @@ function Feedback() {
     this.root.within_tolerance.feedbackSpace = {
         correct: [
             'Measurement recognized as in/out of tolerance',
-            'Good work. The measured value, <your answer-value>, should fall within the tolerance range, that is between the minimum <min-resistance-value> and the maximum <max resistance value> that you calculated based on the tolerance percentage. Since the measured value of this resistor <”did”|”did not> fall within this range, this resistor <”is”}”is not”> within tolerance.'
+            'Good work. The measured value, ${your answer-value}, should fall within the tolerance range, that is between the minimum ${min-resistance-value} and the maximum ${max resistance value} that you calculated based on the tolerance percentage. Since the measured value of this resistor ${did|did not} fall within this range, this resistor ${is|is not} within tolerance.'
         ],
         incorrect: [
             'Measurement not recognized as in/out of tolerance',
-            'The measured value, <your answer-value>, should fall within the tolerance range, that is between the minimum <min-resistance-value> and the maximum <max resistance value> that you calculated based on the tolerance percentage. Since the measured value <”did”|”did not”> fall within this range, this resistor <”is”|”is not”> within tolerance.'
+            'The measured value, ${your answer-value}, should fall within the tolerance range, that is between the minimum ${min-resistance-value} and the maximum <max resistance value> that you calculated based on the tolerance percentage. Since the measured value <”did”|”did not”> fall within this range, this resistor <”is”|”is not”> within tolerance.'
         ]
     };
     
@@ -264,7 +273,7 @@ function Feedback() {
         ],
         slow: [
             'Too slow',
-            'For this assessment, you should be able to remember and interpret the color bands on a resistor, and then enter your answer in less 20 seconds. You took <your-time> seconds. That’s too long! Are you still having to look up each color? Try memorizing the color code and get familiar with the key strokes to enter the values. See the Color Band tutorial for additional help, then try again and see if you can go faster.'
+            'For this assessment, you should be able to remember and interpret the color bands on a resistor, and then enter your answer in less 20 seconds. You took ${your-time} seconds. That’s too long! Are you still having to look up each color? Try memorizing the color code and get familiar with the key strokes to enter the values. See the Color Band tutorial for additional help, then try again and see if you can go faster.'
         ]
     };
 
@@ -279,7 +288,7 @@ function Feedback() {
         ],
         slow: [
             'Too slow',
-            'Your goal is to use the digital multimeter quickly and effectively.  You should be familiar with the DMM so that you know where to set the knob, where to connect the leads, and how to turn I on in order to obtain a reading in less than 20 seconds. You took <your-time> seconds. That’s too long!. See the Using the DMM tutorial for additional help.'
+            'Your goal is to use the digital multimeter quickly and effectively.  You should be familiar with the DMM so that you know where to set the knob, where to connect the leads, and how to turn I on in order to obtain a reading in less than 20 seconds. You took ${your-time} seconds. That’s too long!. See the Using the DMM tutorial for additional help.'
         ]
     };
 
