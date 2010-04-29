@@ -313,8 +313,7 @@ Reporter.prototype =
         closeButton.css('float', 'right');
         var div = $('<div></div>').html(fb[1]);
         div.attr('title', '<img src="' + imgPath + '" /> SPARKS Feedback');
-        div.append($('<p />'));
-        div.append(closeButton).append(tutorialButton);
+        div.append($('<p />')).append(tutorialButton).append(closeButton);;
         var dialog = div.dialog({ autoOpen: false });
         
         a.click(function (event) {
