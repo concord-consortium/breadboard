@@ -126,15 +126,15 @@
             Flash.sendCommand('enable_circuit');
         },
 
-        disableCircuit : function() {
+        disableCircuit: function () {
             Flash.sendCommand('disable_circuit');
         },
 
         // Completed a session (finished with one resistor)
-        completedTry : function() {
+        completedTry: function () {
             var result = {};
 
-            $("form").each(function(i) {
+            $("form").each(function (i) {
                 var form = jQuery(this);
                 result[this.id] = sparks.util.serializeForm(form);
             });
@@ -284,7 +284,7 @@
             }
         },
 
-        enableForm : function(form) {
+        enableForm: function (form) {
           var self = this;
           form.append("<button>Submit</button>");
           this.buttonize();
@@ -301,7 +301,7 @@
           form.find("input[name='start_time']").attr("value", "" + (new Date()).getTime());
         },
 
-        disableForm : function(form) {
+        disableForm: function (form) {
           form.find("input[name='stop_time']").attr("value", "" + (new Date()).getTime());
           form.find("button").remove(); 
           form.find("input, select").attr("disabled", "true");
@@ -330,20 +330,24 @@
 
         // Submit button for question
         submitButtonClicked: function(activity, event) {
-            var form = jQuery(event.target).parent();
+            // Using parents() because:
+            // parent() won't work on Sarari and some versions of IE,
+            // parentsUntil().parent() won't work on FireFox
+            var form = jQuery(event.target).parents('.question_form');
             activity.disableForm(form);
             var nextForm = form.nextAll("form:first");
 
             activity.log.add('end_question', { question : activity.current_question });
-
+            
             if (nextForm.size() === 0) { //all questions answered for current session
                 activity.completedTry();
-            } else {
+            }
+            else {
                 activity.enableForm(nextForm);
                 ++activity.current_question;
                 activity.log.add('start_question', { question : activity.current_question });
                 //console.log('current_question=' + activity.current_question);
-                if (activity.current_question == 3) {
+                if (activity.current_question === 3) {
                     activity.enableCircuit();
                 }
             }
