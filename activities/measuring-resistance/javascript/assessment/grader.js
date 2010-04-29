@@ -1,6 +1,7 @@
 (function () {
 
     var mr = sparks.activities.mr;
+    var str = sparks.string;
 
     mr.Grader = function (session) {
         this.session = session;
@@ -59,7 +60,22 @@
 
             if (question.correct_answer != parsedValue) {
                 if (unitCorrect) {
-                    if (this.sameBeforeDot(question.correct_answer, parsedValue)) {
+                    if (sparks.math.equalExceptPowerOfTen(question.correct_answer, parsedValue)) {
+                        fb.points = 10;
+                        fb.correct = 2;
+                        fb.addFeedback('power_ten',
+                            this.section.resistor_num_bands - 1,
+                            this.section.resistor_num_bands - 2);
+                        return;
+                    }
+                    else if (this.oneOff(question.correct_answer, parsedValue)) {
+                        fb.points = 2;
+                        fb.correct = 1;
+                        fb.addFeedback('difficulty');
+                        return;
+                    }
+                    /*
+                    else if (this.sameBeforeDot(question.correct_answer, parsedValuew)) {
                         if (this.semiCorrectDigits(question.correct_answer, parsedValue, 3)) {
                             fb.points = 2;
                             fb.correct = 1;
@@ -67,14 +83,7 @@
                             return;
                         }
                     }
-                    else if (sparks.math.equalExceptPowerOfTen(question.correct_answer, parsedValue)) {
-                        fb.points = 10;
-                        fb.correct = 2;
-                        fb.addFeedback('power_ten',
-                                this.section.resistor_num_bands - 1,
-                                this.section.resistor_num_bands - 2);
-                        return;
-                    }
+                    */
                 }
                 fb.addFeedback('incorrect');
                 return;
@@ -430,6 +439,33 @@
             return a.substring(0, 3) == b.substring(0, 3);
         },
 
+        // Return true if x and y are equal or different only in one digit
+        oneOff: function(x, y) {
+            var sx = x.toString();
+            var sy = y.toString();
+            if (!sx.match(/\./)) {
+                sx = sx + '.';
+            }
+            if (!sy.match(/\./)) {
+                sy = sy + '.';
+            }
+            sx = str.stripZeros(sx);
+            sy = str.stripZeros(sy);
+            if (sx.length != sy.length) {
+                return false;
+            }
+            var numDiff = 0;
+            for (var i = 0; i < sx.length; ++i) {
+                if (sx.charAt(i) !== sy.charAt(i)) {
+                    numDiff += 1;
+                    if (numDiff > 1) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        },
+        
         // A kludge to determine if two number are of same power of 10 magnitude
         // It only compares the number of digits before the decimal point
         // because numbers less than 1 are not expected.
