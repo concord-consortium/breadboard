@@ -61,13 +61,14 @@ function Feedback() {
     this.root.measuring = new FeedbackItem();
     this.root.measuring.plug_connection = new FeedbackItem(5);
     this.root.measuring.probe_connection = new FeedbackItem(2);
-    this.root.measuring.knob_setting = new FeedbackItem(10);
+    this.root.measuring.knob_setting = new FeedbackItem(20);
     this.root.measuring.power_switch = new FeedbackItem(2);
     this.root.measuring.measured_r_value = new FeedbackItem(10);
     this.root.measuring.task_order = new FeedbackItem(6);
     
-    this.root.t_range_value = new FeedbackItem(15);
-    this.root.within_tolerance = new FeedbackItem(5);
+    this.root.t_range = new FeedbackItem();
+    this.root.t_range.t_range_value = new FeedbackItem(15);
+    this.root.t_range.within_tolerance = new FeedbackItem(5);
     
     this.root.time = new FeedbackItem();
     this.root.time.reading_time = new FeedbackItem(5);
@@ -223,7 +224,7 @@ function Feedback() {
         ]
     };
     
-    this.root.t_range_value.feedbackSpace = {
+    this.root.t_range.t_range_value.feedbackSpace = {
         correct: [
             'Correct calculation',
             'You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer. Good work.'
@@ -242,7 +243,7 @@ function Feedback() {
         ]
     };
     
-    this.root.t_range_value.processPatterns = function (key, messages, subs) {
+    this.root.t_range.t_range_value.processPatterns = function (key, messages, subs) {
         if (key === 'wrong') {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                 '$1<font color="red">' + subs[1] +
@@ -251,7 +252,7 @@ function Feedback() {
         return messages;
     };
     
-    this.root.within_tolerance.feedbackSpace = {
+    this.root.t_range.within_tolerance.feedbackSpace = {
         correct: [
             'Measurement recognized as in/out of tolerance',
             'Good work. The measured value, ${your answer-value}, should fall within the tolerance range, that is between the minimum ${min-resistance-value} and the maximum ${max resistance value} that you calculated based on the tolerance percentage. Since the measured value of this resistor ${did|did not} fall within this range, this resistor ${is|is not} within tolerance.'

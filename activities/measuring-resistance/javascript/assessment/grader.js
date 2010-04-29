@@ -144,7 +144,7 @@ Grader.prototype =
     gradeToleranceRange : function () {
         //console.log('ENTER Grader.gradeToleranceRange');
         var question = this.questions[3];
-        var fb = this.feedback.root.t_range_value;
+        var fb = this.feedback.root.t_range.t_range_value;
         //var nominalResistance = this.section.nominal_resistance;
         //var tolerance = this.section.tolerance;
         var nominalResistance = this.resistanceAnswer;
@@ -228,7 +228,7 @@ Grader.prototype =
     
     gradeWithinTolerance : function() {
         var question = this.questions[4];
-        var fb = this.feedback.root.within_tolerance;
+        var fb = this.feedback.root.t_range.within_tolerance;
         var correctAnswer;
         var nominalValue = this.section.nominal_resistance;
         var tolerance = this.section.tolerance;

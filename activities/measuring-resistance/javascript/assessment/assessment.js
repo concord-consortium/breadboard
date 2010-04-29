@@ -68,8 +68,8 @@ Assessment.prototype =
         resultObj.rated_resistance.correct = fb.reading.rated_r_value.correct;
         resultObj.rated_tolerance.correct = fb.reading.rated_t_value.correct;
         resultObj.measured_resistance.correct = fb.measuring.measured_r_value.correct;
-        resultObj.measured_tolerance.correct = fb.t_range_value.correct;
-        resultObj.within_tolerance.correct = fb.within_tolerance.correct;
+        resultObj.measured_tolerance.correct = fb.t_range.t_range_value.correct;
+        resultObj.within_tolerance.correct = fb.t_range.within_tolerance.correct;
     },
 
     fieldIsEmpty : function(formInput) {

@@ -29,13 +29,13 @@ ServerReporter.prototype =
         
         $('#reading_pts').text(points + fb.points);
         
-        fb = feedback.root.t_range_value;
+        fb = feedback.root.t_range.t_range_value;
         $('#t_range_correct').text(Unit.res_str(questions[3].correct_answer[0]) + ' .. ' + Unit.res_str(questions[3].correct_answer[1]));
         text = (questions[3].answer[0] || questions[3].answer[1]) ? String(questions[3].answer[0]) + questions[3].unit[0] + ' .. ' + questions[3].answer[1] + questions[3].unit[1] : 'No Answer';
         this.setAnswerTextWithColor('#t_range_answer', text, fb);
         $('#t_range_pts').text(fb.points);
         
-        fb = feedback.root.within_tolerance;
+        fb = feedback.root.t_range.within_tolerance;
         $('#within_correct').text(questions[4].correct_answer);
         text = questions[4].answer ? questions[4].answer : 'No Answer';
         this.setAnswerTextWithColor('#within_answer', text, fb);
