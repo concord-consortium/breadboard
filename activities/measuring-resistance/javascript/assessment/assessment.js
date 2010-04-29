@@ -16,7 +16,7 @@ function Assessment(activity)
 Assessment.prototype =
 {
     grade : function(session) {
-        var grader = new Grader(session);
+        var grader = new sparks.activities.mr.Grader(session);
         return grader.grade(session);
     },
     

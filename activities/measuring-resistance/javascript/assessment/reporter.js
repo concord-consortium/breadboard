@@ -134,7 +134,7 @@ Reporter.prototype =
         if (i_knob == o_knob) {
         	color = this.green;
         }
-        else if (Grader.prototype.isResistanceKnob(i_knob)) {
+        else if (sparks.activities.mr.Grader.prototype.isResistanceKnob(i_knob)) {
         	color = this.orange;
         }
         else {
@@ -146,7 +146,7 @@ Reporter.prototype =
         if (f_knob == o_knob) {
         	color = this.green;
         }
-        else if (Grader.prototype.isResistanceKnob(f_knob)) {
+        else if (sparks.activities.mr.Grader.prototype.isResistanceKnob(f_knob)) {
         	color = this.orange;
         }
         else {
@@ -315,7 +315,7 @@ Reporter.prototype =
         closeButton.css('float', 'right');
         var div = $('<div></div>').html(fb[1]);
         div.attr('title', '<img src="' + imgPath + '" /> SPARKS Feedback');
-        div.append($('<p />')).append(tutorialButton).append(closeButton);;
+        div.append($('<p />')).append(tutorialButton).append(closeButton);
         var dialog = div.dialog({ autoOpen: false });
         
         a.click(function (event) {

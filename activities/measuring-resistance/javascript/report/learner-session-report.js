@@ -8,7 +8,7 @@ $(document).ready(function() {
     var ds = new RestDS(null, null, '/sparks_report/get_report/' + reportId);
     ds.readKey = true;
     ds.load(this, function(data) {
-        var grader = new Grader(data[0]);
+        var grader = new sparks.activities.mr.Grader(data[0]);
         var feedback = grader.grade();
         var reporter = new SessionReporter();
         reporter.report(data[0], feedback);

@@ -37,7 +37,7 @@
             $('#load_button').click(function() {
                 ds.readKey = true;
                 ds.load(this, function(data) {
-                     var grader = new Grader(data[0]);
+                     var grader = new sparks.activitie.mr.Grader(data[0]);
                      var feedback = grader.grade();
                      var reporter = new ServerReporter();
                      reporter.sessionReport(data[0], feedback);

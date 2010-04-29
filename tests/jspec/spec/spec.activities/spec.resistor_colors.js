@@ -43,7 +43,7 @@ describe 'Activity 1: Resistor Colors'
     it "should grade a session correctly"
     	// mr_data1.json: perfect answers
     	var session = JSON.parse(fixture('mr_data_1.json')); 
-    	var grader = new Grader(session);
+    	var grader = new sparks.activities.mr.Grader(session);
     	var feedback = grader.grade();
     	
     	feedback.root.getPoints().should.be 100
