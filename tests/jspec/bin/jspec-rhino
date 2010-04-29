@@ -1,0 +1,4 @@
+#!/bin/sh
+
+## Because jspec --rhino doesn't work because of env.js related problems:
+java -jar spec/support/js.jar -opt -1 spec/rhino-terminal.js
