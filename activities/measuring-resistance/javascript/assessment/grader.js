@@ -68,7 +68,7 @@ Grader.prototype =
                         return;
                     }
                 }
-                else if (this.sameFirstSigDigits(question.correct_answer, parsedValue, 3)) {
+                else if (sparks.math.equalExceptPowerOfTen(question.correct_answer, parsedValue)) {
                     fb.points = 10;
                     fb.correct = 2;
                     fb.addFeedback('power_ten',
@@ -431,12 +431,6 @@ Grader.prototype =
         return a.substring(0, 3) == b.substring(0, 3);
     },
     
-    sameFirstSigDigits : function(x, y, numSigDigits) {
-        var sx = String(x).replace('.', '').substring(0, numSigDigits);
-        var sy = String(y).replace('.', '').substring(0, numSigDigits);
-        return sx === sy;
-    },
-
     // A kludge to determine if two number are of same power of 10 magnitude
     // It only compares the number of digits before the decimal point
     // because numbers less than 1 are not expected.
