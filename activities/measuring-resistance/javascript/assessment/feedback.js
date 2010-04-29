@@ -88,7 +88,7 @@ function Feedback() {
             'One of the digits that you reported from the color bands was incorrect. Roll over each band to expand the color and double-check your interpretation of each color band before submitting your answer. See the Color Band tutorial for additional help.'
         ],
         incorrect: [
-            'Incorrect interpretation of color bands (units OK)',
+            'Incorrect interpretation of color bands',
             'The resistance value you submitted indicates that you misinterpreted more than one color band. You seem to be having difficulty using the color bands to determine the rated resistor value. See the Color Band tutorial for a table of band colors and the numbers they signify.'
         ],
         unit: [
@@ -104,7 +104,8 @@ function Feedback() {
                     '</font>$2<font color="blue">' + subs[1] + '</font>$3');
         }
         else if (key === 'unit') {
-            messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m, '$1' + subs[0] + '$2');
+            messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
+                    '$1<font color="red">' + subs[0] + '</font>$2');
         }
         return messages;
     };

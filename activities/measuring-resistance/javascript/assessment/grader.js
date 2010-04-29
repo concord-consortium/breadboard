@@ -45,7 +45,6 @@
             if (!Unit.ohmCompatible(question.unit)) {
                 unitCorrect = false;
                 fb.addFeedback('unit', question.unit);
-                return;
             }
 
             if (question.answer === null || isNaN(question.answer)) {
