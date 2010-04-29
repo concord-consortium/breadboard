@@ -113,7 +113,7 @@
     
     <div id="questions_area">
       <h3>Step 1</h3>
-      <form id='rated_resistance'>
+      <form id='rated_resistance' class="question_form">
         <span class='prompt'>What is the rated resistance:</span>
         <input name='value' />
         <select name='units'>
@@ -127,15 +127,23 @@
           <option>mA</option>
           <option>A</option>
         </select>
+        &nbsp;&nbsp;
       </form>
-      <form id='rated_tolerance'>
+      <form id='rated_tolerance' class="question_form">
         <span class='prompt'>What is the tolerance:</span>
-        <input name='value' />
-        %
+        <select name='value'>
+          <option>1 %</option>
+          <option>2 %</option>
+          <option>5 %</option>
+          <option>10 %</option>
+          <option>15 %</option>
+          <option>20 %</option>
+        </select>
+        &nbsp;&nbsp;
       </form>
 
       <h3>Step 2</h3>
-      <form id='measured_resistance'>
+      <form id='measured_resistance' class="question_form">
         <span class='prompt'>What is the measured resistance:</span>
         <input name='value' />
         <select name='units'>
@@ -149,10 +157,11 @@
           <option>mA</option>
           <option>A</option>
         </select>
+        &nbsp;&nbsp;
       </form>
 
       <h3>Step 3</h3>
-      <form id='measured_tolerance'>
+      <form id='measured_tolerance' class="question_form">
         <span class='prompt'>What is the tolerance range?</span>
         <input name='min' size='12' />
         <select name='min_unit'>
@@ -169,7 +178,7 @@
         to
         <input name='max' size='12' />
         <select name='max_unit'>
-        <option>&#x00b5;V</option>
+          <option>&#x00b5;V</option>
           <option>mV</option>
           <option>V</option>
           <option>&#x2126;</option>
@@ -179,13 +188,15 @@
           <option>mA</option>
           <option>A</option>
         </select>
+        &nbsp;&nbsp;
       </form>
-      <form id='within_tolerance'>
+      <form id='within_tolerance' class="question_form">
         <span class='prompt'>Is the resistor within the tolerance?</span>
         <input name='value' type='radio' value='yes' />
         Yes
         <input name='value' type='radio' value='no' />
         No
+        &nbsp;&nbsp;
       </form>
     </div>
     

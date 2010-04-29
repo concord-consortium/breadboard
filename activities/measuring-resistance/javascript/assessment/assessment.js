@@ -32,7 +32,7 @@ Assessment.prototype =
         value = resultObj.rated_resistance.units;
         questions[0].unit = this.fieldIsEmpty(value) ? null : value;
         
-        value = resultObj.rated_tolerance.value;
+        value = resultObj.rated_tolerance.value.replace(/\s*%$/, '');
         questions[1].answer = this.fieldIsEmpty(value) ? null : Number(value);
         questions[1].unit = '%';
         questions[1].correct_answer = section.tolerance;
