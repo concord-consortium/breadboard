@@ -19,7 +19,6 @@ load('../../common/javascript/circuit/resistor.js');
 load('../../common/javascript/circuit/resistor-4band.js');
 load('../../common/javascript/circuit/resistor-5band.js');
 load('../../common/javascript/circuit/multimeter.js');
-load('../../common/javascript/util/mymath.js');
 load('../../common/javascript/util/unit.js');
 load('../../common/javascript/math.js');
 load('../../common/javascript/string.js');

@@ -2,6 +2,7 @@
 
     var mr = sparks.activities.mr;
     var str = sparks.string;
+    var math = sparks.math;
 
     mr.Grader = function (session) {
         this.session = session;
@@ -34,7 +35,7 @@
             return this.feedback;
         },
 
-        gradeReadingColorBands : function() {
+        gradeReadingColorBands : function () {
             var question = this.questions[0];
             var fb = this.feedback.root.reading.rated_r_value;
             var unitCorrect = true;
@@ -154,6 +155,7 @@
             var fb = this.feedback.root.t_range.t_range_value;
             //var nominalResistance = this.section.nominal_resistance;
             //var tolerance = this.section.tolerance;
+            
             var nominalResistance = this.resistanceAnswer;
             var tolerance = this.toleranceAnswer;
 
@@ -205,14 +207,14 @@
             {
                 fb.points = 15;
                 fb.correct = 4;
-                fb.addFeedback('correct');
+                fb.addFeedback('correct', tolerance, nominalResitance);
                 return;
             }
 
-            if (MyMath.roundToSigDigits(correctMin, 3) ===
-                MyMath.roundToSigDigits(parsedMin, 3) &&
-                MyMath.roundToSigDigits(correctMax, 3) ===
-                MyMath.roundToSigDigits(parsedMax, 3))
+            if (math.roundToSigDigits(correctMin, 3) ===
+                math.roundToSigDigits(parsedMin, 3) &&
+                math.roundToSigDigits(correctMax, 3) ===
+                math.roundToSigDigits(parsedMax, 3))
             {
                 fb.points = 10;
                 fb.correct = 3;
@@ -220,10 +222,10 @@
                 return;
             }
 
-            if (Math.abs(MyMath.getRoundedSigDigits(correctMin, 3) - 
-                         MyMath.getRoundedSigDigits(parsedMin, 3)) <= 2 &&
-                Math.abs(MyMath.getRoundedSigDigits(correctMax, 3) - 
-                         MyMath.getRoundedSigDigits(parsedMax, 3)) <= 2)
+            if (Math.abs(math.getRoundedSigDigits(correctMin, 3) - 
+                         math.getRoundedSigDigits(parsedMin, 3)) <= 2 &&
+                Math.abs(math.getRoundedSigDigits(correctMax, 3) - 
+                         math.getRoundedSigDigits(parsedMax, 3)) <= 2)
             {
                 fb.points = 3;
                 fb.correct = 2;
