@@ -43,5 +43,5 @@ Unit.res_str = function(value) {
     if (vstr.length > n) {
         vstr = vstr.substring(0, n);
     }
-    return vstr + unit;
+    return vstr + ' ' + unit;
 };
