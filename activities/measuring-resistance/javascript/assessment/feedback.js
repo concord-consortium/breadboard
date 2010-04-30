@@ -167,6 +167,10 @@ function Feedback() {
                     '</font>$4<font color="blue">' + subs[3] +
                     '</font>$5<font color="blue">' + subs[4] + '</font>$6');
         }
+        else if (key === 'unit') {
+            messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
+                    '$1<font color="red">' + subs[0] + '</font>$2');
+        }
         return messages;
     };
     

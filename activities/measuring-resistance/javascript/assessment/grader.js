@@ -47,6 +47,7 @@
                 this.resistanceAnswer = null;
                 unitCorrect = false;
                 fb.addFeedback('unit', question.unit);
+                return;
             }
 
             if (question.answer === null || isNaN(question.answer)) {
@@ -88,16 +89,22 @@
         gradeResistance: function () {
             var question = this.questions[2];
             var fb = this.feedback.root.measuring.measured_r_value;
+            var unitCorrect = true;
 
             fb.points = 0;
             fb.correct = 0;
+
+            if (!Unit.ohmCompatible(question.unit)) {
+                unitCorrect = false;
+                fb.addFeedback('unit', question.unit);
+                return;
+            }
 
             if (question.answer === null || isNaN(question.answer)) {
                 fb.addFeedback('incorrect');
                 return;
             }
-            if (!Unit.ohmCompatible(question.unit)) { return; }
-
+            
             var parsedValue = Unit.normalizeToOhms(question.answer, question.unit);
 
             console.log('parsedValue=' + parsedValue + ' correctValue=' + question.correct_answer);
