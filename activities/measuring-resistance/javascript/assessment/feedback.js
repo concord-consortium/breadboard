@@ -141,7 +141,7 @@ function Feedback() {
         ],
         power_ten: [
             'Power-of-ten error.',
-            'While the digits you submitted from the digital multimeter display appear to be correct, the power of ten implied by the units you chose were incorrect. Your answer was ${your answer-value} ${your answer-units}, but the correct answer was <answer-ohms>, <answer-k-ohms>, or <answer meg-ohms>.'
+            'While the digits you submitted from the digital multimeter display appear to be correct, the power of ten implied by the units you chose were incorrect. Your answer was ${your answer-value} ${your answer-units}, but the correct answer was ${answer-ohms}, ${answer-k-ohms}, or ${answer meg-ohms}.'
         ],
         incorrect: [
             'Not a measured value.',
@@ -158,6 +158,14 @@ function Feedback() {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                     '$1<font color="blue">' + subs[0] +
                     '</font>$2<font color="red">' + subs[1] + '</font>$3');
+        }
+        else if (key === 'power_ten') {
+            messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
+                    '$1<font color="orange">' + subs[0] +
+                    '</font>$2<font color="orange">' + subs[1] +
+                    '</font>$3<font color="blue">' + subs[2] +
+                    '</font>$4<font color="blue">' + subs[3] +
+                    '</font>$5<font color="blue">' + subs[4] + '</font>$6');
         }
         return messages;
     };
@@ -238,7 +246,12 @@ function Feedback() {
         ],
         incorrect: [
             'DMM was not turned ON',
-            'The digital multimeter was off. A digital multimeter can only function with power supplied to the electronics within and the display.  In addition, when making resistance measurements, a DMM must supply a small amount of test current through the probes. See the Using the DMM tutorial for additional help.'
+            '<p>The digital multimeter was off. A digital multimeter ' +
+            'can only function with power supplied to the electronics within ' +
+            'and the display.</p><p>In addition, when making resistance ' +
+            'measurements, a DMM must supply a small amount of test current ' +
+            'through the probes. See the Using the DMM tutorial for ' +
+            'additional help.'
         ]
     };
     

@@ -62,7 +62,7 @@
 
             if (question.correct_answer != parsedValue) {
                 if (unitCorrect) {
-                    if (sparks.math.equalExceptPowerOfTen(question.correct_answer, parsedValue)) {
+                    if (math.equalExceptPowerOfTen(question.correct_answer, parsedValue)) {
                         fb.points = 10;
                         fb.correct = 2;
                         fb.addFeedback('power_ten',
@@ -76,16 +76,6 @@
                         fb.addFeedback('difficulty');
                         return;
                     }
-                    /*
-                    else if (this.sameBeforeDot(question.correct_answer, parsedValuew)) {
-                        if (this.semiCorrectDigits(question.correct_answer, parsedValue, 3)) {
-                            fb.points = 2;
-                            fb.correct = 1;
-                            fb.addFeedback('difficulty');
-                            return;
-                        }
-                    }
-                    */
                 }
                 fb.addFeedback('incorrect');
                 return;
@@ -95,7 +85,7 @@
             fb.addFeedback('correct');
         },
 
-        gradeResistance : function() {
+        gradeResistance: function () {
             var question = this.questions[2];
             var fb = this.feedback.root.measuring.measured_r_value;
 
@@ -112,12 +102,24 @@
 
             console.log('parsedValue=' + parsedValue + ' correctValue=' + question.correct_answer);
 
-            if(question.correct_answer != parsedValue){
+            if (question.correct_answer != parsedValue) {
                 if (this.semiAcceptable(question.correct_answer, parsedValue)) {
                     fb.points = 5;
-                    fb.correct = 2;
-                    fb.addFeedback('power_ten');
+                    fb.correct = 3;
+                    fb.addFeedback('incomplete', Unit.res_str(question.correct_answer),
+                        Unit.res_str(parsedValue));
+                    return;
                 }
+                else if (math.equalExceptPowerOfTen(question.correct_answer, parsedValue)) {
+                    fb.points = 3;
+                    fb.correct = 2;
+                    fb.addFeedback('power_ten', question.answer, question.unit,
+                            Unit.res_unit_str(question.correct_answer),
+                            Unit.res_unit_str(question.correct_answer, 'k'),
+                            Unit.res_unit_str(question.correct_answer, 'M'));
+                    return;
+                }
+                fb.addFeedback('incorrect');
                 return;
             }
 
@@ -446,9 +448,12 @@ debug;
         },
 
         semiAcceptable : function(correctAnswer, answer) {
+            /*
             var a = correctAnswer.toString().replace('.', '');
             var b = answer.toString().replace('.', '');
             return a.substring(0, 3) == b.substring(0, 3);
+            */
+            return math.roundToSigDigits(correctAnswer, 3) === answer;
         },
 
         // Return true if x and y are equal or different only in one digit

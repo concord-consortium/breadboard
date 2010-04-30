@@ -34,7 +34,7 @@ Unit.res_str = function(value) {
         unit = Unit.labels.ohms;
     }
     else {
-        vstr = String(value / 1000);
+        vstr = String(value / 1000.0);
         unit = Unit.labels.kilo_ohms;
     }
     
@@ -42,6 +42,25 @@ Unit.res_str = function(value) {
     if (vstr.charAt(0) == '1') { ++n; }
     if (vstr.length > n) {
         vstr = vstr.substring(0, n);
+    }
+    return vstr + ' ' + unit;
+};
+
+Unit.res_unit_str = function(value, mult) {
+    var vstr;
+    var unit = Unit.labels.ohms;
+    
+    if (mult === 'k') {
+        vstr = String(value / 1000.0);
+        unit = Unit.labels.kilo_ohms;
+    }
+    else if (mult === 'M') {
+        vstr = String(value / 1000000.0);
+        unit = Unit.labels.mega_ohms;
+    }
+    else {
+        vstr = String(value);
+        unit = Unit.labels.ohms;
     }
     return vstr + ' ' + unit;
 };
