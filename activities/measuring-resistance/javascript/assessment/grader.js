@@ -44,11 +44,13 @@
             fb.points = 0;
 
             if (!Unit.ohmCompatible(question.unit)) {
+                this.resistanceAnswer = null;
                 unitCorrect = false;
                 fb.addFeedback('unit', question.unit);
             }
 
             if (question.answer === null || isNaN(question.answer)) {
+                this.resistanceAnswer = null;
                 fb.addFeedback('incorrect');
                 return;
             }
@@ -153,10 +155,14 @@
             //console.log('ENTER Grader.gradeToleranceRange');
             var question = this.questions[3];
             var fb = this.feedback.root.t_range.t_range_value;
-            //var nominalResistance = this.section.nominal_resistance;
-            //var tolerance = this.section.tolerance;
+            var nominalResistance = null;
             
-            var nominalResistance = this.resistanceAnswer;
+            if (this.resistanceAnswer) {
+                nominalResistance = this.resistanceAnswer;
+            }
+            else {
+                nominalResistance = this.section.nominal_resistance;
+            }
             var tolerance = this.toleranceAnswer;
 
             fb.points = 0;
@@ -174,8 +180,8 @@
 
             var correctStr = '[' + Unit.res_str(correctMin) + ', ' +
                 Unit.res_str(correctMax) + ']';
-            var answerStr = '[' + min + question.unit[0] + ', ' +
-                max + question.unit[1] + ']';
+            var answerStr = '[' + min + ' ' + question.unit[0] + ', ' +
+                max + ' ' + question.unit[1] + ']';
 
             if (min === null || isNaN(min) || max === null || isNaN(max)) {
                 fb.addFeedback('wrong', correctStr, answerStr);
