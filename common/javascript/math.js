@@ -16,7 +16,15 @@
      // NOTE: The most significant digit is assumed to be the first non-zero digit,
      // which may be unacceptable for certain applications.
      // NOTE: x is a non-negative number.
-     math.leftMostPos = function(x) {
+     math.leftMostPos = function (x) {
+         x = Number(x);
+         if (isNaN(x) || x < 0) {
+             debug('ERROR: math.leftMostPos: Invalid input ' + x);
+             return 0;
+         }
+         if (x == 0) {
+             return 0;
+         }
          var n = 0;
          var y = x;
          if (x < 1) {
