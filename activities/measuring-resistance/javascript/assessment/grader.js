@@ -213,7 +213,8 @@
             {
                 fb.points = 15;
                 fb.correct = 4;
-                fb.addFeedback('correct', tolerance, nominalResitance);
+                fb.addFeedback('correct', Unit.res_str(nominalResistance), 
+                    Unit.pct_str(tolerance));
                 return;
             }
 
@@ -238,6 +239,7 @@
                 fb.addFeedback('inaccurate');
                 return;
             }
+            fb.addFeedback('wrong', correctStr, answerStr);
             return;
         },
 

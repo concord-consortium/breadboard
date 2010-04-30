@@ -45,3 +45,8 @@ Unit.res_str = function(value) {
     }
     return vstr + ' ' + unit;
 };
+
+Unit.pct_str = function(value) {
+    return (value * 100) + ' %';
+};
+

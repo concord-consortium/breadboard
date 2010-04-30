@@ -245,7 +245,12 @@ function Feedback() {
     };
     
     this.root.t_range.t_range_value.processPatterns = function (key, messages, subs) {
-        if (key === 'wrong') {
+        if (key === 'correct') {
+            messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
+                '$1<font color="blue">' + subs[1] +
+                '</font>$2<font color="blue">' + subs[0] + '</font>$3');
+        }
+        else if (key === 'wrong') {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                 '$1<font color="red">' + subs[1] +
                 '</font>$2<font color="blue">' + subs[0] + '</font>$3');
