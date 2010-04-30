@@ -207,7 +207,7 @@
                 parsedMin = parsedMax;
                 parsedMax = tmp;
             }
-
+debug;
             if (this.equalWithTolerance(parsedMin, correctMin, 1e-5) &&
                 this.equalWithTolerance(parsedMax, correctMax, 1e-5))
             {
@@ -217,15 +217,18 @@
                     Unit.pct_str(tolerance));
                 return;
             }
+            
+            var n = this.section.resistor_num_bands - 2;
 
-            if (math.roundToSigDigits(correctMin, 3) ===
-                math.roundToSigDigits(parsedMin, 3) &&
-                math.roundToSigDigits(correctMax, 3) ===
-                math.roundToSigDigits(parsedMax, 3))
+            if (math.roundToSigDigits(correctMin, n) ===
+                math.roundToSigDigits(parsedMin, n) &&
+                math.roundToSigDigits(correctMax, n) ===
+                math.roundToSigDigits(parsedMax, n))
             {
                 fb.points = 10;
                 fb.correct = 3;
-                fb.addFeedback('rounded');
+                fb.addFeedback('rounded', Unit.res_str(nominalResistance), 
+                    Unit.pct_str(tolerance));
                 return;
             }
 
