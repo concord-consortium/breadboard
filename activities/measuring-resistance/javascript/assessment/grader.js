@@ -232,14 +232,14 @@ debug;
                 return;
             }
 
-            if (Math.abs(math.getRoundedSigDigits(correctMin, 3) - 
-                         math.getRoundedSigDigits(parsedMin, 3)) <= 2 &&
-                Math.abs(math.getRoundedSigDigits(correctMax, 3) - 
-                         math.getRoundedSigDigits(parsedMax, 3)) <= 2)
+            if (Math.abs(math.getRoundedSigDigits(correctMin, n) - 
+                         math.getRoundedSigDigits(parsedMin, n)) <= 2 &&
+                Math.abs(math.getRoundedSigDigits(correctMax, n) - 
+                         math.getRoundedSigDigits(parsedMax, n)) <= 2)
             {
                 fb.points = 3;
                 fb.correct = 2;
-                fb.addFeedback('inaccurate');
+                fb.addFeedback('inaccurate', correctStr, answerStr);
                 return;
             }
             fb.addFeedback('wrong', correctStr, answerStr);

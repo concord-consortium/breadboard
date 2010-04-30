@@ -234,7 +234,7 @@ function Feedback() {
             'Rounded result',
             'You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer. For this activity, we recommend you report as many digits as the rated value of the resistance has. For instance, if the rated resistance is 12,300 ohms, based on a reading of a five color band resistor, you should report the minimum and maximum values of the tolerance range to three significant digits.'
         ],
-        inaccuate: [
+        inaccurate: [
             'Inaccurate tolerance',
             'The tolerance range that you specified is close but incorrect. You reported ${student’s-tolerance-range} but the correct answer was ${correct-tolerance-range}. See the Calculating Tolerance tutorial for additional help.'
         ],
@@ -250,7 +250,7 @@ function Feedback() {
                 '$1<font color="blue">' + subs[1] +
                 '</font>$2<font color="blue">' + subs[0] + '</font>$3');
         }
-        else if (key === 'wrong') {
+        else if (key === 'inaccurate' || key === 'wrong') {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                 '$1<font color="red">' + subs[1] +
                 '</font>$2<font color="blue">' + subs[0] + '</font>$3');
