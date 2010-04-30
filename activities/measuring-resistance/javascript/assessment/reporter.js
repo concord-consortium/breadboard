@@ -306,6 +306,8 @@ Reporter.prototype =
         
         var a = $('<a></a>').attr('href', '').append(img);
         a.append(fb[0]);
+        var line = $('<nobr></nobr>');
+        line.append(a);
         
         var tutorialLink = $('<a>Tutorial</a>');
         tutorialLink.attr({ href: tutorialURL, target: 'tutorial'});
@@ -329,6 +331,6 @@ Reporter.prototype =
         closeButton.click(function (event) {
             div.dialog('close');
         });
-        return a;
+        return line;
     }
 };

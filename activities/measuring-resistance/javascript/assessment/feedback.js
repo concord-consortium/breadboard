@@ -169,11 +169,19 @@ function Feedback() {
         ],
         reverse: [
             'Connections to DMM are reversed',
-            'While the meter will still read resistance measurements correctly, it is good practice to always connect the red lead to the VΩmA  jack, and the black lead to the COM jack of the DMM. This will be essential when making correct measurements of voltage and current in later modules. See the Using the DMM tutorial for additional help.'
+            '<p>While the meter will still read resistance measurements ' +
+            'correctly, it is good practice to always connect the red lead ' +
+            'to the <font color="blue">VΩmA</font> jack, and the black lead ' +
+            'to the <font color="blue">COM</font> jack of the DMM.</p>' +
+            '<p>This will be essential when making correct measurements of voltage and current in later modules. See the Using the DMM tutorial for additional help.</p>'
         ],
         incorrect: [
             'Connections to the DMM are incorrect',
-            'The digital multimeter will not measure resistance unless the leads are plugged in correctly: red lead to VΩmA  jack, black lead to COM jack. While there is no risk in this case, it is good practice to be aware that any time you connect the leads to incorrect DMM jacks and to a circuit, you may damage the meter and/or your circuit. See the Using the DMM tutorial for additional help.'
+            '<p>The digital multimeter will not measure resistance unless the ' +
+            'leads are plugged in correctly: red lead to ' +
+            '<font color="blue">VΩmA</font> jack, black lead to ' +
+            '<font color="blue">COM</font> jack.</p>' +
+            '<p>While there is no risk in this case, it is good practice to be aware that any time you connect the leads to incorrect DMM jacks and to a circuit, you may damage the meter and/or your circuit. See the Using the DMM tutorial for additional help.</p>'
         ]
     };
     
