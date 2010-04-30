@@ -23,43 +23,55 @@ Assessment.prototype =
     receiveResultFromHTML : function(resultObj) {
         var section = this.log.currentSession().sections[0];
         var questions = section.questions;
-        var value;
+        var value = null;
         
-        value = resultObj.rated_resistance.value;
+        //value = resultObj.rated_resistance.value;
+        value = $('#rated_resistance_value_input').val();
         questions[0].answer = this.fieldIsEmpty(value) ? null : Number(value);
         questions[0].correct_answer = section.nominal_resistance;
         
-        value = resultObj.rated_resistance.units;
+        //value = resultObj.rated_resistance.units;
+        value  = $('#rated_resistance_unit_select').children('option:selected').val();
         questions[0].unit = this.fieldIsEmpty(value) ? null : value;
         
-        value = resultObj.rated_tolerance.value.replace(/\s*%$/, '');
+        //value = resultObj.rated_tolerance.value.replace(/\s*%$/, '');
+        value = $('#rated_tolerance_select').children('option:selected').val();
+        value = value.replace(/\s*%$/, '');
+
         questions[1].answer = this.fieldIsEmpty(value) ? null : Number(value);
         questions[1].unit = '%';
         questions[1].correct_answer = section.tolerance;
         
-        value = resultObj.measured_resistance.value;
+        //value = resultObj.measured_resistance.value;
+        value = $('#measured_r_value_input').val();
         questions[2].answer = this.fieldIsEmpty(value) ? null : Number(value);
         
-        value = resultObj.measured_resistance.units;
+        //value = resultObj.measured_resistance.units;
+        value = $('#measured_r_unit_select').children('option:selected').val();
         questions[2].unit = this.fieldIsEmpty(value) ? null : value;
         
         questions[2].correct_answer = section.displayed_resistance;
         
         questions[3].answer = [];
-        value = resultObj.measured_tolerance.min;
+        //value = resultObj.measured_tolerance.min;
+        value = $('#t_range_min_value_input').val();
         questions[3].answer[0] = this.fieldIsEmpty(value) ? null : Number(value);
         
-        value = resultObj.measured_tolerance.max;
+        //value = resultObj.measured_tolerance.max;
+        value = $('#t_range_max_value_input').val();
         questions[3].answer[1] = this.fieldIsEmpty(value) ? null : Number(value);
         
         questions[3].unit = [];
-        value = resultObj.measured_tolerance.min_unit;
+        //value = resultObj.measured_tolerance.min_unit;
+        value = $('#t_range_min_unit_select').children('option:selected').val();
         questions[3].unit[0] = this.fieldIsEmpty(value) ? null : value;
         
-        value = resultObj.measured_tolerance.max_unit;
+        //value = resultObj.measured_tolerance.max_unit;
+        value = $('#t_range_max_unit_select').children('option:selected').val();
         questions[3].unit[1] = this.fieldIsEmpty(value) ? null : value;
         
-        value = resultObj.within_tolerance.value;
+        //value = resultObj.within_tolerance.value;
+        value = $("input[@name='within_t_radio']:checked").val();
         questions[4].answer = this.fieldIsEmpty(value) ? null : value;
     },
     

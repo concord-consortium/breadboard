@@ -88,8 +88,8 @@
       <h3>Step 1</h3>
       <form id='rated_resistance' class="question_form">
         <span class='prompt'>What is the rated resistance:</span>
-        <input name='value' />
-        <select name='units'>
+        <input id="rated_resistance_value_input" name='value' />
+        <select id="rated_resistance_unit_select" name='units'>
           <option>&#x00b5;V</option>
           <option>mV</option>
           <option>V</option>
@@ -104,7 +104,7 @@
       </form>
       <form id='rated_tolerance' class="question_form">
         <span class='prompt'>What is the tolerance:</span>
-        <select name='value'>
+        <select id="rated_tolerance_select" name='value'>
           <option>1 %</option>
           <option>2 %</option>
           <option>5 %</option>
@@ -118,8 +118,8 @@
       <h3>Step 2</h3>
       <form id='measured_resistance' class="question_form">
         <span class='prompt'>What is the measured resistance:</span>
-        <input name='value' />
-        <select name='units'>
+        <input id="measured_r_value_input" name='value' />
+        <select id="measured_r_unit_select" name='units'>
           <option>&#x00b5;V</option>
           <option>mV</option>
           <option>V</option>
@@ -136,8 +136,8 @@
       <h3>Step 3</h3>
       <form id='measured_tolerance' class="question_form">
         <span class='prompt'>What is the tolerance range?</span>
-        <input name='min' size='12' />
-        <select name='min_unit'>
+        <input id="t_range_min_value_input" name='min' size='12' />
+        <select id="t_range_min_unit_select" name='min_unit'>
           <option>&#x00b5;V</option>
           <option>mV</option>
           <option>V</option>
@@ -149,8 +149,8 @@
           <option>A</option>
         </select>
         to
-        <input name='max' size='12' />
-        <select name='max_unit'>
+        <input id="t_range_max_value_input" name='max' size='12' />
+        <select id="t_range_max_unit_select" name='max_unit'>
           <option>&#x00b5;V</option>
           <option>mV</option>
           <option>V</option>
@@ -165,9 +165,9 @@
       </form>
       <form id='within_tolerance' class="question_form">
         <span class='prompt'>Is the resistor within the tolerance?</span>
-        <input name='value' type='radio' value='yes' />
+        <input name='within_t_radio' type='radio' value='yes' />
         Yes
-        <input name='value' type='radio' value='no' />
+        <input name='within_t_radio' type='radio' value='no' />
         No
         &nbsp;&nbsp;
       </form>

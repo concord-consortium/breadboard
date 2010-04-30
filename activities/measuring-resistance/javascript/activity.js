@@ -161,7 +161,8 @@
             this.reporter.reportOnSession(this.log.currentSession(), this.feedback);
             
             $(".next_button").each(function() {
-                this.disabled = false;
+                //this.disabled = false;
+                $(this).button('enable');
             }).show();
 
             this.updateEndInstruction();
