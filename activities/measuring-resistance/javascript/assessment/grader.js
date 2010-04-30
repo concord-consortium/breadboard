@@ -386,7 +386,7 @@ debug;
             else if (this.isResistanceKnob(f_knob)){
                 fb.knob_setting.points = 10;
                 fb.knob_setting.correct = 2;
-                fb.knob_setting.addFeedback('suboptimal');
+                fb.knob_setting.addFeedback('suboptimal', o_knob, f_knob);
             }
             else {
                 fb.knob_setting.points = 0;

@@ -203,12 +203,32 @@ function Feedback() {
         ],
         suboptimal: [
             'DMM knob set to incorrect resistance scale',
-            'While the digital multimeter knob was set to measure resistance, it was not set to display the optimal scale for this resistance measurement. You chose ${your-knob-setting}, but the best scale setting for your resistor would have been <optimum-knob-setting>. See the Using the DMM tutorial for additional help.'
+            '<p>While the digital multimeter knob was set to measure ' +
+            'resistance, it was not set to display the optimal scale for ' +
+            'this resistance measurement.</p><p>You chose ' +
+            '${your-knob-setting}, but the best scale setting for your ' +
+            'resistor would have been ${optimum-knob-setting}. See the ' +
+            'Using the DMM tutorial for additional help.</p>'
         ],
         incorrect: [
             'DMM knob not set to a resistance scale',
-            'While there is no risk in this case, the digital multimeter knob should always be set to the proper type of measurement. Here you are measuring resistance, and so the DMM knob should be set to a resistance scale, such as 2000Ω, 20kΩ, and so forth. Any other knob-type setting, may damage either the meter and/or your circuit. See the Using the DMM tutorial for additional help.'
+            '<p>While there is no risk in this case, the digital multimeter ' +
+            'knob should always be set to the proper type of measurement.</p>' +
+            '<p>Here you are measuring resistance, and so the DMM knob ' +
+            'should be set to a resistance scale, such as 2000Ω, 20kΩ, and ' +
+            'so forth.</p><p>Any other knob-type setting, may damage either ' +
+            'the meter and/or your circuit. See the Using the DMM tutorial ' +
+            'for additional help.'
         ]
+    };
+    
+    this.root.measuring.knob_setting.processPatterns = function (key, messages, subs) {
+        if (key === 'suboptimal') {
+            messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
+                    '$1<font color="orange">' + subs[1] +
+                    '</font>$2<font color="blue">' + subs[0] + '</font>$3');
+        }
+        return messages;
     };
     
     this.root.measuring.power_switch.feedbackSpace = {
