@@ -266,7 +266,7 @@ function Feedback() {
         ],
         incorrect: [
             'Incorrect order of tasks',
-            'When measuring resistance, it is not good practice to have the digital multimeter knob set to a non-resistance function when it is turned on and connected to a circuit. At some point during this session, we noted that this condition occurred. Next time, turn the DMM knob to a resistance function before connecting the leads to the resistor. See the Using the DMM tutorial for additional help.'
+            '<p>When measuring resistance, it is not good practice to have the digital multimeter knob set to a non-resistance function when it is turned on and connected to a circuit.</p><p>At some point during this session, we noted that this condition occurred.</p><p>Next time, turn the DMM knob to a resistance function before connecting the leads to the resistor. See the Using the DMM tutorial for additional help.</p>'
         ]
     };
     
