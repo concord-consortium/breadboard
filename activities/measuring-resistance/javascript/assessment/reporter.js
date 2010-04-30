@@ -8,7 +8,8 @@ function Reporter(assessment)
 Reporter.prototype =
 {
     readingHintPath: sparks.config.root_dir + '/common/resources/hint1_colorcode.html',
-    measuringHintPath: sparks.config.root_dir + '/common/resources/MeasureResMovie/index.html',
+    //measuringHintPath: sparks.config.root_dir + '/common/resources/MeasureResMovie/index.html',
+    measuringHintPath: sparks.config.root_dir + '/common/resources/hint1_dmm.html',
     toleranceHintPath: sparks.config.root_dir + '/common/resources/hint1_calctolerance.html',
     
     red : '#cc3300',
