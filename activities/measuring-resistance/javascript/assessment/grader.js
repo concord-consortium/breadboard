@@ -326,12 +326,12 @@ debug;
 
             seconds = (this.questions[1].end_time - this.questions[0].start_time) / 1000;
             fb = this.feedback.root.time.reading_time;
-            if (seconds <= 30) {
+            if (seconds <= 20) {
                 fb.points = 5;
                 fb.correct = 4;
                 fb.addFeedback('efficient');
             }
-            else if (seconds <= 60) {
+            else if (seconds <= 40) {
                 fb.points = 2;
                 fb.correct = 2;
                 fb.addFeedback('semi');
@@ -339,17 +339,17 @@ debug;
             else {
                 fb.points = 0;
                 fb.correct = 0;
-                fb.addFeedback('slow');
+                fb.addFeedback('slow', Math.round(seconds));
             }
 
             seconds = (this.questions[2].end_time - this.questions[2].start_time) / 1000;
             fb = this.feedback.root.time.measuring_time;
-            if (seconds <= 30) {
+            if (seconds <= 20) {
                 fb.points = 5;
                 fb.correct = 4;
                 fb.addFeedback('efficient');
             }
-            else if (seconds <= 60) {
+            else if (seconds <= 40) {
                 fb.points = 2;
                 fb.correct = 2;
                 fb.addFeedback('semi');
@@ -357,7 +357,7 @@ debug;
             else {
                 fb.points = 0;
                 fb.correct = 0;
-                fb.addFeedback('slow');
+                fb.addFeedback('slow', Math.round(seconds));
             }
         },
 

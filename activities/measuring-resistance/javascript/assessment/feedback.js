@@ -340,6 +340,14 @@ function Feedback() {
             'For this assessment, you should be able to remember and interpret the color bands on a resistor, and then enter your answer in less 20 seconds. You took ${your-time} seconds. That’s too long! Are you still having to look up each color? Try memorizing the color code and get familiar with the key strokes to enter the values. See the Color Band tutorial for additional help, then try again and see if you can go faster.'
         ]
     };
+    
+    this.root.time.reading_time.processPatterns = function (key, messages, subs) {
+        if (key === 'slow') {
+            messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
+                    '$1<font color="red">' + subs[0] + '</font>$2');
+        }
+        return messages;
+    };
 
     this.root.time.measuring_time.feedbackSpace = {
         efficient: [
@@ -356,4 +364,12 @@ function Feedback() {
         ]
     };
 
+    this.root.time.measuring_time.processPatterns = function (key, messages, subs) {
+        if (key === 'slow') {
+            messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
+                    '$1<font color="red">' + subs[0] + '</font>$2');
+        }
+        return messages;
+    };
+    
 }
