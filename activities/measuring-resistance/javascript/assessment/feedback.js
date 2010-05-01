@@ -310,8 +310,20 @@ function Feedback() {
         ],
         incorrect: [
             'Measurement not recognized as in/out of tolerance',
-            'The measured value, ${your answer-value}, should fall within the tolerance range, that is between the minimum ${min-resistance-value} and the maximum <max resistance value> that you calculated based on the tolerance percentage. Since the measured value <”did”|”did not”> fall within this range, this resistor <”is”|”is not”> within tolerance.'
+            'The measured value, ${your answer-value}, should fall within the tolerance range, that is between the minimum ${min-resistance-value} and the maximum ${max resistance value} that you calculated based on the tolerance percentage. Since the measured value ${did|did not} fall within this range, this resistor ${is|is not} within tolerance.'
         ]
+    };
+    
+    this.root.t_range.within_tolerance.processPatterns = function (key, messages, subs) {
+        if (key === 'correct' || key === 'incorrect') {
+            messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
+                    '$1<font color="green">' + subs[0] +
+                    '</font>$2<font color="blue">' + subs[1] +
+                    '</font>$3<font color="blue">' + subs[2] +
+                    '</font>$4<font color="green">' + subs[3] +
+                    '</font>$5<font color="green">' + subs[4] + '</font>$6');
+        }
+        return messages;
     };
     
     this.root.time.reading_time.feedbackSpace = {

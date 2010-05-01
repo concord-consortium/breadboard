@@ -15,6 +15,9 @@
         // Values used by gradeToleranceRange()
         this.resistanceAnswer = null;
         this.toleranceAnswer = null;
+        this.measuredResistanceAnswer = null;
+        this.rangeMinAnswer = null;
+        this.rangeMaxAnswer = null;
     };
 
     mr.Grader.prototype = {
@@ -106,6 +109,7 @@
             }
             
             var parsedValue = Unit.normalizeToOhms(question.answer, question.unit);
+            this.measuredResistanceAnswer = parsedValue;
 
             console.log('parsedValue=' + parsedValue + ' correctValue=' + question.correct_answer);
 
@@ -209,6 +213,9 @@
 
             var parsedMin = Unit.normalizeToOhms(min, question.unit[0]);
             var parsedMax = Unit.normalizeToOhms(max, question.unit[1]);
+            
+            this.rangeMinAnswer = parsedMin;
+            this.rangeMaxAnswer = parsedMax;
 
             // Allow answers in reverse order
             if (parsedMin > parsedMax) {
@@ -259,9 +266,24 @@ debug;
             var question = this.questions[4];
             var fb = this.feedback.root.t_range.within_tolerance;
             var correctAnswer;
-            var nominalValue = this.section.nominal_resistance;
-            var tolerance = this.section.tolerance;
-            var displayValue = this.section.displayed_resistance;
+            
+            var nominalValue = null;
+            if (this.resistanceAnswer) {
+                nominalValue = this.resistanceAnswer;
+            }
+            else {
+                nominalResistance = this.section.nominal_resistance;
+            }
+            //var tolerance = this.section.tolerance;
+            var tolerance = this.toleranceAnswer;
+            
+            var displayValue = null;
+            if (this.measuredResistanceAnswer) {
+                displayValue = this.measuredResistanceAnswer;
+            }
+            else {
+                displayValue = this.section.displayed_resistance;
+            }
             var allowance = nominalValue * tolerance;
 
             fb.correct = 0;
@@ -276,14 +298,26 @@ debug;
                 correctAnswer = 'yes';
             }
 
+            var did = (correctAnswer === 'no') ? 'did not' : 'did';
+            var is = (correctAnswer == 'no') ? 'is not' : 'is';
+            
             question.correct_answer = correctAnswer;
             if (question.answer != correctAnswer) {
-                fb.addFeedback('incorrect');
+                fb.addFeedback('incorrect',
+                        Unit.res_str(this.measuredResistanceAnswer),
+                        Unit.res_str(this.rangeMinAnswer),
+                        Unit.res_str(this.rangeMaxAnswer),
+                        did, is);
                 return;
             }
             fb.points = 5;
             fb.correct = 4;
-            fb.addFeedback('correct');
+            
+            fb.addFeedback('correct',
+                    Unit.res_str(this.measuredResistanceAnswer),
+                    Unit.res_str(this.rangeMinAnswer),
+                    Unit.res_str(this.rangeMaxAnswer),
+                    did, is);
         },
 
         gradeTime : function() {
