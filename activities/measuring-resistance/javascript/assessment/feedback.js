@@ -100,12 +100,12 @@ function Feedback() {
     this.root.reading.rated_r_value.processPatterns = function (key, messages, subs) {
         if (key === 'power_ten') {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                    '$1<font color="blue">' + subs[0] +
-                    '</font>$2<font color="blue">' + subs[1] + '</font>$3');
+                    '$1<font color="blue"><i>' + subs[0] +
+                    '</i></font>$2<font color="blue"><i>' + subs[1] + '</i></font>$3');
         }
         else if (key === 'unit') {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
-                    '$1<font color="red">' + subs[0] + '</font>$2');
+                    '$1<font color="red"><i>' + subs[0] + '</i></font>$2');
         }
         return messages;
     };
@@ -124,8 +124,8 @@ function Feedback() {
     this.root.reading.rated_t_value.processPatterns = function (key, messages, subs) {
         if (key === 'incorrect') {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                '$1<font color="red">' + subs[1] +
-                '</font>$2<font color="blue">' + subs[0] + '</font>$3');
+                '$1<font color="red"><i>' + subs[1] +
+                '</i></font>$2<font color="blue"><i>' + subs[0] + '</i></font>$3');
         }
         return messages;
     };
@@ -156,20 +156,20 @@ function Feedback() {
     this.root.measuring.measured_r_value.processPatterns = function (key, messages, subs) {
         if (key === 'incomplete') {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                    '$1<font color="blue">' + subs[0] +
-                    '</font>$2<font color="red">' + subs[1] + '</font>$3');
+                    '$1<font color="blue"><i>' + subs[0] +
+                    '</i></font>$2<font color="red"><i>' + subs[1] + '</i></font>$3');
         }
         else if (key === 'power_ten') {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                    '$1<font color="orange">' + subs[0] +
-                    '</font>$2<font color="orange">' + subs[1] +
-                    '</font>$3<font color="blue">' + subs[2] +
-                    '</font>$4<font color="blue">' + subs[3] +
-                    '</font>$5<font color="blue">' + subs[4] + '</font>$6');
+                    '$1<font color="orange"><i>' + subs[0] +
+                    '</i></font>$2<font color="orange"><i>' + subs[1] +
+                    '</i></font>$3<font color="blue"><i>' + subs[2] +
+                    '</i></font>$4<font color="blue"><i>' + subs[3] +
+                    '</i></font>$5<font color="blue"><i>' + subs[4] + '</i></font>$6');
         }
         else if (key === 'unit') {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
-                    '$1<font color="red">' + subs[0] + '</font>$2');
+                    '$1<font color="red"><i>' + subs[0] + '</i></font>$2');
         }
         return messages;
     };
@@ -237,8 +237,8 @@ function Feedback() {
     this.root.measuring.knob_setting.processPatterns = function (key, messages, subs) {
         if (key === 'suboptimal') {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                    '$1<font color="orange">' + subs[1] +
-                    '</font>$2<font color="blue">' + subs[0] + '</font>$3');
+                    '$1<font color="orange"><i>' + subs[1] +
+                    '</i></font>$2<font color="blue"><i>' + subs[0] + '</i></font>$3');
         }
         return messages;
     };
@@ -292,13 +292,13 @@ function Feedback() {
     this.root.t_range.t_range_value.processPatterns = function (key, messages, subs) {
         if (key === 'correct' || key === 'rounded') {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                '$1<font color="blue">' + subs[1] +
-                '</font>$2<font color="blue">' + subs[0] + '</font>$3');
+                '$1<font color="blue"><i>' + subs[1] +
+                '</i></font>$2<font color="blue"><i>' + subs[0] + '</i></font>$3');
         }
         else if (key === 'inaccurate' || key === 'wrong') {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                '$1<font color="red">' + subs[1] +
-                '</font>$2<font color="blue">' + subs[0] + '</font>$3');
+                '$1<font color="red"><i>' + subs[1] +
+                '</i></font>$2<font color="blue"><i>' + subs[0] + '</i></font>$3');
         }
         return messages;
     };
@@ -317,11 +317,11 @@ function Feedback() {
     this.root.t_range.within_tolerance.processPatterns = function (key, messages, subs) {
         if (key === 'correct' || key === 'incorrect') {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                    '$1<font color="green">' + subs[0] +
-                    '</font>$2<font color="blue">' + subs[1] +
-                    '</font>$3<font color="blue">' + subs[2] +
-                    '</font>$4<font color="green">' + subs[3] +
-                    '</font>$5<font color="green">' + subs[4] + '</font>$6');
+                    '$1<font color="green"><i>' + subs[0] +
+                    '</i></font>$2<font color="blue"><i>' + subs[1] +
+                    '</i></font>$3<font color="blue"><i>' + subs[2] +
+                    '</i></font>$4<font color="green"><i>' + subs[3] +
+                    '</i></font>$5<font color="green"><i>' + subs[4] + '</i></font>$6');
         }
         return messages;
     };
@@ -344,7 +344,7 @@ function Feedback() {
     this.root.time.reading_time.processPatterns = function (key, messages, subs) {
         if (key === 'slow') {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
-                    '$1<font color="red">' + subs[0] + '</font>$2');
+                    '$1<font color="red"><i>' + subs[0] + '</i></font>$2');
         }
         return messages;
     };
@@ -367,7 +367,7 @@ function Feedback() {
     this.root.time.measuring_time.processPatterns = function (key, messages, subs) {
         if (key === 'slow') {
             messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
-                    '$1<font color="red">' + subs[0] + '</font>$2');
+                    '$1<font color="red"><i>' + subs[0] + '</i></font>$2');
         }
         return messages;
     };
