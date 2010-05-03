@@ -84,8 +84,8 @@ Reporter.prototype =
         this.addFeedback($('#rated_t_feedback'), fb, this.readingHintPath);
         
         fb = feedback.root.t_range.t_range_value;
-        $('#t_range_correct').text(Unit.res_str(questions[3].correct_answer[0]) + ' .. ' + Unit.res_str(questions[3].correct_answer[1]));
-        text = (questions[3].answer[0] || questions[3].answer[1]) ? String(questions[3].answer[0]) + questions[3].unit[0] + ' .. ' + questions[3].answer[1] + questions[3].unit[1] : 'No Answer';
+        $('#t_range_correct').text('[' + Unit.res_str(questions[3].correct_answer[0]) + ', ' + Unit.res_str(questions[3].correct_answer[1]) + ']');
+        text = (questions[3].answer[0] || questions[3].answer[1]) ? '[' + String(questions[3].answer[0]) + questions[3].unit[0] + ', ' + questions[3].answer[1] + questions[3].unit[1] + ']' : 'No Answer';
         this.setAnswerTextWithColor('#t_range_answer', text, fb);
         $('#t_range_value_points').text(fb.getPoints());
         this.addFeedback($('#t_range_feedback'), fb, this.toleranceHintPath);
