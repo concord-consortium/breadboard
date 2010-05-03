@@ -262,9 +262,19 @@ debug;
             return;
         },
 
-        gradeWithinTolerance : function() {
-            var question = this.questions[4];
+        gradeWithinTolerance : function () {
             var fb = this.feedback.root.t_range.within_tolerance;
+            
+            if (this.feedback.root.measuring.measured_r_value.correct < 4 ||
+                this.feedback.root.t_range.t_range_value < 4)
+            {
+                // Give full points but don't give feedback
+                fb.points = 5;
+                fb.correct = 4;
+                return;
+            }
+            
+            var question = this.questions[4];
             var correctAnswer;
             
             var nominalValue = null;
