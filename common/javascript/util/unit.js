@@ -38,11 +38,13 @@ Unit.res_str = function(value) {
         unit = Unit.labels.kilo_ohms;
     }
     
+    /*
     var n = vstr.match('.') ?  4 : 3;
     if (vstr.charAt(0) == '1') { ++n; }
     if (vstr.length > n) {
         vstr = vstr.substring(0, n);
     }
+    */
     return vstr + ' ' + unit;
 };
 
