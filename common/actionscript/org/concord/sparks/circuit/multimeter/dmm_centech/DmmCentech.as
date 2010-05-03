@@ -1,5 +1,5 @@
-package org.concord.sparks.circuit.multimeter.dmm_centech
-{
+package org.concord.sparks.circuit.multimeter.dmm_centech {
+    
     import fl.ik.IKArmature;
     import fl.ik.IKManager;
     
@@ -14,8 +14,8 @@ package org.concord.sparks.circuit.multimeter.dmm_centech
     import org.concord.sparks.util.Assert;
     import org.concord.sparks.util.Geom;
     
-    public class DmmCentech
-    {
+    public class DmmCentech {
+        
         // Instance names in Flash movie
         public static var names = {
             container : 'dmm_mc',
@@ -95,7 +95,7 @@ package org.concord.sparks.circuit.multimeter.dmm_centech
             setDial('acv_750', false);
 
             powerSwitch = root[names.power_switch];
-            powerSwitch.addEventListener(MouseEvent.CLICK, togglePower);
+            //powerSwitch.addEventListener(MouseEvent.CLICK, togglePower);
             
             display = root[names.display];
             display.text = '';
@@ -191,7 +191,7 @@ package org.concord.sparks.circuit.multimeter.dmm_centech
             }
         }
         
-        private function togglePower(event:MouseEvent):void {
+        public function togglePower(event:MouseEvent):void {
             if (powerOn) {
                 turnOff();
             }

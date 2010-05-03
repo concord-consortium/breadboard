@@ -1,5 +1,5 @@
-package org.concord.sparks.activities
-{
+package org.concord.sparks.activities {
+    
     import flash.events.Event;
     import flash.events.MouseEvent;
     import flash.external.ExternalInterface;
@@ -32,6 +32,7 @@ package org.concord.sparks.activities
         var leads:Array;
         
         var circuitReady:Boolean = false;
+        var powerSwitchDragStartX:Number = 0;
         
         public function ResistorColors(name:String, root, topDir):void {
             trace('ENTER ResistorColors ' + new Date());
@@ -168,11 +169,23 @@ package org.concord.sparks.activities
                     checkDisconnectPlug(plugs[i], ports[j]);
                 }
             }
+            
+            if (event.target == multimeter.powerSwitch) {
+                this.powerSwitchDragStartX = event.stageX;
+            }
         }
         
         private function handleMouseUp(event:MouseEvent) {
             //trace('ENTER ResistorColors.handleMouseUp');
             var i, j;
+            
+            if (event.target == multimeter.powerSwitch) {
+                if (event.stageX == powerSwitchDragStartX) {
+                    multimeter.togglePower(null);
+                    javascript.sendEvent('multimeter_power', multimeter.powerOn);
+                }
+            }
+            this.powerSwitchDragStartX = 0;
 
             multimeter.dialMouseDown = false;
             multimeter.redProbe.drag = false;
@@ -206,8 +219,17 @@ package org.concord.sparks.activities
         
         private function handleClick(event:MouseEvent) {
             trace('ENTER ResistorColors.handleClick');
-            if (event.target == multimeter.powerSwitch) {
-                javascript.sendEvent('multimeter_power', multimeter.powerOn);
+            if (inPowerOnLabelArea(event.stageX, event.stageY) &&
+                !multimeter.powerOn)
+            {
+                multimeter.turnOn();
+                javascript.sendEvent('multimeter_power', true);
+            }
+            else if (inPowerOffLabelArea(event.stageX, event.stageY) &&
+                multimeter.powerOn)
+            {
+                multimeter.turnOff();
+                javascript.sendEvent('multimeter_power', false);
             }
         }
 
@@ -219,6 +241,41 @@ package org.concord.sparks.activities
                     }
                 }
             }
+            
+            if (inPowerSwitchArea(event.stageX, event.stageY)) {
+                if (this.powerSwitchDragStartX > 0) {
+                    if (event.stageX > this.powerSwitchDragStartX &&
+                        !multimeter.powerOn)
+                    {
+                        powerSwitchDragStartX = 0;
+                        multimeter.turnOn();
+                        javascript.sendEvent('multimeter_power', true);
+                    }
+                    else if (event.stageX < this.powerSwitchDragStartX &&
+                        multimeter.powerOn)
+                    {
+                        powerSwitchDragStartX = 0;
+                        multimeter.turnOff();
+                        javascript.sendEvent('multimeter_power', false);
+                    }
+                }
+            }
+            else {
+                this.powerSwitchDragStartX = 0;
+            }
+        }
+        
+        // Area including the power switch and the ON/OFF labels
+        private function inPowerSwitchArea(x, y) {
+            return x > 123 && x < 219 && y > 390 && y < 413;
+        }
+        
+        private function inPowerOffLabelArea(x, y) {
+            return x > 123 && x < 160 && y > 390 && y < 413;
+        }
+
+        private function inPowerOnLabelArea(x, y) {
+            return x > 188 && x < 219 && y > 390 && y < 413;
         }
     }
 }
