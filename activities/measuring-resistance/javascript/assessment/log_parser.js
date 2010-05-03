@@ -13,7 +13,7 @@ function LogParser(session) {
     this.initial_dial_setting = 'acv_750'; //DMM dial setting when the swith is first turned on
     this.submit_dial_setting = 'acv_750'; //DMM dial setting when the user submits the 3rd question
     this.power_on = false; //Power switch when the user submits the 3rd question
-    this.correct_order = false;
+    this.correct_order = true;
     
     // The following variables prefixed with temp_ are meant to be used
     // by parseEvents(), updated as it scans the list of events
@@ -84,17 +84,25 @@ LogParser.prototype =
             }
         }
         if (this.temp_power_on &&
-            !this.correct_order_set &&
+            //!this.correct_order_set &&
             event.time < this.measure_submit_time)
         {
             if (this.temp_red_probe_conn &&
                 this.temp_black_probe_conn &&
                 this.temp_red_plug_conn &&
-                this.temp_black_plug_conn &&
-                this.temp_dial_setting)
+                this.temp_black_plug_conn) //&&
+                //this.temp_dial_setting)
             {
-                this.correct_order = true;
-                this.correct_order_set = true;
+                if (this.temp_dial_setting != 'r_2000k' &&
+                    this.temp_dial_setting != 'r_200k' &&
+                    this.temp_dial_setting != 'r_20k' &&
+                    this.temp_dial_setting != 'r_2000' &&
+                    this.temp_dial_setting != 'r_200')
+                {
+                    //this.correct_order = true;
+                    //this.correct_order_set = true;
+                    this.correct_order = false;
+                }
             }
         }
     },
