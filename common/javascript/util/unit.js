@@ -45,6 +45,7 @@ Unit.res_str = function(value) {
         vstr = vstr.substring(0, n);
     }
     */
+    vstr = vstr.replace(/(\.[0-9]*[1-9])0000000*[1-9]/, '$1')
     return vstr + ' ' + unit;
 };
 
