@@ -34,7 +34,11 @@ Unit.res_str = function(value) {
         unit = Unit.labels.ohms;
     }
     else {
-        vstr = String(value / 1000.0);
+        var val = value / 1000.0;
+        if (val.toFixed) {
+            val = val.toFixed(6);
+        }
+        vstr = String(val);
         unit = Unit.labels.kilo_ohms;
     }
     
@@ -45,7 +49,6 @@ Unit.res_str = function(value) {
         vstr = vstr.substring(0, n);
     }
     */
-    vstr = vstr.replace(/(\.[0-9]*[1-9])0000000*[1-9]/, '$1')
     return vstr + ' ' + unit;
 };
 
