@@ -121,7 +121,7 @@ SessionReporter.prototype =
         if (f_knob == o_knob) {
         	color = this.green;
         }
-        else if (sparks.activities.Grader.prototype.isResistanceKnob(f_knob)) {
+        else if (sparks.activities.mr.Grader.prototype.isResistanceKnob(f_knob)) {
         	color = this.orange;
         }
         else {
