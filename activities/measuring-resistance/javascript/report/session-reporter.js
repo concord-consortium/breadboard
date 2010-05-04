@@ -32,13 +32,7 @@ SessionReporter.prototype =
         diode: 'Diode'
     },
     
-    report2: function(session, feedback) {
-        
-    },
-    
     report : function(session, feedback) {
-        this.report2(session, feedback);
-        
         var text = '';
         var questions = session.sections[0].questions;
         var points = 0;
