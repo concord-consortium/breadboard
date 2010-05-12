@@ -25,6 +25,10 @@
               this.colors = []; //colors for each resistor band
         },
         
+        getNumBands: function () {
+            return this.numBands;
+        },
+        
         getNominalValue: function () {
             return this.nominalValue;
         },

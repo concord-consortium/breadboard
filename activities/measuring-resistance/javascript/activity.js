@@ -285,13 +285,14 @@
             //console.log('debug_div=' + debug_div.length);
 
             var html =
-              'Nominal Value: ' + resistor.nominalValue + '<br/>' +
-              'Tolerance: ' + resistor.tolerance * 100.0 + '%<br/>' +
-              'Calculated colors: ' + resistor.getColors(resistor.nominalValue, resistor.tolerance) + '<br/>' +
-              'Range: [' + resistor.nominalValue * (1 - resistor.tolerance) + ', ' +
-              resistor.nominalValue * (1 + resistor.tolerance) + ']<br/>' + 
-              'Real Value: ' + resistor.realValue + '<br/>' +
-              'Display Value: ' + this.multimeter.makeDisplayText(resistor.realValue) + '<br/>';
+              'Type: ' + resistor.getNumBands() + '-band<br />' +
+              'Nominal Value: ' + resistor.getNominalValue() + '<br />' +
+              'Tolerance: ' + resistor.getTolerance() * 100.0 + '%<br />' +
+              'Calculated colors: ' + resistor.getColors(resistor.getNominalValue(), resistor.getTolerance()) + '<br />' +
+              'Range: [' + resistor.getNominalValue() * (1 - resistor.getTolerance()) + ', ' +
+              resistor.getNominalValue() * (1 + resistor.getTolerance()) + ']<br />' + 
+              'Real Value: ' + resistor.getRealValue() + '<br />' +
+              'Display Value: ' + this.multimeter.makeDisplayText(resistor.getRealValue()) + '<br />';
 
             if (debug_div.length > 0) {
                 debug_div.html(html);
