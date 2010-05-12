@@ -1,6 +1,9 @@
 (function () {
+
+    var circuit = sparks.circuit;
+    var util = sparks.util;
     
-    sparks.circuit.Resistor5band = function () {
+    circuit.Resistor5band = function () {
         var superclass = sparks.circuit.Resistor5band.uber;
         superclass.init.apply(this);
         this.id = 'resistor_5band';
@@ -10,7 +13,7 @@
         this.r_values2pct = this.filter(r_values.r_values5band2pct);
     };
 
-    sparks.util.extend(sparks.circuit.Resistor5band, Resistor, {
+    util.extend(circuit.Resistor5band, circuit.Resistor, {
 
         randomize : function() {
           var ix = this.randInt(0, 1);
