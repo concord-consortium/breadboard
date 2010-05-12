@@ -19,33 +19,21 @@
           var ix = this.randInt(0, 1);
           var values;
 
-          if (sparks.config.debug_tvalue) {
-              this.tolerance = sparks.config.debug_tvalue;
-          }
-          else {
-              this.tolerance = this.toleranceValues[ix];
-          }
-
+          this.tolerance = this.toleranceValues[ix];
           if (this.tolerance == 0.01) {
               values = this.r_values1pct;
           }
           else {
               values = this.r_values2pct;
           }
-          if (sparks.config.debug_rvalue) {
-              this.nominalValue = sparks.config.debug_rvalue;
-          }
-          else {
-              this.nominalValue = values[this.randInt(0, values.length-1)];
-          }
+          this.nominalValue = values[this.randInt(0, values.length-1)];
           this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
           this.colors = this.getColors(this.nominalValue, this.tolerance);
-          console.log('r=' + this.nominalValue + ' t=' + this.tolerance);
-          console.log('colors=' + this.colors);
-          console.log('Sending colors=' + this.colors.join('|'));
-          Flash.sendCommand('set_resistor_label', this.colors);
+          //console.log('r=' + this.nominalValue + ' t=' + this.tolerance);
+          
+          this.updateColors(this.nominalValue, this.tolerance);
         },
-
+        
         getColors: function(ohms, tolerance) {
             var s = ohms.toString();
             var decIx = s.indexOf('.'); // real location of the dot in the string

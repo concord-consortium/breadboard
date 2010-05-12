@@ -24,6 +24,22 @@
               this.tolerance = 0.0; //tolerance value
               this.colors = []; //colors for each resistor band
         },
+        
+        getNominalValue: function () {
+            return this.nominalValue;
+        },
+        
+        setNominalValue: function (value) {
+            this.nominalValue = value;
+        },
+        
+        getTolerance: function () {
+            return this.tolerance;
+        },
+        
+        setTolerance: function(value) {
+            this.tolerance = value;
+        },
 
         getRealValue: function () {
             return this.realValue;
@@ -32,9 +48,12 @@
         setRealValue: function (value) {
             this.realValue = value;
         },
-
-        getNominalValue: function () {
-            return this.nominalValue;
+        
+        updateColors: function (resistance, tolerance) {
+            //console.log('colors=' + this.colors);
+            //console.log('Sending colors=' + this.colors.join('|'));
+            this.colors = this.getColors(resistance, tolerance);
+            Flash.sendCommand('set_resistor_label', this.colors);
         },
 
         show : function() {

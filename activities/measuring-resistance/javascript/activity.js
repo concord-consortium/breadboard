@@ -110,7 +110,23 @@
                 }
             }
             Flash.sendCommand('set_current_resistor', this.currentResistor.id);
-            this.currentResistor.randomize();
+
+            if (sparks.config.debug_rvalue || sparks.config.debug_mvalue ||
+                sparks.config.debug_tvalue)
+            {
+                if (sparks.config.debug_rvalue) {
+                    this.currentResistor.setNominalValue(sparks.config.debug_rvalue);
+                }
+                if (sparks.config.debug_mvalue) {
+                    this.currentResistor.setRealValue(sparks.config.debug_mvalue);
+                }
+                if (sparks.config.debug_tvalue) {
+                    this.currentResistor.setTolerance(sparks.config.debug_tvalue);
+                }
+            }
+            else {
+                this.currentResistor.randomize();
+            }
             Flash.sendCommand('reset_circuit');
             this.logResistorState();
             debug('currentResistor=' + sparks.activity.currentResistor);

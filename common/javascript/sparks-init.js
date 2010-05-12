@@ -42,6 +42,7 @@
     sparks.config.debug = jQuery.url.param("debug") !== undefined;
     sparks.config.debug_nbands = jQuery.url.param("n");
     sparks.config.debug_rvalue = jQuery.url.param("r");
+    sparks.config.debug_mvalue = jQuery.url.param("m");
     sparks.config.debug_tvalue = jQuery.url.param("t");
 
     $(document).ready(function () {

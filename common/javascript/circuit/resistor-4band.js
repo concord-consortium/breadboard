@@ -16,36 +16,25 @@
     util.extend(circuit.Resistor4band, circuit.Resistor, {
 
         toleranceValues: [0.05, 0.1],
-
+        
         randomize: function () {
             var ix = this.randInt(0, 1);
             var values;
-            if (sparks.config.debug_tvalue) {
-                this.tolerance = sparks.config.debug_tvalue;
-            }
-            else {
-                this.tolerance = this.toleranceValues[ix];
-            }
+
+            this.tolerance = this.toleranceValues[ix];
             if (this.tolerance == 0.05) {
                 values = this.r_values5pct;
             }
             else {
                 values = this.r_values10pct;
             }
-            if (sparks.config.debug_rvalue) {
-                this.nominalValue = sparks.config.debug_rvalue;
-            }
-            else {
-                this.nominalValue = values[this.randInt(0, values.length-1)];
-            }
+            this.nominalValue = values[this.randInt(0, values.length-1)];
             this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
-            this.colors = this.getColors(this.nominalValue, this.tolerance);
             //console.log('r=' + this.nominalValue + ' t=' + this.tolerance);
-            //console.log('colors=' + this.colors);
-            //console.log('Sending colors=' + this.colors.join('|'));
-            Flash.sendCommand('set_resistor_label', this.colors);
+            
+            this.updateColors(this.nominalValue, this.tolerance);
         },
-
+        
         // rvalue: resistance value
         getColors: function (ohms, tolerance) {
             var s = ohms.toString();
