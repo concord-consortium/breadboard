@@ -111,21 +111,24 @@
             }
             Flash.sendCommand('set_current_resistor', this.currentResistor.id);
 
+            var r = this.currentResistor;
+            
             if (sparks.config.debug_rvalue || sparks.config.debug_mvalue ||
                 sparks.config.debug_tvalue)
             {
                 if (sparks.config.debug_rvalue) {
-                    this.currentResistor.setNominalValue(sparks.config.debug_rvalue);
+                    r.setNominalValue(sparks.config.debug_rvalue);
                 }
                 if (sparks.config.debug_mvalue) {
-                    this.currentResistor.setRealValue(sparks.config.debug_mvalue);
+                    r.setRealValue(sparks.config.debug_mvalue);
                 }
                 if (sparks.config.debug_tvalue) {
-                    this.currentResistor.setTolerance(sparks.config.debug_tvalue);
+                    r.setTolerance(sparks.config.debug_tvalue);
                 }
+                r.updateColors(r.getNominalValue(), r.getTolerance());
             }
             else {
-                this.currentResistor.randomize();
+                r.randomize();
             }
             Flash.sendCommand('reset_circuit');
             this.logResistorState();
