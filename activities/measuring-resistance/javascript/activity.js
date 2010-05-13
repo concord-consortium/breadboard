@@ -1,12 +1,11 @@
 (function () {
 
-    if (!sparks.activities.mr) {
-        sparks.activities.mr = {};
-    }
     var mr = sparks.activities.mr;
 
     mr.Activity = function () {
         mr.Activity.uber.init.apply(this);
+        
+        this.dom = mr.ActivityDomHelper;
         
         this.root_dir = sparks.config.root_dir + '/activities/measuring-resistance';
         this.sessionTitle = $('#session_title');
@@ -20,7 +19,7 @@
         this.dataService = null;
         this.log = new ActivityLog();
         this.assessment = new Assessment(this);
-        this.reporter = new Reporter(this.assessment);
+        this.reporter = new mr.Reporter(this.assessment);
 
         this.circuit = null;
         this.multimeter = null;
@@ -36,7 +35,7 @@
         $('#t_range_feedback').hide();
 
         if (sparks.config.debug) {
-            $('#json_button').click(function() {
+            $('#json_button').click(function () {
                 $('#json_current_log').html('<pre>' + sparks.util.prettyPrint(activity.log.sessions, 4) + '</pre>' + JSON.stringify(activity.log));
             });
         }
@@ -49,24 +48,24 @@
     
     sparks.util.extend(mr.Activity, sparks.Activity, {
 
-        setDataService : function(ds) {
+        setDataService: function (ds) {
             this.dataService = ds;
         },
 
         // Initial operation on document when it is loaded
-        initDocument : function() {
+        initDocument: function () {
             var self = this;
 
             // Disable all form elements
             $('input, select').attr("disabled", "true");
 
             // Hide the next buttons and their listeners
-            $('.next_button').hide().click(function(event) {
+            $('.next_button').hide().click(function (event) {
                 self.nextButtonClicked(self, event);
             });
 
             // Hide the show report buttons
-            $('.show_report_button').hide().click(function(event) {
+            $('.show_report_button').hide().click(function (event) {
                 self.showReportButtonClicked(self, event);
             });
 
@@ -74,17 +73,17 @@
             $('form').append(
               "<input name='start_time' type='hidden'></input><input name='stop_time' type='hidden'></input>");
 
-            $('#start_button').click(function(event) {
+            $('#start_button').click(function (event) {
                 self.startButtonClicked(self, event);
             });
             /*
             this.reportElem.dialog({ autoOpen: false, width: 800,
-                height : $(window).height() * 0.9 });
+                height: $(window).height() * 0.9 });
             */
         },
 
         // Initializations that can be done only when the flash movie is loaded
-        onFlashDone : function() {
+        onFlashDone: function () {
             this.multimeter = new sparks.circuit.Multimeter();
             this.resistor4band = new sparks.circuit.Resistor4band();
             this.resistor5band = new sparks.circuit.Resistor5band();
@@ -96,7 +95,7 @@
         },
 
         // Re-initialize the circuit settings for a new set of questions
-        resetCircuit: function() {
+        resetCircuit: function () {
             debug('ENTER ResistorActivity.resetCircuit');
             if (sparks.config.debug_nbands) {
                 this.setCurrentResistor(sparks.config.debug_nbands == 4 ? this.resistor4band : this.resistor5band);
@@ -136,12 +135,12 @@
             this.multimeter.update();
         },
 
-        setCurrentResistor: function(resistor) {
+        setCurrentResistor: function (resistor) {
           this.currentResistor = resistor;
           Flash.sendCommand('set_current_resistor', resistor.id);
         },
 
-        enableCircuit: function() {
+        enableCircuit: function () {
             Flash.sendCommand('enable_circuit');
         },
 
@@ -159,7 +158,7 @@
             });
 
             if (sparks.config.debug) {
-                var resultString = jQuery.map(this.allResults, function(el, i) {
+                var resultString = jQuery.map(this.allResults, function (el, i) {
                     return jQuery.toJSON(el);
                 }).join("<br/>");
                 $("#result").html("<pre>"+resultString+"</pre>");
@@ -179,7 +178,7 @@
             this.reportElem.show();
             this.reporter.reportOnSession(this.log.currentSession(), this.feedback);
             
-            $(".next_button").each(function() {
+            $(".next_button").each(function () {
                 //this.disabled = false;
                 $(this).button('enable');
             }).show();
@@ -193,12 +192,12 @@
             $('body').scrollTop(this.reportElem.offset().top);
         },
 
-        updateEndInstruction : function() {
+        updateEndInstruction : function () {
             var t = 'Click on Next to try another resistor.';
             this.endSessionInstruction.text(t);
         },
 
-        updateItem : function(result, name) {
+        updateItem : function (result, name) {
           var itemForm = $("#" + name);
           var titleText = '';
           var image = '';
@@ -224,7 +223,7 @@
         },
 
         // Start new session (new resistor)
-        startTry : function() {
+        startTry : function () {
           ++ this.current_session;
           this.log.beginNextSession();
           this.current_question = 1;
@@ -280,7 +279,7 @@
           this.buttonize();
         },
 
-        showRccDebugInfo : function() {
+        showRccDebugInfo : function () {
             var resistor = this.currentResistor;
             var model = $("#rcc_model");
             var debug_div = $("#rcc_debug");
@@ -309,11 +308,12 @@
           var self = this;
           form.append("<button>Submit</button>");
           this.buttonize();
-          form.find("button").click(function(event) {
+          form.find("button").click(function (event) {
               self.submitButtonClicked(self, event);
+              event.preventDefault();
           }); 
           form.find("input, select").removeAttr("disabled");
-          form.find("input, select").keypress(function(event) {
+          form.find("input, select").keypress(function (event) {
               if (event.keyCode == '13') { //13: Enter key
                 return false; //to prevent IE from reloading the page
               }
@@ -329,7 +329,7 @@
           form.css("background-color", "");
         },
 
-        logResistorState : function() {
+        logResistorState : function () {
             this.log.setValue('resistor_num_bands', this.currentResistor.numBands);
             this.log.setValue('nominal_resistance', this.currentResistor.nominalValue);
             this.log.setValue('tolerance', this.currentResistor.tolerance);
@@ -338,7 +338,7 @@
                               this.multimeter.makeDisplayText(this.currentResistor.realValue));
         },
 
-        saveStudentData : function() {
+        saveStudentData : function () {
             if (this.dataService) {
                 var obj = { learner_id: this.learner_id,
                             content: JSON.stringify([this.log.currentSession()]) };
@@ -348,16 +348,52 @@
                 alert('Not saving the data:\neither not logged in and/or no data service defined');
             }
         },
+        
+        validateAnswer: function (questionNum) {
+            var answer, value, unit, msg;
+            var title = 'Alert';
+            
+            switch (questionNum) {
+            case 1:
+                answer = this.dom.getAnswer(questionNum);
+                if (!this.dom.validateNumberString(answer[0])) {
+                    //alert("I can't recognize the value you entered.\n" +
+                    //      "Please enter a number."w);
+                    msg = "I can't recognize the value you entered.\nPlease enter a number.";
+                    sparks.ui.alert(title, msg);
+                    return false;
+                }
+                if (!this.dom.validateResistanceUnitString(answer[1])) {
+                    return 
+                }
+                return true;
+            case 2:
+                return true;
+            case 3:
+                return true;
+            case 4:
+                return true;
+            case 5:
+                return true;
+            default:
+                alert('ERROR: wrong question number ' + questionNum);
+                return false;
+            }
+            return true;
+        },
 
         // Submit button for question
-        submitButtonClicked: function(activity, event) {
+        submitButtonClicked: function (activity, event) {
+            if (!activity.validateAnswer(activity.current_question)) {
+                return;
+            }
+
             // Using parents() because:
             // parent() won't work on Sarari and some versions of IE,
             // parentsUntil().parent() won't work on FireFox
             var form = jQuery(event.target).parents('.question_form');
             activity.disableForm(form);
             var nextForm = form.nextAll("form:first");
-
             activity.log.add('end_question', { question : activity.current_question });
             
             if (nextForm.size() === 0) { //all questions answered for current session
@@ -374,21 +410,21 @@
             }
         },
 
-        startButtonClicked: function(activity, event) {
+        startButtonClicked: function (activity, event) {
             //console.log('EVENT: ' + (typeof event));
             $('#intro_area').hide();
             activity.startTry();
         },
 
-        nextButtonClicked: function(activity, event) {
-            $(".next_button").each(function(i){
+        nextButtonClicked: function (activity, event) {
+            $(".next_button").each(function (i){
               this.disabled = true;
             });
             $('.show_report_button').hide();
             activity.startTry();
         },
 
-        showReportButtonClicked: function(event) {
+        showReportButtonClicked: function (event) {
             var activity = sparks.activity;
             activity.reporter.reportOnSession(activity.log.currentSession(), activity.feedback);
         }

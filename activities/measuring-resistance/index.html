@@ -15,19 +15,23 @@
     <script src='../../lib/jquery/plugins/jquery.bgiframe.min.js' type='text/javascript'></script>
     <script src='../../lib/jquery/plugins/jquery.cookie.js' type='text/javascript'></script>
     <script src='../../lib/json2.js' type='text/javascript'></script>
-    <script src='../../common/javascript/sparks-init.js' type='text/javascript'></script>
-    <script src='../../common/javascript/util/util.js' type='text/javascript'></script>
+    <script src='../../common/javascript/sparks-config-common.js' type='text/javascript'></script>
+    <script src='../../common/javascript/sparks-config-client.js' type='text/javascript'></script>
+    <script src='../../common/javascript/util.js' type='text/javascript'></script>
     <script src='../../common/javascript/flash_comm.js' type='text/javascript'></script>
     <script src='../../common/javascript/flash_version_detection.js' type='text/javascript'></script>
     <script src='../../common/javascript/math.js' type='text/javascript'></script>
     <script src='../../common/javascript/string.js' type='text/javascript'></script>
+    <script src='../../common/javascript/ui.js' type='text/javascript'></script>
     <script src='../../common/javascript/activity.js' type='text/javascript'></script>
     <script src='../../common/javascript/circuit/multimeter.js' type='text/javascript'></script>
     <script src='../../common/javascript/circuit/r-values.js' type='text/javascript'></script>
     <script src='../../common/javascript/circuit/resistor.js' type='text/javascript'></script>
     <script src='../../common/javascript/circuit/resistor-4band.js' type='text/javascript'></script>
     <script src='../../common/javascript/circuit/resistor-5band.js' type='text/javascript'></script>
-    <script src='../../common/javascript/util/unit.js' type='text/javascript'></script>
+    <script src='../../common/javascript/unit.js' type='text/javascript'></script>
+    <script src='../../activities/measuring-resistance/javascript/activity-config.js' type='text/javascript'></script>
+    <script src='../../activities/measuring-resistance/javascript/activity-dom-helper.js' type='text/javascript'></script>
     <script src='../../activities/measuring-resistance/javascript/activity.js' type='text/javascript'></script>
     <script src='../../activities/measuring-resistance/javascript/assessment/activity_log.js' type='text/javascript'></script>
     <script src='../../activities/measuring-resistance/javascript/assessment/assessment.js' type='text/javascript'></script>
@@ -89,7 +93,8 @@
         <span class='prompt'>What is the rated resistance:</span>
         <input id="rated_resistance_value_input" name='value' />
         <select id="rated_resistance_unit_select" name='units'>
-          <option selected="selected">&#x00b5;V</option>
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
           <option>mV</option>
           <option>V</option>
           <option>&#x2126;</option>
@@ -119,7 +124,8 @@
         <span class='prompt'>What is the measured resistance:</span>
         <input id="measured_r_value_input" name='value' />
         <select id="measured_r_unit_select" name='units'>
-          <option selected="selected">&#x00b5;V</option>
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
           <option>mV</option>
           <option>V</option>
           <option>&#x2126;</option>
@@ -137,7 +143,8 @@
         <span class='prompt'>What is the tolerance range?</span>
         <input id="t_range_min_value_input" name='min' size='12' />
         <select id="t_range_min_unit_select" name='min_unit'>
-          <option selected="selected">&#x00b5;V</option>
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
           <option>mV</option>
           <option>V</option>
           <option>&#x2126;</option>
@@ -150,7 +157,8 @@
         to
         <input id="t_range_max_value_input" name='max' size='12' />
         <select id="t_range_max_unit_select" name='max_unit'>
-          <option selected="selected">&#x00b5;V</option>
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
           <option>mV</option>
           <option>V</option>
           <option>&#x2126;</option>

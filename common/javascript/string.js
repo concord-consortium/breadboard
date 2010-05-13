@@ -1,7 +1,13 @@
 (function () {
+    
     this.sparks.string = {};
     
     var str = sparks.string;
+    
+    str.strip = function (s) {
+        s = s.replace(/\s*([^\s]*)\s*/, '$1');
+        return s;
+    };
     
     // Remove a dot in the string, and then remove 0's on both sides
     // e.g. '20100' => '201', '0.0020440' => '2044'

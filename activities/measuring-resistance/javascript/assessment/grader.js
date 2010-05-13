@@ -1,8 +1,9 @@
 (function () {
 
-    var mr = sparks.activities.mr;
-    var str = sparks.string;
     var math = sparks.math;
+    var unit = sparks.unit;
+    var str = sparks.string;
+    var mr = sparks.activities.mr;
 
     mr.Grader = function (session) {
         this.session = session;
@@ -46,7 +47,7 @@
             fb.correct = 0;
             fb.points = 0;
 
-            if (!Unit.ohmCompatible(question.unit)) {
+            if (!unit.ohmCompatible(question.unit)) {
                 this.resistanceAnswer = null;
                 unitCorrect = false;
                 fb.addFeedback('unit', question.unit);
@@ -59,7 +60,7 @@
                 return;
             }
 
-            var parsedValue = Unit.normalizeToOhms(question.answer, question.unit);
+            var parsedValue = unit.normalizeToOhms(question.answer, question.unit);
             this.resistanceAnswer = parsedValue;
 
             console.log('parsedValue=' + parsedValue + ' correctValue=' + question.correct_answer);
@@ -97,7 +98,7 @@
             fb.points = 0;
             fb.correct = 0;
 
-            if (!Unit.ohmCompatible(question.unit)) {
+            if (!unit.ohmCompatible(question.unit)) {
                 unitCorrect = false;
                 fb.addFeedback('unit', question.unit);
                 return;
@@ -108,7 +109,7 @@
                 return;
             }
             
-            var parsedValue = Unit.normalizeToOhms(question.answer, question.unit);
+            var parsedValue = unit.normalizeToOhms(question.answer, question.unit);
             this.measuredResistanceAnswer = parsedValue;
 
             console.log('parsedValue=' + parsedValue + ' correctValue=' + question.correct_answer);
@@ -117,17 +118,17 @@
                 if (this.semiAcceptable(question.correct_answer, parsedValue)) {
                     fb.points = 5;
                     fb.correct = 3;
-                    fb.addFeedback('incomplete', Unit.res_str(question.correct_answer),
-                        Unit.res_str(parsedValue));
+                    fb.addFeedback('incomplete', unit.res_str(question.correct_answer),
+                        unit.res_str(parsedValue));
                     return;
                 }
                 else if (math.equalExceptPowerOfTen(question.correct_answer, parsedValue)) {
                     fb.points = 3;
                     fb.correct = 2;
                     fb.addFeedback('power_ten', question.answer, question.unit,
-                            Unit.res_unit_str(question.correct_answer),
-                            Unit.res_unit_str(question.correct_answer, 'k'),
-                            Unit.res_unit_str(question.correct_answer, 'M'));
+                            unit.res_unit_str(question.correct_answer),
+                            unit.res_unit_str(question.correct_answer, 'k'),
+                            unit.res_unit_str(question.correct_answer, 'M'));
                     return;
                 }
                 fb.addFeedback('incorrect');
@@ -191,8 +192,8 @@
             var min = question.answer[0];
             var max = question.answer[1];
 
-            var correctStr = '[' + Unit.res_str(correctMin) + ', ' +
-                Unit.res_str(correctMax) + ']';
+            var correctStr = '[' + unit.res_str(correctMin) + ', ' +
+                unit.res_str(correctMax) + ']';
             var answerStr = '[' + min + ' ' + question.unit[0] + ', ' +
                 max + ' ' + question.unit[1] + ']';
 
@@ -204,15 +205,15 @@
             //console.log('correct min=' + correctMin + ' max=' + correctMax);
             //console.log('submitted min=' + min + ' max=' + max);
 
-            if (!Unit.ohmCompatible(question.unit[0]) ||
-                !Unit.ohmCompatible(question.unit[1]))
+            if (!unit.ohmCompatible(question.unit[0]) ||
+                !unit.ohmCompatible(question.unit[1]))
             {
                 fb.addFeedback('wrong');
                 return;
             }
 
-            var parsedMin = Unit.normalizeToOhms(min, question.unit[0]);
-            var parsedMax = Unit.normalizeToOhms(max, question.unit[1]);
+            var parsedMin = unit.normalizeToOhms(min, question.unit[0]);
+            var parsedMax = unit.normalizeToOhms(max, question.unit[1]);
             
             this.rangeMinAnswer = parsedMin;
             this.rangeMaxAnswer = parsedMax;
@@ -229,8 +230,8 @@ debug;
             {
                 fb.points = 15;
                 fb.correct = 4;
-                fb.addFeedback('correct', Unit.res_str(nominalResistance), 
-                    Unit.pct_str(tolerance));
+                fb.addFeedback('correct', unit.res_str(nominalResistance), 
+                    unit.pct_str(tolerance));
                 return;
             }
             
@@ -243,8 +244,8 @@ debug;
             {
                 fb.points = 10;
                 fb.correct = 3;
-                fb.addFeedback('rounded', Unit.res_str(nominalResistance), 
-                    Unit.pct_str(tolerance));
+                fb.addFeedback('rounded', unit.res_str(nominalResistance), 
+                    unit.pct_str(tolerance));
                 return;
             }
 
@@ -314,9 +315,9 @@ debug;
             question.correct_answer = correctAnswer;
             if (question.answer != correctAnswer) {
                 fb.addFeedback('incorrect',
-                        Unit.res_str(this.measuredResistanceAnswer),
-                        Unit.res_str(this.rangeMinAnswer),
-                        Unit.res_str(this.rangeMaxAnswer),
+                        unit.res_str(this.measuredResistanceAnswer),
+                        unit.res_str(this.rangeMinAnswer),
+                        unit.res_str(this.rangeMaxAnswer),
                         did, is);
                 return;
             }
@@ -324,9 +325,9 @@ debug;
             fb.correct = 4;
             
             fb.addFeedback('correct',
-                    Unit.res_str(this.measuredResistanceAnswer),
-                    Unit.res_str(this.rangeMinAnswer),
-                    Unit.res_str(this.rangeMaxAnswer),
+                    unit.res_str(this.measuredResistanceAnswer),
+                    unit.res_str(this.rangeMinAnswer),
+                    unit.res_str(this.rangeMaxAnswer),
                     did, is);
         },
 

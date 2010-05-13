@@ -12,14 +12,14 @@ load('spec/lib/jspec.shell.js');
 load('spec/support/junit.xml.js');
 
 load('../../common/javascript/sparks-init.js');
-load('../../common/javascript/util/util.js');
+load('../../common/javascript/util.js');
 load('../../common/javascript/flash_comm.js');
 load('../../common/javascript/circuit/r-values.js');
 load('../../common/javascript/circuit/resistor.js');
 load('../../common/javascript/circuit/resistor-4band.js');
 load('../../common/javascript/circuit/resistor-5band.js');
 load('../../common/javascript/circuit/multimeter.js');
-load('../../common/javascript/util/unit.js');
+load('../../common/javascript/unit.js');
 load('../../common/javascript/math.js');
 load('../../common/javascript/string.js');
 load('../../common/javascript/activity.js');
