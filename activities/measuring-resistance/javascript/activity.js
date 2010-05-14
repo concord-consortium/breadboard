@@ -1,6 +1,7 @@
 (function () {
 
     var mr = sparks.activities.mr;
+    var str = sparks.string;
 
     mr.Activity = function () {
         mr.Activity.uber.init.apply(this);
@@ -19,7 +20,7 @@
         this.dataService = null;
         this.log = new ActivityLog();
         this.assessment = new Assessment(this);
-        this.reporter = new mr.Reporter(this.assessment);
+        this.reporter = new mr.Reporter($('#report_area'));
 
         this.circuit = null;
         this.multimeter = null;
@@ -62,11 +63,6 @@
             // Hide the next buttons and their listeners
             $('.next_button').hide().click(function (event) {
                 self.nextButtonClicked(self, event);
-            });
-
-            // Hide the show report buttons
-            $('.show_report_button').hide().click(function (event) {
-                self.showReportButtonClicked(self, event);
             });
 
             // Add start and stop times to all forms
@@ -176,7 +172,7 @@
             //$(".show_report_button").show();
             this.questionsElem.hide();
             this.reportElem.show();
-            this.reporter.reportOnSession(this.log.currentSession(), this.feedback);
+            this.reporter.report(this.log.currentSession(), this.feedback);
             
             $(".next_button").each(function () {
                 //this.disabled = false;
@@ -350,30 +346,54 @@
         },
         
         validateAnswer: function (questionNum) {
-            var answer, value, unit, msg;
+            var value, unit, msg;
             var title = 'Alert';
+            
+            var answer = this.dom.getAnswer(questionNum);
             
             switch (questionNum) {
             case 1:
-                answer = this.dom.getAnswer(questionNum);
+            case 3:
                 if (!this.dom.validateNumberString(answer[0])) {
-                    //alert("I can't recognize the value you entered.\n" +
-                    //      "Please enter a number."w);
-                    msg = "I can't recognize the value you entered.\nPlease enter a number.";
+                    msg = "I can't recognize the value you entered. Please enter a number.";
                     sparks.ui.alert(title, msg);
                     return false;
                 }
-                if (!this.dom.validateResistanceUnitString(answer[1])) {
-                    return 
+                if (answer[1] === 'Units...') {
+                    msg = 'Please select a unit before submitting your answer.';
+                    sparks.ui.alert(title, msg);
+                    return false;
                 }
                 return true;
             case 2:
-                return true;
-            case 3:
+                if (answer === 'Select one') {
+                    msg = 'Please select a tolerance value before submitting your answer.';
+                    sparks.ui.alert(title, msg);
+                    return false;
+                }
                 return true;
             case 4:
+                if (!this.dom.validateNumberString(answer[0]) ||
+                    !this.dom.validateNumberString(answer[2]))
+                {
+                    msg = "I can't recognize the values you entered. Please enter numbers.";
+                    sparks.ui.alert(title, msg);
+                    return false;
+                }
+                if (answer[1] === 'Units...' ||
+                    answer[3] === 'Units...')
+                {
+                    msg = 'Please select a unit for each value before submitting your answer.';
+                    sparks.ui.alert(title, msg);
+                    return false;
+                }
                 return true;
             case 5:
+                if (answer === undefined || answer === null || str.strip(answer) === '') {
+                    msg = 'Please check yes or no before submitting your answer.';
+                    sparks.ui.alert(title, msg);
+                    return false;
+                }
                 return true;
             default:
                 alert('ERROR: wrong question number ' + questionNum);
@@ -422,11 +442,6 @@
             });
             $('.show_report_button').hide();
             activity.startTry();
-        },
-
-        showReportButtonClicked: function (event) {
-            var activity = sparks.activity;
-            activity.reporter.reportOnSession(activity.log.currentSession(), activity.feedback);
         }
     });
     
