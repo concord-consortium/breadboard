@@ -27,11 +27,11 @@
         
         validateNumberString: function (s) {
             var s2 = str.strip(s);
-            return s2 !== '' && Number(s2) !== NaN;
+            return s2 !== '' && !isNaN(Number(s2));
         },
         
-        validateResistanceUnitString: function (s) {
-            
+        selected: function(selectElem) {
+            return selectElem.children('option:selected').val();
         }
     };
     
