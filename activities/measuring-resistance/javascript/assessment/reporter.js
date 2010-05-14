@@ -46,9 +46,6 @@
             var reporter = this;
             this.reportElem.load(this.template, '', function() {
                 reporter.sessionReport(session, feedback);
-                //this.reportElem.data('title.dialog', 'Performance Report');
-                //this.reportElem.dialog('open');
-                //reporter.activity.buttonize();
             });
         },
 
