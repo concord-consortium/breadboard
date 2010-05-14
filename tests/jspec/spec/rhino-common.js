@@ -11,7 +11,8 @@ load('spec/lib/jspec.xhr.js');
 load('spec/lib/jspec.shell.js');
 load('spec/support/junit.xml.js');
 
-load('../../common/javascript/sparks-init.js');
+load('../../common/javascript/sparks-config-common.js');
+load('../../common/javascript/sparks-config-client.js');
 load('../../common/javascript/util.js');
 load('../../common/javascript/flash_comm.js');
 load('../../common/javascript/circuit/r-values.js');
@@ -24,6 +25,7 @@ load('../../common/javascript/math.js');
 load('../../common/javascript/string.js');
 load('../../common/javascript/activity.js');
 
+load('../../activities/measuring-resistance/javascript/activity-config.js');
 load('../../activities/measuring-resistance/javascript/activity.js');
 load('../../activities/measuring-resistance/javascript/assessment/feedback.js');
 load('../../activities/measuring-resistance/javascript/assessment/grader.js');
