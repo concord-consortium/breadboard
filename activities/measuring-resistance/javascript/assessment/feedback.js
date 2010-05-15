@@ -311,6 +311,10 @@ function Feedback() {
         incorrect: [
             'Measurement not recognized as in/out of tolerance',
             'The measured value, ${your answer-value}, should fall within the tolerance range, that is between the minimum ${min-resistance-value} and the maximum ${max resistance value} that you calculated based on the tolerance percentage. Since the measured value ${did|did not} fall within this range, this resistor ${is|is not} within tolerance.'
+        ],
+        undef: [
+            'Previous question(s) incorrect',
+            "You answer to either the measuring resistance question or the tolerance range question was incorrect, so you didn't have enough information to answer this question."
         ]
     };
     

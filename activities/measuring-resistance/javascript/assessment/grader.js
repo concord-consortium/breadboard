@@ -269,18 +269,19 @@ debug;
             if (this.feedback.root.measuring.measured_r_value.correct < 4 ||
                 this.feedback.root.t_range.t_range_value < 4)
             {
-                // Give full points but don't give feedback
-                fb.points = 5;
-                fb.correct = 4;
+                fb.points = 0;
+                fb.correct = 0;
+                fb.addFeedback('undef');
                 return;
             }
             
             var question = this.questions[4];
             var correctAnswer;
             
-            var nominalValue = null;
+            var nominalResistance = null;
+            
             if (this.resistanceAnswer) {
-                nominalValue = this.resistanceAnswer;
+                nominalResistance = this.resistanceAnswer;
             }
             else {
                 nominalResistance = this.section.nominal_resistance;
@@ -295,13 +296,13 @@ debug;
             else {
                 displayValue = this.section.displayed_resistance;
             }
-            var allowance = nominalValue * tolerance;
+            var allowance = nominalResistance * tolerance;
 
             fb.correct = 0;
             fb.points = 0;
 
-            if (displayValue < nominalValue - allowance ||
-                displayValue > nominalValue + allowance)
+            if (displayValue < nominalResistance - allowance ||
+                displayValue > nominalResistance + allowance)
             {
                 correctAnswer = 'no';
             }
