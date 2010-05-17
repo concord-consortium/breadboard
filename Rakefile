@@ -44,4 +44,3 @@ namespace :combine do
   end
 
 end
-

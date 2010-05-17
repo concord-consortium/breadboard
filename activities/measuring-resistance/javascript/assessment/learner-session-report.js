@@ -1,4 +1,5 @@
 //= require "../activity-config"
+//= require <jquery/jquery-ui-1.8.custom.min>
 //= require <data-service/RestDS-jQuery>
 //= require <util>
 //= require "grader"

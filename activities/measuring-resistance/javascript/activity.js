@@ -1,7 +1,6 @@
-//= require <sparks-config-client>
-//= require <flash_version_detection>
-//= require <flash_version_detection>
 //= require <activity>
+//= require <flash_version_detection>
+//= require <flash_version_detection>
 //= require <string>
 //= require <ui>
 //= require <circuit/multimeter>
