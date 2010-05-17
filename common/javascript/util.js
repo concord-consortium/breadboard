@@ -1,6 +1,6 @@
 /* FILE util.js */
 
-sparks.util.readCookie = function(name) {
+sparks.util.readCookie = function (name) {
     var nameEQ = name + "=";
     var ca = document.cookie.split(';');
     for(var i=0;i < ca.length;i++) {
@@ -14,7 +14,7 @@ sparks.util.readCookie = function(name) {
 };
 
 /*
-sparks.util.checkFlashVersion = function() {
+sparks.util.checkFlashVersion = function () {
     var major = 10;
     var minor = 0;
     var revision = 31;
@@ -31,7 +31,7 @@ sparks.util.checkFlashVersion = function() {
 
 // The "next" function returns a different value each time
 // alternating between the two input values x, y.
-sparks.util.Alternator = function(x, y)
+sparks.util.Alternator = function (x, y)
 {
     this.x = x;
     this.y = y;
@@ -39,14 +39,14 @@ sparks.util.Alternator = function(x, y)
 };
 sparks.util.Alternator.prototype =
 {
-    next : function() {
+    next : function () {
         ++this.cnt;
         return this.cnt % 2 == 1 ? this.x : this.y;
     }
 };
 
 // Return a string representation of time lapsed between start and end
-sparks.util.timeLapseStr = function(start, end) {
+sparks.util.timeLapseStr = function (start, end) {
     var seconds = Math.floor((end - start) / 1000);
     var minutes = Math.floor(seconds / 60);
     seconds = seconds % 60;
@@ -64,7 +64,7 @@ as the actual keys in the result object.  This requires more careful naming but 
 makes using the returned object easier.  It could be improved to handle dates and
 numbers perhaps using style classes to tag them as such.
 */
-sparks.util.serializeForm = function(form) {
+sparks.util.serializeForm = function (form) {
     var result = {};
     form.map(function () {
         return this.elements ? jQuery.makeArray(this.elements) : this;
@@ -90,7 +90,7 @@ sparks.util.serializeForm = function(form) {
 
 // Returns a string representation of the input date
 // date: either a Date or a number in milliseconds
-sparks.util.formatDate = function(date) {
+sparks.util.formatDate = function (date) {
     function fillZero(val) {
         return val < 10 ? '0' + val : String(val);
     }
@@ -108,7 +108,7 @@ sparks.util.formatDate = function(date) {
 };
 
 // Pretty print an object. Mainly intended for debugging JSON objects
-sparks.util.prettyPrint = function(obj, indent) {
+sparks.util.prettyPrint = function (obj, indent) {
     var t = '';
     if (typeof obj === 'object') {
         for (var key in obj) {

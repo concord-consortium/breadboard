@@ -3,6 +3,7 @@
 (function () {
 
     var circuit = sparks.circuit;
+    var flash = sparks.flash;
 
     circuit.Resistor = function () {
     };
@@ -59,11 +60,11 @@
             //console.log('colors=' + this.colors);
             //console.log('Sending colors=' + this.colors.join('|'));
             this.colors = this.getColors(resistance, tolerance);
-            Flash.sendCommand('set_resistor_label', this.colors);
+            flash.sendCommand('set_resistor_label', this.colors);
         },
 
         show : function() {
-            Flash.sendCommand('show_resistor');
+            flash.sendCommand('show_resistor');
         },
 
         calcRealValue: function (nominalValue, tolerance) {

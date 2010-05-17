@@ -1,5 +1,9 @@
+/* FILE multimeter.js */
+
 (function () {
 
+    var flash = sparks.flash;
+    
     /*
      * Digital Multimeter
      */
@@ -29,7 +33,7 @@
         updateDisplay : function () {
             if (!this.powerOn) {
                 this.displayText = '       ';
-                Flash.sendCommand('set_multimeter_display', '       ');
+                flash.sendCommand('set_multimeter_display', '       ');
                 return;
             }
             console.log('Multimeter.update: resistance=' + this.value + ' dialPosition=' + this.dialPosition);
@@ -139,7 +143,7 @@
                 }
             }
             console.log('text=' + text);
-            Flash.sendCommand('set_multimeter_display', text);
+            flash.sendCommand('set_multimeter_display', text);
             this.displayText = text;
         },
 

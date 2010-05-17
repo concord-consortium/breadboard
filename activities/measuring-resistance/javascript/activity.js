@@ -8,7 +8,7 @@
 //= require <circuit/resistor-5band>
 //= require "activity-config"
 //= require "activity-dom-helper"
-//= require "assessment/activity_log"
+//= require "assessment/activity-log"
 //= require "assessment/assessment"
 //= require "assessment/reporter"
 
@@ -17,6 +17,7 @@
 (function () {
 
     var mr = sparks.activities.mr;
+    var flash = sparks.flash;
     var str = sparks.string;
 
     mr.Activity = function () {
@@ -34,8 +35,8 @@
 
         var activity = this;
         this.dataService = null;
-        this.log = new ActivityLog();
-        this.assessment = new Assessment(this);
+        this.log = new mr.ActivityLog();
+        this.assessment = new mr.Assessment(this);
         this.reporter = new mr.Reporter($('#report_area'));
 
         this.circuit = null;
@@ -122,7 +123,7 @@
                     this.setCurrentResistor(this.resistor5band);
                 }
             }
-            Flash.sendCommand('set_current_resistor', this.currentResistor.id);
+            flash.sendCommand('set_current_resistor', this.currentResistor.id);
 
             var r = this.currentResistor;
             
@@ -143,7 +144,7 @@
             else {
                 r.randomize();
             }
-            Flash.sendCommand('reset_circuit');
+            flash.sendCommand('reset_circuit');
             this.logResistorState();
             debug('currentResistor=' + sparks.activity.currentResistor);
             this.multimeter.update();
@@ -151,15 +152,15 @@
 
         setCurrentResistor: function (resistor) {
           this.currentResistor = resistor;
-          Flash.sendCommand('set_current_resistor', resistor.id);
+          flash.sendCommand('set_current_resistor', resistor.id);
         },
 
         enableCircuit: function () {
-            Flash.sendCommand('enable_circuit');
+            flash.sendCommand('enable_circuit');
         },
 
         disableCircuit: function () {
-            Flash.sendCommand('disable_circuit');
+            flash.sendCommand('disable_circuit');
         },
 
         // Completed a session (finished with one resistor)

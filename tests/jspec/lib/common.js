@@ -1,10 +1,10 @@
 // Replace Flash calls with fake ones for jspec testing
 
-Flash.getFlashMovie = function(movieName) {
+sparks.flash.getFlashMovie = function(movieName) {
     return { sendMessageToFlash : function() {} };
 };
 
-Flash.sendCommand = function() {
+sparks.flash.sendCommand = function() {
 };
 
 jspec_sparks = {};

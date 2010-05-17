@@ -29,7 +29,7 @@ load('../../activities/measuring-resistance/javascript/activity-config.js');
 load('../../activities/measuring-resistance/javascript/activity.js');
 load('../../activities/measuring-resistance/javascript/assessment/feedback.js');
 load('../../activities/measuring-resistance/javascript/assessment/grader.js');
-load('../../activities/measuring-resistance/javascript/assessment/log_parser.js');
+load('../../activities/measuring-resistance/javascript/assessment/log-parser.js');
 
 load('lib/common.js');
 

@@ -7,7 +7,7 @@
 
 /* FILE learner-session-report.js */
 
-$(document).ready(function() {
+$(document).ready(function () {
     try {
         var mr = sparks.activities.mr;
     

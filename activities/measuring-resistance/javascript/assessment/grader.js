@@ -2,7 +2,7 @@
 //= require <string>
 //= require <unit>
 //= require "feedback"
-//= require "log_parser"
+//= require "log-parser"
 
 /* FILE grader.js */
 
@@ -18,8 +18,8 @@
         this.section = this.session.sections[0];
         this.questions =  this.section.questions;
 
-        this.feedback = new Feedback();
-        this.parser = new LogParser(session);
+        this.feedback = new mr.Feedback();
+        this.parser = new mr.LogParser(session);
 
         // Values used by gradeToleranceRange()
         this.resistanceAnswer = null;

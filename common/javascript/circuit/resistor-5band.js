@@ -13,8 +13,8 @@
         this.id = 'resistor_5band';
         this.numBands = 5;
 
-        this.r_values1pct = this.filter(r_values.r_values5band1pct);
-        this.r_values2pct = this.filter(r_values.r_values5band2pct);
+        this.r_values1pct = this.filter(circuit.r_values.r_values5band1pct);
+        this.r_values2pct = this.filter(circuit.r_values.r_values5band2pct);
     };
 
     sparks.extend(circuit.Resistor5band, circuit.Resistor, {
