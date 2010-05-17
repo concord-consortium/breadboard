@@ -1,3 +1,7 @@
+//= require <string>
+
+/* FILE activity-dom-helper.js */
+
 (function () {
     
     var mr = sparks.activities.mr;

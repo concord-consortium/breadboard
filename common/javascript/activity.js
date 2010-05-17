@@ -1,3 +1,5 @@
+/* FILE activity.js */
+
 (function () {
 
     sparks.Activity = function () {

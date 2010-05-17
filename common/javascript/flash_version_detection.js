@@ -1,3 +1,5 @@
+/* FILE flash_version_dectection.js */
+
 //v1.7
 // Flash Player Version Detection
 // Detect Client Browser type

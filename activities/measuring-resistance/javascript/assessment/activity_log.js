@@ -1,5 +1,4 @@
-/* The following line (global) is for JSLint */
-/*global console*/
+/* FILE activity_log.js */
 
 function Event(name, value, time) {
     this.name = name;

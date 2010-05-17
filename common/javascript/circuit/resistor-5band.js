@@ -1,7 +1,11 @@
+//= require "resistor"
+//= require "r-values"
+
+/* FILE resistor-5band.js */
+
 (function () {
 
     var circuit = sparks.circuit;
-    var util = sparks.util;
     
     circuit.Resistor5band = function () {
         var superclass = sparks.circuit.Resistor5band.uber;
@@ -13,7 +17,7 @@
         this.r_values2pct = this.filter(r_values.r_values5band2pct);
     };
 
-    util.extend(circuit.Resistor5band, circuit.Resistor, {
+    sparks.extend(circuit.Resistor5band, circuit.Resistor, {
 
         randomize : function() {
           var ix = this.randInt(0, 1);

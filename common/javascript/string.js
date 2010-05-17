@@ -1,3 +1,5 @@
+/* FILE string.js */
+
 (function () {
     
     this.sparks.string = {};

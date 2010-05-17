@@ -1,4 +1,6 @@
-/*
+/* FILE feedback.js */
+
+/**
  * A FeedbackItem is contains derived information from the activity log:
  * Grader parses the activity log and populates feedback items.
  * Reporter uses feedback items to generate the report.

@@ -1,3 +1,5 @@
+/* FILE log_parser.js */
+
 function LogParser(session) {
     this.session = session;
     this.section = session.sections[0];

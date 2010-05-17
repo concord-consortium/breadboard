@@ -1,3 +1,7 @@
+//= require <unit>
+
+/* FILE reporter.js */
+
 (function () {
 
     var unit = sparks.unit;
@@ -6,7 +10,7 @@
     mr.Reporter = function (reportElem) {
         this.template = mr.config.root_dir + '/report-templates/spot-report.html';
         this.reportElem = reportElem;
-    }
+    };
 
     mr.Reporter.prototype = {
 

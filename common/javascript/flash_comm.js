@@ -1,3 +1,5 @@
+/* FILE flash_comm.js */
+
 /* The following line (global) is for JSLint */
 /*global console, alert, document, navigator, window, jQuery */
 

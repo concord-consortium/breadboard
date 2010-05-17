@@ -1,3 +1,20 @@
+//= require <sparks-config-client>
+//= require <flash_version_detection>
+//= require <flash_version_detection>
+//= require <activity>
+//= require <string>
+//= require <ui>
+//= require <circuit/multimeter>
+//= require <circuit/resistor-4band>
+//= require <circuit/resistor-5band>
+//= require "activity-config"
+//= require "activity-dom-helper"
+//= require "assessment/activity_log"
+//= require "assessment/assessment"
+//= require "assessment/reporter"
+
+/* FILE activity.js */
+
 (function () {
 
     var mr = sparks.activities.mr;
@@ -47,7 +64,9 @@
         this.buttonize();
     };
     
-    sparks.util.extend(mr.Activity, sparks.Activity, {
+    sparks.config.Activity = sparks.activities.mr.Activity;
+    
+    sparks.extend(mr.Activity, sparks.Activity, {
 
         setDataService: function (ds) {
             this.dataService = ds;
@@ -305,8 +324,13 @@
           form.append("<button>Submit</button>");
           this.buttonize();
           form.find("button").click(function (event) {
-              self.submitButtonClicked(self, event);
-              event.preventDefault();
+              try {
+                  self.submitButtonClicked(self, event);
+                  event.preventDefault();
+              }
+              catch (e) {
+                  alert(e);
+              }
           }); 
           form.find("input, select").removeAttr("disabled");
           form.find("input, select").keypress(function (event) {

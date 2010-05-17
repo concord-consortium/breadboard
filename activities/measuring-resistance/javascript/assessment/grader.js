@@ -1,3 +1,11 @@
+//= require <math>
+//= require <string>
+//= require <unit>
+//= require "feedback"
+//= require "log_parser"
+
+/* FILE grader.js */
+
 (function () {
 
     var math = sparks.math;

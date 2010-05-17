@@ -1,3 +1,11 @@
+//= require <http>
+//= require <json2>
+//= require <jquery/jquery-1.4.2.min>
+//= require <jquery/plugins/jquery.cookie>
+//= require <jquery/plugins/jquery.url.packed>
+
+/* FILE sparks-config-common.js */
+
 (function () {
     
     /*
@@ -43,4 +51,19 @@
     sparks.config.debug_mvalue = jQuery.url.param("m") ? Number(jQuery.url.param("m")) : null;
     sparks.config.debug_tvalue = jQuery.url.param("t") ? Number(jQuery.url.param("t")) : null;
 
+    // YUI-style inheritance
+    sparks.extend = function(Child, Parent, properties) {
+      var F = function() {};
+      F.prototype = Parent.prototype;
+      Child.prototype = new F();
+      if (properties) {
+          for (var k in properties) {
+              Child.prototype[k] = properties[k];
+          }
+      }
+      Child.prototype.constructor = Child;
+      Child.uber = Parent.prototype;
+    };
+
+    
 })();

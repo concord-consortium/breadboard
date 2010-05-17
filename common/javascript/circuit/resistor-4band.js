@@ -1,7 +1,11 @@
+//= require "resistor"
+//= require "r-values"
+
+/* FILE resistor-4band.js */
+
 (function () {
     
     var circuit = sparks.circuit;
-    var util = sparks.util;
 
     circuit.Resistor4band = function () {
         var superclass = sparks.circuit.Resistor4band.uber;
@@ -13,7 +17,7 @@
         this.r_values10pct = this.filter(r_values.r_values4band10pct);
     };
     
-    util.extend(circuit.Resistor4band, circuit.Resistor, {
+    sparks.extend(circuit.Resistor4band, circuit.Resistor, {
 
         toleranceValues: [0.05, 0.1],
         

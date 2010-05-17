@@ -1,8 +1,8 @@
-/* The following line (global) is for JSLint */
+//= require "grader"
 
-/*global console, Grader */
+/* FILE assessment.js */
 
-/* 
+/** 
  * Meant to hold everything needed for grading, such as rubric and grading
  * routines. Since there's no rubric objects defined yet, it may appear to
  * offer little more than Grader.

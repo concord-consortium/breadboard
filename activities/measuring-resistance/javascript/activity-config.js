@@ -1,3 +1,5 @@
+/* FILE activity-config.js */
+
 (function () {
 
     this.sparks.activities.mr = {};

@@ -1,3 +1,5 @@
+/* FILE ui.js */
+
 (function () {
     
     this.sparks.ui = {};

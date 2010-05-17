@@ -1,14 +1,31 @@
+//= require "../activity-config"
+//= require <data-service/RestDS-jQuery>
+//= require <util>
+//= require "grader"
+//= require "reporter"
+
+/* FILE learner-session-report.js */
+
 $(document).ready(function() {
-    var mr = sparks.activities.mr;
+    try {
+        var mr = sparks.activities.mr;
     
-    var reportId = sparks.util.readCookie('report_id');
-    var ds = new RestDS(null, null, '/sparks/report/get_report/' + reportId);
-    ds.readKey = true;
-    ds.load(this, function(data) {
-        var grader = new sparks.activities.mr.Grader(data[0]);
-        var feedback = grader.grade();
-        //var reporter = new SessionReporter();
-        var reporter = new mr.Reporter($('#report_area'));
-        reporter.report(data[0], feedback);
-    }); 
+        var reportId = sparks.util.readCookie('report_id');
+        var ds = new RestDS(null, null, '/sparks/report/get_report/' + reportId);
+        ds.readKey = true;
+        ds.load(this, function (data) {
+            try {
+                var grader = new sparks.activities.mr.Grader(data[0]);
+                var feedback = grader.grade();
+                var reporter = new mr.Reporter($('#report_area'));
+                reporter.report(data[0], feedback);
+            }
+            catch (e) {
+                alert(e);
+            }
+        });
+    }
+    catch (e) {
+        alert(e);
+    }
 });

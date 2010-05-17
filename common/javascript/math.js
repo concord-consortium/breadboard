@@ -1,3 +1,7 @@
+//= require <string>
+
+/* FILE math.js */
+
 (function () {
     this.sparks.math = {};
     

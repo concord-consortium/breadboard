@@ -1,3 +1,5 @@
+/* FILE resistor.js */
+
 (function () {
 
     var circuit = sparks.circuit;
