@@ -34,7 +34,7 @@
         this.correct_order_set = false;
 
         this.parseEvents();
-    }
+    };
 
     mr.LogParser.prototype = {
 

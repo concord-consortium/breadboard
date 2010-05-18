@@ -19,7 +19,7 @@
         this.feedbackSpace = null; //set of all possible feedback messages
         this.points = 0;
         this.maxPoints = (maxPoints === null || maxPoints === undefined ? 0 : maxPoints);
-    }
+    };
 
     mr.FeedbackItem.prototype = {
 
@@ -382,6 +382,6 @@
             return messages;
         };
 
-    }
+    };
 
 })();
