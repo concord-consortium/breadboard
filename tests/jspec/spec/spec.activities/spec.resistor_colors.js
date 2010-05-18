@@ -1,5 +1,6 @@
 describe 'Activity 1: Resistor Colors'
     before
+      Feedback = sparks.activities.mr.Feedback
       Grader = sparks.activities.mr.Grader
     end
 
