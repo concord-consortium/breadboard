@@ -31,7 +31,7 @@
 
     mr.Grader.prototype = {
 
-        grade : function() {
+        grade: function () {
             //console.log('ENTER Grader.grade');
 
             this.gradeReadingColorBands();
@@ -47,7 +47,7 @@
             return this.feedback;
         },
 
-        gradeReadingColorBands : function () {
+        gradeReadingColorBands: function () {
             var question = this.questions[0];
             var fb = this.feedback.root.reading.rated_r_value;
             var unitCorrect = true;
@@ -123,7 +123,7 @@
             console.log('parsedValue=' + parsedValue + ' correctValue=' + question.correct_answer);
 
             if (question.correct_answer != parsedValue) {
-                if (this.semiAcceptable(question.correct_answer, parsedValue)) {
+                if (this.roundedMatch(question.correct_answer, parsedValue)) {
                     fb.points = 5;
                     fb.correct = 3;
                     fb.addFeedback('incomplete', unit.res_str(question.correct_answer),
@@ -148,7 +148,7 @@
             fb.addFeedback('correct');
         },
 
-        gradeTolerance : function() {
+        gradeTolerance: function () {
             var question = this.questions[1];
             var fb = this.feedback.root.reading.rated_t_value;
 
@@ -173,7 +173,7 @@
             fb.addFeedback('correct');
         },
 
-        gradeToleranceRange : function () {
+        gradeToleranceRange: function () {
             //console.log('ENTER Grader.gradeToleranceRange');
             var question = this.questions[3];
             var fb = this.feedback.root.t_range.t_range_value;
@@ -271,7 +271,7 @@ debug;
             return;
         },
 
-        gradeWithinTolerance : function () {
+        gradeWithinTolerance: function () {
             var fb = this.feedback.root.t_range.within_tolerance;
             
             if (this.feedback.root.measuring.measured_r_value.correct < 4 ||
@@ -340,7 +340,7 @@ debug;
                     did, is);
         },
 
-        gradeTime : function() {
+        gradeTime: function () {
             var seconds;
             var fb;
 
@@ -381,7 +381,7 @@ debug;
             }
         },
 
-        gradeSettings : function() {
+        gradeSettings: function () {
             var fb = this.feedback.root.measuring;
             var redProbeConn = this.parser.submit_red_probe_conn;
             var blackProbeConn = this.parser.submit_black_probe_conn;
@@ -482,11 +482,11 @@ debug;
             debug('task_order.points=' + fb.task_order.points);
         },
 
-        equalWithTolerance : function(value1, value2, tolerance) {
+        equalWithTolerance: function (value1, value2, tolerance) {
             return Math.abs(value1 - value2) < tolerance;
         },
 
-        validateNonEmpty : function(inputField, form) {
+        validateNonEmpty: function (inputField, form) {
             if (inputField === null ||
                 inputField === undefined ||
                 inputField.length < 1)
@@ -497,7 +497,7 @@ debug;
             return true;
         },
 
-        validateNumber : function(num, answer) {
+        validateNumber: function (num, answer) {
             // I don't know if this works correctly IE
             // parseFloat will return all numbers before a non numeric char so 
             // parseFloat('3a') returns 3 which isn't really what we want
@@ -508,17 +508,14 @@ debug;
             return true;
         },
 
-        semiAcceptable : function(correctAnswer, answer) {
-            /*
-            var a = correctAnswer.toString().replace('.', '');
-            var b = answer.toString().replace('.', '');
-            return a.substring(0, 3) == b.substring(0, 3);
-            */
-            return math.roundToSigDigits(correctAnswer, 3) === answer;
+        // True if x rounded to numSig digits equals y
+        // Note: the order of x and y is important here
+        roundedMatch: function (x, y, numSig) {
+            return math.roundToSigDigits(x, numSig) === y;
         },
 
         // Return true if x and y are equal or different only in one digit
-        oneOff: function(x, y) {
+        oneOff: function (x, y) {
             var sx = x.toString();
             var sy = y.toString();
             if (!sx.match(/\./)) {
@@ -547,7 +544,7 @@ debug;
         // A kludge to determine if two number are of same power of 10 magnitude
         // It only compares the number of digits before the decimal point
         // because numbers less than 1 are not expected.
-        sameBeforeDot : function(x, y) {
+        sameBeforeDot: function (x, y) {
             var lx = String(x).split('.')[0].length;
             var ly = String(y).split('.')[0].length;
             return lx === ly;
@@ -556,7 +553,7 @@ debug;
         // True if the first numSigDigits digits of x, y are the same 
         // or in reverse order of each other
         // or the order is the same but only 1 digit is different
-        semiCorrectDigits : function(x, y, numSigDigits) {
+        semiCorrectDigits: function (x, y, numSigDigits) {
             var sx = String(x).replace('.', '').substring(0, numSigDigits);
             var sy = String(y).replace('.', '').substring(0, numSigDigits);
             if (sx === sy ||
@@ -568,11 +565,11 @@ debug;
             return false;
         },
 
-        reverseString : function (s) {
+        reverseString: function (s) {
             return s.split('').reverse().join('');
         },
 
-        onlyOneDigitDifferent : function(x, y) {
+        onlyOneDigitDifferent: function (x, y) {
             var numDiff = 0;
             for (var i = 0; i < x.length; ++i) {
                 if (x[i] !== y[i]) {
@@ -582,7 +579,7 @@ debug;
             return numDiff == 1;
         },
 
-        optimalDial : function(r) {
+        optimalDial: function (r) {
             if (r < 200) { return 'r_200'; }
             if (r < 2000) { return 'r_2000'; }
             if (r < 20e3) { return 'r_20k'; }
@@ -590,7 +587,7 @@ debug;
             return 'r_2000k';
         },
 
-        isResistanceKnob : function(setting) {
+        isResistanceKnob: function (setting) {
             return setting === 'r_200' ||
                 setting === 'r_2000' ||
                 setting === 'r_20k' ||

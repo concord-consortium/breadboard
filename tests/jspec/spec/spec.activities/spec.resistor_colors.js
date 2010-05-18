@@ -74,8 +74,12 @@ describe 'Activity 1: Resistor Colors'
     
     it "should do oneOff correctly"
     Grader.prototype.oneOff('12', '22').should.be true
-    Grader.prototype.oneOff('0.2382', '0.2372').should.be true
-    Grader.prototype.oneOff('405', '4050').should.be false
+      Grader.prototype.oneOff('0.2382', '0.2372').should.be true
+      Grader.prototype.oneOff('405', '4050').should.be false
+    end
+    
+    it "should do roundedMatch correctly"
+      Grader.prototype.roundedMatch(12.9, 13, 2).should.be true
     end
     
 end
