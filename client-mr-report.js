@@ -2441,7 +2441,8 @@ sparks.util.prettyPrint = function (obj, indent) {
             console.log('parsedValue=' + parsedValue + ' correctValue=' + question.correct_answer);
 
             if (question.correct_answer != parsedValue) {
-                if (this.roundedMatch(question.correct_answer, parsedValue)) {
+                var n = this.section.resistor_num_bands - 2;
+                if (this.roundedMatch(question.correct_answer, parsedValue, n)) {
                     fb.points = 5;
                     fb.correct = 3;
                     fb.addFeedback('incomplete', unit.res_str(question.correct_answer),
