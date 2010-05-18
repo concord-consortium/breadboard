@@ -2441,7 +2441,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             console.log('parsedValue=' + parsedValue + ' correctValue=' + question.correct_answer);
 
             if (question.correct_answer != parsedValue) {
-                if (this.semiAcceptable(question.correct_answer, parsedValue)) {
+                if (this.roundedMatch(question.correct_answer, parsedValue)) {
                     fb.points = 5;
                     fb.correct = 3;
                     fb.addFeedback('incomplete', unit.res_str(question.correct_answer),
@@ -2813,17 +2813,8 @@ debug;
             return true;
         },
 
-        semiAcceptable: function (correctAnswer, answer) {
-            /*
-            var a = correctAnswer.toString().replace('.', '');
-            var b = answer.toString().replace('.', '');
-            return a.substring(0, 3) == b.substring(0, 3);
-            */
-            return math.roundToSigDigits(correctAnswer, 3) === answer;
-        },
-
         roundedMatch: function (x, y, numSig) {
-            return math.roundToSigDigits(x, 3) === y;
+            return math.roundToSigDigits(x, numSig) === y;
         },
 
         oneOff: function (x, y) {
