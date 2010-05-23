@@ -1,254 +1,3 @@
-/**
- * http.js: utilities for scripted HTTP requests
- *
- * From the book JavaScript: The Definitive Guide, 5th Edition,
- * by David Flanagan. Copyright 2006 O'Reilly Media, Inc. (ISBN: 0596101996)
- */
-
-var HTTP;
-if (HTTP && (typeof HTTP != "object" || HTTP.NAME))
-    throw new Error("Namespace 'HTTP' already exists");
-
-HTTP = {};
-HTTP.NAME = "HTTP";    // The name of this namespace
-HTTP.VERSION = 1.0;    // The version of this namespace
-
-HTTP._factories = [
-    function() { return new XMLHttpRequest(); },
-    function() { return new ActiveXObject("Msxml2.XMLHTTP"); },
-    function() { return new ActiveXObject("Microsoft.XMLHTTP"); }
-];
-
-HTTP._factory = null;
-
-/**
- * Create and return a new XMLHttpRequest object.
- *
- * The first time we're called, try the list of factory functions until
- * we find one that returns a nonnull value and does not throw an
- * exception.  Once we find a working factory, remember it for later use.
- */
-HTTP.newRequest = function() {
-    if (HTTP._factory != null) return HTTP._factory();
-
-    for(var i = 0; i < HTTP._factories.length; i++) {
-        try {
-            var factory = HTTP._factories[i];
-            var request = factory();
-            if (request != null) {
-                HTTP._factory = factory;
-                return request;
-            }
-        }
-        catch(e) {
-            continue;
-        }
-    }
-
-    HTTP._factory = function() {
-        throw new Error("XMLHttpRequest not supported");
-    }
-    HTTP._factory(); // Throw an error
-}
-
-/**
- * Use XMLHttpRequest to fetch the contents of the specified URL using
- * an HTTP GET request.  When the response arrives, pass it (as plain
- * text) to the specified callback function.
- *
- * This function does not block and has no return value.
- */
-HTTP.getText = function(url, context, callback) {
-    var request = HTTP.newRequest();
-    request.onreadystatechange = function() {
-        if (request.readyState == 4 && request.status == 200) {
-            callback(request.responseText, context);
-        } // else {
-    };
-    request.open("GET", url);
-    request.send(null);
-};
-
-/**
- * Use XMLHttpRequest to fetch the contents of the specified URL using
- * an HTTP GET request.  When the response arrives, pass it (as a parsed
- * XML Document object) to the specified callback function.
- *
- * This function does not block and has no return value.
- */
-HTTP.getXML = function(url, callback) {
-    var request = HTTP.newRequest();
-    request.onreadystatechange = function() {
-        if (request.readyState == 4 && request.status == 200)
-            callback(request.responseXML);
-    }
-    request.open("GET", url);
-    request.send(null);
-};
-
-/**
- * Use an HTTP HEAD request to obtain the headers for the specified URL.
- * When the headers arrive, parse them with HTTP.parseHeaders() and pass the
- * resulting object to the specified callback function. If the server returns
- * an error code, invoke the specified errorHandler function instead.  If no
- * error handler is specified, pass null to the callback function.
- */
-HTTP.getHeaders = function(url, callback, errorHandler) {
-    var request = HTTP.newRequest();
-    request.onreadystatechange = function() {
-        if (request.readyState == 4) {
-            if (request.status == 200) {
-                callback(HTTP.parseHeaders(request));
-            }
-            else {
-                if (errorHandler) errorHandler(request.status,
-                                               request.statusText);
-                else callback(null);
-            }
-        }
-    }
-    request.open("HEAD", url);
-    request.send(null);
-};
-
-/**
- * Parse the response headers from an XMLHttpRequest object and return
- * the header names and values as property names and values of a new object.
- */
-HTTP.parseHeaders = function(request) {
-    var headerText = request.getAllResponseHeaders();  // Text from the server
-    var headers = {}; // This will be our return value
-    var ls = /^\s*/;  // Leading space regular expression
-    var ts = /\s*$/;  // Trailing space regular expression
-
-    var lines = headerText.split("\n");
-    for(var i = 0; i < lines.length; i++) {
-        var line = lines[i];
-        if (line.length == 0) continue;  // Skip empty lines
-        var pos = line.indexOf(':');
-        var name = line.substring(0, pos).replace(ls, "").replace(ts, "");
-        var value = line.substring(pos+1).replace(ls, "").replace(ts, "");
-        headers[name] = value;
-    }
-    return headers;
-};
-
-HTTP.post = function(url, values, callback, errorHandler) {
-    var request = HTTP.newRequest();
-    request.onreadystatechange = function() {
-        if (request.readyState == 4) {
-            if (request.status == 200) {
-                callback(HTTP._getResponse(request));
-            }
-            else {
-                if (errorHandler) errorHandler(request.status,
-                                               request.statusText);
-                else callback(null);
-            }
-        }
-    }
-
-    request.open("POST", url);
-    request.setRequestHeader("Content-Type",
-                             "application/x-www-form-urlencoded");
-    request.send(HTTP.encodeFormData(values));
-};
-
-/**
- * Encode the property name/value pairs of an object as if they were from
- * an HTML form, using application/x-www-form-urlencoded format
- */
-HTTP.encodeFormData = function(data) {
-    var pairs = [];
-    var regexp = /%20/g; // A regular expression to match an encoded space
-
-    for(var name in data) {
-        var value = data[name].toString();
-        var pair = encodeURIComponent(name).replace(regexp,"+") + '=' +
-            encodeURIComponent(value).replace(regexp,"+");
-        pairs.push(pair);
-    }
-
-    return pairs.join('&');
-};
-
-/**
- * Parse an HTTP response based on its Content-Type header
- * and return the parsed object
- */
-HTTP._getResponse = function(request) {
-    switch(request.getResponseHeader("Content-Type")) {
-    case "text/xml":
-        return request.responseXML;
-
-    case "text/json":
-    case "application/json":
-    case "text/javascript":
-    case "application/javascript":
-    case "application/x-javascript":
-        return eval(request.responseText);
-
-    default:
-        return request.responseText;
-    }
-};
-
-HTTP.get = function(url, callback, options) {
-    var request = HTTP.newRequest();
-    var n = 0;
-    var timer;
-    if (options.timeout)
-        timer = setTimeout(function() {
-                               request.abort();
-                               if (options.timeoutHandler)
-                                   options.timeoutHandler(url);
-                           },
-                           options.timeout);
-
-    request.onreadystatechange = function() {
-        if (request.readyState == 4) {
-            if (timer) clearTimeout(timer);
-            if (request.status == 200) {
-                callback(HTTP._getResponse(request));
-            }
-            else {
-                if (options.errorHandler)
-                    options.errorHandler(request.status,
-                                         request.statusText);
-                else callback(null);
-            }
-        }
-        else if (options.progressHandler) {
-            options.progressHandler(++n);
-        }
-    }
-
-    var target = url;
-    if (options.parameters)
-        target += "?" + HTTP.encodeFormData(options.parameters)
-    request.open("GET", target);
-    request.send(null);
-};
-
-HTTP.getTextWithScript = function(url, callback) {
-    var script = document.createElement("script");
-    document.body.appendChild(script);
-
-    var funcname = "func" + HTTP.getTextWithScript.counter++;
-
-    HTTP.getTextWithScript[funcname] = function(text) {
-        callback(text);
-
-        document.body.removeChild(script);
-        delete HTTP.getTextWithScript[funcname];
-    }
-
-    script.src = "jsquoter.php" +
-                 "?url=" + encodeURIComponent(url) + "&func=" +
-                 encodeURIComponent("HTTP.getTextWithScript." + funcname);
-}
-
-HTTP.getTextWithScript.counter = 0;
 /*
     http://www.JSON.org/json2.js
     2009-09-29
@@ -655,6 +404,71 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
         };
     }
 }());
+
+/* FILE setup-common.js */
+
+(function () {
+
+    /*
+     * Common initial setup for SPARKS activities
+     */
+
+    if (typeof console === 'undefined' || !console) {
+        this.console = {};
+    }
+    if (!console.log) {
+        if (typeof print !== 'undefined') {
+            console.log = print;
+        }
+        else if (typeof debug !== 'undefined') {
+            console.log = debug;
+        }
+        else {
+            console.log = function () {};
+        }
+    }
+
+    if (typeof debug === 'undefined' || !debug) {
+        this.debug = function (x) { console.log(x); };
+    }
+
+    if (typeof sparks === 'undefined' || !sparks) {
+        this.sparks = {};
+    }
+
+    if (!sparks.config) {
+        sparks.config = {};
+    }
+
+    if (!sparks.circuit) {
+        sparks.circuit = {};
+    }
+
+    if (!sparks.util) {
+        sparks.util = {};
+    }
+
+    if (!sparks.activities) {
+        sparks.activities = {};
+    }
+
+    sparks.config.root_dir = '/sparks-content';
+
+    sparks.extend = function(Child, Parent, properties) {
+      var F = function() {};
+      F.prototype = Parent.prototype;
+      Child.prototype = new F();
+      if (properties) {
+          for (var k in properties) {
+              Child.prototype[k] = properties[k];
+          }
+      }
+      Child.prototype.constructor = Child;
+      Child.uber = Parent.prototype;
+    };
+
+
+})();
 /*!
  * jQuery JavaScript Library v1.4.2
  * http://jquery.com/
@@ -809,162 +623,6 @@ d,e);d={top:b.top-e.top+j,left:b.left-e.left+i};"using"in b?b.using.call(a,d):f.
 f.top,left:d.left-f.left}},offsetParent:function(){return this.map(function(){for(var a=this.offsetParent||s.body;a&&!/^body|html$/i.test(a.nodeName)&&c.css(a,"position")==="static";)a=a.offsetParent;return a})}});c.each(["Left","Top"],function(a,b){var d="scroll"+b;c.fn[d]=function(f){var e=this[0],j;if(!e)return null;if(f!==w)return this.each(function(){if(j=wa(this))j.scrollTo(!a?f:c(j).scrollLeft(),a?f:c(j).scrollTop());else this[d]=f});else return(j=wa(e))?"pageXOffset"in j?j[a?"pageYOffset":
 "pageXOffset"]:c.support.boxModel&&j.document.documentElement[d]||j.document.body[d]:e[d]}});c.each(["Height","Width"],function(a,b){var d=b.toLowerCase();c.fn["inner"+b]=function(){return this[0]?c.css(this[0],d,false,"padding"):null};c.fn["outer"+b]=function(f){return this[0]?c.css(this[0],d,false,f?"margin":"border"):null};c.fn[d]=function(f){var e=this[0];if(!e)return f==null?null:this;if(c.isFunction(f))return this.each(function(j){var i=c(this);i[d](f.call(this,j,i[d]()))});return"scrollTo"in
 e&&e.document?e.document.compatMode==="CSS1Compat"&&e.document.documentElement["client"+b]||e.document.body["client"+b]:e.nodeType===9?Math.max(e.documentElement["client"+b],e.body["scroll"+b],e.documentElement["scroll"+b],e.body["offset"+b],e.documentElement["offset"+b]):f===w?c.css(e,d):this.css(d,typeof f==="string"?f:f+"px")}});A.jQuery=A.$=c})(window);
-/**
- * Cookie plugin
- *
- * Copyright (c) 2006 Klaus Hartl (stilbuero.de)
- * Dual licensed under the MIT and GPL licenses:
- * http://www.opensource.org/licenses/mit-license.php
- * http://www.gnu.org/licenses/gpl.html
- *
- */
-
-/**
- * Create a cookie with the given name and value and other optional parameters.
- *
- * @example $.cookie('the_cookie', 'the_value');
- * @desc Set the value of a cookie.
- * @example $.cookie('the_cookie', 'the_value', { expires: 7, path: '/', domain: 'jquery.com', secure: true });
- * @desc Create a cookie with all available options.
- * @example $.cookie('the_cookie', 'the_value');
- * @desc Create a session cookie.
- * @example $.cookie('the_cookie', null);
- * @desc Delete a cookie by passing null as value. Keep in mind that you have to use the same path and domain
- *       used when the cookie was set.
- *
- * @param String name The name of the cookie.
- * @param String value The value of the cookie.
- * @param Object options An object literal containing key/value pairs to provide optional cookie attributes.
- * @option Number|Date expires Either an integer specifying the expiration date from now on in days or a Date object.
- *                             If a negative value is specified (e.g. a date in the past), the cookie will be deleted.
- *                             If set to null or omitted, the cookie will be a session cookie and will not be retained
- *                             when the the browser exits.
- * @option String path The value of the path atribute of the cookie (default: path of page that created the cookie).
- * @option String domain The value of the domain attribute of the cookie (default: domain of page that created the cookie).
- * @option Boolean secure If true, the secure attribute of the cookie will be set and the cookie transmission will
- *                        require a secure protocol (like HTTPS).
- * @type undefined
- *
- * @name $.cookie
- * @cat Plugins/Cookie
- * @author Klaus Hartl/klaus.hartl@stilbuero.de
- */
-
-/**
- * Get the value of a cookie with the given name.
- *
- * @example $.cookie('the_cookie');
- * @desc Get the value of a cookie.
- *
- * @param String name The name of the cookie.
- * @return The value of the cookie.
- * @type String
- *
- * @name $.cookie
- * @cat Plugins/Cookie
- * @author Klaus Hartl/klaus.hartl@stilbuero.de
- */
-jQuery.cookie = function(name, value, options) {
-    if (typeof value != 'undefined') { // name and value given, set cookie
-        options = options || {};
-        if (value === null) {
-            value = '';
-            options.expires = -1;
-        }
-        var expires = '';
-        if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
-            var date;
-            if (typeof options.expires == 'number') {
-                date = new Date();
-                date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
-            } else {
-                date = options.expires;
-            }
-            expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
-        }
-        var path = options.path ? '; path=' + (options.path) : '';
-        var domain = options.domain ? '; domain=' + (options.domain) : '';
-        var secure = options.secure ? '; secure' : '';
-        document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
-    } else { // only name given, get cookie
-        var cookieValue = null;
-        if (document.cookie && document.cookie != '') {
-            var cookies = document.cookie.split(';');
-            for (var i = 0; i < cookies.length; i++) {
-                var cookie = jQuery.trim(cookies[i]);
-                if (cookie.substring(0, name.length + 1) == (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-};
-jQuery.url=function(){var segments={};var parsed={};var options={url:window.location,strictMode:false,key:["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],q:{name:"queryKey",parser:/(?:^|&)([^&=]*)=?([^&]*)/g},parser:{strict:/^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,loose:/^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/}};var parseUri=function(){str=decodeURI(options.url);var m=options.parser[options.strictMode?"strict":"loose"].exec(str);var uri={};var i=14;while(i--){uri[options.key[i]]=m[i]||""}uri[options.q.name]={};uri[options.key[12]].replace(options.q.parser,function($0,$1,$2){if($1){uri[options.q.name][$1]=$2}});return uri};var key=function(key){if(!parsed.length){setUp()}if(key=="base"){if(parsed.port!==null&&parsed.port!==""){return parsed.protocol+"://"+parsed.host+":"+parsed.port+"/"}else{return parsed.protocol+"://"+parsed.host+"/"}}return(parsed[key]==="")?null:parsed[key]};var param=function(item){if(!parsed.length){setUp()}return(parsed.queryKey[item]===null)?null:parsed.queryKey[item]};var setUp=function(){parsed=parseUri();getSegments()};var getSegments=function(){var p=parsed.path;segments=[];segments=parsed.path.length==1?{}:(p.charAt(p.length-1)=="/"?p.substring(1,p.length-1):path=p.substring(1)).split("/")};return{setMode:function(mode){strictMode=mode=="strict"?true:false;return this},setUrl:function(newUri){options.url=newUri===undefined?window.location:newUri;setUp();return this},segment:function(pos){if(!parsed.length){setUp()}if(pos===undefined){return segments.length}return(segments[pos]===""||segments[pos]===undefined)?null:segments[pos]},attr:key,param:param}}();
-
-/* FILE sparks-config-common.js */
-
-(function () {
-
-    /*
-     * Common initial setup for SPARKS activities
-     */
-
-    if (typeof console === 'undefined' || !console) {
-        this.console = {};
-    }
-    if (!console.log) {
-        console.log = function () {};
-    }
-
-    if (typeof debug === 'undefined' || !debug) {
-        this.debug = function (x) { console.log(x); };
-    }
-
-    if (typeof sparks === 'undefined' || !sparks) {
-        this.sparks = {};
-    }
-
-    if (!sparks.config) {
-        sparks.config = {};
-    }
-
-    if (!sparks.circuit) {
-        sparks.circuit = {};
-    }
-
-    if (!sparks.util) {
-        sparks.util = {};
-    }
-
-    if (!sparks.activities) {
-        sparks.activities = {};
-    }
-
-    sparks.config.root_dir = '/sparks-content';
-
-    sparks.config.debug = jQuery.url.param("debug") !== undefined;
-    sparks.config.debug_nbands = jQuery.url.param("n") ? Number(jQuery.url.param("n")) : null;
-    sparks.config.debug_rvalue = jQuery.url.param("r") ? Number(jQuery.url.param("r")) : null;
-    sparks.config.debug_mvalue = jQuery.url.param("m") ? Number(jQuery.url.param("m")) : null;
-    sparks.config.debug_tvalue = jQuery.url.param("t") ? Number(jQuery.url.param("t")) : null;
-
-    sparks.extend = function(Child, Parent, properties) {
-      var F = function() {};
-      F.prototype = Parent.prototype;
-      Child.prototype = new F();
-      if (properties) {
-          for (var k in properties) {
-              Child.prototype[k] = properties[k];
-          }
-      }
-      Child.prototype.constructor = Child;
-      Child.uber = Parent.prototype;
-    };
-
-
-})();
 /*!
  * jQuery UI 1.8
  *
@@ -1339,6 +997,99 @@ jQuery.ui||(function(a){a.ui={version:"1.8",plugin:{add:function(c,d,f){var e=a.
  * Depends:
  *	jquery.effects.core.js
  */(function(a){a.effects.transfer=function(b){return this.queue(function(){var f=a(this),h=a(b.options.to),e=h.offset(),g={top:e.top,left:e.left,height:h.innerHeight(),width:h.innerWidth()},d=f.offset(),c=a('<div class="ui-effects-transfer"></div>').appendTo(document.body).addClass(b.options.className).css({top:d.top,left:d.left,height:f.innerHeight(),width:f.innerWidth(),position:"absolute"}).animate(g,b.duration,b.options.easing,function(){c.remove();(b.callback&&b.callback.apply(f[0],arguments));f.dequeue()})})}})(jQuery);;
+jQuery.url=function(){var segments={};var parsed={};var options={url:window.location,strictMode:false,key:["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],q:{name:"queryKey",parser:/(?:^|&)([^&=]*)=?([^&]*)/g},parser:{strict:/^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,loose:/^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/}};var parseUri=function(){str=decodeURI(options.url);var m=options.parser[options.strictMode?"strict":"loose"].exec(str);var uri={};var i=14;while(i--){uri[options.key[i]]=m[i]||""}uri[options.q.name]={};uri[options.key[12]].replace(options.q.parser,function($0,$1,$2){if($1){uri[options.q.name][$1]=$2}});return uri};var key=function(key){if(!parsed.length){setUp()}if(key=="base"){if(parsed.port!==null&&parsed.port!==""){return parsed.protocol+"://"+parsed.host+":"+parsed.port+"/"}else{return parsed.protocol+"://"+parsed.host+"/"}}return(parsed[key]==="")?null:parsed[key]};var param=function(item){if(!parsed.length){setUp()}return(parsed.queryKey[item]===null)?null:parsed.queryKey[item]};var setUp=function(){parsed=parseUri();getSegments()};var getSegments=function(){var p=parsed.path;segments=[];segments=parsed.path.length==1?{}:(p.charAt(p.length-1)=="/"?p.substring(1,p.length-1):path=p.substring(1)).split("/")};return{setMode:function(mode){strictMode=mode=="strict"?true:false;return this},setUrl:function(newUri){options.url=newUri===undefined?window.location:newUri;setUp();return this},segment:function(pos){if(!parsed.length){setUp()}if(pos===undefined){return segments.length}return(segments[pos]===""||segments[pos]===undefined)?null:segments[pos]},attr:key,param:param}}();
+/**
+ * Cookie plugin
+ *
+ * Copyright (c) 2006 Klaus Hartl (stilbuero.de)
+ * Dual licensed under the MIT and GPL licenses:
+ * http://www.opensource.org/licenses/mit-license.php
+ * http://www.gnu.org/licenses/gpl.html
+ *
+ */
+
+/**
+ * Create a cookie with the given name and value and other optional parameters.
+ *
+ * @example $.cookie('the_cookie', 'the_value');
+ * @desc Set the value of a cookie.
+ * @example $.cookie('the_cookie', 'the_value', { expires: 7, path: '/', domain: 'jquery.com', secure: true });
+ * @desc Create a cookie with all available options.
+ * @example $.cookie('the_cookie', 'the_value');
+ * @desc Create a session cookie.
+ * @example $.cookie('the_cookie', null);
+ * @desc Delete a cookie by passing null as value. Keep in mind that you have to use the same path and domain
+ *       used when the cookie was set.
+ *
+ * @param String name The name of the cookie.
+ * @param String value The value of the cookie.
+ * @param Object options An object literal containing key/value pairs to provide optional cookie attributes.
+ * @option Number|Date expires Either an integer specifying the expiration date from now on in days or a Date object.
+ *                             If a negative value is specified (e.g. a date in the past), the cookie will be deleted.
+ *                             If set to null or omitted, the cookie will be a session cookie and will not be retained
+ *                             when the the browser exits.
+ * @option String path The value of the path atribute of the cookie (default: path of page that created the cookie).
+ * @option String domain The value of the domain attribute of the cookie (default: domain of page that created the cookie).
+ * @option Boolean secure If true, the secure attribute of the cookie will be set and the cookie transmission will
+ *                        require a secure protocol (like HTTPS).
+ * @type undefined
+ *
+ * @name $.cookie
+ * @cat Plugins/Cookie
+ * @author Klaus Hartl/klaus.hartl@stilbuero.de
+ */
+
+/**
+ * Get the value of a cookie with the given name.
+ *
+ * @example $.cookie('the_cookie');
+ * @desc Get the value of a cookie.
+ *
+ * @param String name The name of the cookie.
+ * @return The value of the cookie.
+ * @type String
+ *
+ * @name $.cookie
+ * @cat Plugins/Cookie
+ * @author Klaus Hartl/klaus.hartl@stilbuero.de
+ */
+jQuery.cookie = function(name, value, options) {
+    if (typeof value != 'undefined') { // name and value given, set cookie
+        options = options || {};
+        if (value === null) {
+            value = '';
+            options.expires = -1;
+        }
+        var expires = '';
+        if (options.expires && (typeof options.expires == 'number' || options.expires.toUTCString)) {
+            var date;
+            if (typeof options.expires == 'number') {
+                date = new Date();
+                date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
+            } else {
+                date = options.expires;
+            }
+            expires = '; expires=' + date.toUTCString(); // use expires attribute, max-age is not supported by IE
+        }
+        var path = options.path ? '; path=' + (options.path) : '';
+        var domain = options.domain ? '; domain=' + (options.domain) : '';
+        var secure = options.secure ? '; secure' : '';
+        document.cookie = [name, '=', encodeURIComponent(value), expires, path, domain, secure].join('');
+    } else { // only name given, get cookie
+        var cookieValue = null;
+        if (document.cookie && document.cookie != '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = jQuery.trim(cookies[i]);
+                if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+};
 /* Copyright (c) 2006 Brandon Aaron (http://brandonaaron.net)
  * Dual licensed under the MIT (http://www.opensource.org/licenses/mit-license.php)
  * and GPL (http://www.opensource.org/licenses/gpl-license.php) licenses.
@@ -1452,131 +1203,7 @@ jQuery.ui||(function(a){a.ui={version:"1.8",plugin:{add:function(c,d,f){var e=a.
         }
     };
 })();
-/* FILE util.js */
 
-sparks.util.readCookie = function (name) {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0;i < ca.length;i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) === 0) {
-            return c.substring(nameEQ.length,c.length);
-        }
-    }
-    return null;
-};
-
-/*
-sparks.util.checkFlashVersion = function () {
-    var major = 10;
-    var minor = 0;
-    var revision = 31;
-
-    if (!DetectFlashVer(10, 0, 33)) {
-        var msg = 'This activity requires Flash version ';
-        msg += major + '.' + minor + '.' + revision + '. ';
-
-        $('body').html('<p>' + msg + '</p>');
-    }
-    document.write('<p>Flash version: ' + GetSwfVer() + '</p>');
-};
-*/
-
-sparks.util.Alternator = function (x, y)
-{
-    this.x = x;
-    this.y = y;
-    this.cnt = 0;
-};
-sparks.util.Alternator.prototype =
-{
-    next : function () {
-        ++this.cnt;
-        return this.cnt % 2 == 1 ? this.x : this.y;
-    }
-};
-
-sparks.util.timeLapseStr = function (start, end) {
-    var seconds = Math.floor((end - start) / 1000);
-    var minutes = Math.floor(seconds / 60);
-    seconds = seconds % 60;
-    var str = seconds + (seconds == 1 ? ' second' : ' seconds');
-    if (minutes > 0) {
-        str = minutes + (minutes == 1 ? ' minute ' : ' minutes ') + str;
-    }
-    return str;
-};
-
-/**
-The initial version of this was copied from the serializeArray method of jQuery
-this version returns a result object and uses the names of the input elements
-as the actual keys in the result object.  This requires more careful naming but it
-makes using the returned object easier.  It could be improved to handle dates and
-numbers perhaps using style classes to tag them as such.
-*/
-sparks.util.serializeForm = function (form) {
-    var result = {};
-    form.map(function () {
-        return this.elements ? jQuery.makeArray(this.elements) : this;
-    }).filter(function () {
-        return this.name &&
-        (this.checked || (/select|textarea/i).test(this.nodeName) ||
-        (/text|hidden|password|search/i).test(this.type));
-    }).each(function (i) {
-        var val = jQuery(this).val();
-        if(val === null){
-            return;
-        }
-
-        if (jQuery.isArray(val)) {
-            result[this.name] = jQuery.makeArray(val);
-        }
-        else {
-            result[this.name] = val;
-        }
-    });
-    return result;
-};
-
-sparks.util.formatDate = function (date) {
-    function fillZero(val) {
-        return val < 10 ? '0' + val : String(val);
-    }
-    if (typeof date === 'number') {
-        date = new Date(date);
-    }
-    var s = fillZero(date.getMonth() + 1) + '/';
-
-    s += fillZero(date.getDate()) + '/';
-    s += String(date.getFullYear()) + ' ';
-    s += fillZero(date.getHours()) + ':';
-    s += fillZero(date.getMinutes()) + ':';
-    s += fillZero(date.getSeconds()) + ' ';
-    return s;
-};
-
-sparks.util.prettyPrint = function (obj, indent) {
-    var t = '';
-    if (typeof obj === 'object') {
-        for (var key in obj) {
-            if (typeof obj[key] !== 'function') {
-                for (var i = 0; i < indent; ++i) {
-                    t += ' ';
-                }
-                t += key + ': ';
-                if (typeof obj[key] === 'object') {
-                    t += '\n';
-                }
-                t += sparks.util.prettyPrint(obj[key], indent + 4);
-            }
-        }
-        return t;
-    }
-    else {
-        return obj + '\n';
-    }
-};
 /* FILE flash_version_dectection.js */
 
 
@@ -1828,6 +1455,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
   if (mimeType) ret.embedAttrs["type"] = mimeType;
   return ret;
 }
+
 /* FILE flash_comm.js */
 
 (function () {
@@ -1925,6 +1553,132 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
 
 })();
 
+/* FILE util.js */
+
+sparks.util.readCookie = function (name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) === 0) {
+            return c.substring(nameEQ.length,c.length);
+        }
+    }
+    return null;
+};
+
+/*
+sparks.util.checkFlashVersion = function () {
+    var major = 10;
+    var minor = 0;
+    var revision = 31;
+
+    if (!DetectFlashVer(10, 0, 33)) {
+        var msg = 'This activity requires Flash version ';
+        msg += major + '.' + minor + '.' + revision + '. ';
+
+        $('body').html('<p>' + msg + '</p>');
+    }
+    document.write('<p>Flash version: ' + GetSwfVer() + '</p>');
+};
+*/
+
+sparks.util.Alternator = function (x, y)
+{
+    this.x = x;
+    this.y = y;
+    this.cnt = 0;
+};
+sparks.util.Alternator.prototype =
+{
+    next : function () {
+        ++this.cnt;
+        return this.cnt % 2 == 1 ? this.x : this.y;
+    }
+};
+
+sparks.util.timeLapseStr = function (start, end) {
+    var seconds = Math.floor((end - start) / 1000);
+    var minutes = Math.floor(seconds / 60);
+    seconds = seconds % 60;
+    var str = seconds + (seconds == 1 ? ' second' : ' seconds');
+    if (minutes > 0) {
+        str = minutes + (minutes == 1 ? ' minute ' : ' minutes ') + str;
+    }
+    return str;
+};
+
+/**
+The initial version of this was copied from the serializeArray method of jQuery
+this version returns a result object and uses the names of the input elements
+as the actual keys in the result object.  This requires more careful naming but it
+makes using the returned object easier.  It could be improved to handle dates and
+numbers perhaps using style classes to tag them as such.
+*/
+sparks.util.serializeForm = function (form) {
+    var result = {};
+    form.map(function () {
+        return this.elements ? jQuery.makeArray(this.elements) : this;
+    }).filter(function () {
+        return this.name &&
+        (this.checked || (/select|textarea/i).test(this.nodeName) ||
+        (/text|hidden|password|search/i).test(this.type));
+    }).each(function (i) {
+        var val = jQuery(this).val();
+        if(val === null){
+            return;
+        }
+
+        if (jQuery.isArray(val)) {
+            result[this.name] = jQuery.makeArray(val);
+        }
+        else {
+            result[this.name] = val;
+        }
+    });
+    return result;
+};
+
+sparks.util.formatDate = function (date) {
+    function fillZero(val) {
+        return val < 10 ? '0' + val : String(val);
+    }
+    if (typeof date === 'number') {
+        date = new Date(date);
+    }
+    var s = fillZero(date.getMonth() + 1) + '/';
+
+    s += fillZero(date.getDate()) + '/';
+    s += String(date.getFullYear()) + ' ';
+    s += fillZero(date.getHours()) + ':';
+    s += fillZero(date.getMinutes()) + ':';
+    s += fillZero(date.getSeconds()) + ' ';
+    return s;
+};
+
+sparks.util.prettyPrint = function (obj, indent) {
+    var t = '';
+    if (typeof obj === 'object') {
+        for (var key in obj) {
+            if (typeof obj[key] !== 'function') {
+                for (var i = 0; i < indent; ++i) {
+                    t += ' ';
+                }
+                t += key + ': ';
+                if (typeof obj[key] === 'object') {
+                    t += '\n';
+                }
+                t += sparks.util.prettyPrint(obj[key], indent + 4);
+            }
+        }
+        return t;
+    }
+    else {
+        return obj + '\n';
+    }
+};
+
 /* FILE activity.js */
 
 (function () {
@@ -1976,6 +1730,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
     };
 
 })();
+
 /* FILE string.js */
 
 (function () {
@@ -2004,6 +1759,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
 
 
 })();
+
 /* FILE ui.js */
 
 (function () {
@@ -2703,7 +2459,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
     });
 })();
 
-/* FILE activity-config.js */
+/* FILE setup-common.js */
 
 (function () {
 
@@ -2712,6 +2468,18 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
     this.sparks.activities.mr.assessment = {};
 
     sparks.activities.mr.config.root_dir = sparks.config.root_dir + '/activities/measuring-resistance';
+
+})();
+
+/* FILE setup-activity.js */
+
+(function () {
+
+    sparks.config.debug = jQuery.url.param("debug") !== undefined;
+    sparks.config.debug_nbands = jQuery.url.param("n") ? Number(jQuery.url.param("n")) : null;
+    sparks.config.debug_rvalue = jQuery.url.param("r") ? Number(jQuery.url.param("r")) : null;
+    sparks.config.debug_mvalue = jQuery.url.param("m") ? Number(jQuery.url.param("m")) : null;
+    sparks.config.debug_tvalue = jQuery.url.param("t") ? Number(jQuery.url.param("t")) : null;
 
 })();
 
@@ -2773,6 +2541,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
     };
 
 })();
+
 /* FILE activity-log.js */
 
 (function () {
@@ -2992,6 +2761,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
      };
 
 })();
+
 /* FILE unit.js */
 
 (function () {
@@ -3077,6 +2847,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
 
 
 })();
+
 /* FILE feedback.js */
 
 (function () {
@@ -3089,7 +2860,6 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
      * Reporter uses feedback items to generate the report.
      */
     mr.FeedbackItem = function (maxPoints) {
-
         this.correct = 0;
 
         this.feedbacks = [];
@@ -3135,6 +2905,12 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
     };
 
     mr.Feedback = function () {
+        this.optimal_dial_setting = '';
+        this.initial_dial_setting = '';
+        this.final_dial_setting = '';
+        this.time_reading = 0;
+        this.time_measuring = 0;
+
         this.root = new mr.FeedbackItem();
 
         this.root.reading = new mr.FeedbackItem();
@@ -3462,6 +3238,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
     };
 
 })();
+
 /* FILE log-parser.js */
 
 (function () {
@@ -3686,6 +3463,9 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
 
         grade: function () {
 
+            this.realCorrectMin = this.section.nominal_resistance * (1 - this.section.tolerance);
+            this.realCorrectMax = this.section.nominal_resistance * (1 + this.section.tolerance);
+
             this.gradeReadingColorBands();
             this.gradeTolerance();
             this.gradeResistance();
@@ -3694,15 +3474,24 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
             this.gradeTime();
             this.gradeSettings();
 
-            debug('measurd_r_value.points=' + this.feedback.root.measuring.measured_r_value.points);
-
+            root = this.feedback.root;
+            root.points = root.getPoints();
+            root.maxPoints = root.getMaxPoints();
+            root.reading.points = root.reading.getPoints();
+            root.reading.maxPoints = root.reading.getMaxPoints();
+            root.measuring.points = root.reading.getPoints();
+            root.measuring.maxPoints = root.measuring.getMaxPoints();
+            root.t_range.points = root.t_range.getPoints();
+            root.t_range.maxPoints = root.t_range.getMaxPoints();
+            root.time.points = root.time.getPoints();
+            root.time.maxPoints = root.time.getMaxPoints();
             return this.feedback;
         },
 
         gradeReadingColorBands: function () {
             var question = this.questions[0];
-            var fb = this.feedback.root.reading.rated_r_value;
             var unitCorrect = true;
+            var fb = this.feedback.root.reading.rated_r_value;
 
             fb.correct = 0;
             fb.points = 0;
@@ -3723,7 +3512,6 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
             var parsedValue = unit.normalizeToOhms(question.answer, question.unit);
             this.resistanceAnswer = parsedValue;
 
-            console.log('parsedValue=' + parsedValue + ' correctValue=' + question.correct_answer);
 
             if (question.correct_answer != parsedValue) {
                 if (unitCorrect) {
@@ -3829,7 +3617,9 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
         gradeToleranceRange: function () {
             var question = this.questions[3];
             var fb = this.feedback.root.t_range.t_range_value;
-            var nominalResistance = null;
+            var nominalResistance;
+
+            question.correct_answer = [this.realCorrectMin, this.realCorrectMax];
 
             if (this.resistanceAnswer) {
                 nominalResistance = this.resistanceAnswer;
@@ -3845,8 +3635,6 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
             var correctMin = nominalResistance * (1 - tolerance);
             var correctMax = nominalResistance * (1 + tolerance);
 
-
-            question.correct_answer = [correctMin, correctMax];
 
             var min = question.answer[0];
             var max = question.answer[1];
@@ -3880,7 +3668,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
                 parsedMin = parsedMax;
                 parsedMax = tmp;
             }
-debug;
+
             if (this.equalWithTolerance(parsedMin, correctMin, 1e-5) &&
                 this.equalWithTolerance(parsedMax, correctMax, 1e-5))
             {
@@ -3920,6 +3708,19 @@ debug;
         },
 
         gradeWithinTolerance: function () {
+            var question = this.questions[4];
+            var correctAnswer;
+            var nominalResistance = null;
+
+            if (this.section.displayed_resistance >= this.realCorrectMin &&
+                this.section.displayed_resistance <= this.realCorrectMax)
+            {
+                question.correct_answer = 'yes';
+            }
+            else {
+                question.correct_answer = 'no';
+            }
+
             var fb = this.feedback.root.t_range.within_tolerance;
 
             if (this.feedback.root.measuring.measured_r_value.correct < 4 ||
@@ -3930,11 +3731,6 @@ debug;
                 fb.addFeedback('undef');
                 return;
             }
-
-            var question = this.questions[4];
-            var correctAnswer;
-
-            var nominalResistance = null;
 
             if (this.resistanceAnswer) {
                 nominalResistance = this.resistanceAnswer;
@@ -3968,7 +3764,6 @@ debug;
             var did = (correctAnswer === 'no') ? 'did not' : 'did';
             var is = (correctAnswer == 'no') ? 'is not' : 'is';
 
-            question.correct_answer = correctAnswer;
             if (question.answer != correctAnswer) {
                 fb.addFeedback('incorrect',
                         unit.res_str(this.measuredResistanceAnswer),
@@ -3991,7 +3786,8 @@ debug;
             var seconds;
             var fb;
 
-            seconds = (this.questions[1].end_time - this.questions[0].start_time) / 1000;
+            this.feedback.reading_time = this.questions[1].end_time - this.questions[0].start_time;
+            seconds = this.feedback.reading_time / 1000;
             fb = this.feedback.root.time.reading_time;
             if (seconds <= 20) {
                 fb.points = 5;
@@ -4009,7 +3805,8 @@ debug;
                 fb.addFeedback('slow', Math.round(seconds));
             }
 
-            seconds = (this.questions[2].end_time - this.questions[2].start_time) / 1000;
+            this.feedback.measuring_time = this.questions[2].end_time - this.questions[2].start_time;
+            seconds = this.feedback.measuring_time / 1000;
             fb = this.feedback.root.time.measuring_time;
             if (seconds <= 20) {
                 fb.points = 5;
@@ -4972,7 +4769,9 @@ debug;
         saveStudentData : function () {
             if (this.dataService) {
                 var obj = { learner_id: this.learner_id,
-                            content: JSON.stringify([this.log.currentSession()]) };
+                            content: JSON.stringify([this.log.currentSession()]),
+                            graded_result: JSON.stringify(this.feedback)
+                };
                 this.dataService.save(obj);
             }
             else {
