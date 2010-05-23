@@ -1,12 +1,10 @@
 //= require <activity>
-//= require <flash_version_detection>
-//= require <flash_version_detection>
 //= require <string>
 //= require <ui>
 //= require <circuit/multimeter>
 //= require <circuit/resistor-4band>
 //= require <circuit/resistor-5band>
-//= require "activity-config"
+//= require "setup-activity"
 //= require "activity-dom-helper"
 //= require "assessment/activity-log"
 //= require "assessment/assessment"
@@ -361,7 +359,9 @@
         saveStudentData : function () {
             if (this.dataService) {
                 var obj = { learner_id: this.learner_id,
-                            content: JSON.stringify([this.log.currentSession()]) };
+                            content: JSON.stringify([this.log.currentSession()]),
+                            graded_result: JSON.stringify(this.feedback)
+                };
                 this.dataService.save(obj);
             }
             else {
