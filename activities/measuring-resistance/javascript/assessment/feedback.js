@@ -1,3 +1,5 @@
+//= require "../setup-common"
+
 /* FILE feedback.js */
 
 (function () {
@@ -10,7 +12,6 @@
      * Reporter uses feedback items to generate the report.
      */
     mr.FeedbackItem = function (maxPoints) {
-
         // "correctness" on the scale of 0 to 4 for the purpose of labeling/coloring
         // 0 means incorrect, 4 correct, 1 thru 3 partially correct
         this.correct = 0;
@@ -58,6 +59,12 @@
     };
 
     mr.Feedback = function () {
+        this.optimal_dial_setting = '';
+        this.initial_dial_setting = '';
+        this.final_dial_setting = '';
+        this.time_reading = 0;
+        this.time_measuring = 0;
+        
         this.root = new mr.FeedbackItem();
 
         this.root.reading = new mr.FeedbackItem();

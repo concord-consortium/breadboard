@@ -1,6 +1,7 @@
 //= require <math>
 //= require <string>
 //= require <unit>
+//= require "../setup-common"
 //= require "feedback"
 //= require "log-parser"
 
@@ -33,6 +34,9 @@
 
         grade: function () {
             //console.log('ENTER Grader.grade');
+        
+            this.realCorrectMin = this.section.nominal_resistance * (1 - this.section.tolerance);
+            this.realCorrectMax = this.section.nominal_resistance * (1 + this.section.tolerance);
 
             this.gradeReadingColorBands();
             this.gradeTolerance();
@@ -42,16 +46,27 @@
             this.gradeTime();
             this.gradeSettings();
 
-            debug('measurd_r_value.points=' + this.feedback.root.measuring.measured_r_value.points);
-
+            // Update non-leaf node values so they can be saved to json
+            // and used later by server.
+            root = this.feedback.root;
+            root.points = root.getPoints();
+            root.maxPoints = root.getMaxPoints();
+            root.reading.points = root.reading.getPoints();
+            root.reading.maxPoints = root.reading.getMaxPoints();
+            root.measuring.points = root.reading.getPoints();
+            root.measuring.maxPoints = root.measuring.getMaxPoints();
+            root.t_range.points = root.t_range.getPoints();
+            root.t_range.maxPoints = root.t_range.getMaxPoints();
+            root.time.points = root.time.getPoints();
+            root.time.maxPoints = root.time.getMaxPoints();
             return this.feedback;
         },
 
         gradeReadingColorBands: function () {
             var question = this.questions[0];
-            var fb = this.feedback.root.reading.rated_r_value;
             var unitCorrect = true;
-
+            var fb = this.feedback.root.reading.rated_r_value;
+            
             fb.correct = 0;
             fb.points = 0;
 
@@ -71,7 +86,7 @@
             var parsedValue = unit.normalizeToOhms(question.answer, question.unit);
             this.resistanceAnswer = parsedValue;
 
-            console.log('parsedValue=' + parsedValue + ' correctValue=' + question.correct_answer);
+            //console.log('parsedValue=' + parsedValue + ' correctValue=' + question.correct_answer);
 
             if (question.correct_answer != parsedValue) {
                 if (unitCorrect) {
@@ -178,7 +193,9 @@
             //console.log('ENTER Grader.gradeToleranceRange');
             var question = this.questions[3];
             var fb = this.feedback.root.t_range.t_range_value;
-            var nominalResistance = null;
+            var nominalResistance;
+            
+            question.correct_answer = [this.realCorrectMin, this.realCorrectMax];
             
             if (this.resistanceAnswer) {
                 nominalResistance = this.resistanceAnswer;
@@ -195,8 +212,6 @@
             var correctMax = nominalResistance * (1 + tolerance);
 
             //console.log('nom=' + nominalResistance + ' tol=' + tolerance + ' min=' + correctMin + ' max=' + correctMax);
-
-            question.correct_answer = [correctMin, correctMax];
 
             var min = question.answer[0];
             var max = question.answer[1];
@@ -233,7 +248,7 @@
                 parsedMin = parsedMax;
                 parsedMax = tmp;
             }
-debug;
+
             if (this.equalWithTolerance(parsedMin, correctMin, 1e-5) &&
                 this.equalWithTolerance(parsedMax, correctMax, 1e-5))
             {
@@ -273,6 +288,19 @@ debug;
         },
 
         gradeWithinTolerance: function () {
+            var question = this.questions[4];
+            var correctAnswer;
+            var nominalResistance = null;
+            
+            if (this.section.displayed_resistance >= this.realCorrectMin &&
+                this.section.displayed_resistance <= this.realCorrectMax)
+            {
+                question.correct_answer = 'yes';
+            }
+            else {
+                question.correct_answer = 'no';
+            }
+            
             var fb = this.feedback.root.t_range.within_tolerance;
             
             if (this.feedback.root.measuring.measured_r_value.correct < 4 ||
@@ -283,11 +311,6 @@ debug;
                 fb.addFeedback('undef');
                 return;
             }
-            
-            var question = this.questions[4];
-            var correctAnswer;
-            
-            var nominalResistance = null;
             
             if (this.resistanceAnswer) {
                 nominalResistance = this.resistanceAnswer;
@@ -322,7 +345,6 @@ debug;
             var did = (correctAnswer === 'no') ? 'did not' : 'did';
             var is = (correctAnswer == 'no') ? 'is not' : 'is';
             
-            question.correct_answer = correctAnswer;
             if (question.answer != correctAnswer) {
                 fb.addFeedback('incorrect',
                         unit.res_str(this.measuredResistanceAnswer),
@@ -345,7 +367,8 @@ debug;
             var seconds;
             var fb;
 
-            seconds = (this.questions[1].end_time - this.questions[0].start_time) / 1000;
+            this.feedback.reading_time = this.questions[1].end_time - this.questions[0].start_time;
+            seconds = this.feedback.reading_time / 1000;
             fb = this.feedback.root.time.reading_time;
             if (seconds <= 20) {
                 fb.points = 5;
@@ -363,7 +386,8 @@ debug;
                 fb.addFeedback('slow', Math.round(seconds));
             }
 
-            seconds = (this.questions[2].end_time - this.questions[2].start_time) / 1000;
+            this.feedback.measuring_time = this.questions[2].end_time - this.questions[2].start_time;
+            seconds = this.feedback.measuring_time / 1000;
             fb = this.feedback.root.time.measuring_time;
             if (seconds <= 20) {
                 fb.points = 5;
