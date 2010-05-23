@@ -1,6 +1,6 @@
-//= require <sparks-config-common>
+//= require <setup-common>
 
-/* FILE activity-config.js */
+/* FILE setup-common.js */
 
 (function () {
 

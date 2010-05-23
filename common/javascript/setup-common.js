@@ -1,10 +1,6 @@
-//= require <http>
 //= require <json2>
-//= require <jquery/jquery-1.4.2.min>
-//= require <jquery/plugins/jquery.cookie>
-//= require <jquery/plugins/jquery.url.packed>
 
-/* FILE sparks-config-common.js */
+/* FILE setup-common.js */
 
 (function () {
     
@@ -17,7 +13,15 @@
         this.console = {};
     }
     if (!console.log) {
-        console.log = function () {};
+        if (typeof print !== 'undefined') {
+            console.log = print;
+        }
+        else if (typeof debug !== 'undefined') {
+            console.log = debug;
+        }
+        else {
+            console.log = function () {};
+        }
     }
     
     if (typeof debug === 'undefined' || !debug) {
@@ -46,12 +50,6 @@
     }
 
     sparks.config.root_dir = '/sparks-content';
-    
-    sparks.config.debug = jQuery.url.param("debug") !== undefined;
-    sparks.config.debug_nbands = jQuery.url.param("n") ? Number(jQuery.url.param("n")) : null;
-    sparks.config.debug_rvalue = jQuery.url.param("r") ? Number(jQuery.url.param("r")) : null;
-    sparks.config.debug_mvalue = jQuery.url.param("m") ? Number(jQuery.url.param("m")) : null;
-    sparks.config.debug_tvalue = jQuery.url.param("t") ? Number(jQuery.url.param("t")) : null;
     
     // YUI-style inheritance
     sparks.extend = function(Child, Parent, properties) {

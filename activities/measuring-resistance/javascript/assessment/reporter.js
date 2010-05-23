@@ -1,4 +1,5 @@
 //= require <unit>
+//= require "../setup-common"
 
 /* FILE reporter.js */
 

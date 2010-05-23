@@ -1,10 +1,14 @@
-//= require "sparks-config-common"
+//= require "setup-common"
+//= require <jquery/jquery-1.4.2.min>
 //= require <jquery/jquery-ui-1.8.custom.min>
+//= require <jquery/plugins/jquery.url.packed>
+//= require <jquery/plugins/jquery.cookie>
 //= require <jquery/plugins/jquery.bgiframe.min>
 //= require <data-service/RestDS-jQuery>
+//= require <flash_version_detection>
+//= require <flash_version_detection>
+//= require <flash_comm>
 //= require <util>
-//= require "flash_version_detection"
-//= require "flash_comm"
 
 /* FILE activity.js */
 

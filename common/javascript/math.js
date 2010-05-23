@@ -1,4 +1,5 @@
 //= require <string>
+//= require "setup-common"
 
 /* FILE math.js */
 

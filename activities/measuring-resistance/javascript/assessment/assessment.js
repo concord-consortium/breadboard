@@ -1,3 +1,4 @@
+//= require "../setup-common"
 //= require "grader"
 
 /* FILE assessment.js */

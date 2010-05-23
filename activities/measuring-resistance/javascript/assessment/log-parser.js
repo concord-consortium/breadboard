@@ -1,3 +1,5 @@
+//= require "../setup-common"
+
 /* FILE log-parser.js */
 
 (function () {

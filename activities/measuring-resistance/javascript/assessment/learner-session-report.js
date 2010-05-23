@@ -1,4 +1,4 @@
-//= require "../activity-config"
+//= require "../setup-activity"
 //= require <jquery/jquery-ui-1.8.custom.min>
 //= require <data-service/RestDS-jQuery>
 //= require <util>

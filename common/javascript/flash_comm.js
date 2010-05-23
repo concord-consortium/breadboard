@@ -1,3 +1,5 @@
+//= require "setup-common"
+
 /* FILE flash_comm.js */
 
 (function () {
