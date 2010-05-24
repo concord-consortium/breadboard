@@ -1,5 +1,6 @@
-//= require "../setup-activity"
+//= require <jquery/jquery-1.4.2.min>
 //= require <jquery/jquery-ui-1.8.custom.min>
+//= require <jquery/plugins/jquery.cookie>
 //= require <data-service/RestDS-jQuery>
 //= require <util>
 //= require "grader"

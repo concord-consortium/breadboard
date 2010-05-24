@@ -4,7 +4,6 @@
 //= require <circuit/multimeter>
 //= require <circuit/resistor-4band>
 //= require <circuit/resistor-5band>
-//= require "setup-activity"
 //= require "activity-dom-helper"
 //= require "assessment/activity-log"
 //= require "assessment/assessment"
@@ -17,6 +16,12 @@
     var mr = sparks.activities.mr;
     var flash = sparks.flash;
     var str = sparks.string;
+    
+    sparks.config.debug = jQuery.url.param("debug") !== undefined;
+    sparks.config.debug_nbands = jQuery.url.param("n") ? Number(jQuery.url.param("n")) : null;
+    sparks.config.debug_rvalue = jQuery.url.param("r") ? Number(jQuery.url.param("r")) : null;
+    sparks.config.debug_mvalue = jQuery.url.param("m") ? Number(jQuery.url.param("m")) : null;
+    sparks.config.debug_tvalue = jQuery.url.param("t") ? Number(jQuery.url.param("t")) : null;
 
     mr.Activity = function () {
         mr.Activity.uber.init.apply(this);
