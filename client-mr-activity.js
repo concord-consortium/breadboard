@@ -2471,18 +2471,6 @@ sparks.util.prettyPrint = function (obj, indent) {
 
 })();
 
-/* FILE setup-activity.js */
-
-(function () {
-
-    sparks.config.debug = jQuery.url.param("debug") !== undefined;
-    sparks.config.debug_nbands = jQuery.url.param("n") ? Number(jQuery.url.param("n")) : null;
-    sparks.config.debug_rvalue = jQuery.url.param("r") ? Number(jQuery.url.param("r")) : null;
-    sparks.config.debug_mvalue = jQuery.url.param("m") ? Number(jQuery.url.param("m")) : null;
-    sparks.config.debug_tvalue = jQuery.url.param("t") ? Number(jQuery.url.param("t")) : null;
-
-})();
-
 /* FILE activity-dom-helper.js */
 
 (function () {
@@ -2870,24 +2858,27 @@ sparks.util.prettyPrint = function (obj, indent) {
 
     mr.FeedbackItem.prototype = {
 
-        getPoints : function () {
-            var points = 0;
-            for (var key in this) {
+        updatePoints : function () {
+            var key;
+            var isLeaf = true;
+            for (key in this) {
                 if (this[key] instanceof mr.FeedbackItem) {
-                    points += this[key].getPoints();
+                    isLeaf = false;
+                    break;
                 }
             }
-            return points + this.points;
-        },
-
-        getMaxPoints: function () {
-            var maxPoints = 0;
-            for (var key in this) {
-                if (this[key] instanceof mr.FeedbackItem) {
-                    maxPoints += this[key].getMaxPoints();
+            if (!isLeaf) {
+                this.points = 0;
+                this.maxPoints = 0;
+                for (key in this) {
+                    if (this[key] instanceof mr.FeedbackItem) {
+                        pair = this[key].updatePoints();
+                        this.points += pair[0];
+                        this.maxPoints += pair[1];
+                    }
                 }
             }
-            return maxPoints + this.maxPoints;
+            return [this.points, this.maxPoints];
         },
 
         addFeedback: function (key) {
@@ -3474,17 +3465,8 @@ sparks.util.prettyPrint = function (obj, indent) {
             this.gradeTime();
             this.gradeSettings();
 
-            root = this.feedback.root;
-            root.points = root.getPoints();
-            root.maxPoints = root.getMaxPoints();
-            root.reading.points = root.reading.getPoints();
-            root.reading.maxPoints = root.reading.getMaxPoints();
-            root.measuring.points = root.reading.getPoints();
-            root.measuring.maxPoints = root.measuring.getMaxPoints();
-            root.t_range.points = root.t_range.getPoints();
-            root.t_range.maxPoints = root.t_range.getMaxPoints();
-            root.time.points = root.time.getPoints();
-            root.time.maxPoints = root.time.getMaxPoints();
+            this.feedback.root.updatePoints();
+
             return this.feedback;
         },
 
@@ -4186,38 +4168,38 @@ sparks.util.prettyPrint = function (obj, indent) {
             $('#rated_r_correct').text(unit.res_str(questions[0].correct_answer));
             text = questions[0].answer ? questions[0].answer + questions[0].unit : 'No Answer';
             this.setAnswerTextWithColor('#rated_r_answer', text, fb);
-            $('#rated_r_points').text(fb.getPoints() + ' / ' + fb.getMaxPoints());
+            $('#rated_r_points').text(fb.points + ' / ' + fb.maxPoints);
             this.addFeedback($('#rated_r_feedback'), fb, this.readingHintPath);
 
             fb = feedback.root.reading.rated_t_value;
             $('#rated_t_correct').text(questions[1].correct_answer * 100 + '%');
             text = questions[1].answer ? questions[1].answer + questions[1].unit : 'No Answer';
             this.setAnswerTextWithColor('#rated_t_answer', text, fb);
-            $('#rated_t_points').text(fb.getPoints() + ' / ' + fb.getMaxPoints());
+            $('#rated_t_points').text(fb.points + ' / ' + fb.maxPoints);
             this.addFeedback($('#rated_t_feedback'), fb, this.readingHintPath);
 
             fb = feedback.root.t_range.t_range_value;
             $('#t_range_correct').text('[' + unit.res_str(questions[3].correct_answer[0]) + ', ' + unit.res_str(questions[3].correct_answer[1]) + ']');
             text = (questions[3].answer[0] || questions[3].answer[1]) ? '[' + String(questions[3].answer[0]) + questions[3].unit[0] + ', ' + questions[3].answer[1] + questions[3].unit[1] + ']' : 'No Answer';
             this.setAnswerTextWithColor('#t_range_answer', text, fb);
-            $('#t_range_value_points').text(fb.getPoints() + ' / ' + fb.getMaxPoints());
+            $('#t_range_value_points').text(fb.points + ' / ' + fb.maxPoints);
             this.addFeedback($('#t_range_feedback'), fb, this.toleranceHintPath);
 
             fb = feedback.root.t_range.within_tolerance;
             $('#within_correct').text(questions[4].correct_answer);
             text = questions[4].answer ? questions[4].answer : 'No Answer';
             this.setAnswerTextWithColor('#within_answer', text, fb);
-            $('#within_points').text(fb.getPoints() + ' / ' + fb.getMaxPoints());
+            $('#within_points').text(fb.points + ' / ' + fb.maxPoints);
             this.addFeedback($('#within_feedback'), fb, this.toleranceHintPath);
 
             fb = feedback.root.time.reading_time;
             this.setAnswerTextWithColor('#reading_time', sparks.util.timeLapseStr(questions[0].start_time, questions[1].end_time), fb);
-            $('#reading_time_points').text(fb.getPoints() + ' / ' + fb.getMaxPoints());
+            $('#reading_time_points').text(fb.points + ' / ' + fb.maxPoints);
             this.addFeedback($('#reading_time_feedback'), fb, this.readingHintPath);
 
             fb = feedback.root.time.measuring_time;
             this.setAnswerTextWithColor('#measuring_time', sparks.util.timeLapseStr(questions[2].start_time, questions[2].end_time), fb);
-            $('#measuring_time_points').text(fb.getPoints() + ' / ' + fb.getMaxPoints());
+            $('#measuring_time_points').text(fb.points + ' / ' + fb.maxPoints);
             this.addFeedback($('#measuring_time_feedback'), fb, this.measuringHintPath);
 
             fb = feedback.root.measuring.probe_connection;
@@ -4267,7 +4249,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             }
             this.setTextWithColor('#knob_setting_answer', this.dialLabels[feedback.submit_dial_setting], color);
 
-            $('#knob_setting_points').text(fb.getPoints() + ' / ' + fb.getMaxPoints());
+            $('#knob_setting_points').text(fb.points + ' / ' + fb.maxPoints);
             this.addFeedback($('#knob_setting_feedback'), fb, this.measuringHintPath);
 
             if (feedback.root.measuring.power_switch.correct == 4) {
@@ -4282,7 +4264,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             $('#measured_r_correct').text(unit.res_str(questions[2].correct_answer));
             text = questions[2].answer ? questions[2].answer + questions[2].unit : 'No Answer';
             this.setAnswerTextWithColor('#measured_r_answer', text, fb);
-            $('#measured_r_points').text(fb.getPoints() + ' / ' + fb.getMaxPoints());
+            $('#measured_r_points').text(fb.points + ' / ' + fb.maxPoints);
             this.addFeedback($('#measured_r_feedback'), fb, this.measuringHintPath);
 
             fb = feedback.root.measuring.plug_connection;
@@ -4292,7 +4274,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             else {
                 this.setTextWithColor('#plug_connection_answer', 'Incorrect', this.red);
             }
-            $('#plug_connection_points').text(fb.getPoints() + ' / ' + fb.getMaxPoints());
+            $('#plug_connection_points').text(fb.points + ' / ' + fb.maxPoints);
             this.addFeedback($('#plug_connection_feedback'), fb, this.measuringHintPath);
 
             fb = feedback.root.measuring.probe_connection;
@@ -4302,7 +4284,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             else {
                 this.setTextWithColor('#probe_connection_answer', 'Incorrect', this.red);
             }
-            $('#probe_connection_points').text(fb.getPoints() + ' / ' + fb.getMaxPoints());
+            $('#probe_connection_points').text(fb.points + ' / ' + fb.maxPoints);
             this.addFeedback($('#probe_connection_feedback'), fb, this.measuringHintPath);
 
             fb = feedback.root.measuring.power_switch;
@@ -4312,7 +4294,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             else {
                 this.setTextWithColor('#power_switch_answer', 'Incorrect', this.red);
             }
-            $('#power_switch_points').text(fb.getPoints() + ' / ' + fb.getMaxPoints());
+            $('#power_switch_points').text(fb.points + ' / ' + fb.maxPoints);
             this.addFeedback($('#power_switch_feedback'), fb, this.measuringHintPath);
 
             fb = feedback.root.measuring.task_order;
@@ -4322,28 +4304,28 @@ sparks.util.prettyPrint = function (obj, indent) {
             else {
                 this.setTextWithColor('#task_order_answer', 'Incorrect', this.red);
             }
-            $('#task_order_points').text(fb.getPoints() + ' / ' + fb.getMaxPoints());
+            $('#task_order_points').text(fb.points + ' / ' + fb.maxPoints);
             this.addFeedback($('#task_order_feedback'), fb, this.measuringHintPath);
 
             fb = feedback.root.reading;
-            $('#reading_points').html('<b>' + fb.getPoints() + ' / ' +
-                    fb.getMaxPoints() + '</b>');
+            $('#reading_points').html('<b>' + fb.points + ' / ' +
+                    fb.maxPoints + '</b>');
 
             fb = feedback.root.measuring;
-            $('#measuring_points').html('<b>' + fb.getPoints() + ' / ' +
-                    fb.getMaxPoints() + '</b>');
+            $('#measuring_points').html('<b>' + fb.points + ' / ' +
+                    fb.maxPoints + '</b>');
 
             fb = feedback.root.t_range;
-            $('#t_range_points').html('<b>' + fb.getPoints() + ' / ' +
-                    fb.getMaxPoints() + '</b>');
+            $('#t_range_points').html('<b>' + fb.points + ' / ' +
+                    fb.maxPoints + '</b>');
 
             fb = feedback.root.time;
-            $('#time_points').html('<b>' + fb.getPoints() + ' / ' +
-                    fb.getMaxPoints() + '</b>');
+            $('#time_points').html('<b>' + fb.points + ' / ' +
+                    fb.maxPoints + '</b>');
 
             fb = feedback.root;
-            $('#total_points').html('<b>' + fb.getPoints() + ' / ' +
-                    fb.getMaxPoints() + '</b>');
+            $('#total_points').html('<b>' + fb.points + ' / ' +
+                    fb.maxPoints + '</b>');
 
             this.addHelpLinks(feedback);
         },
@@ -4353,21 +4335,21 @@ sparks.util.prettyPrint = function (obj, indent) {
 
             var fb = feedback.root.reading;
 
-            if (fb.getPoints() != fb.getMaxPoints()) {
+            if (fb.points != fb.maxPoints) {
                 this.imageLink($('#reading_tutorial_link'),
                     rootDir + '/common/icons/tutorial.png',
                     this.readingHintPath);
             }
 
             fb = feedback.root.measuring;
-            if (fb.getPoints() != fb.getMaxPoints()) {
+            if (fb.points != fb.maxPoints) {
                 this.imageLink($('#measuring_tutorial_link'),
                     rootDir + '/common/icons/tutorial.png',
                     this.measuringHintPath);
             }
 
             fb = feedback.root.t_range.t_range_value;
-            if (fb.getPoints() != fb.getMaxPoints()) {
+            if (fb.points != fb.maxPoints) {
                 this.imageLink($('#t_range_tutorial_link'),
                     rootDir + '/common/icons/tutorial.png',
                     this.toleranceHintPath);
@@ -4454,6 +4436,12 @@ sparks.util.prettyPrint = function (obj, indent) {
     var mr = sparks.activities.mr;
     var flash = sparks.flash;
     var str = sparks.string;
+
+    sparks.config.debug = jQuery.url.param("debug") !== undefined;
+    sparks.config.debug_nbands = jQuery.url.param("n") ? Number(jQuery.url.param("n")) : null;
+    sparks.config.debug_rvalue = jQuery.url.param("r") ? Number(jQuery.url.param("r")) : null;
+    sparks.config.debug_mvalue = jQuery.url.param("m") ? Number(jQuery.url.param("m")) : null;
+    sparks.config.debug_tvalue = jQuery.url.param("t") ? Number(jQuery.url.param("t")) : null;
 
     mr.Activity = function () {
         mr.Activity.uber.init.apply(this);

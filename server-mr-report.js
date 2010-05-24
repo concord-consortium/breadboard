@@ -670,24 +670,27 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 
     mr.FeedbackItem.prototype = {
 
-        getPoints : function () {
-            var points = 0;
-            for (var key in this) {
+        updatePoints : function () {
+            var key;
+            var isLeaf = true;
+            for (key in this) {
                 if (this[key] instanceof mr.FeedbackItem) {
-                    points += this[key].getPoints();
+                    isLeaf = false;
+                    break;
                 }
             }
-            return points + this.points;
-        },
-
-        getMaxPoints: function () {
-            var maxPoints = 0;
-            for (var key in this) {
-                if (this[key] instanceof mr.FeedbackItem) {
-                    maxPoints += this[key].getMaxPoints();
+            if (!isLeaf) {
+                this.points = 0;
+                this.maxPoints = 0;
+                for (key in this) {
+                    if (this[key] instanceof mr.FeedbackItem) {
+                        pair = this[key].updatePoints();
+                        this.points += pair[0];
+                        this.maxPoints += pair[1];
+                    }
                 }
             }
-            return maxPoints + this.maxPoints;
+            return [this.points, this.maxPoints];
         },
 
         addFeedback: function (key) {
@@ -1274,17 +1277,8 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             this.gradeTime();
             this.gradeSettings();
 
-            root = this.feedback.root;
-            root.points = root.getPoints();
-            root.maxPoints = root.getMaxPoints();
-            root.reading.points = root.reading.getPoints();
-            root.reading.maxPoints = root.reading.getMaxPoints();
-            root.measuring.points = root.reading.getPoints();
-            root.measuring.maxPoints = root.measuring.getMaxPoints();
-            root.t_range.points = root.t_range.getPoints();
-            root.t_range.maxPoints = root.t_range.getMaxPoints();
-            root.time.points = root.time.getPoints();
-            root.time.maxPoints = root.time.getMaxPoints();
+            this.feedback.root.updatePoints();
+
             return this.feedback;
         },
 
