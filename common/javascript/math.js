@@ -24,7 +24,7 @@
      math.leftMostPos = function (x) {
          x = Number(x);
          if (isNaN(x) || x < 0) {
-             debug('ERROR: math.leftMostPos: Invalid input ' + x);
+             console.log('ERROR: math.leftMostPos: Invalid input ' + x);
              return 0;
          }
          if (x == 0) {

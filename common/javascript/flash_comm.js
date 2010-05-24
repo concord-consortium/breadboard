@@ -19,7 +19,7 @@
         }
         var flash = sparks.flash.getFlashMovie("resistor_colors");
         var retVal = flash.sendMessageToFlash.apply(flash, params).split('|');
-        debug('Returned by flash: ' + retVal);
+        console.log('Returned by flash: ' + retVal);
         if (retVal[0] == 'flash_error') {
           alert('Flash error:\n' + retVal[1]);
         }

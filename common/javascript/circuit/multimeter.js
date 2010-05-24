@@ -148,18 +148,18 @@
         },
 
         toDisplayString : function (s, dec) {
-            //debug('s1=' + s + ' dec=' + dec);
+            //console.log('s1=' + s + ' dec=' + dec);
             var i;
             var sign = s.charAt(0) === '-' ? s.charAt(0) : ' ';
             s = s.replace('-', '');
 
-            //debug('s2=' + s);
+            //console.log('s2=' + s);
             var pointLoc = s.indexOf('.');
             var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
             if (decLen === 0) {
                 s = s.concat('.');
             }
-            //debug('s3=' + s);
+            //console.log('s3=' + s);
             if (dec < decLen) {
                 s = s.substring(0, pointLoc + dec + 1);
             }
@@ -168,9 +168,9 @@
                     s = s.concat('0');
                 }
             }
-            //debug('s4=' + s);
+            //console.log('s4=' + s);
             s = s.replace('.', '');
-            //debug('s5=' + s);
+            //console.log('s5=' + s);
             var len = s.length;
             if (len < 4) {
                 for (i = 0; i < 3 - len; ++i) {
@@ -178,7 +178,7 @@
                 }
                 s = ' ' + s;
             }
-            //debug('s6=' + s);
+            //console.log('s6=' + s);
 
             var dot1;
             var dot2;
@@ -201,7 +201,7 @@
             }
 
             s = sign + s.substring(0, 2) + dot1 + s.charAt(2) + dot2 + s.charAt(3);
-            //debug('s7=' + s);
+            //console.log('s7=' + s);
             return s;
 
         },

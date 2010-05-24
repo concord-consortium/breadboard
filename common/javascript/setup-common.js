@@ -13,15 +13,7 @@
         this.console = {};
     }
     if (!console.log) {
-        if (typeof print !== 'undefined') {
-            console.log = print;
-        }
-        else if (typeof debug !== 'undefined') {
-            console.log = debug;
-        }
-        else {
-            console.log = function () {};
-        }
+        console.log = function () {};
     }
     
     if (typeof debug === 'undefined' || !debug) {

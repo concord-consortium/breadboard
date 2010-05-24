@@ -422,7 +422,7 @@
                 fb.probe_connection.desc = 'Incorrect';
                 fb.probe_connection.addFeedback('incorrect');
             }
-            debug('probe_connection.points=' + fb.probe_connection.points);
+            console.log('probe_connection.points=' + fb.probe_connection.points);
 
             // Connectin to DMM
             if (redPlugConn == 'voma_port' && blackPlugConn == 'common_port') {
@@ -446,7 +446,7 @@
                     fb.plug_connection.addFeedback('incorrect');
                 }
             }
-            debug('plug_connection.points=' + fb.plug_connection.points);
+            console.log('plug_connection.points=' + fb.plug_connection.points);
 
             // DMM knob
             var i_knob = this.parser.initial_dial_setting;
@@ -483,7 +483,7 @@
                 fb.power_switch.correct = 0;
                 fb.power_switch.addFeedback('incorrect');
             }
-            debug('power_switch.points=' + fb.power_switch.points);
+            console.log('power_switch.points=' + fb.power_switch.points);
 
             if (this.parser.correct_order) {
                 fb.task_order.points = 6;
@@ -495,7 +495,7 @@
                 fb.task_order.correct = 0;
                 fb.task_order.addFeedback('incorrect');
             }
-            debug('task_order.points=' + fb.task_order.points);
+            console.log('task_order.points=' + fb.task_order.points);
         },
 
         equalWithTolerance: function (value1, value2, tolerance) {

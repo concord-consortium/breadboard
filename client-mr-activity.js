@@ -417,15 +417,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
         this.console = {};
     }
     if (!console.log) {
-        if (typeof print !== 'undefined') {
-            console.log = print;
-        }
-        else if (typeof debug !== 'undefined') {
-            console.log = debug;
-        }
-        else {
-            console.log = function () {};
-        }
+        console.log = function () {};
     }
 
     if (typeof debug === 'undefined' || !debug) {
@@ -1475,7 +1467,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
         }
         var flash = sparks.flash.getFlashMovie("resistor_colors");
         var retVal = flash.sendMessageToFlash.apply(flash, params).split('|');
-        debug('Returned by flash: ' + retVal);
+        console.log('Returned by flash: ' + retVal);
         if (retVal[0] == 'flash_error') {
           alert('Flash error:\n' + retVal[1]);
         }
@@ -1706,7 +1698,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             activity.learner_id = sparks.util.readCookie('learner_id');
             if (activity.learner_id) {
                 var put_path = unescape(sparks.util.readCookie('put_path')) || 'undefined_path';
-                debug('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
+                console.log('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
                 activity.setDataService(new RestDS(null, null, put_path));
             }
             sparks.activity = activity;
@@ -2716,7 +2708,7 @@ sparks.util.prettyPrint = function (obj, indent) {
      math.leftMostPos = function (x) {
          x = Number(x);
          if (isNaN(x) || x < 0) {
-             debug('ERROR: math.leftMostPos: Invalid input ' + x);
+             console.log('ERROR: math.leftMostPos: Invalid input ' + x);
              return 0;
          }
          if (x == 0) {
@@ -3125,8 +3117,24 @@ sparks.util.prettyPrint = function (obj, indent) {
                 'Correct calculation',
                 'You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer. Good work.'
             ],
+            correct_wrong_prev_r: [
+                'Correct calculation based on wrong resistance',
+                'You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer. But keep in mind that your calculation was based on the wrong resistance value so in the real world the answer would not be acceptable.'
+            ],
+            correct_wrong_prev_t: [
+                'Correct calculation based on wrong tolerance',
+                'You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer. But keep in mind that your calculation was based on the wrong tolerance value so in the real world the answer would not be acceptable.'
+            ],
+            correct_wrong_prev_rt: [
+                'Correct calculation based on wrong resistance/tolerance',
+                'You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer. But keep in mind that your calculation was based on the wrong resistance and tolerance value so in the real world the answer would not be acceptable.'
+            ],
             rounded: [
                 'Rounded result',
+                'You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer. For this activity, we recommend you report as many digits as the rated value of the resistance has. For instance, if the rated resistance is 12,300 ohms, based on a reading of a five color band resistor, you should report the minimum and maximum values of the tolerance range to three significant digits.'
+            ],
+            rounded_wrong_prev_r: [
+                'Rounded result based on wrong resistance',
                 'You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer. For this activity, we recommend you report as many digits as the rated value of the resistance has. For instance, if the rated resistance is 12,300 ohms, based on a reading of a five color band resistor, you should report the minimum and maximum values of the tolerance range to three significant digits.'
             ],
             inaccurate: [
@@ -3270,7 +3278,7 @@ sparks.util.prettyPrint = function (obj, indent) {
 
         parseEvents: function () {
             for (var i = 0; i < this.events.length; ++i) {
-                debug('event name=' + this.events[i].name + ' value=' + this.events[i].value);
+                console.log('event name=' + this.events[i].name + ' value=' + this.events[i].value);
                 if (this.events[i].name === 'connect') {
                     this.parseConnect(this.events[i]);
                 }
@@ -3830,7 +3838,7 @@ sparks.util.prettyPrint = function (obj, indent) {
                 fb.probe_connection.desc = 'Incorrect';
                 fb.probe_connection.addFeedback('incorrect');
             }
-            debug('probe_connection.points=' + fb.probe_connection.points);
+            console.log('probe_connection.points=' + fb.probe_connection.points);
 
             if (redPlugConn == 'voma_port' && blackPlugConn == 'common_port') {
                 fb.plug_connection.points = 5;
@@ -3853,7 +3861,7 @@ sparks.util.prettyPrint = function (obj, indent) {
                     fb.plug_connection.addFeedback('incorrect');
                 }
             }
-            debug('plug_connection.points=' + fb.plug_connection.points);
+            console.log('plug_connection.points=' + fb.plug_connection.points);
 
             var i_knob = this.parser.initial_dial_setting;
             var f_knob = this.parser.submit_dial_setting;
@@ -3889,7 +3897,7 @@ sparks.util.prettyPrint = function (obj, indent) {
                 fb.power_switch.correct = 0;
                 fb.power_switch.addFeedback('incorrect');
             }
-            debug('power_switch.points=' + fb.power_switch.points);
+            console.log('power_switch.points=' + fb.power_switch.points);
 
             if (this.parser.correct_order) {
                 fb.task_order.points = 6;
@@ -3901,7 +3909,7 @@ sparks.util.prettyPrint = function (obj, indent) {
                 fb.task_order.correct = 0;
                 fb.task_order.addFeedback('incorrect');
             }
-            debug('task_order.points=' + fb.task_order.points);
+            console.log('task_order.points=' + fb.task_order.points);
         },
 
         equalWithTolerance: function (value1, value2, tolerance) {
@@ -4525,7 +4533,7 @@ sparks.util.prettyPrint = function (obj, indent) {
         },
 
         resetCircuit: function () {
-            debug('ENTER ResistorActivity.resetCircuit');
+            console.log('ENTER ResistorActivity.resetCircuit');
             if (sparks.config.debug_nbands) {
                 this.setCurrentResistor(sparks.config.debug_nbands == 4 ? this.resistor4band : this.resistor5band);
             }
@@ -4560,7 +4568,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             }
             flash.sendCommand('reset_circuit');
             this.logResistorState();
-            debug('currentResistor=' + sparks.activity.currentResistor);
+            console.log('currentResistor=' + sparks.activity.currentResistor);
             this.multimeter.update();
         },
 

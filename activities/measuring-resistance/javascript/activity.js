@@ -114,7 +114,7 @@
 
         // Re-initialize the circuit settings for a new set of questions
         resetCircuit: function () {
-            debug('ENTER ResistorActivity.resetCircuit');
+            console.log('ENTER ResistorActivity.resetCircuit');
             if (sparks.config.debug_nbands) {
                 this.setCurrentResistor(sparks.config.debug_nbands == 4 ? this.resistor4band : this.resistor5band);
             }
@@ -149,7 +149,7 @@
             }
             flash.sendCommand('reset_circuit');
             this.logResistorState();
-            debug('currentResistor=' + sparks.activity.currentResistor);
+            console.log('currentResistor=' + sparks.activity.currentResistor);
             this.multimeter.update();
         },
 
