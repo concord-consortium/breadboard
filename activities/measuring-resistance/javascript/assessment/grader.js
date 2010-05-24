@@ -48,17 +48,8 @@
 
             // Update non-leaf node values so they can be saved to json
             // and used later by server.
-            root = this.feedback.root;
-            root.points = root.getPoints();
-            root.maxPoints = root.getMaxPoints();
-            root.reading.points = root.reading.getPoints();
-            root.reading.maxPoints = root.reading.getMaxPoints();
-            root.measuring.points = root.reading.getPoints();
-            root.measuring.maxPoints = root.measuring.getMaxPoints();
-            root.t_range.points = root.t_range.getPoints();
-            root.t_range.maxPoints = root.t_range.getMaxPoints();
-            root.time.points = root.time.getPoints();
-            root.time.maxPoints = root.time.getMaxPoints();
+            this.feedback.root.updatePoints();
+            
             return this.feedback;
         },
 

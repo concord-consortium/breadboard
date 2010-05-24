@@ -24,24 +24,27 @@
 
     mr.FeedbackItem.prototype = {
 
-        getPoints : function () {
-            var points = 0;
-            for (var key in this) {
+        updatePoints : function () {
+            var key;
+            var isLeaf = true;
+            for (key in this) {
                 if (this[key] instanceof mr.FeedbackItem) {
-                    points += this[key].getPoints();
+                    isLeaf = false;
+                    break;
                 }
             }
-            return points + this.points;
-        },
-
-        getMaxPoints: function () {
-            var maxPoints = 0;
-            for (var key in this) {
-                if (this[key] instanceof mr.FeedbackItem) {
-                    maxPoints += this[key].getMaxPoints();
+            if (!isLeaf) {
+                this.points = 0;
+                this.maxPoints = 0;
+                for (key in this) {
+                    if (this[key] instanceof mr.FeedbackItem) {
+                        pair = this[key].updatePoints();
+                        this.points += pair[0];
+                        this.maxPoints += pair[1];
+                    }
                 }
             }
-            return maxPoints + this.maxPoints;
+            return [this.points, this.maxPoints];
         },
 
         addFeedback: function (key) {
@@ -288,8 +291,24 @@
                 'Correct calculation',
                 'You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer. Good work.'
             ],
+            correct_wrong_prev_r: [
+                'Correct calculation based on wrong resistance',
+                'You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer. But keep in mind that your calculation was based on the wrong resistance value so in the real world the answer would not be acceptable.'
+            ],
+            correct_wrong_prev_t: [
+                'Correct calculation based on wrong tolerance',
+                'You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer. But keep in mind that your calculation was based on the wrong tolerance value so in the real world the answer would not be acceptable.'
+            ],
+            correct_wrong_prev_rt: [
+                'Correct calculation based on wrong resistance/tolerance',
+                'You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer. But keep in mind that your calculation was based on the wrong resistance and tolerance value so in the real world the answer would not be acceptable.'
+            ],
             rounded: [
                 'Rounded result',
+                'You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer. For this activity, we recommend you report as many digits as the rated value of the resistance has. For instance, if the rated resistance is 12,300 ohms, based on a reading of a five color band resistor, you should report the minimum and maximum values of the tolerance range to three significant digits.'
+            ],
+            rounded_wrong_prev_r: [
+                'Rounded result based on wrong resistance',
                 'You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer. For this activity, we recommend you report as many digits as the rated value of the resistance has. For instance, if the rated resistance is 12,300 ohms, based on a reading of a five color band resistor, you should report the minimum and maximum values of the tolerance range to three significant digits.'
             ],
             inaccurate: [

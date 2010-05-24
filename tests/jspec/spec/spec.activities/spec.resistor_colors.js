@@ -21,27 +21,28 @@ describe 'Activity 1: Resistor Colors'
     
     it "should calculate max points correctly"
       var feedback = new Feedback();
+      feedback.root.updatePoints();
     
-      feedback.root.getMaxPoints().should.be 100
+      feedback.root.maxPoints.should.be 100
       
-      feedback.root.reading.getMaxPoints().should.be 25
-      feedback.root.reading.rated_r_value.getMaxPoints().should.be 20
-      feedback.root.reading.rated_t_value.getMaxPoints().should.be 5
+      feedback.root.reading.maxPoints.should.be 25
+      feedback.root.reading.rated_r_value.maxPoints.should.be 20
+      feedback.root.reading.rated_t_value.maxPoints.should.be 5
       
-      feedback.root.t_range.t_range_value.getMaxPoints().should.be 15
+      feedback.root.t_range.t_range_value.maxPoints.should.be 15
       
-      feedback.root.measuring.getMaxPoints().should.be 45
-      feedback.root.measuring.probe_connection.getMaxPoints().should.be 2
-      feedback.root.measuring.plug_connection.getMaxPoints().should.be 5
-      feedback.root.measuring.knob_setting.getMaxPoints().should.be 20
-      feedback.root.measuring.power_switch.getMaxPoints().should.be 2
-      feedback.root.measuring.task_order.getMaxPoints().should.be 6
+      feedback.root.measuring.maxPoints.should.be 45
+      feedback.root.measuring.probe_connection.maxPoints.should.be 2
+      feedback.root.measuring.plug_connection.maxPoints.should.be 5
+      feedback.root.measuring.knob_setting.maxPoints.should.be 20
+      feedback.root.measuring.power_switch.maxPoints.should.be 2
+      feedback.root.measuring.task_order.maxPoints.should.be 6
       
-      feedback.root.t_range.within_tolerance.getMaxPoints().should.be 5
+      feedback.root.t_range.within_tolerance.maxPoints.should.be 5
       
-      feedback.root.time.getMaxPoints().should.be 10
-      feedback.root.time.reading_time.getMaxPoints().should.be 5
-      feedback.root.time.measuring_time.getMaxPoints().should.be 5
+      feedback.root.time.maxPoints.should.be 10
+      feedback.root.time.reading_time.maxPoints.should.be 5
+      feedback.root.time.measuring_time.maxPoints.should.be 5
     end
     
     it "should grade a session correctly"
@@ -50,26 +51,26 @@ describe 'Activity 1: Resistor Colors'
       var grader = new sparks.activities.mr.Grader(session);
       var feedback = grader.grade();
       
-      feedback.root.getPoints().should.be 100
+      feedback.root.points.should.be 100
       
-      feedback.root.reading.rated_r_value.getPoints().should.be 20
-      feedback.root.reading.rated_t_value.getPoints().should.be 5
-      feedback.root.reading.getPoints().should.be 25
+      feedback.root.reading.rated_r_value.points.should.be 20
+      feedback.root.reading.rated_t_value.points.should.be 5
+      feedback.root.reading.points.should.be 25
       
-      feedback.root.t_range.t_range_value.getPoints().should.be 15
+      feedback.root.t_range.t_range_value.points.should.be 15
       
-      feedback.root.measuring.getPoints().should.be 45
-      feedback.root.measuring.probe_connection.getPoints().should.be 2
-      feedback.root.measuring.plug_connection.getPoints().should.be 5
-      feedback.root.measuring.knob_setting.getPoints().should.be 20
-      feedback.root.measuring.power_switch.getPoints().should.be 2
-      feedback.root.measuring.task_order.getPoints().should.be 6
+      feedback.root.measuring.points.should.be 45
+      feedback.root.measuring.probe_connection.points.should.be 2
+      feedback.root.measuring.plug_connection.points.should.be 5
+      feedback.root.measuring.knob_setting.points.should.be 20
+      feedback.root.measuring.power_switch.points.should.be 2
+      feedback.root.measuring.task_order.points.should.be 6
       
-      feedback.root.t_range.within_tolerance.getPoints().should.be 5
+      feedback.root.t_range.within_tolerance.points.should.be 5
       
-      feedback.root.time.getPoints().should.be 10
-      feedback.root.time.reading_time.getPoints().should.be 5
-      feedback.root.time.measuring_time.getPoints().should.be 5
+      feedback.root.time.points.should.be 10
+      feedback.root.time.reading_time.points.should.be 5
+      feedback.root.time.measuring_time.points.should.be 5
     end
     
     it "should do oneOff correctly"
