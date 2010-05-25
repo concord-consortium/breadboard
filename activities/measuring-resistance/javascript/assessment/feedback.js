@@ -293,28 +293,53 @@
             ],
             correct_wrong_prev_r: [
                 'Correct calculation based on wrong resistance',
-                'You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer. But keep in mind that your calculation was based on the wrong resistance value so in the real world the answer would not be acceptable.'
+                '<p>You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer.</p><p>But keep in mind that your calculation was based on the wrong resistance value so in the real world the answer would not be acceptable.</p>'
             ],
             correct_wrong_prev_t: [
                 'Correct calculation based on wrong tolerance',
-                'You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer. But keep in mind that your calculation was based on the wrong tolerance value so in the real world the answer would not be acceptable.'
+                '<p>You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer.</p><p>But keep in mind that your calculation was based on the wrong tolerance value so in the real world the answer would not be acceptable.</p>'
             ],
             correct_wrong_prev_rt: [
                 'Correct calculation based on wrong resistance/tolerance',
-                'You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer. But keep in mind that your calculation was based on the wrong resistance and tolerance value so in the real world the answer would not be acceptable.'
+                '<p>You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer.</p><p>But keep in mind that your calculation was based on the wrong resistance and tolerance value so in the real world the answer would not be acceptable.</p>'
             ],
             rounded: [
                 'Rounded result',
-                'You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer. For this activity, we recommend you report as many digits as the rated value of the resistance has. For instance, if the rated resistance is 12,300 ohms, based on a reading of a five color band resistor, you should report the minimum and maximum values of the tolerance range to three significant digits.'
+                'You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer.'
             ],
             rounded_wrong_prev_r: [
                 'Rounded result based on wrong resistance',
-                'You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer. For this activity, we recommend you report as many digits as the rated value of the resistance has. For instance, if the rated resistance is 12,300 ohms, based on a reading of a five color band resistor, you should report the minimum and maximum values of the tolerance range to three significant digits.'
+                '<p>You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer.</p><p>Also keep in mind that your calculation was based on the wrong resistance value so in the real world the answer would not be acceptable.</p>'
             ],
+            rounded_wrong_prev_t:
+                [
+                 'Rounded result based on wrong tolerance',
+                 '<p>You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer.</p><p>Also keep in mind that your calculation was based on the wrong tolerance value so in the real world the answer would not be acceptable.</p>'
+                 ],
+            rounded_wrong_prev_rt:
+                [
+                 'Rounded result based on wrong resistance and tolerance',
+                 '<p>You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer.</p><p>Also keep in mind that your calculation was based on the wrong resistance and tolerance value so in the real world the answer would not be acceptable.</p>'
+                 ],
             inaccurate: [
                 'Inaccurate tolerance',
                 'The tolerance range that you specified is close but incorrect. You reported ${student’s-tolerance-range} but the correct answer was ${correct-tolerance-range}. See the Calculating Tolerance tutorial for additional help.'
             ],
+            inaccurate_wrong_prev_r:
+                [
+                 'Inaccurate tolerance based on wrong resistance',
+                 '<p>The tolerance range that you specified is close but incorrect. You reported ${student’s-tolerance-range} but the correct answer was ${correct-tolerance-range}. See the Calculating Tolerance tutorial for additional help.</p><p>Also keep in mind that your calculation was based on the wrong resistance value so in the real world the answer would not be acceptable.</p>'
+                 ],
+            inaccurate_wrong_prev_t:
+                [
+                 'Inaccurate tolerance based on wrong tolerance',
+                 '<p>The tolerance range that you specified is close but incorrect. You reported ${student’s-tolerance-range} but the correct answer was ${correct-tolerance-range}. See the Calculating Tolerance tutorial for additional help.</p><p>Also keep in mind that your calculation was based on the wrong tolerance value so in the real world the answer would not be acceptable.</p>'
+                 ],
+            inaccurate_wrong_prev_rt:
+                [
+                 'Inaccurate tolerance based on wrong resistance and tolerance',
+                 '<p>The tolerance range that you specified is close but incorrect. You reported ${student’s-tolerance-range} but the correct answer was ${correct-tolerance-range}. See the Calculating Tolerance tutorial for additional help.</p><p>Also keep in mind that your calculation was based on the wrong resistance and tolerance value so in the real world the answer would not be acceptable.</p>'
+                 ],
             wrong: [
                 'Wrong tolerance',
                 'The tolerance range that you specified is incorrect. You reported ${student’s-tolerance-range} but the correct answer was ${correct-tolerance-range}. See the Calculating Tolerance tutorial for additional help.'
@@ -322,12 +347,19 @@
         };
 
         this.root.t_range.t_range_value.processPatterns = function (key, messages, subs) {
-            if (key === 'correct' || key === 'rounded') {
+            if (key === 'correct' || key === 'rounded' ||
+                key === 'correct_wrong_prev_r' || key === 'correct_wrong_prev_t' ||
+                key === 'correct_wrong_prev_rt' || key === 'rounded_wrong_prev_r' ||
+                key === 'rounded_wrong_prev_t' || key === 'rounded_wrong_prev_rt')
+            {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                     '$1<font color="blue"><i>' + subs[1] +
                     '</i></font>$2<font color="blue"><i>' + subs[0] + '</i></font>$3');
             }
-            else if (key === 'inaccurate' || key === 'wrong') {
+            else if (key === 'inaccurate' || key === 'wrong' ||
+                key === 'inaccurate_wrong_prev_r' || key === 'inaccurate_wrong_prev_t' ||
+                key === 'inaccurate_wrong_prev_rt')
+            {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                     '$1<font color="red"><i>' + subs[1] +
                     '</i></font>$2<font color="blue"><i>' + subs[0] + '</i></font>$3');
@@ -340,10 +372,20 @@
                 'Measurement recognized as in/out of tolerance',
                 'Good work. The measured value, ${your answer-value}, should fall within the tolerance range, that is between the minimum ${min-resistance-value} and the maximum ${max resistance value} that you calculated based on the tolerance percentage. Since the measured value of this resistor ${did|did not} fall within this range, this resistor ${is|is not} within tolerance.'
             ],
+            correct_wrong_prev:
+                [
+                 'Measurement recognized as in/out of tolerance but based on wrong value(s)',
+                 'Your answer is correct based on your answers to previous questions, but one or more of your previous answers were incorrect, so in the real sense it is not truly correct'
+                ],
             incorrect: [
                 'Measurement not recognized as in/out of tolerance',
                 'The measured value, ${your answer-value}, should fall within the tolerance range, that is between the minimum ${min-resistance-value} and the maximum ${max resistance value} that you calculated based on the tolerance percentage. Since the measured value ${did|did not} fall within this range, this resistor ${is|is not} within tolerance.'
             ],
+            incorrect_wrong_prev:
+                [
+                 'Measurement not recognized as in/out of tolerance',
+                 'Although it agrees with the "real" correct answer, your answer is incorrect based on answers to previous questions.'
+                ],
             undef: [
                 'Previous question(s) incorrect',
                 "You answer to either the measuring resistance question or the tolerance range question was incorrect, so you didn't have enough information to answer this question."

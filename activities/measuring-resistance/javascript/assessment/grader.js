@@ -184,7 +184,10 @@
             //console.log('ENTER Grader.gradeToleranceRange');
             var question = this.questions[3];
             var fb = this.feedback.root.t_range.t_range_value;
+            var fb_r = this.feedback.root.reading.rated_r_value;
+            var fb_t = this.feedback.root.reading.rated_t_value;
             var nominalResistance;
+            var fbkey;
             
             question.correct_answer = [this.realCorrectMin, this.realCorrectMax];
             
@@ -245,8 +248,24 @@
             {
                 fb.points = 15;
                 fb.correct = 4;
-                fb.addFeedback('correct', unit.res_str(nominalResistance), 
-                    unit.pct_str(tolerance));
+                if (fb_r.correct === 4) {
+                    if (fb_t.correct == 4) {
+                        fb.addFeedback('correct', unit.res_str(nominalResistance), 
+                                unit.pct_str(tolerance));
+                    }
+                    else {
+                        fb.addFeedback('correct_wrong_prev_t', unit.res_str(nominalResistance), 
+                                unit.pct_str(tolerance));
+                    }                        
+                }
+                else if (fb_t.correct == 4) {
+                    fb.addFeedback('correct_wrong_prev_r', unit.res_str(nominalResistance), 
+                            unit.pct_str(tolerance));
+                }
+                else {
+                    fb.addFeedback('correct_wrong_prev_rt', unit.res_str(nominalResistance), 
+                            unit.pct_str(tolerance));
+                }
                 return;
             }
             
@@ -259,8 +278,24 @@
             {
                 fb.points = 10;
                 fb.correct = 3;
-                fb.addFeedback('rounded', unit.res_str(nominalResistance), 
-                    unit.pct_str(tolerance));
+                if (fb_r.correct === 4) {
+                    if (fb_t.correct === 4) {
+                        fb.addFeedback('rounded', unit.res_str(nominalResistance), 
+                                unit.pct_str(tolerance));
+                    }
+                    else {
+                        fb.addFeedback('rounded_wrong_prev_t', unit.res_str(nominalResistance), 
+                                unit.pct_str(tolerance));
+                    }
+                }
+                else if (fb_t.correct === 4) {
+                    fb.addFeedback('rounded_wrong_prev_r', unit.res_str(nominalResistance), 
+                            unit.pct_str(tolerance));
+                }
+                else {
+                    fb.addFeedback('rounded_wrong_prev_rt', unit.res_str(nominalResistance), 
+                            unit.pct_str(tolerance));
+                }
                 return;
             }
 
@@ -271,7 +306,20 @@
             {
                 fb.points = 3;
                 fb.correct = 2;
-                fb.addFeedback('inaccurate', correctStr, answerStr);
+                if (fb_r.correct === 4) {
+                    if (fb_t.correct === 4) {
+                        fb.addFeedback('inaccurate', correctStr, answerStr);
+                    }
+                    else {
+                        fb.addFeedback('inaccurate_wrong_prev_t', correctStr, answerStr);
+                    }
+                }
+                else if (fb_t.correct === 4) {
+                    fb.addFeedback('inaccurate_wrong_prev_r', correctStr, answerStr);
+                }
+                else {
+                    fb.addFeedback('inaccurate_wrong_prev_rt', correctStr, answerStr);
+                }
                 return;
             }
             fb.addFeedback('wrong', correctStr, answerStr);
@@ -334,24 +382,34 @@
             }
 
             var did = (correctAnswer === 'no') ? 'did not' : 'did';
-            var is = (correctAnswer == 'no') ? 'is not' : 'is';
+            var is = (correctAnswer === 'no') ? 'is not' : 'is';
             
-            if (question.answer != correctAnswer) {
-                fb.addFeedback('incorrect',
+            if (question.answer !== correctAnswer) {
+                if (question.correct_answer === correctAnswer) {
+                    fb.addFeedback('incorrect',
                         unit.res_str(this.measuredResistanceAnswer),
                         unit.res_str(this.rangeMinAnswer),
                         unit.res_str(this.rangeMaxAnswer),
                         did, is);
+                }
+                else {
+                    fb.addFeedback('incorrect_wrong_prev');
+                }
                 return;
             }
             fb.points = 5;
             fb.correct = 4;
-            
-            fb.addFeedback('correct',
+
+            if (question.correct_answer === correctAnswer) {
+                fb.addFeedback('correct',
                     unit.res_str(this.measuredResistanceAnswer),
                     unit.res_str(this.rangeMinAnswer),
                     unit.res_str(this.rangeMaxAnswer),
                     did, is);
+            }
+            else {
+                fb.addFeedback('correct_wrong_prev');
+            }
         },
 
         gradeTime: function () {
