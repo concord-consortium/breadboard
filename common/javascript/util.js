@@ -15,6 +15,31 @@ sparks.util.readCookie = function (name) {
     return null;
 };
 
+/**
+ * Naive deep-cloning of an object.
+ * Doesn't check against infinite recursion.
+ */
+sparks.util.cloneSimpleObject = function (obj) {
+    var ret, key;
+    if (obj instanceof Array) {
+        ret = [];
+        for (key in obj) {
+            ret.push(sparks.util.cloneSimpleObject(obj[key]));
+        }
+        return ret;
+    }
+    else if (typeof obj === 'object') {
+        ret = {};
+        for (key in obj) {
+            ret[key] = sparks.util.cloneSimpleObject(obj[key]);
+        }
+        return ret;
+    }
+    else {
+        return obj;
+    }
+};
+
 /*
 sparks.util.checkFlashVersion = function () {
     var major = 10;

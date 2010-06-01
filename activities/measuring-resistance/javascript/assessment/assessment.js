@@ -21,9 +21,9 @@
 
     mr.Assessment.prototype = {
 
-        grade : function(session) {
-            var grader = new mr.Grader(session);
-            return grader.grade(session);
+        grade : function(session, rubric) {
+            var grader = new mr.Grader(session, rubric);
+            return grader.grade();
         },
 
         receiveResultFromHTML : function(resultObj) {
@@ -82,12 +82,12 @@
         },
 
         sendResultToHTML : function(resultObj, feedback) {
-            var fb = feedback.root;
-            resultObj.rated_resistance.correct = fb.reading.rated_r_value.correct;
-            resultObj.rated_tolerance.correct = fb.reading.rated_t_value.correct;
-            resultObj.measured_resistance.correct = fb.measuring.measured_r_value.correct;
-            resultObj.measured_tolerance.correct = fb.t_range.t_range_value.correct;
-            resultObj.within_tolerance.correct = fb.t_range.within_tolerance.correct;
+            var root = feedback.root;
+            resultObj.rated_resistance.correct = root.items.reading.items.rated_r_value.correct;
+            resultObj.rated_tolerance.correct = root.items.reading.items.rated_t_value.correct;
+            resultObj.measured_resistance.correct = root.items.measuring.items.measured_r_value.correct;
+            resultObj.measured_tolerance.correct = root.items.t_range.items.range_values.correct;
+            resultObj.within_tolerance.correct = root.items.t_range.items.in_out.correct;
         },
 
         fieldIsEmpty : function(formInput) {

@@ -36,18 +36,16 @@
     this.initActivity = function () {
     //function onFlashLoad() {
         //console.log('ENTER initActivity');
-
         try {
             var activity = new sparks.config.Activity();
-            activity.initDocument();
-            activity.onFlashDone();
-
             activity.learner_id = sparks.util.readCookie('learner_id');
             if (activity.learner_id) {
-                var put_path = unescape(sparks.util.readCookie('put_path')) || 'undefined_path';
+                var put_path = unescape(sparks.util.readCookie('save_path')) || 'undefined_path';
                 console.log('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
                 activity.setDataService(new RestDS(null, null, put_path));
             }
+            activity.initDocument();
+            activity.onFlashDone();
             sparks.activity = activity;
         }
         catch (e) {
@@ -60,7 +58,34 @@
     };
     
     sparks.Activity.prototype = {
+            
         init: function () {
+        },
+        
+        getRubric: function (id) {
+            debugger;
+            var self = this;
+            var url;
+            
+            if (this.dataService) {
+                //get it from server
+                url = unescape(sparks.util.readCookie('rubric_path') + '/' + id + '.json');
+            }
+            else {
+                url = 'rubric.json';
+            }
+                $.ajax({
+                    url: url,
+                    dataType: 'json',
+                    success: function (rubric) {
+                        debugger;
+                        self.rubric = rubric;
+                    },
+                    error: function (request, status, error) {
+                        debugger;
+                        console.log('Activity#getRubric ERROR:\nstatus: ' + status + '\nerror: ' + error); 
+                    }
+                });
         },
         
         buttonize: function () {

@@ -1092,8 +1092,8 @@ jQuery.cookie = function(name, value, options) {
  * Version 2.1.1
  */
 (function($){$.fn.bgIframe=$.fn.bgiframe=function(s){if($.browser.msie&&/6.0/.test(navigator.userAgent)){s=$.extend({top:'auto',left:'auto',width:'auto',height:'auto',opacity:true,src:'javascript:false;'},s||{});var prop=function(n){return n&&n.constructor==Number?n+'px':n;},html='<iframe class="bgiframe"frameborder="0"tabindex="-1"src="'+s.src+'"'+'style="display:block;position:absolute;z-index:-1;'+(s.opacity!==false?'filter:Alpha(Opacity=\'0\');':'')+'top:'+(s.top=='auto'?'expression(((parseInt(this.parentNode.currentStyle.borderTopWidth)||0)*-1)+\'px\')':prop(s.top))+';'+'left:'+(s.left=='auto'?'expression(((parseInt(this.parentNode.currentStyle.borderLeftWidth)||0)*-1)+\'px\')':prop(s.left))+';'+'width:'+(s.width=='auto'?'expression(this.parentNode.offsetWidth+\'px\')':prop(s.width))+';'+'height:'+(s.height=='auto'?'expression(this.parentNode.offsetHeight+\'px\')':prop(s.height))+';'+'"/>';return this.each(function(){if($('> iframe.bgiframe',this).length==0)this.insertBefore(document.createElement(html),this.firstChild);});}return this;};})(jQuery);
-(function(){
-    RestDS = function(readKey,writeKey,_post_path){
+(function (){
+    RestDS = function (readKey,writeKey,_post_path){
         this.data = "";
         this.enableLoadAndSave = true;
         this.postPath = _post_path || "/models/";
@@ -1103,9 +1103,9 @@ jQuery.cookie = function(name, value, options) {
 
     RestDS.prototype =
     {
-        setKeys: function(read,write) {
+        setKeys: function (read,write) {
             if (read) {
-                this.load(this,function(){});// just load data
+                this.load(this,function (){});// just load data
                 this.readKey = read;
             }
             if (write) {
@@ -1116,7 +1116,7 @@ jQuery.cookie = function(name, value, options) {
             }
         },
 
-        randomString: function() {
+        randomString: function () {
             var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
             var string_length = 8;
             var randomstring = '';
@@ -1127,7 +1127,7 @@ jQuery.cookie = function(name, value, options) {
             return randomstring;
         },
 
-        save: function(_data) {
+        save: function (_data) {
             this.data = _data;
             var post_to = this.postPath;
             debug('post_to=' + post_to);
@@ -1142,7 +1142,7 @@ jQuery.cookie = function(name, value, options) {
             debug("readKey written: " + this.readKey);
         },
 
-        load: function(context,callback) {
+        load: function (context,callback) {
             if (this.readKey) {
             	var key = this.readKey;
                 this.writeKey = key;
@@ -1165,19 +1165,19 @@ jQuery.cookie = function(name, value, options) {
                 new Ajax.Request(get_from, {
                     asynchronous: true,
                     method: 'GET',
-                    onSuccess: function(rsp) {
+                    onSuccess: function (rsp) {
                         var text = rsp.responseText;
                         var _data = eval(text);
                         self.data = _data;
                         callback(_data,context,callback);
                         debug("returned from load");
                     },
-                    onFailure: function(req,err) {
+                    onFailure: function (req,err) {
                         debug("failed!");
                     }
                 });
                 */
-                jQuery.get(get_from, function(rsp, textStatus) {
+                jQuery.get(get_from, function (rsp, textStatus) {
                     console.log('rsp=' + rsp);
                     var _data = eval(rsp);
                     self.data = _data;
@@ -1190,7 +1190,7 @@ jQuery.cookie = function(name, value, options) {
             }
         },
 
-        toString: function() {
+        toString: function () {
             return "Data Service (" + this.postPath + "" + this.writeKey + ")";
         }
     };
@@ -1560,6 +1560,31 @@ sparks.util.readCookie = function (name) {
     return null;
 };
 
+/**
+ * Naive deep-cloning of an object.
+ * Doesn't check against infinite recursion.
+ */
+sparks.util.cloneSimpleObject = function (obj) {
+    var ret, key;
+    if (obj instanceof Array) {
+        ret = [];
+        for (key in obj) {
+            ret.push(sparks.util.cloneSimpleObject(obj[key]));
+        }
+        return ret;
+    }
+    else if (typeof obj === 'object') {
+        ret = {};
+        for (key in obj) {
+            ret[key] = sparks.util.cloneSimpleObject(obj[key]);
+        }
+        return ret;
+    }
+    else {
+        return obj;
+    }
+};
+
 /*
 sparks.util.checkFlashVersion = function () {
     var major = 10;
@@ -1689,18 +1714,16 @@ sparks.util.prettyPrint = function (obj, indent) {
      * initiated from this function.
      */
     this.initActivity = function () {
-
         try {
             var activity = new sparks.config.Activity();
-            activity.initDocument();
-            activity.onFlashDone();
-
             activity.learner_id = sparks.util.readCookie('learner_id');
             if (activity.learner_id) {
-                var put_path = unescape(sparks.util.readCookie('put_path')) || 'undefined_path';
+                var put_path = unescape(sparks.util.readCookie('save_path')) || 'undefined_path';
                 console.log('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
                 activity.setDataService(new RestDS(null, null, put_path));
             }
+            activity.initDocument();
+            activity.onFlashDone();
             sparks.activity = activity;
         }
         catch (e) {
@@ -1713,7 +1736,33 @@ sparks.util.prettyPrint = function (obj, indent) {
     };
 
     sparks.Activity.prototype = {
+
         init: function () {
+        },
+
+        getRubric: function (id) {
+            debugger;
+            var self = this;
+            var url;
+
+            if (this.dataService) {
+                url = unescape(sparks.util.readCookie('rubric_path') + '/' + id + '.json');
+            }
+            else {
+                url = 'rubric.json';
+            }
+                $.ajax({
+                    url: url,
+                    dataType: 'json',
+                    success: function (rubric) {
+                        debugger;
+                        self.rubric = rubric;
+                    },
+                    error: function (request, status, error) {
+                        debugger;
+                        console.log('Activity#getRubric ERROR:\nstatus: ' + status + '\nerror: ' + error);
+                    }
+                });
         },
 
         buttonize: function () {
@@ -2832,114 +2881,67 @@ sparks.util.prettyPrint = function (obj, indent) {
 
 (function () {
 
+    var util = sparks.util;
     var mr = sparks.activities.mr;
 
     /**
-     * A FeedbackItem is contains derived information from the activity log:
-     * Grader parses the activity log and populates feedback items.
-     * Reporter uses feedback items to generate the report.
+     * rubric
+     *   :name
+     *   :version
+     *   :description
+     *   :variables
+     *     :rated_resistance
+     *       :description
+     *       :value
+     *     :rated_tolerance
+     *       :description
+     *       :value
+     *   :max_points
+     *   :items
+     *     :reading
+     *       :description
+     *       :max_points
+     *       :items
+     *         :rated_r_value
+     *           :description
+     *           :max_points
+     *           :feedback
+     *             :messages
+     *               :correct
+     *                 :description
+     *                 :short_message
+     *                 :long_message
+     *               :incorrect
+     *         :rated_t_value
+     *     :measuring
+     *       :items
+     *         :measured_r_value
+     *         :plug_connection
+     *         :probe_connection
+     *         :knob_setting
+     *         :power_switch
+     *         :task_order
+     *     :t_range
+     *       :items
+     *         :range_values
+     *         :in_out
+     *     :time
+     *       :items
+     *         :reading
+     *         :measuring
      */
-    mr.FeedbackItem = function (maxPoints) {
-        this.correct = 0;
 
-        this.feedbacks = [];
-        this.feedbackSpace = null; //set of all possible feedback messages
-        this.points = 0;
-        this.maxPoints = (maxPoints === null || maxPoints === undefined ? 0 : maxPoints);
-    };
+    mr.Feedback = function (rubric) {
+        this.root = util.cloneSimpleObject(rubric);
+        console.log(JSON.stringify(this.root));
 
-    mr.FeedbackItem.prototype = {
-
-        updatePoints : function () {
-            var key;
-            var isLeaf = true;
-            for (key in this) {
-                if (this[key] instanceof mr.FeedbackItem) {
-                    isLeaf = false;
-                    break;
-                }
-            }
-            if (!isLeaf) {
-                this.points = 0;
-                this.maxPoints = 0;
-                for (key in this) {
-                    if (this[key] instanceof mr.FeedbackItem) {
-                        pair = this[key].updatePoints();
-                        this.points += pair[0];
-                        this.maxPoints += pair[1];
-                    }
-                }
-            }
-            return [this.points, this.maxPoints];
-        },
-
-        addFeedback: function (key) {
-            var messages = [];
-            for (var i = 0; i < this.feedbackSpace[key].length; ++i) {
-                messages[i] = this.feedbackSpace[key][i];
-            }
-            var subs = Array.prototype.slice.call(arguments, 1);
-            this.feedbacks.push(this.processPatterns(key, messages, subs));
-        },
-
-        processPatterns: function (key, messages, substitutions) {
-            return messages;
-        }
-    };
-
-    mr.Feedback = function () {
         this.optimal_dial_setting = '';
         this.initial_dial_setting = '';
         this.final_dial_setting = '';
         this.time_reading = 0;
         this.time_measuring = 0;
 
-        this.root = new mr.FeedbackItem();
-
-        this.root.reading = new mr.FeedbackItem();
-        this.root.reading.rated_r_value = new mr.FeedbackItem(20);
-        this.root.reading.rated_t_value = new mr.FeedbackItem(5);
-
-        this.root.measuring = new mr.FeedbackItem();
-        this.root.measuring.plug_connection = new mr.FeedbackItem(5);
-        this.root.measuring.probe_connection = new mr.FeedbackItem(2);
-        this.root.measuring.knob_setting = new mr.FeedbackItem(20);
-        this.root.measuring.power_switch = new mr.FeedbackItem(2);
-        this.root.measuring.measured_r_value = new mr.FeedbackItem(10);
-        this.root.measuring.task_order = new mr.FeedbackItem(6);
-
-        this.root.t_range = new mr.FeedbackItem();
-        this.root.t_range.t_range_value = new mr.FeedbackItem(15);
-        this.root.t_range.within_tolerance = new mr.FeedbackItem(5);
-
-        this.root.time = new mr.FeedbackItem();
-        this.root.time.reading_time = new mr.FeedbackItem(5);
-        this.root.time.measuring_time = new mr.FeedbackItem(5);
-
-        this.root.reading.rated_r_value.feedbackSpace = {
-            correct: [
-                'Correct interpretation of color bands',
-                'Good work! You correctly interpreted the color bands used to label this resistor’s rated resistance value.'
-            ],
-            power_ten: [
-                'Power-of-ten error',
-                'Although you got the digits correct, based on the first ${number of bands} bands, you seemed to have trouble interpreting the power-of-ten band. This band determines the power of ten to multiply the digits from the first ${number of bands – 1} bands. See the Color Band tutorial for additional help.'
-            ],
-            difficulty: [
-                'Apparent difficulty interpreting color bands',
-                'One of the digits that you reported from the color bands was incorrect. Roll over each band to expand the color and double-check your interpretation of each color band before submitting your answer. See the Color Band tutorial for additional help.'
-            ],
-            incorrect: [
-                'Incorrect interpretation of color bands',
-                'The resistance value you submitted indicates that you misinterpreted more than one color band. You seem to be having difficulty using the color bands to determine the rated resistor value. See the Color Band tutorial for a table of band colors and the numbers they signify.'
-            ],
-            unit: [
-                'Incorrect units (not resistance units)',
-                'You mistakenly specified ${selected unit} in your answer. That is not a unit resistance of resistance. The base unit for resistance is the ohm.'
-            ]
-        };
-
-        this.root.reading.rated_r_value.processPatterns = function (key, messages, subs) {
+        this.root.items.reading.items.rated_r_value.processPatterns = function (key, messages, subs) {
             if (key === 'power_ten') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                         '$1<font color="blue"><i>' + subs[0] +
@@ -2952,18 +2954,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             return messages;
         };
 
-        this.root.reading.rated_t_value.feedbackSpace = {
-            correct: [
-                'Correct interpretation of tolerance color band',
-                'Good work! You correctly interpreted the color band used to label this resistor’s rated tolerance.'
-            ],
-            incorrect: [
-                'Incorrect tolerance value',
-                'You specified ${your tolerance-value}, rather than the correct tolerance value of ${tolerance value}. Next time, refer to the color code for the tolerance band. See the Color Band tutorial for additional help.'
-            ]
-        };
-
-        this.root.reading.rated_t_value.processPatterns = function (key, messages, subs) {
+        this.root.items.reading.items.rated_t_value.processPatterns = function (key, messages, subs) {
             if (key === 'incorrect') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                     '$1<font color="red"><i>' + subs[1] +
@@ -2972,30 +2963,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             return messages;
         };
 
-        this.root.measuring.measured_r_value.feedbackSpace = {
-            correct: [
-                'Correct measured R value',
-                'You correctly reported the value of this resistor as measured with the digital multimeter.'
-            ],
-            incomplete: [
-                'Did not record complete value from DMM display.',
-                'You should record all the digits displayed by the digital multimeter —don’t round the results. While the DMM displayed ${dmm-display}, your answer was ${your answer-value}.'
-            ],
-            power_ten: [
-                'Power-of-ten error.',
-                'While the digits you submitted from the digital multimeter display appear to be correct, the power of ten implied by the units you chose were incorrect. Your answer was ${your answer-value} ${your answer-units}, but the correct answer was ${answer-ohms}, ${answer-k-ohms}, or ${answer meg-ohms}.'
-            ],
-            incorrect: [
-                'Not a measured value.',
-                'Submitted value does not match a valued measured with the digital multimeter. The tutorial on this subject may help clarify this topic for you.'
-            ],
-            unit: [
-                'Incorrect type of units.',
-                'The result of a resistance measurement should be a resistance unit, such as Ω, kΩ, or MΩ, not ${your answer-unit}.'
-            ]
-        };
-
-        this.root.measuring.measured_r_value.processPatterns = function (key, messages, subs) {
+        this.root.items.measuring.items.measured_r_value.processPatterns = function (key, messages, subs) {
             if (key === 'incomplete') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                         '$1<font color="blue"><i>' + subs[0] +
@@ -3016,67 +2984,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             return messages;
         };
 
-        this.root.measuring.plug_connection.feedbackSpace = {
-            correct: [
-                'Correct connections to the DMM',
-                'Good work. The probes were correctly connected to the digital multimeter for this measurement.'
-            ],
-            reverse: [
-                'Connections to DMM are reversed',
-                '<p>While the meter will still read resistance measurements ' +
-                'correctly, it is good practice to always connect the red lead ' +
-                'to the <font color="blue">VΩmA</font> jack, and the black lead ' +
-                'to the <font color="blue">COM</font> jack of the DMM.</p>' +
-                '<p>This will be essential when making correct measurements of voltage and current in later modules. See the Using the DMM tutorial for additional help.</p>'
-            ],
-            incorrect: [
-                'Connections to the DMM are incorrect',
-                '<p>The digital multimeter will not measure resistance unless the ' +
-                'leads are plugged in correctly: red lead to ' +
-                '<font color="blue">VΩmA</font> jack, black lead to ' +
-                '<font color="blue">COM</font> jack.</p>' +
-                '<p>While there is no risk in this case, it is good practice to be aware that any time you connect the leads to incorrect DMM jacks and to a circuit, you may damage the meter and/or your circuit. See the Using the DMM tutorial for additional help.</p>'
-            ]
-        };
-
-        this.root.measuring.probe_connection.feedbackSpace = {
-                correct: [
-                    'Correct connections to the resistor',
-                    'Good work. You correctly connected the probes to each end of the resistor to make your resistance measurement.'
-                ],
-                incorrect: [
-                    'Incorrect connections to the resistor',
-                    'You must connect one of the digital multimeter probes to each end of the resistor to make a resistance measurement. See the Using the DMM tutorial for additional help.'
-                ]
-        };
-
-        this.root.measuring.knob_setting.feedbackSpace = {
-            correct: [
-                'Correct DMM knob setting.',
-                'Good work. You set the digital multimeter knob to the correct resistance scale for this resistance measurement.'
-            ],
-            suboptimal: [
-                'DMM knob set to incorrect resistance scale',
-                '<p>While the digital multimeter knob was set to measure ' +
-                'resistance, it was not set to display the optimal scale for ' +
-                'this resistance measurement.</p><p>You chose ' +
-                '${your-knob-setting}, but the best scale setting for your ' +
-                'resistor would have been ${optimum-knob-setting}. See the ' +
-                'Using the DMM tutorial for additional help.</p>'
-            ],
-            incorrect: [
-                'DMM knob not set to a resistance scale',
-                '<p>While there is no risk in this case, the digital multimeter ' +
-                'knob should always be set to the proper type of measurement.</p>' +
-                '<p>Here you are measuring resistance, and so the DMM knob ' +
-                'should be set to a resistance scale, such as 2000Ω, 20kΩ, and ' +
-                'so forth.</p><p>Any other knob-type setting, may damage either ' +
-                'the meter and/or your circuit. See the Using the DMM tutorial ' +
-                'for additional help.'
-            ]
-        };
-
-        this.root.measuring.knob_setting.processPatterns = function (key, messages, subs) {
+        this.root.items.measuring.items.knob_setting.processPatterns = function (key, messages, subs) {
             if (key === 'suboptimal') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                         '$1<font color="orange"><i>' + subs[1] +
@@ -3085,94 +2993,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             return messages;
         };
 
-        this.root.measuring.power_switch.feedbackSpace = {
-            correct: [
-                'DMM turned ON',
-                'Good work. You correctly turned on the digital multimeter to make this resistance measurement.'
-            ],
-            incorrect: [
-                'DMM was not turned ON',
-                '<p>The digital multimeter was off. A digital multimeter ' +
-                'can only function with power supplied to the electronics within ' +
-                'and the display.</p><p>In addition, when making resistance ' +
-                'measurements, a DMM must supply a small amount of test current ' +
-                'through the probes. See the Using the DMM tutorial for ' +
-                'additional help.'
-            ]
-        };
-
-        this.root.measuring.task_order.feedbackSpace = {
-            correct: [
-                'Order of tasks is acceptable.',
-                'When measuring resistance, it is always a good practice to have the DMM knob set to a resistance function prior to turning ON the digital multimeter and connecting the probes to the circuit, just as you did.  Good job!'
-            ],
-            incorrect: [
-                'Incorrect order of tasks',
-                '<p>When measuring resistance, it is not good practice to have the digital multimeter knob set to a non-resistance function when it is turned on and connected to a circuit.</p><p>At some point during this session, we noted that this condition occurred.</p><p>Next time, turn the DMM knob to a resistance function before connecting the leads to the resistor. See the Using the DMM tutorial for additional help.</p>'
-            ]
-        };
-
-        this.root.t_range.t_range_value.feedbackSpace = {
-            correct: [
-                'Correct calculation',
-                'You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer. Good work.'
-            ],
-            correct_wrong_prev_r: [
-                'Correct calculation based on wrong resistance',
-                '<p>You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer.</p><p>But keep in mind that your calculation was based on the wrong resistance value so in the real world the answer would not be acceptable.</p>'
-            ],
-            correct_wrong_prev_t: [
-                'Correct calculation based on wrong tolerance',
-                '<p>You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer.</p><p>But keep in mind that your calculation was based on the wrong tolerance value so in the real world the answer would not be acceptable.</p>'
-            ],
-            correct_wrong_prev_rt: [
-                'Correct calculation based on wrong resistance/tolerance',
-                '<p>You correctly applied the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, and included all the digits in your answer.</p><p>But keep in mind that your calculation was based on the wrong resistance and tolerance value so in the real world the answer would not be acceptable.</p>'
-            ],
-            rounded: [
-                'Rounded result',
-                'You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer.'
-            ],
-            rounded_wrong_prev_r: [
-                'Rounded result based on wrong resistance',
-                '<p>You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer.</p><p>Also keep in mind that your calculation was based on the wrong resistance value so in the real world the answer would not be acceptable.</p>'
-            ],
-            rounded_wrong_prev_t:
-                [
-                 'Rounded result based on wrong tolerance',
-                 '<p>You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer.</p><p>Also keep in mind that your calculation was based on the wrong tolerance value so in the real world the answer would not be acceptable.</p>'
-                 ],
-            rounded_wrong_prev_rt:
-                [
-                 'Rounded result based on wrong resistance and tolerance',
-                 '<p>You appeared to correctly apply the ${tolerance-band-number} tolerance band to the ${resistor-value} resistor value to calculate the tolerance range for this resistor, but you seem to have rounded your answer.</p><p>Also keep in mind that your calculation was based on the wrong resistance and tolerance value so in the real world the answer would not be acceptable.</p>'
-                 ],
-            inaccurate: [
-                'Inaccurate tolerance',
-                'The tolerance range that you specified is close but incorrect. You reported ${student’s-tolerance-range} but the correct answer was ${correct-tolerance-range}. See the Calculating Tolerance tutorial for additional help.'
-            ],
-            inaccurate_wrong_prev_r:
-                [
-                 'Inaccurate tolerance based on wrong resistance',
-                 '<p>The tolerance range that you specified is close but incorrect. You reported ${student’s-tolerance-range} but the correct answer was ${correct-tolerance-range}. See the Calculating Tolerance tutorial for additional help.</p><p>Also keep in mind that your calculation was based on the wrong resistance value so in the real world the answer would not be acceptable.</p>'
-                 ],
-            inaccurate_wrong_prev_t:
-                [
-                 'Inaccurate tolerance based on wrong tolerance',
-                 '<p>The tolerance range that you specified is close but incorrect. You reported ${student’s-tolerance-range} but the correct answer was ${correct-tolerance-range}. See the Calculating Tolerance tutorial for additional help.</p><p>Also keep in mind that your calculation was based on the wrong tolerance value so in the real world the answer would not be acceptable.</p>'
-                 ],
-            inaccurate_wrong_prev_rt:
-                [
-                 'Inaccurate tolerance based on wrong resistance and tolerance',
-                 '<p>The tolerance range that you specified is close but incorrect. You reported ${student’s-tolerance-range} but the correct answer was ${correct-tolerance-range}. See the Calculating Tolerance tutorial for additional help.</p><p>Also keep in mind that your calculation was based on the wrong resistance and tolerance value so in the real world the answer would not be acceptable.</p>'
-                 ],
-            wrong: [
-                'Wrong tolerance',
-                'The tolerance range that you specified is incorrect. You reported ${student’s-tolerance-range} but the correct answer was ${correct-tolerance-range}. See the Calculating Tolerance tutorial for additional help.'
-            ]
-        };
-
-        this.root.t_range.t_range_value.processPatterns = function (key, messages, subs) {
+        this.root.items.t_range.items.range_values.processPatterns = function (key, messages, subs) {
             if (key === 'correct' || key === 'rounded' ||
                 key === 'correct_wrong_prev_r' || key === 'correct_wrong_prev_t' ||
                 key === 'correct_wrong_prev_rt' || key === 'rounded_wrong_prev_r' ||
@@ -3193,32 +3014,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             return messages;
         };
 
-        this.root.t_range.within_tolerance.feedbackSpace = {
-            correct: [
-                'Measurement recognized as in/out of tolerance',
-                'Good work. The measured value, ${your answer-value}, should fall within the tolerance range, that is between the minimum ${min-resistance-value} and the maximum ${max resistance value} that you calculated based on the tolerance percentage. Since the measured value of this resistor ${did|did not} fall within this range, this resistor ${is|is not} within tolerance.'
-            ],
-            correct_wrong_prev:
-                [
-                 'Measurement recognized as in/out of tolerance but based on wrong value(s)',
-                 'Your answer is correct based on your answers to previous questions, but one or more of your previous answers were incorrect, so in the real sense it is not truly correct'
-                ],
-            incorrect: [
-                'Measurement not recognized as in/out of tolerance',
-                'The measured value, ${your answer-value}, should fall within the tolerance range, that is between the minimum ${min-resistance-value} and the maximum ${max resistance value} that you calculated based on the tolerance percentage. Since the measured value ${did|did not} fall within this range, this resistor ${is|is not} within tolerance.'
-            ],
-            incorrect_wrong_prev:
-                [
-                 'Measurement not recognized as in/out of tolerance',
-                 'Although it agrees with the "real" correct answer, your answer is incorrect based on answers to previous questions.'
-                ],
-            undef: [
-                'Previous question(s) incorrect',
-                "You answer to either the measuring resistance question or the tolerance range question was incorrect, so you didn't have enough information to answer this question."
-            ]
-        };
-
-        this.root.t_range.within_tolerance.processPatterns = function (key, messages, subs) {
+        this.root.items.t_range.items.in_out.processPatterns = function (key, messages, subs) {
             if (key === 'correct' || key === 'incorrect') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                         '$1<font color="green"><i>' + subs[0] +
@@ -3230,22 +3026,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             return messages;
         };
 
-        this.root.time.reading_time.feedbackSpace = {
-            efficient: [
-                'Very efficient!',
-                'For this assessment, remembering and quickly interpreting the color bands on a resistor is the key to entering your answer in less than 20 seconds. You did this! Good work!'
-            ],
-            semi: [
-                'Can you speed it up?',
-                'For this assessment, you should be able to remember and interpret the color bands on a resistor, and then enter your answer in less than 20 seconds. Are you still looking up each color? Try memorizing the color code and get familiar with the key strokes to enter the values. See the Color Band tutorial for additional help and try again.'
-            ],
-            slow: [
-                'Too slow',
-                'For this assessment, you should be able to remember and interpret the color bands on a resistor, and then enter your answer in less 20 seconds. You took ${your-time} seconds. That’s too long! Are you still having to look up each color? Try memorizing the color code and get familiar with the key strokes to enter the values. See the Color Band tutorial for additional help, then try again and see if you can go faster.'
-            ]
-        };
-
-        this.root.time.reading_time.processPatterns = function (key, messages, subs) {
+        this.root.items.time.items.reading.processPatterns = function (key, messages, subs) {
             if (key === 'slow') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
                         '$1<font color="red"><i>' + subs[0] + '</i></font>$2');
@@ -3253,22 +3034,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             return messages;
         };
 
-        this.root.time.measuring_time.feedbackSpace = {
-            efficient: [
-                'Very efficient!',
-                'For this assessment, setting up the digital multimeter and correctly connecting it to the circuit is the key to entering your answer in less than 20 seconds. You did this! Good work!'
-            ],
-            semi: [
-                'Efficient',
-                'For this assessment, you should be familiar with the digital multimeter so you know where to set the knob, where to connect the leads, and how to turn on the meter to obtain a reading in less than 20 seconds.  See the Using the DMM tutorial for additional help.'
-            ],
-            slow: [
-                'Too slow',
-                'Your goal is to use the digital multimeter quickly and effectively.  You should be familiar with the DMM so that you know where to set the knob, where to connect the leads, and how to turn I on in order to obtain a reading in less than 20 seconds. You took ${your-time} seconds. That’s too long!. See the Using the DMM tutorial for additional help.'
-            ]
-        };
-
-        this.root.time.measuring_time.processPatterns = function (key, messages, subs) {
+        this.root.items.time.items.measuring.processPatterns = function (key, messages, subs) {
             if (key === 'slow') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
                         '$1<font color="red"><i>' + subs[0] + '</i></font>$2');
@@ -3276,6 +3042,50 @@ sparks.util.prettyPrint = function (obj, indent) {
             return messages;
         };
 
+    };
+
+    mr.Feedback.prototype = {
+
+        addFeedback: function (node, key) {
+            console.log('key=' + key);
+            console.log('addFeedback for: key=' + key + ', ' + node.description);
+            var messages = [];
+            messages[0] = node.feedback.messages[key].short_message;
+            messages[1] = node.feedback.messages[key].long_message;
+            var subs = Array.prototype.slice.call(arguments, 2);
+            if (!node.feedbacks) { node.feedbacks = []; }
+            if (node.processPatterns) {
+                node.feedbacks.push(node.processPatterns(key, messages, subs));
+            }
+            else {
+                node.feedbacks.push(messages);
+            }
+        },
+
+        updatePoints: function () {
+            this._updatePoints(this.root);
+        },
+
+        _updatePoints: function (node) {
+            var key, pair, points, maxPoints;
+
+            if (node.items) {
+                points = 0;
+                maxPoints = 0;
+                for (key in node.items) {
+                    pair = this._updatePoints(node.items[key]);
+                    points += pair[0];
+                    maxPoints += pair[1];
+                }
+                node.points = points;
+                node.maxPoints = maxPoints;
+            }
+            return [node.points, node.maxPoints];
+        },
+
+        processPatterns: function (key, messages, substitutions) {
+            return messages;
+        }
     };
 
 })();
@@ -3485,12 +3295,14 @@ sparks.util.prettyPrint = function (obj, indent) {
     var str = sparks.string;
     var mr = sparks.activities.mr;
 
-    mr.Grader = function (session) {
+    mr.Grader = function (session, rubric) {
         this.session = session;
+        this.rubric = rubric;
+
         this.section = this.session.sections[0];
         this.questions =  this.section.questions;
 
-        this.feedback = new mr.Feedback();
+        this.feedback = new mr.Feedback(rubric);
         this.parser = new mr.LogParser(session);
 
         this.resistanceAnswer = null;
@@ -3515,7 +3327,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             this.gradeTime();
             this.gradeSettings();
 
-            this.feedback.root.updatePoints();
+            this.feedback.updatePoints();
 
             return this.feedback;
         },
@@ -3523,7 +3335,7 @@ sparks.util.prettyPrint = function (obj, indent) {
         gradeReadingColorBands: function () {
             var question = this.questions[0];
             var unitCorrect = true;
-            var fb = this.feedback.root.reading.rated_r_value;
+            var fb = this.feedback.root.items.reading.items.rated_r_value;
 
             fb.correct = 0;
             fb.points = 0;
@@ -3531,13 +3343,13 @@ sparks.util.prettyPrint = function (obj, indent) {
             if (!unit.ohmCompatible(question.unit)) {
                 this.resistanceAnswer = null;
                 unitCorrect = false;
-                fb.addFeedback('unit', question.unit);
+                this.feedback.addFeedback(fb, 'unit', question.unit);
                 return;
             }
 
             if (question.answer === null || isNaN(question.answer)) {
                 this.resistanceAnswer = null;
-                fb.addFeedback('incorrect');
+                this.feedback.addFeedback(fb, 'incorrect');
                 return;
             }
 
@@ -3550,7 +3362,7 @@ sparks.util.prettyPrint = function (obj, indent) {
                     if (math.equalExceptPowerOfTen(question.correct_answer, parsedValue)) {
                         fb.points = 10;
                         fb.correct = 2;
-                        fb.addFeedback('power_ten',
+                        this.feedback.addFeedback(fb, 'power_ten',
                             this.section.resistor_num_bands - 1,
                             this.section.resistor_num_bands - 2);
                         return;
@@ -3558,21 +3370,21 @@ sparks.util.prettyPrint = function (obj, indent) {
                     else if (this.oneOff(question.correct_answer, parsedValue)) {
                         fb.points = 2;
                         fb.correct = 1;
-                        fb.addFeedback('difficulty');
+                        this.feedback.addFeedback(fb, 'difficulty');
                         return;
                     }
                 }
-                fb.addFeedback('incorrect');
+                this.feedback.addFeedback(fb, 'incorrect');
                 return;
             }
             fb.points = 20;
             fb.correct = 4;
-            fb.addFeedback('correct');
+            this.feedback.addFeedback(fb, 'correct');
         },
 
         gradeResistance: function () {
             var question = this.questions[2];
-            var fb = this.feedback.root.measuring.measured_r_value;
+            var fb = this.feedback.root.items.measuring.items.measured_r_value;
             var unitCorrect = true;
 
             fb.points = 0;
@@ -3580,12 +3392,12 @@ sparks.util.prettyPrint = function (obj, indent) {
 
             if (!unit.ohmCompatible(question.unit)) {
                 unitCorrect = false;
-                fb.addFeedback('unit', question.unit);
+                this.feedback.addFeedback(fb, 'unit', question.unit);
                 return;
             }
 
             if (question.answer === null || isNaN(question.answer)) {
-                fb.addFeedback('incorrect');
+                this.feedback.addFeedback(fb, 'incorrect');
                 return;
             }
 
@@ -3599,31 +3411,31 @@ sparks.util.prettyPrint = function (obj, indent) {
                 if (this.roundedMatch(question.correct_answer, parsedValue, n)) {
                     fb.points = 5;
                     fb.correct = 3;
-                    fb.addFeedback('incomplete', unit.res_str(question.correct_answer),
+                    this.feedback.addFeedback(fb, 'incomplete', unit.res_str(question.correct_answer),
                         unit.res_str(parsedValue));
                     return;
                 }
                 else if (math.equalExceptPowerOfTen(question.correct_answer, parsedValue)) {
                     fb.points = 3;
                     fb.correct = 2;
-                    fb.addFeedback('power_ten', question.answer, question.unit,
+                    this.feedback.addFeedback(fb, 'power_ten', question.answer, question.unit,
                             unit.res_unit_str(question.correct_answer),
                             unit.res_unit_str(question.correct_answer, 'k'),
                             unit.res_unit_str(question.correct_answer, 'M'));
                     return;
                 }
-                fb.addFeedback('incorrect');
+                this.feedback.addFeedback(fb, 'incorrect');
                 return;
             }
 
             fb.points = 10;
             fb.correct = 4;
-            fb.addFeedback('correct');
+            this.feedback.addFeedback(fb, 'correct');
         },
 
         gradeTolerance: function () {
             var question = this.questions[1];
-            var fb = this.feedback.root.reading.rated_t_value;
+            var fb = this.feedback.root.items.reading.items.rated_t_value;
 
             var correctStr = (question.correct_answer * 100) + '%';
             var answerStr = question.answer + '%';
@@ -3632,25 +3444,25 @@ sparks.util.prettyPrint = function (obj, indent) {
             fb.points = 0;
 
             if (question.answer === null || isNaN(question.answer)) {
-                fb.addFeedback('incorrect', correctStr, answerStr);
+                this.feedback.addFeedback(fb, 'incorrect', correctStr, answerStr);
                 return;
             }
             this.toleranceAnswer = question.answer / 100.0;
             if (question.correct_answer != question.answer / 100.0){
-                fb.addFeedback('incorrect', correctStr, answerStr);
+                this.feedback.addFeedback(fb, 'incorrect', correctStr, answerStr);
                 return;
             }
 
             fb.correct = 4;
             fb.points = 5;
-            fb.addFeedback('correct');
+            this.feedback.addFeedback(fb, 'correct');
         },
 
         gradeToleranceRange: function () {
             var question = this.questions[3];
-            var fb = this.feedback.root.t_range.t_range_value;
-            var fb_r = this.feedback.root.reading.rated_r_value;
-            var fb_t = this.feedback.root.reading.rated_t_value;
+            var fb = this.feedback.root.items.t_range.items.range_values;
+            var fb_r = this.feedback.root.items.reading.items.rated_r_value;
+            var fb_t = this.feedback.root.items.reading.items.rated_t_value;
             var nominalResistance;
             var fbkey;
 
@@ -3680,7 +3492,7 @@ sparks.util.prettyPrint = function (obj, indent) {
                 max + ' ' + question.unit[1] + ']';
 
             if (min === null || isNaN(min) || max === null || isNaN(max)) {
-                fb.addFeedback('wrong', correctStr, answerStr);
+                this.feedback.addFeedback(fb, 'wrong', correctStr, answerStr);
                 return;
             }
 
@@ -3688,7 +3500,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             if (!unit.ohmCompatible(question.unit[0]) ||
                 !unit.ohmCompatible(question.unit[1]))
             {
-                fb.addFeedback('wrong');
+                this.feedback.addFeedback(fb, 'wrong');
                 return;
             }
 
@@ -3711,20 +3523,20 @@ sparks.util.prettyPrint = function (obj, indent) {
                 fb.correct = 4;
                 if (fb_r.correct === 4) {
                     if (fb_t.correct == 4) {
-                        fb.addFeedback('correct', unit.res_str(nominalResistance),
+                        this.feedback.addFeedback(fb, 'correct', unit.res_str(nominalResistance),
                                 unit.pct_str(tolerance));
                     }
                     else {
-                        fb.addFeedback('correct_wrong_prev_t', unit.res_str(nominalResistance),
+                        this.feedback.addFeedback(fb, 'correct_wrong_prev_t', unit.res_str(nominalResistance),
                                 unit.pct_str(tolerance));
                     }
                 }
                 else if (fb_t.correct == 4) {
-                    fb.addFeedback('correct_wrong_prev_r', unit.res_str(nominalResistance),
+                    this.feedback.addFeedback(fb, 'correct_wrong_prev_r', unit.res_str(nominalResistance),
                             unit.pct_str(tolerance));
                 }
                 else {
-                    fb.addFeedback('correct_wrong_prev_rt', unit.res_str(nominalResistance),
+                    this.feedback.addFeedback(fb, 'correct_wrong_prev_rt', unit.res_str(nominalResistance),
                             unit.pct_str(tolerance));
                 }
                 return;
@@ -3741,20 +3553,20 @@ sparks.util.prettyPrint = function (obj, indent) {
                 fb.correct = 3;
                 if (fb_r.correct === 4) {
                     if (fb_t.correct === 4) {
-                        fb.addFeedback('rounded', unit.res_str(nominalResistance),
+                        this.feedback.addFeedback(fb, 'rounded', unit.res_str(nominalResistance),
                                 unit.pct_str(tolerance));
                     }
                     else {
-                        fb.addFeedback('rounded_wrong_prev_t', unit.res_str(nominalResistance),
+                        this.feedback.addFeedback(fb, 'rounded_wrong_prev_t', unit.res_str(nominalResistance),
                                 unit.pct_str(tolerance));
                     }
                 }
                 else if (fb_t.correct === 4) {
-                    fb.addFeedback('rounded_wrong_prev_r', unit.res_str(nominalResistance),
+                    this.feedback.addFeedback(fb, 'rounded_wrong_prev_r', unit.res_str(nominalResistance),
                             unit.pct_str(tolerance));
                 }
                 else {
-                    fb.addFeedback('rounded_wrong_prev_rt', unit.res_str(nominalResistance),
+                    this.feedback.addFeedback(fb, 'rounded_wrong_prev_rt', unit.res_str(nominalResistance),
                             unit.pct_str(tolerance));
                 }
                 return;
@@ -3769,21 +3581,22 @@ sparks.util.prettyPrint = function (obj, indent) {
                 fb.correct = 2;
                 if (fb_r.correct === 4) {
                     if (fb_t.correct === 4) {
-                        fb.addFeedback('inaccurate', correctStr, answerStr);
+                        this.feedback.addFeedback(fb, 'inaccurate', correctStr, answerStr);
                     }
                     else {
-                        fb.addFeedback('inaccurate_wrong_prev_t', correctStr, answerStr);
+                        this.feedback.addFeedback(fb, 'inaccurate_wrong_prev_t', correctStr, answerStr);
                     }
                 }
                 else if (fb_t.correct === 4) {
-                    fb.addFeedback('inaccurate_wrong_prev_r', correctStr, answerStr);
+                    this.feedback.addFeedback(fb, 'inaccurate_wrong_prev_r', correctStr, answerStr);
                 }
                 else {
-                    fb.addFeedback('inaccurate_wrong_prev_rt', correctStr, answerStr);
+                    this.feedback.addFeedback(fb, 'inaccurate_wrong_prev_rt', correctStr, answerStr);
                 }
                 return;
             }
-            fb.addFeedback('wrong', correctStr, answerStr);
+            debugger;
+            this.feedback.addFeedback(fb, 'wrong', correctStr, answerStr);
             return;
         },
 
@@ -3801,14 +3614,14 @@ sparks.util.prettyPrint = function (obj, indent) {
                 question.correct_answer = 'no';
             }
 
-            var fb = this.feedback.root.t_range.within_tolerance;
+            var fb = this.feedback.root.items.t_range.items.in_out;
 
-            if (this.feedback.root.measuring.measured_r_value.correct < 4 ||
-                this.feedback.root.t_range.t_range_value < 4)
+            if (this.feedback.root.items.measuring.items.measured_r_value.correct < 4 ||
+                this.feedback.root.items.t_range.items.range_values < 4)
             {
                 fb.points = 0;
                 fb.correct = 0;
-                fb.addFeedback('undef');
+                this.feedback.addFeedback(fb, 'undef');
                 return;
             }
 
@@ -3846,7 +3659,7 @@ sparks.util.prettyPrint = function (obj, indent) {
 
             if (question.answer !== correctAnswer) {
                 if (question.correct_answer === correctAnswer) {
-                    fb.addFeedback('incorrect',
+                    this.feedback.addFeedback(fb, 'incorrect',
                         unit.res_str(this.measuredResistanceAnswer),
                         unit.res_str(this.rangeMinAnswer),
                         unit.res_str(this.rangeMaxAnswer),
@@ -3861,14 +3674,14 @@ sparks.util.prettyPrint = function (obj, indent) {
             fb.correct = 4;
 
             if (question.correct_answer === correctAnswer) {
-                fb.addFeedback('correct',
+                this.feedback.addFeedback(fb, 'correct',
                     unit.res_str(this.measuredResistanceAnswer),
                     unit.res_str(this.rangeMinAnswer),
                     unit.res_str(this.rangeMaxAnswer),
                     did, is);
             }
             else {
-                fb.addFeedback('correct_wrong_prev');
+                this.feedback.addFeedback(fb, 'correct_wrong_prev');
             }
         },
 
@@ -3878,45 +3691,45 @@ sparks.util.prettyPrint = function (obj, indent) {
 
             this.feedback.reading_time = this.questions[1].end_time - this.questions[0].start_time;
             seconds = this.feedback.reading_time / 1000;
-            fb = this.feedback.root.time.reading_time;
+            fb = this.feedback.root.items.time.items.reading;
             if (seconds <= 20) {
                 fb.points = 5;
                 fb.correct = 4;
-                fb.addFeedback('efficient');
+                this.feedback.addFeedback(fb, 'efficient');
             }
             else if (seconds <= 40) {
                 fb.points = 2;
                 fb.correct = 2;
-                fb.addFeedback('semi');
+                this.feedback.addFeedback(fb, 'semi');
             }
             else {
                 fb.points = 0;
                 fb.correct = 0;
-                fb.addFeedback('slow', Math.round(seconds));
+                this.feedback.addFeedback(fb, 'slow', Math.round(seconds));
             }
 
             this.feedback.measuring_time = this.questions[2].end_time - this.questions[2].start_time;
             seconds = this.feedback.measuring_time / 1000;
-            fb = this.feedback.root.time.measuring_time;
+            fb = this.feedback.root.items.time.items.measuring;
             if (seconds <= 20) {
                 fb.points = 5;
                 fb.correct = 4;
-                fb.addFeedback('efficient');
+                this.feedback.addFeedback(fb, 'efficient');
             }
             else if (seconds <= 40) {
                 fb.points = 2;
                 fb.correct = 2;
-                fb.addFeedback('semi');
+                this.feedback.addFeedback(fb, 'semi');
             }
             else {
                 fb.points = 0;
                 fb.correct = 0;
-                fb.addFeedback('slow', Math.round(seconds));
+                this.feedback.addFeedback(fb, 'slow', Math.round(seconds));
             }
         },
 
         gradeSettings: function () {
-            var fb = this.feedback.root.measuring;
+            var fb = this.feedback.root.items.measuring;
             var redProbeConn = this.parser.submit_red_probe_conn;
             var blackProbeConn = this.parser.submit_black_probe_conn;
             var redPlugConn = this.parser.submit_red_plug_conn;
@@ -3927,41 +3740,39 @@ sparks.util.prettyPrint = function (obj, indent) {
                 (blackProbeConn == 'resistor_lead1' || blackProbeConn == 'resistor_lead2') &&
                 (redProbeConn != blackProbeConn))
             {
-                fb.probe_connection.correct = 4;
-                fb.probe_connection.points = 2;
-                fb.probe_connection.desc = 'Correct';
-                fb.probe_connection.addFeedback('correct');
+                fb.items.probe_connection.correct = 4;
+                fb.items.probe_connection.points = 2;
+                fb.items.probe_connection.desc = 'Correct';
+                this.feedback.addFeedback(fb.items.probe_connection, 'correct');
             }
             else {
-                fb.probe_connection.correct = 0;
-                fb.probe_connection.points = 0;
-                fb.probe_connection.desc = 'Incorrect';
-                fb.probe_connection.addFeedback('incorrect');
+                fb.items.probe_connection.correct = 0;
+                fb.items.probe_connection.points = 0;
+                fb.items.probe_connection.desc = 'Incorrect';
+                this.feedback.addFeedback(fb.items.probe_connection, 'incorrect');
             }
-            console.log('probe_connection.points=' + fb.probe_connection.points);
 
             if (redPlugConn == 'voma_port' && blackPlugConn == 'common_port') {
-                fb.plug_connection.points = 5;
-                fb.plug_connection.correct = 4;
-                fb.plug_connection.desc = 'Correct';
-                fb.plug_connection.addFeedback('correct');
+                fb.items.plug_connection.points = 5;
+                fb.items.plug_connection.correct = 4;
+                fb.items.plug_connection.desc = 'Correct';
+                this.feedback.addFeedback(fb.items.plug_connection, 'correct');
             }
             else {
-                fb.plug_connection.correct = 0;
+                fb.items.plug_connection.correct = 0;
                 if (redPlugConn == 'common_port' && blackPlugConn == 'voma_port') {
-                    fb.plug_connection.points = 3;
-                    fb.plug_connection.correct = 3;
-                    fb.plug_connection.desc = 'Reversed';
-                    fb.plug_connection.addFeedback('reverse');
+                    fb.items.plug_connection.points = 3;
+                    fb.items.plug_connection.correct = 3;
+                    fb.items.plug_connection.desc = 'Reversed';
+                    this.feedback.addFeedback(fb.items.plug_connection, 'reverse');
                 }
                 else {
-                    fb.plug_connection.points = 0;
-                    fb.plug_connection.correct = 0;
-                    fb.plug_connection.desc = 'Incorrect';
-                    fb.plug_connection.addFeedback('incorrect');
+                    fb.items.plug_connection.points = 0;
+                    fb.items.plug_connection.correct = 0;
+                    fb.items.plug_connection.desc = 'Incorrect';
+                    this.feedback.addFeedback(fb.items.plug_connection, 'incorrect');
                 }
             }
-            console.log('plug_connection.points=' + fb.plug_connection.points);
 
             var i_knob = this.parser.initial_dial_setting;
             var f_knob = this.parser.submit_dial_setting;
@@ -3972,44 +3783,44 @@ sparks.util.prettyPrint = function (obj, indent) {
             this.feedback.optimal_dial_setting = o_knob;
 
             if (f_knob === o_knob) {
-                fb.knob_setting.points = 20;
-                fb.knob_setting.correct = 4;
-                fb.knob_setting.addFeedback('correct');
+                fb.items.knob_setting.points = 20;
+                fb.items.knob_setting.correct = 4;
+                this.feedback.addFeedback(fb.items.knob_setting, 'correct');
             }
             else if (this.isResistanceKnob(f_knob)){
-                fb.knob_setting.points = 10;
-                fb.knob_setting.correct = 2;
-                fb.knob_setting.addFeedback('suboptimal', o_knob, f_knob);
+                fb.items.knob_setting.points = 10;
+                fb.items.knob_setting.correct = 2;
+                this.feedback.addFeedback(fb.items.knob_setting, 'suboptimal', o_knob, f_knob);
             }
             else {
-                fb.knob_setting.points = 0;
-                fb.knob_setting.correct = 0;
-                fb.knob_setting.addFeedback('incorrect');
+                fb.items.knob_setting.points = 0;
+                fb.items.knob_setting.correct = 0;
+                this.feedback.addFeedback(fb.items.knob_setting, 'incorrect');
             }
 
             if (this.parser.power_on) {
-                fb.power_switch.points = 2;
-                fb.power_switch.correct = 4;
-                fb.power_switch.addFeedback('correct');
+                fb.items.power_switch.points = 2;
+                fb.items.power_switch.correct = 4;
+                this.feedback.addFeedback(fb.items.power_switch, 'correct');
             }
             else {
-                fb.power_switch.points = 0;
-                fb.power_switch.correct = 0;
-                fb.power_switch.addFeedback('incorrect');
+                fb.items.power_switch.points = 0;
+                fb.items.power_switch.correct = 0;
+                this.feedback.addFeedback(fb.items.power_switch, 'incorrect');
             }
-            console.log('power_switch.points=' + fb.power_switch.points);
+            console.log('power_switch.points=' + fb.items.power_switch.points);
 
             if (this.parser.correct_order) {
-                fb.task_order.points = 6;
-                fb.task_order.correct = 4;
-                fb.task_order.addFeedback('correct');
+                fb.items.task_order.points = 6;
+                fb.items.task_order.correct = 4;
+                this.feedback.addFeedback(fb.items.task_order, 'correct');
             }
             else {
-                fb.task_order.points = 0;
-                fb.task_order.correct = 0;
-                fb.task_order.addFeedback('incorrect');
+                fb.items.task_order.points = 0;
+                fb.items.task_order.correct = 0;
+                this.feedback.addFeedback(fb.items.task_order, 'incorrect');
             }
-            console.log('task_order.points=' + fb.task_order.points);
+            console.log('task_order.points=' + fb.items.task_order.points);
         },
 
         equalWithTolerance: function (value1, value2, tolerance) {
@@ -4134,9 +3945,9 @@ sparks.util.prettyPrint = function (obj, indent) {
 
     mr.Assessment.prototype = {
 
-        grade : function(session) {
-            var grader = new mr.Grader(session);
-            return grader.grade(session);
+        grade : function(session, rubric) {
+            var grader = new mr.Grader(session, rubric);
+            return grader.grade();
         },
 
         receiveResultFromHTML : function(resultObj) {
@@ -4185,12 +3996,12 @@ sparks.util.prettyPrint = function (obj, indent) {
         },
 
         sendResultToHTML : function(resultObj, feedback) {
-            var fb = feedback.root;
-            resultObj.rated_resistance.correct = fb.reading.rated_r_value.correct;
-            resultObj.rated_tolerance.correct = fb.reading.rated_t_value.correct;
-            resultObj.measured_resistance.correct = fb.measuring.measured_r_value.correct;
-            resultObj.measured_tolerance.correct = fb.t_range.t_range_value.correct;
-            resultObj.within_tolerance.correct = fb.t_range.within_tolerance.correct;
+            var root = feedback.root;
+            resultObj.rated_resistance.correct = root.items.reading.items.rated_r_value.correct;
+            resultObj.rated_tolerance.correct = root.items.reading.items.rated_t_value.correct;
+            resultObj.measured_resistance.correct = root.items.measuring.items.measured_r_value.correct;
+            resultObj.measured_tolerance.correct = root.items.t_range.items.range_values.correct;
+            resultObj.within_tolerance.correct = root.items.t_range.items.in_out.correct;
         },
 
         fieldIsEmpty : function(formInput) {
@@ -4272,45 +4083,45 @@ sparks.util.prettyPrint = function (obj, indent) {
             var questions = session.sections[0].questions;
             var color;
 
-            var fb = feedback.root.reading.rated_r_value;
+            var fb = feedback.root.items.reading.items.rated_r_value;
             $('#rated_r_correct').text(unit.res_str(questions[0].correct_answer));
             text = questions[0].answer ? questions[0].answer + questions[0].unit : 'No Answer';
             this.setAnswerTextWithColor('#rated_r_answer', text, fb);
-            $('#rated_r_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#rated_r_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#rated_r_feedback'), fb, this.readingHintPath);
 
-            fb = feedback.root.reading.rated_t_value;
+            fb = feedback.root.items.reading.items.rated_t_value;
             $('#rated_t_correct').text(questions[1].correct_answer * 100 + '%');
             text = questions[1].answer ? questions[1].answer + questions[1].unit : 'No Answer';
             this.setAnswerTextWithColor('#rated_t_answer', text, fb);
-            $('#rated_t_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#rated_t_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#rated_t_feedback'), fb, this.readingHintPath);
 
-            fb = feedback.root.t_range.t_range_value;
+            fb = feedback.root.items.t_range.items.range_values;
             $('#t_range_correct').text('[' + unit.res_str(questions[3].correct_answer[0]) + ', ' + unit.res_str(questions[3].correct_answer[1]) + ']');
             text = (questions[3].answer[0] || questions[3].answer[1]) ? '[' + String(questions[3].answer[0]) + questions[3].unit[0] + ', ' + questions[3].answer[1] + questions[3].unit[1] + ']' : 'No Answer';
             this.setAnswerTextWithColor('#t_range_answer', text, fb);
-            $('#t_range_value_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#t_range_value_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#t_range_feedback'), fb, this.toleranceHintPath);
 
-            fb = feedback.root.t_range.within_tolerance;
+            fb = feedback.root.items.t_range.items.in_out;
             $('#within_correct').text(questions[4].correct_answer);
             text = questions[4].answer ? questions[4].answer : 'No Answer';
             this.setAnswerTextWithColor('#within_answer', text, fb);
-            $('#within_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#within_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#within_feedback'), fb, this.toleranceHintPath);
 
-            fb = feedback.root.time.reading_time;
+            fb = feedback.root.items.time.items.reading;
             this.setAnswerTextWithColor('#reading_time', sparks.util.timeLapseStr(questions[0].start_time, questions[1].end_time), fb);
-            $('#reading_time_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#reading_time_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#reading_time_feedback'), fb, this.readingHintPath);
 
-            fb = feedback.root.time.measuring_time;
+            fb = feedback.root.items.time.items.measuring;
             this.setAnswerTextWithColor('#measuring_time', sparks.util.timeLapseStr(questions[2].start_time, questions[2].end_time), fb);
-            $('#measuring_time_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#measuring_time_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#measuring_time_feedback'), fb, this.measuringHintPath);
 
-            fb = feedback.root.measuring.probe_connection;
+            fb = feedback.root.items.measuring.items.probe_connection;
             if (fb.correct == 4) {
                 this.setTextWithColor('#probe_connection', fb.desc , this.green);
             }
@@ -4318,7 +4129,7 @@ sparks.util.prettyPrint = function (obj, indent) {
                 this.setTextWithColor('#probe_connection', fb.desc, this.red);
             }
 
-            fb = feedback.root.measuring.plug_connection;
+            fb = feedback.root.items.measuring.items.plug_connection;
             if (fb.correct) {
                 this.setTextWithColor('#plug_connection', fb.desc, this.green);
             }
@@ -4326,7 +4137,7 @@ sparks.util.prettyPrint = function (obj, indent) {
                 this.setTextWithColor('#plug_connection', fb.desc, this.red);
             }
 
-            fb = feedback.root.measuring.knob_setting;
+            fb = feedback.root.items.measuring.items.knob_setting;
 
             var f_knob = feedback.submit_dial_setting;
             var o_knob = feedback.optimal_dial_setting;
@@ -4357,7 +4168,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             }
             this.setTextWithColor('#knob_setting_answer', this.dialLabels[feedback.submit_dial_setting], color);
 
-            $('#knob_setting_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#knob_setting_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#knob_setting_feedback'), fb, this.measuringHintPath);
 
             if (feedback.root.measuring.power_switch.correct == 4) {
@@ -4368,72 +4179,72 @@ sparks.util.prettyPrint = function (obj, indent) {
             }
 
 
-            fb = feedback.root.measuring.measured_r_value;
+            fb = feedback.root.items.measuring.items.measured_r_value;
             $('#measured_r_correct').text(unit.res_str(questions[2].correct_answer));
             text = questions[2].answer ? questions[2].answer + questions[2].unit : 'No Answer';
             this.setAnswerTextWithColor('#measured_r_answer', text, fb);
-            $('#measured_r_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#measured_r_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#measured_r_feedback'), fb, this.measuringHintPath);
 
-            fb = feedback.root.measuring.plug_connection;
+            fb = feedback.root.items.measuring.items.plug_connection;
             if (fb.correct == 4) {
                 this.setTextWithColor('#plug_connection_answer', 'Correct', this.green);
             }
             else {
                 this.setTextWithColor('#plug_connection_answer', 'Incorrect', this.red);
             }
-            $('#plug_connection_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#plug_connection_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#plug_connection_feedback'), fb, this.measuringHintPath);
 
-            fb = feedback.root.measuring.probe_connection;
+            fb = feedback.root.items.measuring.items.probe_connection;
             if (fb.correct == 4) {
                 this.setTextWithColor('#probe_connection_answer', 'Correct', this.green);
             }
             else {
                 this.setTextWithColor('#probe_connection_answer', 'Incorrect', this.red);
             }
-            $('#probe_connection_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#probe_connection_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#probe_connection_feedback'), fb, this.measuringHintPath);
 
-            fb = feedback.root.measuring.power_switch;
+            fb = feedback.root.items.measuring.items.power_switch;
             if (fb.correct == 4) {
                 this.setTextWithColor('#power_switch_answer', 'Correct', this.green);
             }
             else {
                 this.setTextWithColor('#power_switch_answer', 'Incorrect', this.red);
             }
-            $('#power_switch_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#power_switch_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#power_switch_feedback'), fb, this.measuringHintPath);
 
-            fb = feedback.root.measuring.task_order;
+            fb = feedback.root.items.measuring.items.task_order;
             if (fb.correct == 4) {
                 this.setTextWithColor('#task_order_answer', 'Correct', this.green);
             }
             else {
                 this.setTextWithColor('#task_order_answer', 'Incorrect', this.red);
             }
-            $('#task_order_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#task_order_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#task_order_feedback'), fb, this.measuringHintPath);
 
-            fb = feedback.root.reading;
+            fb = feedback.root.items.reading;
             $('#reading_points').html('<b>' + fb.points + ' / ' +
-                    fb.maxPoints + '</b>');
+                    fb.max_points + '</b>');
 
-            fb = feedback.root.measuring;
+            fb = feedback.root.items.measuring;
             $('#measuring_points').html('<b>' + fb.points + ' / ' +
-                    fb.maxPoints + '</b>');
+                    fb.max_points + '</b>');
 
-            fb = feedback.root.t_range;
+            fb = feedback.root.items.t_range;
             $('#t_range_points').html('<b>' + fb.points + ' / ' +
-                    fb.maxPoints + '</b>');
+                    fb.max_points + '</b>');
 
-            fb = feedback.root.time;
+            fb = feedback.root.items.time;
             $('#time_points').html('<b>' + fb.points + ' / ' +
-                    fb.maxPoints + '</b>');
+                    fb.max_points + '</b>');
 
             fb = feedback.root;
             $('#total_points').html('<b>' + fb.points + ' / ' +
-                    fb.maxPoints + '</b>');
+                    fb.max_points + '</b>');
 
             this.addHelpLinks(feedback);
         },
@@ -4441,23 +4252,23 @@ sparks.util.prettyPrint = function (obj, indent) {
         addHelpLinks: function(feedback) {
             var rootDir = sparks.config.root_dir;
 
-            var fb = feedback.root.reading;
+            var fb = feedback.root.items.reading;
 
-            if (fb.points != fb.maxPoints) {
+            if (fb.points != fb.max_points) {
                 this.imageLink($('#reading_tutorial_link'),
                     rootDir + '/common/icons/tutorial.png',
                     this.readingHintPath);
             }
 
-            fb = feedback.root.measuring;
-            if (fb.points != fb.maxPoints) {
+            fb = feedback.root.items.measuring;
+            if (fb.points != fb.max_points) {
                 this.imageLink($('#measuring_tutorial_link'),
                     rootDir + '/common/icons/tutorial.png',
                     this.measuringHintPath);
             }
 
-            fb = feedback.root.t_range.t_range_value;
-            if (fb.points != fb.maxPoints) {
+            fb = feedback.root.items.t_range.items.range_value;
+            if (fb.points != fb.max_points) {
                 this.imageLink($('#t_range_tutorial_link'),
                     rootDir + '/common/icons/tutorial.png',
                     this.toleranceHintPath);
@@ -4554,16 +4365,6 @@ sparks.util.prettyPrint = function (obj, indent) {
     mr.Activity = function () {
         mr.Activity.uber.init.apply(this);
 
-        this.dom = mr.ActivityDomHelper;
-
-        this.root_dir = sparks.config.root_dir + '/activities/measuring-resistance';
-        this.sessionTitle = $('#session_title');
-        this.endSessionInstruction = $('.instruction_end_session');
-        this.questionsElem = $('#questions_area');
-        this.reportElem = $('#report_area').hide();
-
-        $('body').scrollTop(0); //scroll to top
-
         var activity = this;
         this.dataService = null;
         this.log = new mr.ActivityLog();
@@ -4578,21 +4379,6 @@ sparks.util.prettyPrint = function (obj, indent) {
         this.current_question = 0;
         this.allResults = [];
 
-        $('#rated_r_feedback').hide();
-        $('#rated_t_feedback').hide();
-        $('#measured_r_feedback').hide();
-        $('#t_range_feedback').hide();
-
-        if (sparks.config.debug) {
-            $('#json_button').click(function () {
-                $('#json_current_log').html('<pre>' + sparks.util.prettyPrint(activity.log.sessions, 4) + '</pre>' + JSON.stringify(activity.log));
-            });
-        }
-        else {
-            $('#json').hide();
-        }
-
-        this.buttonize();
     };
 
     sparks.config.Activity = sparks.activities.mr.Activity;
@@ -4606,6 +4392,27 @@ sparks.util.prettyPrint = function (obj, indent) {
         initDocument: function () {
             var self = this;
 
+            this.dom = mr.ActivityDomHelper;
+
+            this.root_dir = sparks.config.root_dir + '/activities/measuring-resistance';
+            this.sessionTitle = $('#session_title');
+            this.endSessionInstruction = $('.instruction_end_session');
+            this.questionsElem = $('#questions_area');
+            this.reportElem = $('#report_area').hide();
+
+            if (sparks.config.debug) {
+                $('#json_button').click(function () {
+                    $('#json_current_log').html('<pre>' + sparks.util.prettyPrint(activity.log.sessions, 4) + '</pre>' + JSON.stringify(activity.log));
+                });
+            }
+            else {
+                $('#json').hide();
+            }
+
+            this.buttonize();
+
+            $('body').scrollTop(0); //scroll to top
+
             $('input, select').attr("disabled", "true");
 
             $('.next_button').hide().click(function (event) {
@@ -4618,10 +4425,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             $('#start_button').click(function (event) {
                 self.startButtonClicked(self, event);
             });
-            /*
-            this.reportElem.dialog({ autoOpen: false, width: 800,
-                height: $(window).height() * 0.9 });
-            */
+            this.rubic = this.getRubric(1);
         },
 
         onFlashDone: function () {
@@ -4701,7 +4505,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             }
 
             this.assessment.receiveResultFromHTML(result);
-            this.feedback = this.assessment.grade(this.log.currentSession());
+            this.feedback = this.assessment.grade(this.log.currentSession(), this.rubric);
             this.assessment.sendResultToHTML(result, this.feedback);
 
             for (var item in result) {
@@ -4756,6 +4560,7 @@ sparks.util.prettyPrint = function (obj, indent) {
         },
 
         startTry : function () {
+            debugger;
           ++ this.current_session;
           this.log.beginNextSession();
           this.current_question = 1;
@@ -4828,13 +4633,8 @@ sparks.util.prettyPrint = function (obj, indent) {
           form.append("<button>Submit</button>");
           this.buttonize();
           form.find("button").click(function (event) {
-              try {
-                  self.submitButtonClicked(self, event);
-                  event.preventDefault();
-              }
-              catch (e) {
-                  alert(e);
-              }
+              self.submitButtonClicked(self, event);
+              event.preventDefault();
           });
           form.find("input, select").removeAttr("disabled");
           form.find("input, select").keypress(function (event) {

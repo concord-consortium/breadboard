@@ -26,16 +26,6 @@
     mr.Activity = function () {
         mr.Activity.uber.init.apply(this);
         
-        this.dom = mr.ActivityDomHelper;
-        
-        this.root_dir = sparks.config.root_dir + '/activities/measuring-resistance';
-        this.sessionTitle = $('#session_title');
-        this.endSessionInstruction = $('.instruction_end_session');
-        this.questionsElem = $('#questions_area');
-        this.reportElem = $('#report_area').hide();
-        
-        $('body').scrollTop(0); //scroll to top
-
         var activity = this;
         this.dataService = null;
         this.log = new mr.ActivityLog();
@@ -50,21 +40,6 @@
         this.current_question = 0;
         this.allResults = [];
 
-        $('#rated_r_feedback').hide();
-        $('#rated_t_feedback').hide();
-        $('#measured_r_feedback').hide();
-        $('#t_range_feedback').hide();
-
-        if (sparks.config.debug) {
-            $('#json_button').click(function () {
-                $('#json_current_log').html('<pre>' + sparks.util.prettyPrint(activity.log.sessions, 4) + '</pre>' + JSON.stringify(activity.log));
-            });
-        }
-        else {
-            $('#json').hide();
-        }
-        
-        this.buttonize();
     };
     
     sparks.config.Activity = sparks.activities.mr.Activity;
@@ -79,6 +54,27 @@
         initDocument: function () {
             var self = this;
 
+            this.dom = mr.ActivityDomHelper;
+            
+            this.root_dir = sparks.config.root_dir + '/activities/measuring-resistance';
+            this.sessionTitle = $('#session_title');
+            this.endSessionInstruction = $('.instruction_end_session');
+            this.questionsElem = $('#questions_area');
+            this.reportElem = $('#report_area').hide();
+            
+            if (sparks.config.debug) {
+                $('#json_button').click(function () {
+                    $('#json_current_log').html('<pre>' + sparks.util.prettyPrint(activity.log.sessions, 4) + '</pre>' + JSON.stringify(activity.log));
+                });
+            }
+            else {
+                $('#json').hide();
+            }
+            
+            this.buttonize();
+            
+            $('body').scrollTop(0); //scroll to top
+            
             // Disable all form elements
             $('input, select').attr("disabled", "true");
 
@@ -94,10 +90,7 @@
             $('#start_button').click(function (event) {
                 self.startButtonClicked(self, event);
             });
-            /*
-            this.reportElem.dialog({ autoOpen: false, width: 800,
-                height: $(window).height() * 0.9 });
-            */
+            this.rubic = this.getRubric(1);
         },
 
         // Initializations that can be done only when the flash movie is loaded
@@ -111,7 +104,7 @@
             //console.log('Real Resistance=' + this.resistor.realValue);
 
         },
-
+        
         // Re-initialize the circuit settings for a new set of questions
         resetCircuit: function () {
             console.log('ENTER ResistorActivity.resetCircuit');
@@ -183,7 +176,7 @@
             }
 
             this.assessment.receiveResultFromHTML(result);
-            this.feedback = this.assessment.grade(this.log.currentSession());
+            this.feedback = this.assessment.grade(this.log.currentSession(), this.rubric);
             this.assessment.sendResultToHTML(result, this.feedback);
 
             // Update forms
@@ -242,6 +235,7 @@
 
         // Start new session (new resistor)
         startTry : function () {
+            debugger;
           ++ this.current_session;
           this.log.beginNextSession();
           this.current_question = 1;
@@ -327,13 +321,8 @@
           form.append("<button>Submit</button>");
           this.buttonize();
           form.find("button").click(function (event) {
-              try {
-                  self.submitButtonClicked(self, event);
-                  event.preventDefault();
-              }
-              catch (e) {
-                  alert(e);
-              }
+              self.submitButtonClicked(self, event);
+              event.preventDefault();
           }); 
           form.find("input, select").removeAttr("disabled");
           form.find("input, select").keypress(function (event) {
