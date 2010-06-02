@@ -644,6 +644,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 
 (function () {
 
+    var util = sparks.util;
     var mr = sparks.activities.mr;
 
     /**
@@ -702,7 +703,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
         this.time_reading = 0;
         this.time_measuring = 0;
 
-        this.root.reading.rated_r_value.processPatterns = function (key, messages, subs) {
+        this.root.items.reading.items.rated_r_value.processPatterns = function (key, messages, subs) {
             if (key === 'power_ten') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                         '$1<font color="blue"><i>' + subs[0] +
@@ -715,7 +716,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             return messages;
         };
 
-        this.root.reading.rated_t_value.processPatterns = function (key, messages, subs) {
+        this.root.items.reading.items.rated_t_value.processPatterns = function (key, messages, subs) {
             if (key === 'incorrect') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                     '$1<font color="red"><i>' + subs[1] +
@@ -724,7 +725,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             return messages;
         };
 
-        this.root.measuring.measured_r_value.processPatterns = function (key, messages, subs) {
+        this.root.items.measuring.items.measured_r_value.processPatterns = function (key, messages, subs) {
             if (key === 'incomplete') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                         '$1<font color="blue"><i>' + subs[0] +
@@ -745,18 +746,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             return messages;
         };
 
-        this.root.measuring.probe_connection.feedbackSpace = {
-                correct: [
-                    'Correct connections to the resistor',
-                    'Good work. You correctly connected the probes to each end of the resistor to make your resistance measurement.'
-                ],
-                incorrect: [
-                    'Incorrect connections to the resistor',
-                    'You must connect one of the digital multimeter probes to each end of the resistor to make a resistance measurement. See the Using the DMM tutorial for additional help.'
-                ]
-        };
-
-        this.root.measuring.knob_setting.processPatterns = function (key, messages, subs) {
+        this.root.items.measuring.items.knob_setting.processPatterns = function (key, messages, subs) {
             if (key === 'suboptimal') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                         '$1<font color="orange"><i>' + subs[1] +
@@ -765,7 +755,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             return messages;
         };
 
-        this.root.t_range.t_range_value.processPatterns = function (key, messages, subs) {
+        this.root.items.t_range.items.range_values.processPatterns = function (key, messages, subs) {
             if (key === 'correct' || key === 'rounded' ||
                 key === 'correct_wrong_prev_r' || key === 'correct_wrong_prev_t' ||
                 key === 'correct_wrong_prev_rt' || key === 'rounded_wrong_prev_r' ||
@@ -786,7 +776,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             return messages;
         };
 
-        this.root.t_range.within_tolerance.processPatterns = function (key, messages, subs) {
+        this.root.items.t_range.items.in_out.processPatterns = function (key, messages, subs) {
             if (key === 'correct' || key === 'incorrect') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                         '$1<font color="green"><i>' + subs[0] +
@@ -798,7 +788,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             return messages;
         };
 
-        this.root.time.reading_time.processPatterns = function (key, messages, subs) {
+        this.root.items.time.items.reading.processPatterns = function (key, messages, subs) {
             if (key === 'slow') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
                         '$1<font color="red"><i>' + subs[0] + '</i></font>$2');
@@ -806,7 +796,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             return messages;
         };
 
-        this.root.time.measuring_time.processPatterns = function (key, messages, subs) {
+        this.root.items.time.items.measuring.processPatterns = function (key, messages, subs) {
             if (key === 'slow') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
                         '$1<font color="red"><i>' + subs[0] + '</i></font>$2');
@@ -822,8 +812,14 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             var messages = [];
             messages[0] = node.feedback.messages[key].short_message;
             messages[1] = node.feedback.messages[key].long_message;
-            var subs = Array.prototype.slice.call(arguments, 1);
-            node.feedbacks.push(node.processPatterns(key, messages, subs));
+            var subs = Array.prototype.slice.call(arguments, 2);
+            if (!node.feedbacks) { node.feedbacks = []; }
+            if (node.processPatterns) {
+                node.feedbacks.push(node.processPatterns(key, messages, subs));
+            }
+            else {
+                node.feedbacks.push(messages);
+            }
         },
 
         updatePoints: function () {
@@ -845,6 +841,10 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
                 node.maxPoints = maxPoints;
             }
             return [node.points, node.maxPoints];
+        },
+
+        processPatterns: function (key, messages, substitutions) {
+            return messages;
         }
     };
 
@@ -1075,7 +1075,6 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
     mr.Grader.prototype = {
 
         grade: function () {
-
             this.realCorrectMin = this.section.nominal_resistance * (1 - this.section.tolerance);
             this.realCorrectMax = this.section.nominal_resistance * (1 + this.section.tolerance);
 
@@ -1095,7 +1094,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
         gradeReadingColorBands: function () {
             var question = this.questions[0];
             var unitCorrect = true;
-            var fb = this.feedback.root.reading.rated_r_value;
+            var fb = this.feedback.root.items.reading.items.rated_r_value;
 
             fb.correct = 0;
             fb.points = 0;
@@ -1103,13 +1102,13 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             if (!unit.ohmCompatible(question.unit)) {
                 this.resistanceAnswer = null;
                 unitCorrect = false;
-                fb.addFeedback('unit', question.unit);
+                this.feedback.addFeedback(fb, 'unit', question.unit);
                 return;
             }
 
             if (question.answer === null || isNaN(question.answer)) {
                 this.resistanceAnswer = null;
-                fb.addFeedback('incorrect');
+                this.feedback.addFeedback(fb, 'incorrect');
                 return;
             }
 
@@ -1122,7 +1121,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
                     if (math.equalExceptPowerOfTen(question.correct_answer, parsedValue)) {
                         fb.points = 10;
                         fb.correct = 2;
-                        fb.addFeedback('power_ten',
+                        this.feedback.addFeedback(fb, 'power_ten',
                             this.section.resistor_num_bands - 1,
                             this.section.resistor_num_bands - 2);
                         return;
@@ -1130,21 +1129,21 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
                     else if (this.oneOff(question.correct_answer, parsedValue)) {
                         fb.points = 2;
                         fb.correct = 1;
-                        fb.addFeedback('difficulty');
+                        this.feedback.addFeedback(fb, 'difficulty');
                         return;
                     }
                 }
-                fb.addFeedback('incorrect');
+                this.feedback.addFeedback(fb, 'incorrect');
                 return;
             }
             fb.points = 20;
             fb.correct = 4;
-            fb.addFeedback('correct');
+            this.feedback.addFeedback(fb, 'correct');
         },
 
         gradeResistance: function () {
             var question = this.questions[2];
-            var fb = this.feedback.root.measuring.measured_r_value;
+            var fb = this.feedback.root.items.measuring.items.measured_r_value;
             var unitCorrect = true;
 
             fb.points = 0;
@@ -1152,12 +1151,12 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 
             if (!unit.ohmCompatible(question.unit)) {
                 unitCorrect = false;
-                fb.addFeedback('unit', question.unit);
+                this.feedback.addFeedback(fb, 'unit', question.unit);
                 return;
             }
 
             if (question.answer === null || isNaN(question.answer)) {
-                fb.addFeedback('incorrect');
+                this.feedback.addFeedback(fb, 'incorrect');
                 return;
             }
 
@@ -1171,31 +1170,31 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
                 if (this.roundedMatch(question.correct_answer, parsedValue, n)) {
                     fb.points = 5;
                     fb.correct = 3;
-                    fb.addFeedback('incomplete', unit.res_str(question.correct_answer),
+                    this.feedback.addFeedback(fb, 'incomplete', unit.res_str(question.correct_answer),
                         unit.res_str(parsedValue));
                     return;
                 }
                 else if (math.equalExceptPowerOfTen(question.correct_answer, parsedValue)) {
                     fb.points = 3;
                     fb.correct = 2;
-                    fb.addFeedback('power_ten', question.answer, question.unit,
+                    this.feedback.addFeedback(fb, 'power_ten', question.answer, question.unit,
                             unit.res_unit_str(question.correct_answer),
                             unit.res_unit_str(question.correct_answer, 'k'),
                             unit.res_unit_str(question.correct_answer, 'M'));
                     return;
                 }
-                fb.addFeedback('incorrect');
+                this.feedback.addFeedback(fb, 'incorrect');
                 return;
             }
 
             fb.points = 10;
             fb.correct = 4;
-            fb.addFeedback('correct');
+            this.feedback.addFeedback(fb, 'correct');
         },
 
         gradeTolerance: function () {
             var question = this.questions[1];
-            var fb = this.feedback.root.reading.rated_t_value;
+            var fb = this.feedback.root.items.reading.items.rated_t_value;
 
             var correctStr = (question.correct_answer * 100) + '%';
             var answerStr = question.answer + '%';
@@ -1204,25 +1203,25 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             fb.points = 0;
 
             if (question.answer === null || isNaN(question.answer)) {
-                fb.addFeedback('incorrect', correctStr, answerStr);
+                this.feedback.addFeedback(fb, 'incorrect', correctStr, answerStr);
                 return;
             }
             this.toleranceAnswer = question.answer / 100.0;
             if (question.correct_answer != question.answer / 100.0){
-                fb.addFeedback('incorrect', correctStr, answerStr);
+                this.feedback.addFeedback(fb, 'incorrect', correctStr, answerStr);
                 return;
             }
 
             fb.correct = 4;
             fb.points = 5;
-            fb.addFeedback('correct');
+            this.feedback.addFeedback(fb, 'correct');
         },
 
         gradeToleranceRange: function () {
             var question = this.questions[3];
-            var fb = this.feedback.root.t_range.t_range_value;
-            var fb_r = this.feedback.root.reading.rated_r_value;
-            var fb_t = this.feedback.root.reading.rated_t_value;
+            var fb = this.feedback.root.items.t_range.items.range_values;
+            var fb_r = this.feedback.root.items.reading.items.rated_r_value;
+            var fb_t = this.feedback.root.items.reading.items.rated_t_value;
             var nominalResistance;
             var fbkey;
 
@@ -1252,7 +1251,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
                 max + ' ' + question.unit[1] + ']';
 
             if (min === null || isNaN(min) || max === null || isNaN(max)) {
-                fb.addFeedback('wrong', correctStr, answerStr);
+                this.feedback.addFeedback(fb, 'wrong', correctStr, answerStr);
                 return;
             }
 
@@ -1260,7 +1259,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             if (!unit.ohmCompatible(question.unit[0]) ||
                 !unit.ohmCompatible(question.unit[1]))
             {
-                fb.addFeedback('wrong');
+                this.feedback.addFeedback(fb, 'wrong');
                 return;
             }
 
@@ -1283,20 +1282,20 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
                 fb.correct = 4;
                 if (fb_r.correct === 4) {
                     if (fb_t.correct == 4) {
-                        fb.addFeedback('correct', unit.res_str(nominalResistance),
+                        this.feedback.addFeedback(fb, 'correct', unit.res_str(nominalResistance),
                                 unit.pct_str(tolerance));
                     }
                     else {
-                        fb.addFeedback('correct_wrong_prev_t', unit.res_str(nominalResistance),
+                        this.feedback.addFeedback(fb, 'correct_wrong_prev_t', unit.res_str(nominalResistance),
                                 unit.pct_str(tolerance));
                     }
                 }
                 else if (fb_t.correct == 4) {
-                    fb.addFeedback('correct_wrong_prev_r', unit.res_str(nominalResistance),
+                    this.feedback.addFeedback(fb, 'correct_wrong_prev_r', unit.res_str(nominalResistance),
                             unit.pct_str(tolerance));
                 }
                 else {
-                    fb.addFeedback('correct_wrong_prev_rt', unit.res_str(nominalResistance),
+                    this.feedback.addFeedback(fb, 'correct_wrong_prev_rt', unit.res_str(nominalResistance),
                             unit.pct_str(tolerance));
                 }
                 return;
@@ -1313,20 +1312,20 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
                 fb.correct = 3;
                 if (fb_r.correct === 4) {
                     if (fb_t.correct === 4) {
-                        fb.addFeedback('rounded', unit.res_str(nominalResistance),
+                        this.feedback.addFeedback(fb, 'rounded', unit.res_str(nominalResistance),
                                 unit.pct_str(tolerance));
                     }
                     else {
-                        fb.addFeedback('rounded_wrong_prev_t', unit.res_str(nominalResistance),
+                        this.feedback.addFeedback(fb, 'rounded_wrong_prev_t', unit.res_str(nominalResistance),
                                 unit.pct_str(tolerance));
                     }
                 }
                 else if (fb_t.correct === 4) {
-                    fb.addFeedback('rounded_wrong_prev_r', unit.res_str(nominalResistance),
+                    this.feedback.addFeedback(fb, 'rounded_wrong_prev_r', unit.res_str(nominalResistance),
                             unit.pct_str(tolerance));
                 }
                 else {
-                    fb.addFeedback('rounded_wrong_prev_rt', unit.res_str(nominalResistance),
+                    this.feedback.addFeedback(fb, 'rounded_wrong_prev_rt', unit.res_str(nominalResistance),
                             unit.pct_str(tolerance));
                 }
                 return;
@@ -1341,21 +1340,22 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
                 fb.correct = 2;
                 if (fb_r.correct === 4) {
                     if (fb_t.correct === 4) {
-                        fb.addFeedback('inaccurate', correctStr, answerStr);
+                        this.feedback.addFeedback(fb, 'inaccurate', correctStr, answerStr);
                     }
                     else {
-                        fb.addFeedback('inaccurate_wrong_prev_t', correctStr, answerStr);
+                        this.feedback.addFeedback(fb, 'inaccurate_wrong_prev_t', correctStr, answerStr);
                     }
                 }
                 else if (fb_t.correct === 4) {
-                    fb.addFeedback('inaccurate_wrong_prev_r', correctStr, answerStr);
+                    this.feedback.addFeedback(fb, 'inaccurate_wrong_prev_r', correctStr, answerStr);
                 }
                 else {
-                    fb.addFeedback('inaccurate_wrong_prev_rt', correctStr, answerStr);
+                    this.feedback.addFeedback(fb, 'inaccurate_wrong_prev_rt', correctStr, answerStr);
                 }
                 return;
             }
-            fb.addFeedback('wrong', correctStr, answerStr);
+            debugger;
+            this.feedback.addFeedback(fb, 'wrong', correctStr, answerStr);
             return;
         },
 
@@ -1373,14 +1373,14 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
                 question.correct_answer = 'no';
             }
 
-            var fb = this.feedback.root.t_range.within_tolerance;
+            var fb = this.feedback.root.items.t_range.items.in_out;
 
-            if (this.feedback.root.measuring.measured_r_value.correct < 4 ||
-                this.feedback.root.t_range.t_range_value < 4)
+            if (this.feedback.root.items.measuring.items.measured_r_value.correct < 4 ||
+                this.feedback.root.items.t_range.items.range_values < 4)
             {
                 fb.points = 0;
                 fb.correct = 0;
-                fb.addFeedback('undef');
+                this.feedback.addFeedback(fb, 'undef');
                 return;
             }
 
@@ -1418,7 +1418,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 
             if (question.answer !== correctAnswer) {
                 if (question.correct_answer === correctAnswer) {
-                    fb.addFeedback('incorrect',
+                    this.feedback.addFeedback(fb, 'incorrect',
                         unit.res_str(this.measuredResistanceAnswer),
                         unit.res_str(this.rangeMinAnswer),
                         unit.res_str(this.rangeMaxAnswer),
@@ -1433,14 +1433,14 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             fb.correct = 4;
 
             if (question.correct_answer === correctAnswer) {
-                fb.addFeedback('correct',
+                this.feedback.addFeedback(fb, 'correct',
                     unit.res_str(this.measuredResistanceAnswer),
                     unit.res_str(this.rangeMinAnswer),
                     unit.res_str(this.rangeMaxAnswer),
                     did, is);
             }
             else {
-                fb.addFeedback('correct_wrong_prev');
+                this.feedback.addFeedback(fb, 'correct_wrong_prev');
             }
         },
 
@@ -1450,45 +1450,45 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 
             this.feedback.reading_time = this.questions[1].end_time - this.questions[0].start_time;
             seconds = this.feedback.reading_time / 1000;
-            fb = this.feedback.root.time.reading_time;
+            fb = this.feedback.root.items.time.items.reading;
             if (seconds <= 20) {
                 fb.points = 5;
                 fb.correct = 4;
-                fb.addFeedback('efficient');
+                this.feedback.addFeedback(fb, 'efficient');
             }
             else if (seconds <= 40) {
                 fb.points = 2;
                 fb.correct = 2;
-                fb.addFeedback('semi');
+                this.feedback.addFeedback(fb, 'semi');
             }
             else {
                 fb.points = 0;
                 fb.correct = 0;
-                fb.addFeedback('slow', Math.round(seconds));
+                this.feedback.addFeedback(fb, 'slow', Math.round(seconds));
             }
 
             this.feedback.measuring_time = this.questions[2].end_time - this.questions[2].start_time;
             seconds = this.feedback.measuring_time / 1000;
-            fb = this.feedback.root.time.measuring_time;
+            fb = this.feedback.root.items.time.items.measuring;
             if (seconds <= 20) {
                 fb.points = 5;
                 fb.correct = 4;
-                fb.addFeedback('efficient');
+                this.feedback.addFeedback(fb, 'efficient');
             }
             else if (seconds <= 40) {
                 fb.points = 2;
                 fb.correct = 2;
-                fb.addFeedback('semi');
+                this.feedback.addFeedback(fb, 'semi');
             }
             else {
                 fb.points = 0;
                 fb.correct = 0;
-                fb.addFeedback('slow', Math.round(seconds));
+                this.feedback.addFeedback(fb, 'slow', Math.round(seconds));
             }
         },
 
         gradeSettings: function () {
-            var fb = this.feedback.root.measuring;
+            var fb = this.feedback.root.items.measuring;
             var redProbeConn = this.parser.submit_red_probe_conn;
             var blackProbeConn = this.parser.submit_black_probe_conn;
             var redPlugConn = this.parser.submit_red_plug_conn;
@@ -1499,41 +1499,39 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
                 (blackProbeConn == 'resistor_lead1' || blackProbeConn == 'resistor_lead2') &&
                 (redProbeConn != blackProbeConn))
             {
-                fb.probe_connection.correct = 4;
-                fb.probe_connection.points = 2;
-                fb.probe_connection.desc = 'Correct';
-                fb.probe_connection.addFeedback('correct');
+                fb.items.probe_connection.correct = 4;
+                fb.items.probe_connection.points = 2;
+                fb.items.probe_connection.desc = 'Correct';
+                this.feedback.addFeedback(fb.items.probe_connection, 'correct');
             }
             else {
-                fb.probe_connection.correct = 0;
-                fb.probe_connection.points = 0;
-                fb.probe_connection.desc = 'Incorrect';
-                fb.probe_connection.addFeedback('incorrect');
+                fb.items.probe_connection.correct = 0;
+                fb.items.probe_connection.points = 0;
+                fb.items.probe_connection.desc = 'Incorrect';
+                this.feedback.addFeedback(fb.items.probe_connection, 'incorrect');
             }
-            console.log('probe_connection.points=' + fb.probe_connection.points);
 
             if (redPlugConn == 'voma_port' && blackPlugConn == 'common_port') {
-                fb.plug_connection.points = 5;
-                fb.plug_connection.correct = 4;
-                fb.plug_connection.desc = 'Correct';
-                fb.plug_connection.addFeedback('correct');
+                fb.items.plug_connection.points = 5;
+                fb.items.plug_connection.correct = 4;
+                fb.items.plug_connection.desc = 'Correct';
+                this.feedback.addFeedback(fb.items.plug_connection, 'correct');
             }
             else {
-                fb.plug_connection.correct = 0;
+                fb.items.plug_connection.correct = 0;
                 if (redPlugConn == 'common_port' && blackPlugConn == 'voma_port') {
-                    fb.plug_connection.points = 3;
-                    fb.plug_connection.correct = 3;
-                    fb.plug_connection.desc = 'Reversed';
-                    fb.plug_connection.addFeedback('reverse');
+                    fb.items.plug_connection.points = 3;
+                    fb.items.plug_connection.correct = 3;
+                    fb.items.plug_connection.desc = 'Reversed';
+                    this.feedback.addFeedback(fb.items.plug_connection, 'reverse');
                 }
                 else {
-                    fb.plug_connection.points = 0;
-                    fb.plug_connection.correct = 0;
-                    fb.plug_connection.desc = 'Incorrect';
-                    fb.plug_connection.addFeedback('incorrect');
+                    fb.items.plug_connection.points = 0;
+                    fb.items.plug_connection.correct = 0;
+                    fb.items.plug_connection.desc = 'Incorrect';
+                    this.feedback.addFeedback(fb.items.plug_connection, 'incorrect');
                 }
             }
-            console.log('plug_connection.points=' + fb.plug_connection.points);
 
             var i_knob = this.parser.initial_dial_setting;
             var f_knob = this.parser.submit_dial_setting;
@@ -1544,44 +1542,44 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             this.feedback.optimal_dial_setting = o_knob;
 
             if (f_knob === o_knob) {
-                fb.knob_setting.points = 20;
-                fb.knob_setting.correct = 4;
-                fb.knob_setting.addFeedback('correct');
+                fb.items.knob_setting.points = 20;
+                fb.items.knob_setting.correct = 4;
+                this.feedback.addFeedback(fb.items.knob_setting, 'correct');
             }
             else if (this.isResistanceKnob(f_knob)){
-                fb.knob_setting.points = 10;
-                fb.knob_setting.correct = 2;
-                fb.knob_setting.addFeedback('suboptimal', o_knob, f_knob);
+                fb.items.knob_setting.points = 10;
+                fb.items.knob_setting.correct = 2;
+                this.feedback.addFeedback(fb.items.knob_setting, 'suboptimal', o_knob, f_knob);
             }
             else {
-                fb.knob_setting.points = 0;
-                fb.knob_setting.correct = 0;
-                fb.knob_setting.addFeedback('incorrect');
+                fb.items.knob_setting.points = 0;
+                fb.items.knob_setting.correct = 0;
+                this.feedback.addFeedback(fb.items.knob_setting, 'incorrect');
             }
 
             if (this.parser.power_on) {
-                fb.power_switch.points = 2;
-                fb.power_switch.correct = 4;
-                fb.power_switch.addFeedback('correct');
+                fb.items.power_switch.points = 2;
+                fb.items.power_switch.correct = 4;
+                this.feedback.addFeedback(fb.items.power_switch, 'correct');
             }
             else {
-                fb.power_switch.points = 0;
-                fb.power_switch.correct = 0;
-                fb.power_switch.addFeedback('incorrect');
+                fb.items.power_switch.points = 0;
+                fb.items.power_switch.correct = 0;
+                this.feedback.addFeedback(fb.items.power_switch, 'incorrect');
             }
-            console.log('power_switch.points=' + fb.power_switch.points);
+            console.log('power_switch.points=' + fb.items.power_switch.points);
 
             if (this.parser.correct_order) {
-                fb.task_order.points = 6;
-                fb.task_order.correct = 4;
-                fb.task_order.addFeedback('correct');
+                fb.items.task_order.points = 6;
+                fb.items.task_order.correct = 4;
+                this.feedback.addFeedback(fb.items.task_order, 'correct');
             }
             else {
-                fb.task_order.points = 0;
-                fb.task_order.correct = 0;
-                fb.task_order.addFeedback('incorrect');
+                fb.items.task_order.points = 0;
+                fb.items.task_order.correct = 0;
+                this.feedback.addFeedback(fb.items.task_order, 'incorrect');
             }
-            console.log('task_order.points=' + fb.task_order.points);
+            console.log('task_order.points=' + fb.items.task_order.points);
         },
 
         equalWithTolerance: function (value1, value2, tolerance) {

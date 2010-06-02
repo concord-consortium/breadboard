@@ -618,8 +618,8 @@ jQuery.cookie = function(name, value, options) {
         return cookieValue;
     }
 };
-(function(){
-    RestDS = function(readKey,writeKey,_post_path){
+(function (){
+    RestDS = function (readKey,writeKey,_post_path){
         this.data = "";
         this.enableLoadAndSave = true;
         this.postPath = _post_path || "/models/";
@@ -629,9 +629,9 @@ jQuery.cookie = function(name, value, options) {
 
     RestDS.prototype =
     {
-        setKeys: function(read,write) {
+        setKeys: function (read,write) {
             if (read) {
-                this.load(this,function(){});// just load data
+                this.load(this,function (){});// just load data
                 this.readKey = read;
             }
             if (write) {
@@ -642,7 +642,7 @@ jQuery.cookie = function(name, value, options) {
             }
         },
 
-        randomString: function() {
+        randomString: function () {
             var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
             var string_length = 8;
             var randomstring = '';
@@ -653,7 +653,7 @@ jQuery.cookie = function(name, value, options) {
             return randomstring;
         },
 
-        save: function(_data) {
+        save: function (_data) {
             this.data = _data;
             var post_to = this.postPath;
             debug('post_to=' + post_to);
@@ -668,7 +668,7 @@ jQuery.cookie = function(name, value, options) {
             debug("readKey written: " + this.readKey);
         },
 
-        load: function(context,callback) {
+        load: function (context,callback) {
             if (this.readKey) {
             	var key = this.readKey;
                 this.writeKey = key;
@@ -691,19 +691,19 @@ jQuery.cookie = function(name, value, options) {
                 new Ajax.Request(get_from, {
                     asynchronous: true,
                     method: 'GET',
-                    onSuccess: function(rsp) {
+                    onSuccess: function (rsp) {
                         var text = rsp.responseText;
                         var _data = eval(text);
                         self.data = _data;
                         callback(_data,context,callback);
                         debug("returned from load");
                     },
-                    onFailure: function(req,err) {
+                    onFailure: function (req,err) {
                         debug("failed!");
                     }
                 });
                 */
-                jQuery.get(get_from, function(rsp, textStatus) {
+                jQuery.get(get_from, function (rsp, textStatus) {
                     console.log('rsp=' + rsp);
                     var _data = eval(rsp);
                     self.data = _data;
@@ -716,7 +716,7 @@ jQuery.cookie = function(name, value, options) {
             }
         },
 
-        toString: function() {
+        toString: function () {
             return "Data Service (" + this.postPath + "" + this.writeKey + ")";
         }
     };
@@ -1518,6 +1518,7 @@ sparks.util.prettyPrint = function (obj, indent) {
 
 (function () {
 
+    var util = sparks.util;
     var mr = sparks.activities.mr;
 
     /**
@@ -1576,7 +1577,7 @@ sparks.util.prettyPrint = function (obj, indent) {
         this.time_reading = 0;
         this.time_measuring = 0;
 
-        this.root.reading.rated_r_value.processPatterns = function (key, messages, subs) {
+        this.root.items.reading.items.rated_r_value.processPatterns = function (key, messages, subs) {
             if (key === 'power_ten') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                         '$1<font color="blue"><i>' + subs[0] +
@@ -1589,7 +1590,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             return messages;
         };
 
-        this.root.reading.rated_t_value.processPatterns = function (key, messages, subs) {
+        this.root.items.reading.items.rated_t_value.processPatterns = function (key, messages, subs) {
             if (key === 'incorrect') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                     '$1<font color="red"><i>' + subs[1] +
@@ -1598,7 +1599,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             return messages;
         };
 
-        this.root.measuring.measured_r_value.processPatterns = function (key, messages, subs) {
+        this.root.items.measuring.items.measured_r_value.processPatterns = function (key, messages, subs) {
             if (key === 'incomplete') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                         '$1<font color="blue"><i>' + subs[0] +
@@ -1619,18 +1620,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             return messages;
         };
 
-        this.root.measuring.probe_connection.feedbackSpace = {
-                correct: [
-                    'Correct connections to the resistor',
-                    'Good work. You correctly connected the probes to each end of the resistor to make your resistance measurement.'
-                ],
-                incorrect: [
-                    'Incorrect connections to the resistor',
-                    'You must connect one of the digital multimeter probes to each end of the resistor to make a resistance measurement. See the Using the DMM tutorial for additional help.'
-                ]
-        };
-
-        this.root.measuring.knob_setting.processPatterns = function (key, messages, subs) {
+        this.root.items.measuring.items.knob_setting.processPatterns = function (key, messages, subs) {
             if (key === 'suboptimal') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                         '$1<font color="orange"><i>' + subs[1] +
@@ -1639,7 +1629,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             return messages;
         };
 
-        this.root.t_range.t_range_value.processPatterns = function (key, messages, subs) {
+        this.root.items.t_range.items.range_values.processPatterns = function (key, messages, subs) {
             if (key === 'correct' || key === 'rounded' ||
                 key === 'correct_wrong_prev_r' || key === 'correct_wrong_prev_t' ||
                 key === 'correct_wrong_prev_rt' || key === 'rounded_wrong_prev_r' ||
@@ -1660,7 +1650,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             return messages;
         };
 
-        this.root.t_range.within_tolerance.processPatterns = function (key, messages, subs) {
+        this.root.items.t_range.items.in_out.processPatterns = function (key, messages, subs) {
             if (key === 'correct' || key === 'incorrect') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
                         '$1<font color="green"><i>' + subs[0] +
@@ -1672,7 +1662,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             return messages;
         };
 
-        this.root.time.reading_time.processPatterns = function (key, messages, subs) {
+        this.root.items.time.items.reading.processPatterns = function (key, messages, subs) {
             if (key === 'slow') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
                         '$1<font color="red"><i>' + subs[0] + '</i></font>$2');
@@ -1680,7 +1670,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             return messages;
         };
 
-        this.root.time.measuring_time.processPatterns = function (key, messages, subs) {
+        this.root.items.time.items.measuring.processPatterns = function (key, messages, subs) {
             if (key === 'slow') {
                 messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
                         '$1<font color="red"><i>' + subs[0] + '</i></font>$2');
@@ -1696,8 +1686,14 @@ sparks.util.prettyPrint = function (obj, indent) {
             var messages = [];
             messages[0] = node.feedback.messages[key].short_message;
             messages[1] = node.feedback.messages[key].long_message;
-            var subs = Array.prototype.slice.call(arguments, 1);
-            node.feedbacks.push(node.processPatterns(key, messages, subs));
+            var subs = Array.prototype.slice.call(arguments, 2);
+            if (!node.feedbacks) { node.feedbacks = []; }
+            if (node.processPatterns) {
+                node.feedbacks.push(node.processPatterns(key, messages, subs));
+            }
+            else {
+                node.feedbacks.push(messages);
+            }
         },
 
         updatePoints: function () {
@@ -1719,6 +1715,10 @@ sparks.util.prettyPrint = function (obj, indent) {
                 node.maxPoints = maxPoints;
             }
             return [node.points, node.maxPoints];
+        },
+
+        processPatterns: function (key, messages, substitutions) {
+            return messages;
         }
     };
 
@@ -1949,7 +1949,6 @@ sparks.util.prettyPrint = function (obj, indent) {
     mr.Grader.prototype = {
 
         grade: function () {
-
             this.realCorrectMin = this.section.nominal_resistance * (1 - this.section.tolerance);
             this.realCorrectMax = this.section.nominal_resistance * (1 + this.section.tolerance);
 
@@ -1969,7 +1968,7 @@ sparks.util.prettyPrint = function (obj, indent) {
         gradeReadingColorBands: function () {
             var question = this.questions[0];
             var unitCorrect = true;
-            var fb = this.feedback.root.reading.rated_r_value;
+            var fb = this.feedback.root.items.reading.items.rated_r_value;
 
             fb.correct = 0;
             fb.points = 0;
@@ -1977,13 +1976,13 @@ sparks.util.prettyPrint = function (obj, indent) {
             if (!unit.ohmCompatible(question.unit)) {
                 this.resistanceAnswer = null;
                 unitCorrect = false;
-                fb.addFeedback('unit', question.unit);
+                this.feedback.addFeedback(fb, 'unit', question.unit);
                 return;
             }
 
             if (question.answer === null || isNaN(question.answer)) {
                 this.resistanceAnswer = null;
-                fb.addFeedback('incorrect');
+                this.feedback.addFeedback(fb, 'incorrect');
                 return;
             }
 
@@ -1996,7 +1995,7 @@ sparks.util.prettyPrint = function (obj, indent) {
                     if (math.equalExceptPowerOfTen(question.correct_answer, parsedValue)) {
                         fb.points = 10;
                         fb.correct = 2;
-                        fb.addFeedback('power_ten',
+                        this.feedback.addFeedback(fb, 'power_ten',
                             this.section.resistor_num_bands - 1,
                             this.section.resistor_num_bands - 2);
                         return;
@@ -2004,21 +2003,21 @@ sparks.util.prettyPrint = function (obj, indent) {
                     else if (this.oneOff(question.correct_answer, parsedValue)) {
                         fb.points = 2;
                         fb.correct = 1;
-                        fb.addFeedback('difficulty');
+                        this.feedback.addFeedback(fb, 'difficulty');
                         return;
                     }
                 }
-                fb.addFeedback('incorrect');
+                this.feedback.addFeedback(fb, 'incorrect');
                 return;
             }
             fb.points = 20;
             fb.correct = 4;
-            fb.addFeedback('correct');
+            this.feedback.addFeedback(fb, 'correct');
         },
 
         gradeResistance: function () {
             var question = this.questions[2];
-            var fb = this.feedback.root.measuring.measured_r_value;
+            var fb = this.feedback.root.items.measuring.items.measured_r_value;
             var unitCorrect = true;
 
             fb.points = 0;
@@ -2026,12 +2025,12 @@ sparks.util.prettyPrint = function (obj, indent) {
 
             if (!unit.ohmCompatible(question.unit)) {
                 unitCorrect = false;
-                fb.addFeedback('unit', question.unit);
+                this.feedback.addFeedback(fb, 'unit', question.unit);
                 return;
             }
 
             if (question.answer === null || isNaN(question.answer)) {
-                fb.addFeedback('incorrect');
+                this.feedback.addFeedback(fb, 'incorrect');
                 return;
             }
 
@@ -2045,31 +2044,31 @@ sparks.util.prettyPrint = function (obj, indent) {
                 if (this.roundedMatch(question.correct_answer, parsedValue, n)) {
                     fb.points = 5;
                     fb.correct = 3;
-                    fb.addFeedback('incomplete', unit.res_str(question.correct_answer),
+                    this.feedback.addFeedback(fb, 'incomplete', unit.res_str(question.correct_answer),
                         unit.res_str(parsedValue));
                     return;
                 }
                 else if (math.equalExceptPowerOfTen(question.correct_answer, parsedValue)) {
                     fb.points = 3;
                     fb.correct = 2;
-                    fb.addFeedback('power_ten', question.answer, question.unit,
+                    this.feedback.addFeedback(fb, 'power_ten', question.answer, question.unit,
                             unit.res_unit_str(question.correct_answer),
                             unit.res_unit_str(question.correct_answer, 'k'),
                             unit.res_unit_str(question.correct_answer, 'M'));
                     return;
                 }
-                fb.addFeedback('incorrect');
+                this.feedback.addFeedback(fb, 'incorrect');
                 return;
             }
 
             fb.points = 10;
             fb.correct = 4;
-            fb.addFeedback('correct');
+            this.feedback.addFeedback(fb, 'correct');
         },
 
         gradeTolerance: function () {
             var question = this.questions[1];
-            var fb = this.feedback.root.reading.rated_t_value;
+            var fb = this.feedback.root.items.reading.items.rated_t_value;
 
             var correctStr = (question.correct_answer * 100) + '%';
             var answerStr = question.answer + '%';
@@ -2078,25 +2077,25 @@ sparks.util.prettyPrint = function (obj, indent) {
             fb.points = 0;
 
             if (question.answer === null || isNaN(question.answer)) {
-                fb.addFeedback('incorrect', correctStr, answerStr);
+                this.feedback.addFeedback(fb, 'incorrect', correctStr, answerStr);
                 return;
             }
             this.toleranceAnswer = question.answer / 100.0;
             if (question.correct_answer != question.answer / 100.0){
-                fb.addFeedback('incorrect', correctStr, answerStr);
+                this.feedback.addFeedback(fb, 'incorrect', correctStr, answerStr);
                 return;
             }
 
             fb.correct = 4;
             fb.points = 5;
-            fb.addFeedback('correct');
+            this.feedback.addFeedback(fb, 'correct');
         },
 
         gradeToleranceRange: function () {
             var question = this.questions[3];
-            var fb = this.feedback.root.t_range.t_range_value;
-            var fb_r = this.feedback.root.reading.rated_r_value;
-            var fb_t = this.feedback.root.reading.rated_t_value;
+            var fb = this.feedback.root.items.t_range.items.range_values;
+            var fb_r = this.feedback.root.items.reading.items.rated_r_value;
+            var fb_t = this.feedback.root.items.reading.items.rated_t_value;
             var nominalResistance;
             var fbkey;
 
@@ -2126,7 +2125,7 @@ sparks.util.prettyPrint = function (obj, indent) {
                 max + ' ' + question.unit[1] + ']';
 
             if (min === null || isNaN(min) || max === null || isNaN(max)) {
-                fb.addFeedback('wrong', correctStr, answerStr);
+                this.feedback.addFeedback(fb, 'wrong', correctStr, answerStr);
                 return;
             }
 
@@ -2134,7 +2133,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             if (!unit.ohmCompatible(question.unit[0]) ||
                 !unit.ohmCompatible(question.unit[1]))
             {
-                fb.addFeedback('wrong');
+                this.feedback.addFeedback(fb, 'wrong');
                 return;
             }
 
@@ -2157,20 +2156,20 @@ sparks.util.prettyPrint = function (obj, indent) {
                 fb.correct = 4;
                 if (fb_r.correct === 4) {
                     if (fb_t.correct == 4) {
-                        fb.addFeedback('correct', unit.res_str(nominalResistance),
+                        this.feedback.addFeedback(fb, 'correct', unit.res_str(nominalResistance),
                                 unit.pct_str(tolerance));
                     }
                     else {
-                        fb.addFeedback('correct_wrong_prev_t', unit.res_str(nominalResistance),
+                        this.feedback.addFeedback(fb, 'correct_wrong_prev_t', unit.res_str(nominalResistance),
                                 unit.pct_str(tolerance));
                     }
                 }
                 else if (fb_t.correct == 4) {
-                    fb.addFeedback('correct_wrong_prev_r', unit.res_str(nominalResistance),
+                    this.feedback.addFeedback(fb, 'correct_wrong_prev_r', unit.res_str(nominalResistance),
                             unit.pct_str(tolerance));
                 }
                 else {
-                    fb.addFeedback('correct_wrong_prev_rt', unit.res_str(nominalResistance),
+                    this.feedback.addFeedback(fb, 'correct_wrong_prev_rt', unit.res_str(nominalResistance),
                             unit.pct_str(tolerance));
                 }
                 return;
@@ -2187,20 +2186,20 @@ sparks.util.prettyPrint = function (obj, indent) {
                 fb.correct = 3;
                 if (fb_r.correct === 4) {
                     if (fb_t.correct === 4) {
-                        fb.addFeedback('rounded', unit.res_str(nominalResistance),
+                        this.feedback.addFeedback(fb, 'rounded', unit.res_str(nominalResistance),
                                 unit.pct_str(tolerance));
                     }
                     else {
-                        fb.addFeedback('rounded_wrong_prev_t', unit.res_str(nominalResistance),
+                        this.feedback.addFeedback(fb, 'rounded_wrong_prev_t', unit.res_str(nominalResistance),
                                 unit.pct_str(tolerance));
                     }
                 }
                 else if (fb_t.correct === 4) {
-                    fb.addFeedback('rounded_wrong_prev_r', unit.res_str(nominalResistance),
+                    this.feedback.addFeedback(fb, 'rounded_wrong_prev_r', unit.res_str(nominalResistance),
                             unit.pct_str(tolerance));
                 }
                 else {
-                    fb.addFeedback('rounded_wrong_prev_rt', unit.res_str(nominalResistance),
+                    this.feedback.addFeedback(fb, 'rounded_wrong_prev_rt', unit.res_str(nominalResistance),
                             unit.pct_str(tolerance));
                 }
                 return;
@@ -2215,21 +2214,22 @@ sparks.util.prettyPrint = function (obj, indent) {
                 fb.correct = 2;
                 if (fb_r.correct === 4) {
                     if (fb_t.correct === 4) {
-                        fb.addFeedback('inaccurate', correctStr, answerStr);
+                        this.feedback.addFeedback(fb, 'inaccurate', correctStr, answerStr);
                     }
                     else {
-                        fb.addFeedback('inaccurate_wrong_prev_t', correctStr, answerStr);
+                        this.feedback.addFeedback(fb, 'inaccurate_wrong_prev_t', correctStr, answerStr);
                     }
                 }
                 else if (fb_t.correct === 4) {
-                    fb.addFeedback('inaccurate_wrong_prev_r', correctStr, answerStr);
+                    this.feedback.addFeedback(fb, 'inaccurate_wrong_prev_r', correctStr, answerStr);
                 }
                 else {
-                    fb.addFeedback('inaccurate_wrong_prev_rt', correctStr, answerStr);
+                    this.feedback.addFeedback(fb, 'inaccurate_wrong_prev_rt', correctStr, answerStr);
                 }
                 return;
             }
-            fb.addFeedback('wrong', correctStr, answerStr);
+            debugger;
+            this.feedback.addFeedback(fb, 'wrong', correctStr, answerStr);
             return;
         },
 
@@ -2247,14 +2247,14 @@ sparks.util.prettyPrint = function (obj, indent) {
                 question.correct_answer = 'no';
             }
 
-            var fb = this.feedback.root.t_range.within_tolerance;
+            var fb = this.feedback.root.items.t_range.items.in_out;
 
-            if (this.feedback.root.measuring.measured_r_value.correct < 4 ||
-                this.feedback.root.t_range.t_range_value < 4)
+            if (this.feedback.root.items.measuring.items.measured_r_value.correct < 4 ||
+                this.feedback.root.items.t_range.items.range_values < 4)
             {
                 fb.points = 0;
                 fb.correct = 0;
-                fb.addFeedback('undef');
+                this.feedback.addFeedback(fb, 'undef');
                 return;
             }
 
@@ -2292,7 +2292,7 @@ sparks.util.prettyPrint = function (obj, indent) {
 
             if (question.answer !== correctAnswer) {
                 if (question.correct_answer === correctAnswer) {
-                    fb.addFeedback('incorrect',
+                    this.feedback.addFeedback(fb, 'incorrect',
                         unit.res_str(this.measuredResistanceAnswer),
                         unit.res_str(this.rangeMinAnswer),
                         unit.res_str(this.rangeMaxAnswer),
@@ -2307,14 +2307,14 @@ sparks.util.prettyPrint = function (obj, indent) {
             fb.correct = 4;
 
             if (question.correct_answer === correctAnswer) {
-                fb.addFeedback('correct',
+                this.feedback.addFeedback(fb, 'correct',
                     unit.res_str(this.measuredResistanceAnswer),
                     unit.res_str(this.rangeMinAnswer),
                     unit.res_str(this.rangeMaxAnswer),
                     did, is);
             }
             else {
-                fb.addFeedback('correct_wrong_prev');
+                this.feedback.addFeedback(fb, 'correct_wrong_prev');
             }
         },
 
@@ -2324,45 +2324,45 @@ sparks.util.prettyPrint = function (obj, indent) {
 
             this.feedback.reading_time = this.questions[1].end_time - this.questions[0].start_time;
             seconds = this.feedback.reading_time / 1000;
-            fb = this.feedback.root.time.reading_time;
+            fb = this.feedback.root.items.time.items.reading;
             if (seconds <= 20) {
                 fb.points = 5;
                 fb.correct = 4;
-                fb.addFeedback('efficient');
+                this.feedback.addFeedback(fb, 'efficient');
             }
             else if (seconds <= 40) {
                 fb.points = 2;
                 fb.correct = 2;
-                fb.addFeedback('semi');
+                this.feedback.addFeedback(fb, 'semi');
             }
             else {
                 fb.points = 0;
                 fb.correct = 0;
-                fb.addFeedback('slow', Math.round(seconds));
+                this.feedback.addFeedback(fb, 'slow', Math.round(seconds));
             }
 
             this.feedback.measuring_time = this.questions[2].end_time - this.questions[2].start_time;
             seconds = this.feedback.measuring_time / 1000;
-            fb = this.feedback.root.time.measuring_time;
+            fb = this.feedback.root.items.time.items.measuring;
             if (seconds <= 20) {
                 fb.points = 5;
                 fb.correct = 4;
-                fb.addFeedback('efficient');
+                this.feedback.addFeedback(fb, 'efficient');
             }
             else if (seconds <= 40) {
                 fb.points = 2;
                 fb.correct = 2;
-                fb.addFeedback('semi');
+                this.feedback.addFeedback(fb, 'semi');
             }
             else {
                 fb.points = 0;
                 fb.correct = 0;
-                fb.addFeedback('slow', Math.round(seconds));
+                this.feedback.addFeedback(fb, 'slow', Math.round(seconds));
             }
         },
 
         gradeSettings: function () {
-            var fb = this.feedback.root.measuring;
+            var fb = this.feedback.root.items.measuring;
             var redProbeConn = this.parser.submit_red_probe_conn;
             var blackProbeConn = this.parser.submit_black_probe_conn;
             var redPlugConn = this.parser.submit_red_plug_conn;
@@ -2373,41 +2373,39 @@ sparks.util.prettyPrint = function (obj, indent) {
                 (blackProbeConn == 'resistor_lead1' || blackProbeConn == 'resistor_lead2') &&
                 (redProbeConn != blackProbeConn))
             {
-                fb.probe_connection.correct = 4;
-                fb.probe_connection.points = 2;
-                fb.probe_connection.desc = 'Correct';
-                fb.probe_connection.addFeedback('correct');
+                fb.items.probe_connection.correct = 4;
+                fb.items.probe_connection.points = 2;
+                fb.items.probe_connection.desc = 'Correct';
+                this.feedback.addFeedback(fb.items.probe_connection, 'correct');
             }
             else {
-                fb.probe_connection.correct = 0;
-                fb.probe_connection.points = 0;
-                fb.probe_connection.desc = 'Incorrect';
-                fb.probe_connection.addFeedback('incorrect');
+                fb.items.probe_connection.correct = 0;
+                fb.items.probe_connection.points = 0;
+                fb.items.probe_connection.desc = 'Incorrect';
+                this.feedback.addFeedback(fb.items.probe_connection, 'incorrect');
             }
-            console.log('probe_connection.points=' + fb.probe_connection.points);
 
             if (redPlugConn == 'voma_port' && blackPlugConn == 'common_port') {
-                fb.plug_connection.points = 5;
-                fb.plug_connection.correct = 4;
-                fb.plug_connection.desc = 'Correct';
-                fb.plug_connection.addFeedback('correct');
+                fb.items.plug_connection.points = 5;
+                fb.items.plug_connection.correct = 4;
+                fb.items.plug_connection.desc = 'Correct';
+                this.feedback.addFeedback(fb.items.plug_connection, 'correct');
             }
             else {
-                fb.plug_connection.correct = 0;
+                fb.items.plug_connection.correct = 0;
                 if (redPlugConn == 'common_port' && blackPlugConn == 'voma_port') {
-                    fb.plug_connection.points = 3;
-                    fb.plug_connection.correct = 3;
-                    fb.plug_connection.desc = 'Reversed';
-                    fb.plug_connection.addFeedback('reverse');
+                    fb.items.plug_connection.points = 3;
+                    fb.items.plug_connection.correct = 3;
+                    fb.items.plug_connection.desc = 'Reversed';
+                    this.feedback.addFeedback(fb.items.plug_connection, 'reverse');
                 }
                 else {
-                    fb.plug_connection.points = 0;
-                    fb.plug_connection.correct = 0;
-                    fb.plug_connection.desc = 'Incorrect';
-                    fb.plug_connection.addFeedback('incorrect');
+                    fb.items.plug_connection.points = 0;
+                    fb.items.plug_connection.correct = 0;
+                    fb.items.plug_connection.desc = 'Incorrect';
+                    this.feedback.addFeedback(fb.items.plug_connection, 'incorrect');
                 }
             }
-            console.log('plug_connection.points=' + fb.plug_connection.points);
 
             var i_knob = this.parser.initial_dial_setting;
             var f_knob = this.parser.submit_dial_setting;
@@ -2418,44 +2416,44 @@ sparks.util.prettyPrint = function (obj, indent) {
             this.feedback.optimal_dial_setting = o_knob;
 
             if (f_knob === o_knob) {
-                fb.knob_setting.points = 20;
-                fb.knob_setting.correct = 4;
-                fb.knob_setting.addFeedback('correct');
+                fb.items.knob_setting.points = 20;
+                fb.items.knob_setting.correct = 4;
+                this.feedback.addFeedback(fb.items.knob_setting, 'correct');
             }
             else if (this.isResistanceKnob(f_knob)){
-                fb.knob_setting.points = 10;
-                fb.knob_setting.correct = 2;
-                fb.knob_setting.addFeedback('suboptimal', o_knob, f_knob);
+                fb.items.knob_setting.points = 10;
+                fb.items.knob_setting.correct = 2;
+                this.feedback.addFeedback(fb.items.knob_setting, 'suboptimal', o_knob, f_knob);
             }
             else {
-                fb.knob_setting.points = 0;
-                fb.knob_setting.correct = 0;
-                fb.knob_setting.addFeedback('incorrect');
+                fb.items.knob_setting.points = 0;
+                fb.items.knob_setting.correct = 0;
+                this.feedback.addFeedback(fb.items.knob_setting, 'incorrect');
             }
 
             if (this.parser.power_on) {
-                fb.power_switch.points = 2;
-                fb.power_switch.correct = 4;
-                fb.power_switch.addFeedback('correct');
+                fb.items.power_switch.points = 2;
+                fb.items.power_switch.correct = 4;
+                this.feedback.addFeedback(fb.items.power_switch, 'correct');
             }
             else {
-                fb.power_switch.points = 0;
-                fb.power_switch.correct = 0;
-                fb.power_switch.addFeedback('incorrect');
+                fb.items.power_switch.points = 0;
+                fb.items.power_switch.correct = 0;
+                this.feedback.addFeedback(fb.items.power_switch, 'incorrect');
             }
-            console.log('power_switch.points=' + fb.power_switch.points);
+            console.log('power_switch.points=' + fb.items.power_switch.points);
 
             if (this.parser.correct_order) {
-                fb.task_order.points = 6;
-                fb.task_order.correct = 4;
-                fb.task_order.addFeedback('correct');
+                fb.items.task_order.points = 6;
+                fb.items.task_order.correct = 4;
+                this.feedback.addFeedback(fb.items.task_order, 'correct');
             }
             else {
-                fb.task_order.points = 0;
-                fb.task_order.correct = 0;
-                fb.task_order.addFeedback('incorrect');
+                fb.items.task_order.points = 0;
+                fb.items.task_order.correct = 0;
+                this.feedback.addFeedback(fb.items.task_order, 'incorrect');
             }
-            console.log('task_order.points=' + fb.task_order.points);
+            console.log('task_order.points=' + fb.items.task_order.points);
         },
 
         equalWithTolerance: function (value1, value2, tolerance) {
@@ -2633,45 +2631,45 @@ sparks.util.prettyPrint = function (obj, indent) {
             var questions = session.sections[0].questions;
             var color;
 
-            var fb = feedback.root.reading.rated_r_value;
+            var fb = feedback.root.items.reading.items.rated_r_value;
             $('#rated_r_correct').text(unit.res_str(questions[0].correct_answer));
             text = questions[0].answer ? questions[0].answer + questions[0].unit : 'No Answer';
             this.setAnswerTextWithColor('#rated_r_answer', text, fb);
-            $('#rated_r_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#rated_r_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#rated_r_feedback'), fb, this.readingHintPath);
 
-            fb = feedback.root.reading.rated_t_value;
+            fb = feedback.root.items.reading.items.rated_t_value;
             $('#rated_t_correct').text(questions[1].correct_answer * 100 + '%');
             text = questions[1].answer ? questions[1].answer + questions[1].unit : 'No Answer';
             this.setAnswerTextWithColor('#rated_t_answer', text, fb);
-            $('#rated_t_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#rated_t_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#rated_t_feedback'), fb, this.readingHintPath);
 
-            fb = feedback.root.t_range.t_range_value;
+            fb = feedback.root.items.t_range.items.range_values;
             $('#t_range_correct').text('[' + unit.res_str(questions[3].correct_answer[0]) + ', ' + unit.res_str(questions[3].correct_answer[1]) + ']');
             text = (questions[3].answer[0] || questions[3].answer[1]) ? '[' + String(questions[3].answer[0]) + questions[3].unit[0] + ', ' + questions[3].answer[1] + questions[3].unit[1] + ']' : 'No Answer';
             this.setAnswerTextWithColor('#t_range_answer', text, fb);
-            $('#t_range_value_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#t_range_value_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#t_range_feedback'), fb, this.toleranceHintPath);
 
-            fb = feedback.root.t_range.within_tolerance;
+            fb = feedback.root.items.t_range.items.in_out;
             $('#within_correct').text(questions[4].correct_answer);
             text = questions[4].answer ? questions[4].answer : 'No Answer';
             this.setAnswerTextWithColor('#within_answer', text, fb);
-            $('#within_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#within_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#within_feedback'), fb, this.toleranceHintPath);
 
-            fb = feedback.root.time.reading_time;
+            fb = feedback.root.items.time.items.reading;
             this.setAnswerTextWithColor('#reading_time', sparks.util.timeLapseStr(questions[0].start_time, questions[1].end_time), fb);
-            $('#reading_time_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#reading_time_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#reading_time_feedback'), fb, this.readingHintPath);
 
-            fb = feedback.root.time.measuring_time;
+            fb = feedback.root.items.time.items.measuring;
             this.setAnswerTextWithColor('#measuring_time', sparks.util.timeLapseStr(questions[2].start_time, questions[2].end_time), fb);
-            $('#measuring_time_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#measuring_time_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#measuring_time_feedback'), fb, this.measuringHintPath);
 
-            fb = feedback.root.measuring.probe_connection;
+            fb = feedback.root.items.measuring.items.probe_connection;
             if (fb.correct == 4) {
                 this.setTextWithColor('#probe_connection', fb.desc , this.green);
             }
@@ -2679,7 +2677,7 @@ sparks.util.prettyPrint = function (obj, indent) {
                 this.setTextWithColor('#probe_connection', fb.desc, this.red);
             }
 
-            fb = feedback.root.measuring.plug_connection;
+            fb = feedback.root.items.measuring.items.plug_connection;
             if (fb.correct) {
                 this.setTextWithColor('#plug_connection', fb.desc, this.green);
             }
@@ -2687,7 +2685,7 @@ sparks.util.prettyPrint = function (obj, indent) {
                 this.setTextWithColor('#plug_connection', fb.desc, this.red);
             }
 
-            fb = feedback.root.measuring.knob_setting;
+            fb = feedback.root.items.measuring.items.knob_setting;
 
             var f_knob = feedback.submit_dial_setting;
             var o_knob = feedback.optimal_dial_setting;
@@ -2718,10 +2716,10 @@ sparks.util.prettyPrint = function (obj, indent) {
             }
             this.setTextWithColor('#knob_setting_answer', this.dialLabels[feedback.submit_dial_setting], color);
 
-            $('#knob_setting_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#knob_setting_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#knob_setting_feedback'), fb, this.measuringHintPath);
 
-            if (feedback.root.measuring.power_switch.correct == 4) {
+            if (feedback.root.items.measuring.items.power_switch.correct == 4) {
                 this.setTextWithColor('#power_switch', 'On', this.green);
             }
             else {
@@ -2729,72 +2727,72 @@ sparks.util.prettyPrint = function (obj, indent) {
             }
 
 
-            fb = feedback.root.measuring.measured_r_value;
+            fb = feedback.root.items.measuring.items.measured_r_value;
             $('#measured_r_correct').text(unit.res_str(questions[2].correct_answer));
             text = questions[2].answer ? questions[2].answer + questions[2].unit : 'No Answer';
             this.setAnswerTextWithColor('#measured_r_answer', text, fb);
-            $('#measured_r_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#measured_r_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#measured_r_feedback'), fb, this.measuringHintPath);
 
-            fb = feedback.root.measuring.plug_connection;
+            fb = feedback.root.items.measuring.items.plug_connection;
             if (fb.correct == 4) {
                 this.setTextWithColor('#plug_connection_answer', 'Correct', this.green);
             }
             else {
                 this.setTextWithColor('#plug_connection_answer', 'Incorrect', this.red);
             }
-            $('#plug_connection_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#plug_connection_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#plug_connection_feedback'), fb, this.measuringHintPath);
 
-            fb = feedback.root.measuring.probe_connection;
+            fb = feedback.root.items.measuring.items.probe_connection;
             if (fb.correct == 4) {
                 this.setTextWithColor('#probe_connection_answer', 'Correct', this.green);
             }
             else {
                 this.setTextWithColor('#probe_connection_answer', 'Incorrect', this.red);
             }
-            $('#probe_connection_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#probe_connection_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#probe_connection_feedback'), fb, this.measuringHintPath);
 
-            fb = feedback.root.measuring.power_switch;
+            fb = feedback.root.items.measuring.items.power_switch;
             if (fb.correct == 4) {
                 this.setTextWithColor('#power_switch_answer', 'Correct', this.green);
             }
             else {
                 this.setTextWithColor('#power_switch_answer', 'Incorrect', this.red);
             }
-            $('#power_switch_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#power_switch_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#power_switch_feedback'), fb, this.measuringHintPath);
 
-            fb = feedback.root.measuring.task_order;
+            fb = feedback.root.items.measuring.items.task_order;
             if (fb.correct == 4) {
                 this.setTextWithColor('#task_order_answer', 'Correct', this.green);
             }
             else {
                 this.setTextWithColor('#task_order_answer', 'Incorrect', this.red);
             }
-            $('#task_order_points').text(fb.points + ' / ' + fb.maxPoints);
+            $('#task_order_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#task_order_feedback'), fb, this.measuringHintPath);
 
-            fb = feedback.root.reading;
+            fb = feedback.root.items.reading;
             $('#reading_points').html('<b>' + fb.points + ' / ' +
-                    fb.maxPoints + '</b>');
+                    fb.max_points + '</b>');
 
-            fb = feedback.root.measuring;
+            fb = feedback.root.items.measuring;
             $('#measuring_points').html('<b>' + fb.points + ' / ' +
-                    fb.maxPoints + '</b>');
+                    fb.max_points + '</b>');
 
-            fb = feedback.root.t_range;
+            fb = feedback.root.items.t_range;
             $('#t_range_points').html('<b>' + fb.points + ' / ' +
-                    fb.maxPoints + '</b>');
+                    fb.max_points + '</b>');
 
-            fb = feedback.root.time;
+            fb = feedback.root.items.time;
             $('#time_points').html('<b>' + fb.points + ' / ' +
-                    fb.maxPoints + '</b>');
+                    fb.max_points + '</b>');
 
             fb = feedback.root;
             $('#total_points').html('<b>' + fb.points + ' / ' +
-                    fb.maxPoints + '</b>');
+                    fb.max_points + '</b>');
 
             this.addHelpLinks(feedback);
         },
@@ -2802,23 +2800,23 @@ sparks.util.prettyPrint = function (obj, indent) {
         addHelpLinks: function(feedback) {
             var rootDir = sparks.config.root_dir;
 
-            var fb = feedback.root.reading;
+            var fb = feedback.root.items.reading;
 
-            if (fb.points != fb.maxPoints) {
+            if (fb.points != fb.max_points) {
                 this.imageLink($('#reading_tutorial_link'),
                     rootDir + '/common/icons/tutorial.png',
                     this.readingHintPath);
             }
 
-            fb = feedback.root.measuring;
-            if (fb.points != fb.maxPoints) {
+            fb = feedback.root.items.measuring;
+            if (fb.points != fb.max_points) {
                 this.imageLink($('#measuring_tutorial_link'),
                     rootDir + '/common/icons/tutorial.png',
                     this.measuringHintPath);
             }
 
-            fb = feedback.root.t_range.t_range_value;
-            if (fb.points != fb.maxPoints) {
+            fb = feedback.root.items.t_range.items.range_value;
+            if (fb.points != fb.max_points) {
                 this.imageLink($('#t_range_tutorial_link'),
                     rootDir + '/common/icons/tutorial.png',
                     this.toleranceHintPath);
