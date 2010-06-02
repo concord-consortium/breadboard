@@ -36,7 +36,6 @@
 
         grade: function () {
             //console.log('ENTER Grader.grade');
-        
             this.realCorrectMin = this.section.nominal_resistance * (1 - this.section.tolerance);
             this.realCorrectMax = this.section.nominal_resistance * (1 + this.section.tolerance);
 

@@ -57,7 +57,7 @@
     // rubric is a json object
     mr.Feedback = function (rubric) {
         this.root = util.cloneSimpleObject(rubric);
-        console.log(JSON.stringify(this.root));
+        //console.log(JSON.stringify(this.root));
         
         this.optimal_dial_setting = '';
         this.initial_dial_setting = '';
@@ -171,8 +171,8 @@
     mr.Feedback.prototype = {
             
         addFeedback: function (node, key) {
-            console.log('key=' + key);
-            console.log('addFeedback for: key=' + key + ', ' + node.description);
+            //console.log('key=' + key);
+            //console.log('addFeedback for: key=' + key + ', ' + node.description);
             var messages = [];
             messages[0] = node.feedback.messages[key].short_message;
             messages[1] = node.feedback.messages[key].long_message;
