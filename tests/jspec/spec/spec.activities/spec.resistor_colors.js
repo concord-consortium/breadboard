@@ -19,58 +19,32 @@ describe 'Activity 1: Resistor Colors'
         //true.should.be false
     end
     
-    it "should calculate max points correctly"
-      var feedback = new Feedback();
-      feedback.root.updatePoints();
-    
-      feedback.root.maxPoints.should.be 100
-      
-      feedback.root.reading.maxPoints.should.be 25
-      feedback.root.reading.rated_r_value.maxPoints.should.be 20
-      feedback.root.reading.rated_t_value.maxPoints.should.be 5
-      
-      feedback.root.t_range.t_range_value.maxPoints.should.be 15
-      
-      feedback.root.measuring.maxPoints.should.be 45
-      feedback.root.measuring.probe_connection.maxPoints.should.be 2
-      feedback.root.measuring.plug_connection.maxPoints.should.be 5
-      feedback.root.measuring.knob_setting.maxPoints.should.be 20
-      feedback.root.measuring.power_switch.maxPoints.should.be 2
-      feedback.root.measuring.task_order.maxPoints.should.be 6
-      
-      feedback.root.t_range.within_tolerance.maxPoints.should.be 5
-      
-      feedback.root.time.maxPoints.should.be 10
-      feedback.root.time.reading_time.maxPoints.should.be 5
-      feedback.root.time.measuring_time.maxPoints.should.be 5
-    end
-    
     it "should grade a session correctly"
       // mr_data1.json: perfect answers
-      var session = JSON.parse(fixture('mr_data_1.json')); 
-      var grader = new sparks.activities.mr.Grader(session);
+      var session = JSON.parse(fixture('mr_data_1.json'))
+      var rubric = JSON.parse(fixture('rubric-mr.json'))
+      var grader = new sparks.activities.mr.Grader(session, rubric);
       var feedback = grader.grade();
       
       feedback.root.points.should.be 100
+      feedback.root.items.reading.items.rated_r_value.points.should.be 20
+      feedback.root.items.reading.items.rated_t_value.points.should.be 5
+      feedback.root.items.reading.points.should.be 25
       
-      feedback.root.reading.rated_r_value.points.should.be 20
-      feedback.root.reading.rated_t_value.points.should.be 5
-      feedback.root.reading.points.should.be 25
+      feedback.root.items.t_range.items.range_values.points.should.be 15
       
-      feedback.root.t_range.t_range_value.points.should.be 15
+      feedback.root.items.measuring.points.should.be 45
+      feedback.root.items.measuring.items.probe_connection.points.should.be 2
+      feedback.root.items.measuring.items.plug_connection.points.should.be 5
+      feedback.root.items.measuring.items.knob_setting.points.should.be 20
+      feedback.root.items.measuring.items.power_switch.points.should.be 2
+      feedback.root.items.measuring.items.task_order.points.should.be 6
       
-      feedback.root.measuring.points.should.be 45
-      feedback.root.measuring.probe_connection.points.should.be 2
-      feedback.root.measuring.plug_connection.points.should.be 5
-      feedback.root.measuring.knob_setting.points.should.be 20
-      feedback.root.measuring.power_switch.points.should.be 2
-      feedback.root.measuring.task_order.points.should.be 6
+      feedback.root.items.t_range.items.in_out.points.should.be 5
       
-      feedback.root.t_range.within_tolerance.points.should.be 5
-      
-      feedback.root.time.points.should.be 10
-      feedback.root.time.reading_time.points.should.be 5
-      feedback.root.time.measuring_time.points.should.be 5
+      feedback.root.items.time.points.should.be 10
+      feedback.root.items.time.items.reading.points.should.be 5
+      feedback.root.items.time.items.measuring.points.should.be 5
     end
     
     it "should do oneOff correctly"

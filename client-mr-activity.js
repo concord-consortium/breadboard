@@ -2933,7 +2933,6 @@ sparks.util.prettyPrint = function (obj, indent) {
 
     mr.Feedback = function (rubric) {
         this.root = util.cloneSimpleObject(rubric);
-        console.log(JSON.stringify(this.root));
 
         this.optimal_dial_setting = '';
         this.initial_dial_setting = '';
@@ -3047,8 +3046,6 @@ sparks.util.prettyPrint = function (obj, indent) {
     mr.Feedback.prototype = {
 
         addFeedback: function (node, key) {
-            console.log('key=' + key);
-            console.log('addFeedback for: key=' + key + ', ' + node.description);
             var messages = [];
             messages[0] = node.feedback.messages[key].short_message;
             messages[1] = node.feedback.messages[key].long_message;
@@ -3315,7 +3312,6 @@ sparks.util.prettyPrint = function (obj, indent) {
     mr.Grader.prototype = {
 
         grade: function () {
-
             this.realCorrectMin = this.section.nominal_resistance * (1 - this.section.tolerance);
             this.realCorrectMax = this.section.nominal_resistance * (1 + this.section.tolerance);
 
@@ -4171,7 +4167,7 @@ sparks.util.prettyPrint = function (obj, indent) {
             $('#knob_setting_points').text(fb.points + ' / ' + fb.max_points);
             this.addFeedback($('#knob_setting_feedback'), fb, this.measuringHintPath);
 
-            if (feedback.root.measuring.power_switch.correct == 4) {
+            if (feedback.root.items.measuring.items.power_switch.correct == 4) {
                 this.setTextWithColor('#power_switch', 'On', this.green);
             }
             else {
