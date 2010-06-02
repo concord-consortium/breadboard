@@ -47,14 +47,14 @@
             diode: 'Diode'
         },
 
-        report: function(session, feedback, callback) {
+        report: function (session, feedback, callback) {
             var reporter = this;
-            this.reportElem.load(this.template, '', function() {
+            this.reportElem.load(this.template, '', function () {
                 reporter.sessionReport(session, feedback);
             });
         },
 
-        sessionReport : function(session, feedback) {
+        sessionReport: function (session, feedback) {
             var studentName = jQuery.cookie('student_name');
             if (studentName) {
                 $('#student_name').text(studentName.replace('+', ' '));
@@ -242,7 +242,7 @@
             this.addHelpLinks(feedback);
         },
 
-        addHelpLinks: function(feedback) {
+        addHelpLinks: function (feedback) {
             var rootDir = sparks.config.root_dir;
 
             var fb = feedback.root.items.reading;
@@ -268,7 +268,7 @@
             }
         },
 
-        setAnswerTextWithColor : function(elemId, text, feedback) {
+        setAnswerTextWithColor: function (elemId, text, feedback) {
             var color;
             switch (feedback.correct)
             {
@@ -281,12 +281,12 @@
             this.setTextWithColor(elemId, text, color);
         },
 
-        setTextWithColor : function(elemId, text, color) {
+        setTextWithColor: function (elemId, text, color) {
             $(elemId).text(text);
             $(elemId).attr('style', 'color: ' + color + ';');
         },
 
-        imageLink: function(container, imageUrl, linkUrl) {
+        imageLink: function (container, imageUrl, linkUrl) {
           var a = $('<a></a>').addClass('no_deco');
           a.attr({ href: linkUrl, title: 'Click for SPARKS Help!', target: 'feedback' });
           var img = $('<img></img>').addClass('no_border');

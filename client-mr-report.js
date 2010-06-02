@@ -2626,14 +2626,14 @@ sparks.util.getRubric = function (id, callback, local) {
             diode: 'Diode'
         },
 
-        report: function(session, feedback, callback) {
+        report: function (session, feedback, callback) {
             var reporter = this;
-            this.reportElem.load(this.template, '', function() {
+            this.reportElem.load(this.template, '', function () {
                 reporter.sessionReport(session, feedback);
             });
         },
 
-        sessionReport : function(session, feedback) {
+        sessionReport: function (session, feedback) {
             var studentName = jQuery.cookie('student_name');
             if (studentName) {
                 $('#student_name').text(studentName.replace('+', ' '));
@@ -2818,7 +2818,7 @@ sparks.util.getRubric = function (id, callback, local) {
             this.addHelpLinks(feedback);
         },
 
-        addHelpLinks: function(feedback) {
+        addHelpLinks: function (feedback) {
             var rootDir = sparks.config.root_dir;
 
             var fb = feedback.root.items.reading;
@@ -2844,7 +2844,7 @@ sparks.util.getRubric = function (id, callback, local) {
             }
         },
 
-        setAnswerTextWithColor : function(elemId, text, feedback) {
+        setAnswerTextWithColor: function (elemId, text, feedback) {
             var color;
             switch (feedback.correct)
             {
@@ -2857,12 +2857,12 @@ sparks.util.getRubric = function (id, callback, local) {
             this.setTextWithColor(elemId, text, color);
         },
 
-        setTextWithColor : function(elemId, text, color) {
+        setTextWithColor: function (elemId, text, color) {
             $(elemId).text(text);
             $(elemId).attr('style', 'color: ' + color + ';');
         },
 
-        imageLink: function(container, imageUrl, linkUrl) {
+        imageLink: function (container, imageUrl, linkUrl) {
           var a = $('<a></a>').addClass('no_deco');
           a.attr({ href: linkUrl, title: 'Click for SPARKS Help!', target: 'feedback' });
           var img = $('<img></img>').addClass('no_border');
@@ -2919,6 +2919,10 @@ sparks.util.getRubric = function (id, callback, local) {
 
 /* FILE learner-session-report.js */
 
+/*
+ * Report for individual student/session
+ */
+
 $(document).ready(function () {
     try {
         var mr = sparks.activities.mr;
@@ -2929,14 +2933,11 @@ $(document).ready(function () {
         ds.readKey = true;
         ds.load(this, function (data) {
             try {
-                util.getRubric(1, function (r) {
-                    var rubric = r;
-                    console.log(JSON.stringify(rubric));
-                    var grader = new sparks.activities.mr.Grader(data[0], rubric);
-                    var feedback = grader.grade();
-                    var reporter = new mr.Reporter($('#report_area'));
-                    reporter.report(data[0], feedback);
-                });
+                var log = JSON.parse(data.measuring_resistance_report.content)[0];
+                var feedback = JSON.parse(data.measuring_resistance_report.graded_result);
+                console.log('feedback=' + feedback);
+                var reporter = new mr.Reporter($('#report_area'));
+                reporter.report(log, feedback);
             }
             catch (e) {
                 alert(e);
