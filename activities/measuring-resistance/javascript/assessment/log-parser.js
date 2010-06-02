@@ -43,7 +43,7 @@
         // Scan the events once to produce derived data
         parseEvents: function () {
             for (var i = 0; i < this.events.length; ++i) {
-                console.log('event name=' + this.events[i].name + ' value=' + this.events[i].value);
+                //console.log('event name=' + this.events[i].name + ' value=' + this.events[i].value);
                 if (this.events[i].name === 'connect') {
                     this.parseConnect(this.events[i]);
                 }
