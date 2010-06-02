@@ -296,6 +296,8 @@
             var resistor = this.currentResistor;
             var model = $("#rcc_model");
             var debug_div = $("#rcc_debug");
+            var min = resistor.getNominalValue() * (1 - resistor.getTolerance());
+            var max = resistor.getNominalValue() * (1 + resistor.getTolerance());
 
             //console.log('debug_div=' + debug_div.length);
 
@@ -304,8 +306,7 @@
               'Nominal Value: ' + resistor.getNominalValue() + '<br />' +
               'Tolerance: ' + resistor.getTolerance() * 100.0 + '%<br />' +
               'Calculated colors: ' + resistor.getColors(resistor.getNominalValue(), resistor.getTolerance()) + '<br />' +
-              'Range: [' + resistor.getNominalValue() * (1 - resistor.getTolerance()) + ', ' +
-              resistor.getNominalValue() * (1 + resistor.getTolerance()) + ']<br />' + 
+              'Range: [' + sparks.unit.res_str(min) + ', ' + sparks.unit.res_str(max) + ']<br />' + 
               'Real Value: ' + resistor.getRealValue() + '<br />' +
               'Display Value: ' + this.multimeter.makeDisplayText(resistor.getRealValue()) + '<br />';
 
