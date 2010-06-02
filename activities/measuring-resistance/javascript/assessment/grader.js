@@ -394,7 +394,7 @@
                         did, is);
                 }
                 else {
-                    fb.addFeedback('incorrect_wrong_prev');
+                    this.feedback.addFeedback(fb, 'incorrect_wrong_prev');
                 }
                 return;
             }
