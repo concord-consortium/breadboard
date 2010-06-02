@@ -1787,7 +1787,6 @@ sparks.util.getRubric = function (id, callback, local) {
 
         parseEvents: function () {
             for (var i = 0; i < this.events.length; ++i) {
-                console.log('event name=' + this.events[i].name + ' value=' + this.events[i].value);
                 if (this.events[i].name === 'connect') {
                     this.parseConnect(this.events[i]);
                 }
@@ -2321,7 +2320,7 @@ sparks.util.getRubric = function (id, callback, local) {
                         did, is);
                 }
                 else {
-                    fb.addFeedback('incorrect_wrong_prev');
+                    this.feedback.addFeedback(fb, 'incorrect_wrong_prev');
                 }
                 return;
             }
