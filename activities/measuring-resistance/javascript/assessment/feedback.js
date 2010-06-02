@@ -1,3 +1,4 @@
+//= require <util>
 //= require "../setup-common"
 
 /* FILE feedback.js */
