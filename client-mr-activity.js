@@ -1696,6 +1696,29 @@ sparks.util.prettyPrint = function (obj, indent) {
     }
 };
 
+sparks.util.getRubric = function (id, callback, local) {
+    var self = this;
+    var url;
+
+    if (local) {
+        url = 'rubric.json';
+    }
+    else {
+        url = unescape(sparks.util.readCookie('rubric_path') + '/' + id + '.json');
+    }
+    console.log('url=' + url);
+    $.ajax({
+        url: url,
+        dataType: 'json',
+        success: function (rubric) {
+            callback(rubric);
+        },
+        error: function (request, status, error) {
+            console.log('Activity#getRubric ERROR:\nstatus: ' + status + '\nerror: ' + error + '\nurl=' + url);
+        }
+    });
+};
+
 /* FILE activity.js */
 
 (function () {
@@ -1738,31 +1761,6 @@ sparks.util.prettyPrint = function (obj, indent) {
     sparks.Activity.prototype = {
 
         init: function () {
-        },
-
-        getRubric: function (id) {
-            debugger;
-            var self = this;
-            var url;
-
-            if (this.dataService) {
-                url = unescape(sparks.util.readCookie('rubric_path') + '/' + id + '.json');
-            }
-            else {
-                url = 'rubric.json';
-            }
-                $.ajax({
-                    url: url,
-                    dataType: 'json',
-                    success: function (rubric) {
-                        debugger;
-                        self.rubric = rubric;
-                    },
-                    error: function (request, status, error) {
-                        debugger;
-                        console.log('Activity#getRubric ERROR:\nstatus: ' + status + '\nerror: ' + error);
-                    }
-                });
         },
 
         buttonize: function () {
@@ -3591,7 +3589,6 @@ sparks.util.prettyPrint = function (obj, indent) {
                 }
                 return;
             }
-            debugger;
             this.feedback.addFeedback(fb, 'wrong', correctStr, answerStr);
             return;
         },
@@ -4263,7 +4260,7 @@ sparks.util.prettyPrint = function (obj, indent) {
                     this.measuringHintPath);
             }
 
-            fb = feedback.root.items.t_range.items.range_value;
+            fb = feedback.root.items.t_range.items.range_values;
             if (fb.points != fb.max_points) {
                 this.imageLink($('#t_range_tutorial_link'),
                     rootDir + '/common/icons/tutorial.png',
@@ -4351,6 +4348,7 @@ sparks.util.prettyPrint = function (obj, indent) {
     var mr = sparks.activities.mr;
     var flash = sparks.flash;
     var str = sparks.string;
+    var util = sparks.util;
 
     sparks.config.debug = jQuery.url.param("debug") !== undefined;
     sparks.config.debug_nbands = jQuery.url.param("n") ? Number(jQuery.url.param("n")) : null;
@@ -4421,7 +4419,8 @@ sparks.util.prettyPrint = function (obj, indent) {
             $('#start_button').click(function (event) {
                 self.startButtonClicked(self, event);
             });
-            this.rubic = this.getRubric(1);
+            var local = this.dataService ? false : true;
+            this.rubic = util.getRubric(1, function (rubric) { self.rubric = rubric; }, local);
         },
 
         onFlashDone: function () {
@@ -4556,7 +4555,6 @@ sparks.util.prettyPrint = function (obj, indent) {
         },
 
         startTry : function () {
-            debugger;
           ++ this.current_session;
           this.log.beginNextSession();
           this.current_question = 1;

@@ -260,7 +260,7 @@
                     this.measuringHintPath);
             }
 
-            fb = feedback.root.items.t_range.items.range_value;
+            fb = feedback.root.items.t_range.items.range_values;
             if (fb.points != fb.max_points) {
                 this.imageLink($('#t_range_tutorial_link'),
                     rootDir + '/common/icons/tutorial.png',

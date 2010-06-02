@@ -323,7 +323,6 @@
                 }
                 return;
             }
-            debugger;
             this.feedback.addFeedback(fb, 'wrong', correctStr, answerStr);
             return;
         },

@@ -1336,6 +1336,29 @@ sparks.util.prettyPrint = function (obj, indent) {
     }
 };
 
+sparks.util.getRubric = function (id, callback, local) {
+    var self = this;
+    var url;
+
+    if (local) {
+        url = 'rubric.json';
+    }
+    else {
+        url = unescape(sparks.util.readCookie('rubric_path') + '/' + id + '.json');
+    }
+    console.log('url=' + url);
+    $.ajax({
+        url: url,
+        dataType: 'json',
+        success: function (rubric) {
+            callback(rubric);
+        },
+        error: function (request, status, error) {
+            console.log('Activity#getRubric ERROR:\nstatus: ' + status + '\nerror: ' + error + '\nurl=' + url);
+        }
+    });
+};
+
 /* FILE string.js */
 
 (function () {
@@ -2228,7 +2251,6 @@ sparks.util.prettyPrint = function (obj, indent) {
                 }
                 return;
             }
-            debugger;
             this.feedback.addFeedback(fb, 'wrong', correctStr, answerStr);
             return;
         },
@@ -2815,7 +2837,7 @@ sparks.util.prettyPrint = function (obj, indent) {
                     this.measuringHintPath);
             }
 
-            fb = feedback.root.items.t_range.items.range_value;
+            fb = feedback.root.items.t_range.items.range_values;
             if (fb.points != fb.max_points) {
                 this.imageLink($('#t_range_tutorial_link'),
                     rootDir + '/common/icons/tutorial.png',
@@ -2901,16 +2923,21 @@ sparks.util.prettyPrint = function (obj, indent) {
 $(document).ready(function () {
     try {
         var mr = sparks.activities.mr;
+        var util = sparks.util;
 
         var reportId = sparks.util.readCookie('report_id');
         var ds = new RestDS(null, null, '/sparks/report/get_report/' + reportId);
         ds.readKey = true;
         ds.load(this, function (data) {
             try {
-                var grader = new sparks.activities.mr.Grader(data[0]);
-                var feedback = grader.grade();
-                var reporter = new mr.Reporter($('#report_area'));
-                reporter.report(data[0], feedback);
+                util.getRubric(1, function (r) {
+                    var rubric = r;
+                    console.log(JSON.stringify(rubric));
+                    var grader = new sparks.activities.mr.Grader(data[0], rubric);
+                    var feedback = grader.grade();
+                    var reporter = new mr.Reporter($('#report_area'));
+                    reporter.report(data[0], feedback);
+                });
             }
             catch (e) {
                 alert(e);

@@ -62,32 +62,6 @@
         init: function () {
         },
         
-        getRubric: function (id) {
-            debugger;
-            var self = this;
-            var url;
-            
-            if (this.dataService) {
-                //get it from server
-                url = unescape(sparks.util.readCookie('rubric_path') + '/' + id + '.json');
-            }
-            else {
-                url = 'rubric.json';
-            }
-                $.ajax({
-                    url: url,
-                    dataType: 'json',
-                    success: function (rubric) {
-                        debugger;
-                        self.rubric = rubric;
-                    },
-                    error: function (request, status, error) {
-                        debugger;
-                        console.log('Activity#getRubric ERROR:\nstatus: ' + status + '\nerror: ' + error); 
-                    }
-                });
-        },
-        
         buttonize: function () {
             $('button').button();
         }

@@ -156,3 +156,27 @@ sparks.util.prettyPrint = function (obj, indent) {
         return obj + '\n';
     }
 };
+
+sparks.util.getRubric = function (id, callback, local) {
+    var self = this;
+    var url;
+    
+    if (local) {
+        url = 'rubric.json';
+    }
+    else {
+        //get it from server
+        url = unescape(sparks.util.readCookie('rubric_path') + '/' + id + '.json');
+    }
+    console.log('url=' + url);
+    $.ajax({
+        url: url,
+        dataType: 'json',
+        success: function (rubric) {
+            callback(rubric);
+        },
+        error: function (request, status, error) {
+            console.log('Activity#getRubric ERROR:\nstatus: ' + status + '\nerror: ' + error + '\nurl=' + url); 
+        }
+    });
+};

@@ -16,6 +16,7 @@
     var mr = sparks.activities.mr;
     var flash = sparks.flash;
     var str = sparks.string;
+    var util = sparks.util;
     
     sparks.config.debug = jQuery.url.param("debug") !== undefined;
     sparks.config.debug_nbands = jQuery.url.param("n") ? Number(jQuery.url.param("n")) : null;
@@ -90,7 +91,8 @@
             $('#start_button').click(function (event) {
                 self.startButtonClicked(self, event);
             });
-            this.rubic = this.getRubric(1);
+            var local = this.dataService ? false : true;
+            this.rubic = util.getRubric(1, function (rubric) { self.rubric = rubric; }, local);
         },
 
         // Initializations that can be done only when the flash movie is loaded
@@ -235,7 +237,6 @@
 
         // Start new session (new resistor)
         startTry : function () {
-            debugger;
           ++ this.current_session;
           this.log.beginNextSession();
           this.current_question = 1;
