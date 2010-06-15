@@ -205,6 +205,7 @@
 
       //// COMPONENT MODEL /////////////////////////////////////////////////////////
       var Component = function Component(props){
+        console.log('ENTER Component');
         for(var i in props){
           this[i]=props[i];
         }
@@ -213,6 +214,7 @@
 
         this.connections=[];
         for(var i in props.connections){
+          console.log('i=' + i);
           if (props.connections[i].nodeName) {
             this.connections[i] = props.connections[i];
           } else {
@@ -270,7 +272,8 @@
                 props.resistance = Resistor.getResistance( arguments[2].split(",") );
               }else if( typeof(arguments[2])=="number" ){
                 props.resistance = arguments[2];
-              }          
+              }
+              $('#rated_values').text($('#rated_values').text() + ' ' + props.resistance);
               break;
           }
           var newComponent;
@@ -359,21 +362,27 @@
         }
         var func = arguments[0];
         
-        $('#popup').text('Calculating...');
-        $('#popup').dialog();
-        
         if (func === 'query') {
+            var conns = arguments[2].split(',');
+            if (conns[0] === 'null' || conns[1] === 'null') {
+                return 0;
+            }
+            $('#popup').text('Calculating...');
+            $('#popup').dialog();
+            
             var r = interfaces.query.apply(window, ['resistance', arguments[2], arguments[3]]);
             $('#resistance').text(r);
             var c = interfaces.query.apply(window, ['current', arguments[2], arguments[3]]);
             $('#current').text(c);
             var v = interfaces.query.apply(window, ['voltage', arguments[2], arguments[3]]);
             $('#voltage').text(v);
+            
+            $('#popup').dialog('close');
+            return v;
         }
-        $('#popup').dialog('close');
-        
-        //return interfaces[func].apply(window, newArgs);
-        return v;
+        else {
+          return interfaces[func].apply(window, newArgs);
+        }
       };
 
       // The outward interface between JS & Flash
