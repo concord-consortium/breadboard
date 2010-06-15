@@ -1819,2527 +1819,474 @@ sparks.util.getRubric = function (id, callback, local) {
     };
 
 })();
-/* FILE multimeter.js */
+/* FILE qucsator.js */
 
 (function () {
 
-    var flash = sparks.flash;
+  var inGroupsOf = function (ary, n) {
+    var grouped = [];
+    for(i in ary) {
+      if (!grouped[Math.floor(i / 3)]) { grouped[Math.floor(i / 3)] = []; }
+      grouped[Math.floor(i / 3)][i % 3] = ary[i];
+    }
+    return grouped;
+  }
 
-    /*
-     * Digital Multimeter
-     */
-    sparks.circuit.Multimeter = function () {
-        this.mode = this.modes.ohmmeter;
-        this.value = 0; //real value
-        this.displayText = '       ';
+  sparks.circuit.qucsate = function(netlist, callback, type) {
+    console.log('netlist=' + JSON.stringify(netlist));
+    console.log('url=' + sparks.config.qucsate_server_url);
+    type = type || 'qucs';
+    var data = {};
+    data[type || 'qucs'] = netlist;
+    $.ajax({
+        async: false,
+        url: sparks.config.qucsate_server_url,
+        data: data,
+        success: sparks.circuit.qucsate.parser(callback),
+        error: function (request, status, error) {
+                  debug('ERROR: url=' + qucsate.serverUrl + '\nstatus=' + status + '\nerror=' + error);
+              }
+    });
+  };
 
-        this.redProbeConnection = null;
-        this.blackProbeConnection = null;
-        this.redPlugConnection = null;
-        this.blackPlugConnecton = null;
-        this.dialPosition = 'acv_750';
-        this.powerOn = false;
-    };
 
-    sparks.circuit.Multimeter.prototype = {
+  sparks.circuit.qucsate.parser = function(callback) {
+    return(function(data) {
+      var results = {};
 
-        modes : { ohmmeter : 0, voltmeter : 1, ammeter : 2 },
+      if ( data.result ) { data = data.result; }
 
-        update : function () {
-            console.log('ENTER update powerOn=', this.powerOn + ' ' + (typeof this.powerOn));
-            this.value = sparks.activity.currentResistor.getRealValue();
-            this.updateDisplay();
-        },
-
-        updateDisplay : function () {
-            if (!this.powerOn) {
-                this.displayText = '       ';
-                flash.sendCommand('set_multimeter_display', '       ');
-                return;
-            }
-            console.log('Multimeter.update: resistance=' + this.value + ' dialPosition=' + this.dialPosition);
-
-            var text = '';
-            if (this.allConnected()) {
-                console.log('pos=' + this.dialPosition + ' val=' + this.value);
-                if (this.dialPosition === 'r_200') {
-                    if (this.value < 199.95) {
-                        text = (Math.round(this.value * 10) * 0.1).toString();
-                        text = this.toDisplayString(text, 1);
-                    }
-                    else {
-                        text = ' 1   . ';
-                    }
-                }
-                else if (this.dialPosition === 'r_2000' || this.dialPosition === 'diode') {
-                    if (this.value < 1999.5) {
-                        text = Math.round(this.value).toString();
-                        text = this.toDisplayString(text, 0);
-                    }
-                    else {
-                        text = ' 1     ';
-                    }
-                }
-                else if (this.dialPosition === 'r_20k') {
-                    if (this.value < 19995) {
-                        text = (Math.round(this.value * 0.1) * 0.01).toString();
-                        text = this.toDisplayString(text, 2);
-                    }
-                    else {
-                        text = ' 1 .   ';
-                    }
-                }
-                else if (this.dialPosition === 'r_200k') {
-                    if (this.value < 199950) {
-                        text = (Math.round(this.value * 0.01) * 0.1).toString();
-                        text = this.toDisplayString(text, 1);
-                    }
-                    else {
-                        text = ' 1   . ';
-                    }
-                }
-                else if (this.dialPosition === 'r_2000k') {
-                    if (this.value < 1999500) {
-                        text = Math.round(this.value * 0.001).toString();
-                        text = this.toDisplayString(text, 0);
-                    }
-                    else {
-                        text = ' 1     ';
-                    }
-                }
-                else if (this.dialPosition === 'dcv_200m' || this.dialPosition === 'dcv_200' ||
-                        this.dialPosition === 'acv_200' || this.dialPosition === 'p_9v' ||
-                        this.dialPosition === 'dca_200mc' || this.dialPosition === 'dca_200m') {
-                    text = '  0 0.0';
-                }
-                else if (this.dialPosition === 'dcv_2000m' || this.dialPosition === 'dca_2000mc' ||
-                        this.dialPosition === 'hfe') {
-                    text = '  0 0 0';
-                }
-                else if (this.dialPosition === 'dcv_20' || this.dialPosition === 'dca_20m' ||
-                        this.dialPosition === 'c_10a') {
-                    text = '  0.0 0';
-                }
-                else if (this.dialPosition === 'dcv_1000' || this.dialPosition === 'acv_750') {
-                    text = 'h 0 0 0';
-                }
-                else {
-                    text = '       ';
-                }
-            }
-            else {
-                if (this.dialPosition === 'r_200') {
-                    text = ' 1   . ';
-                }
-                else if (this.dialPosition === 'r_2000' || this.dialPosition === 'diode') {
-                    text = ' 1     ';
-                }
-                else if (this.dialPosition === 'r_20k') {
-                    text = ' 1 .   ';
-                }
-                else if (this.dialPosition === 'r_200k') {
-                    text = ' 1   . ';
-                }
-                else if (this.dialPosition === 'r_2000k') {
-                    text = ' 1     ';
-                }
-                else if (this.dialPosition === 'dcv_200m' || this.dialPosition === 'dcv_200' ||
-                        this.dialPosition === 'acv_200' || this.dialPosition === 'p_9v' ||
-                        this.dialPosition === 'dca_200mc' || this.dialPosition === 'dca_200m') {
-                    text = '  0 0.0';
-                }
-                else if (this.dialPosition === 'dcv_2000m' || this.dialPosition === 'dca_2000mc' ||
-                        this.dialPosition === 'hfe') {
-                    text = '  0 0 0';
-                }
-                else if (this.dialPosition === 'dcv_20' || this.dialPosition === 'dca_20m' ||
-                        this.dialPosition === 'c_10a') {
-                    text = '  0.0 0';
-                }
-                else if (this.dialPosition === 'dcv_1000' || this.dialPosition === 'acv_750') {
-                    text = 'h 0 0 0';
-                }
-                else {
-                    text = '       ';
-                }
-            }
-            console.log('text=' + text);
-            flash.sendCommand('set_multimeter_display', text);
-            this.displayText = text;
-        },
-
-        toDisplayString : function (s, dec) {
-            var i;
-            var sign = s.charAt(0) === '-' ? s.charAt(0) : ' ';
-            s = s.replace('-', '');
-
-            var pointLoc = s.indexOf('.');
-            var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
-            if (decLen === 0) {
-                s = s.concat('.');
-            }
-            if (dec < decLen) {
-                s = s.substring(0, pointLoc + dec + 1);
-            }
-            else {
-                for (i = 0; i < dec - decLen; ++i) {
-                    s = s.concat('0');
-                }
-            }
-            s = s.replace('.', '');
-            var len = s.length;
-            if (len < 4) {
-                for (i = 0; i < 3 - len; ++i) {
-                    s = '0' + s;
-                }
-                s = ' ' + s;
-            }
-
-            var dot1;
-            var dot2;
-
-            switch (dec) {
-            case 0:
-                dot1 = ' ';
-                dot2 = ' ';
-                break;
-            case 1:
-                dot1 = ' ';
-                dot2 = '.';
-                break;
-            case 2:
-                dot1 = '.';
-                dot2 = ' ';
-                break;
-            default:
-                console.log('ERROR: invalid dec ' + dec);
-            }
-
-            s = sign + s.substring(0, 2) + dot1 + s.charAt(2) + dot2 + s.charAt(3);
-            return s;
-
-        },
-
-        formatDecimalString : function (s, dec) {
-            var pointLoc = s.indexOf('.');
-            var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
-            if (decLen === 0) {
-                s = s.concat('.');
-            }
-            if (dec < decLen) {
-                s = s.substring(0, pointLoc + dec + 1);
-            }
-            else {
-                for (var i = 0; i < dec - decLen; ++i) {
-                    s = s.concat('0');
-                }
-            }
-            return s;
-        },
-
-        getDisplayText : function () {
-            return this.displayText;
-        },
-
-        /*
-         * Return value to be shown under optimal setting.
-         * This value is to be compared with the student answer for grading.
-         *
-         * Take three significant digits, four if the first digit is 1.
-         */
-        makeDisplayText : function (value) {
-            var text;
-            if (value < 199.95) {
-                text = (Math.round(value * 10) * 0.1).toString();
-                text = this.formatDecimalString(text, 1);
-            }
-            else if (value < 1999.5) {
-                text = Math.round(value).toString();
-                text = this.formatDecimalString(text, 0);
-            }
-            else if (value < 19995) {
-                text = (Math.round(value * 0.1) * 10).toString();
-            }
-            else if (value < 199950) {
-                text = (Math.round(value * 0.01) * 100).toString();
-            }
-            else if (value < 1999500) {
-                text = (Math.round(value * 0.001) * 1000).toString();
-            }
-            else {
-                text = 'NaN';
-            }
-            return parseFloat(text);
-        },
-
-        allConnected : function () {
-            return this.redProbeConnection !== null &&
-                this.blackProbeConnection !== null &&
-                this.redProbeConnection !== this.blackProbeConnection &&
-                (this.redPlugConnection === 'voma_port' &&
-                 this.blackPlugConnection === 'common_port' ||
-                 this.redPlugConnection === 'common_port' &&
-                 this.blackPlugConnection === 'voma_port') &&
-                this.powerOn;
+      var chunks = data.split("\n")
+      chunks = inGroupsOf(chunks.slice(1, chunks.length - 1), 3);
+      for (var i in chunks) {
+        var key = /<indep (.+)\./.exec(chunks[i][0]);
+        key = key && key[1];
+        if(key) {
+          results[key] = parseFloat(chunks[i][1]);
         }
-    };
+      }
+      console.log('qucsate.parser results=' + JSON.stringify(results));
+      callback(results);
+    });
+  };
+
+  sparks.circuit.qucsate.makeNetlist = function(board) {
+    var netlist = '# QUCS Netlist\n';
+    $.each(board.components, function(name, component) {
+      var line = '';
+
+      var nodes = [];
+      $.each(component.connections, function(i, hole){
+        nodes.push(hole.nodeName());
+      });
+
+      switch (component.kind) {
+        case "resistor":
+          if (!(nodes.length == 2 && component.resistance && component.UID)) { return; }
+          line = 'R:' + component.UID + ' ';
+          line = line + nodes.join(' ');
+          line = line + ' R="' + component.resistance + ' Ohm"' ;
+          break;
+        case "wire":
+          if (!(nodes.length == 2 && component.UID)) { return; }
+          line = 'TLIN:' + component.UID + ' ';
+          line = line + nodes.join(' ');
+          line = line + ' Z="0 Ohm" L="1 mm" Alpha="0 dB"' ;
+          break;
+        case "battery":
+          if (!(nodes.length == 2 && component.voltage && component.UID)) { return; }
+          line = 'Vdc:' + component.UID + ' ';
+          line = line + nodes.join(' ');
+          line = line + ' U="' + component.voltage + ' V"' ;
+          break;
+        case "vprobe":
+          if (!(nodes.length == 2 && component.UID)) { return; }
+          line = 'VProbe:' + component.UID + ' ';
+          line = line + nodes.join(' ');
+          break;
+        case "iprobe":
+          if (!(nodes.length == 2 && component.UID)) { return; }
+          line = 'IProbe:' + component.UID + ' ';
+          line = line + nodes.join(' ');
+          break;
+
+      }
+
+      netlist = netlist + "\n" + line;
+    });
+    return netlist + "\n.DC:DC1";
+  }
 
 })();
-/* FILE resistor.js */
+
+/* FILE breadboard.js */
 
 (function () {
 
-    var circuit = sparks.circuit;
-    var flash = sparks.flash;
 
-    circuit.Resistor = function () {
-    };
+      var defs = {
+        rows            : 31,
+        powerRailHoles  : 25,
+        debug           : true
+      };
 
-    circuit.Resistor.prototype =
-    {
-        colorMap: { '-1': 'gold', '-2': 'silver',
+
+      var remove = function(array, from, to) {
+        var rest = array.slice((to || from) + 1 || array.length);
+        array.length = from < 0 ? array.length + from : from;
+        return array.push.apply(array, rest);
+      };
+
+      var HTMLLog = undefined, HTMLbody = undefined;
+      this.debug = function(){
+        if(defs.debug){
+          if(typeof console!=='undefined'){
+            console.log(arguments[0]);
+          }else{
+            if(!HTMLLog){
+              HTMLLog = document.createElement('div');
+              HTMLLog.setAttribute("id", "HTMLLog");
+              HTMLBody = document.getElementsByTagName('body')[0];
+              HTMLBody.appendChild(HTMLLog);
+              HTMLLog.innerHTML += '<b>HTML-DEBUG-LOG:</b></b><br />';
+            }
+            HTMLLog.innerHTML += arguments[0] + '<br />';
+          }
+        }
+      };
+
+
+      this.Resistor = {
+        colorMap : { '-1': 'gold', '-2': 'silver',
             0 : 'black', 1 : 'brown', 2 : 'red', 3 : 'orange',
             4 : 'yellow', 5 : 'green', 6 : 'blue', 7 : 'violet', 8 : 'grey',
             9 : 'white' },
-
-        toleranceColorMap: { 0.01 : 'brown', 0.02 : 'red', 5e-3 : 'green',
+        toleranceColorMap : { 0.01 : 'brown', 0.02 : 'red', 5e-3 : 'green',
             2.5e-3 : 'blue', 1e-3 : 'violet', 5e-4 : 'gray', 5e-2 : 'gold',
             0.1 : 'silver', 0.2 : 'none' },
-
-        toleranceValues: [ 0.01, 0.02 ],
-
-        init: function () {
-              this.nominalValue = 0.0; //resistance value specified by band colors;
-              this.realValue = 0.0; //real resistance value in Ohms
-              this.tolerance = 0.0; //tolerance value
-              this.colors = []; //colors for each resistor band
-        },
-
-        getNumBands: function () {
-            return this.numBands;
-        },
-
-        getNominalValue: function () {
-            return this.nominalValue;
-        },
-
-        setNominalValue: function (value) {
-            this.nominalValue = value;
-        },
-
-        getTolerance: function () {
-            return this.tolerance;
-        },
-
-        setTolerance: function(value) {
-            this.tolerance = value;
-        },
-
-        getRealValue: function () {
-            return this.realValue;
-        },
-
-        setRealValue: function (value) {
-            this.realValue = value;
-        },
-
-        updateColors: function (resistance, tolerance) {
-            this.colors = this.getColors(resistance, tolerance);
-            flash.sendCommand('set_resistor_label', this.colors);
-        },
-
-        show : function() {
-            flash.sendCommand('show_resistor');
-        },
-
-        calcRealValue: function (nominalValue, tolerance) {
-            var chance = Math.random();
-            if (chance > 0.8) {
-                var chance2 = Math.random();
-                if (chance2 < 0.5) {
-                    return nominalValue + nominalValue * (tolerance + Math.random() * tolerance);
-                }
-                else {
-                    return nominalValue - nominalValue * (tolerance + Math.random() * tolerance);
-                }
-            }
-
-            var realTolerance = tolerance * 0.9;
-            return nominalValue * this.randFloat(1 - realTolerance, 1 + realTolerance);
-        },
-
-        randInt: function (min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        },
-
-        randFloat: function (min, max) {
-            return this.randPseudoGaussian(3) * (max - min) + min;
-        },
-
-        randPseudoGaussian: function (n) {
-            var r = 0.0;
-            for (var i = 0; i < n; ++i) {
-                r += Math.random();
-            }
-            return r / n;
-        },
-
-        filter: function (in_values) {
-            var values = [];
-            for (var i = 0; i < in_values.length; ++i) {
-                if (in_values[i] >= 10.0 && in_values[i] < 2e6) {
-                    values.push(in_values[i]);
-                }
-            }
-            return values;
-        }
-    };
-
-})();
-/* FILE r-values.js */
-
-(function () {
-
-
-    this.sparks.circuit.r_values = {};
-
-    var rv = sparks.circuit.r_values;
-
-    rv.r_values5band1pct = [
-        1.00, 1.02, 1.05, 1.07, 1.10, 1.13, 1.15, 1.18, 1.21, 1.24, 1.27,
-        1.30, 1.33, 1.37, 1.40, 1.43, 1.47, 1.50, 1.54, 1.58, 1.62, 1.65, 1.69,
-        1.74, 1.78, 1.82, 1.87, 1.91, 1.96,
-        2.00, 2.05, 2.10, 2.15, 2.21, 2.26, 2.32, 2.37, 2.43, 2.49, 2.55, 2.61,
-        2.67, 2.74, 2.80, 2.87, 2.94,
-        3.01, 3.09, 3.16, 3.24, 3.32, 3.40, 3.48, 3.57, 3.65, 3.74, 3.83, 3.92,
-        4.02, 4.12, 4.22, 4.32, 4.42, 4.53, 4.64, 4.75, 4.87, 4.99,
-        5.11, 5.23, 5.36, 5.49, 5.62, 5.76, 5.90, 6.04, 6.19, 6.34, 6.49, 6.65,
-        6.81, 6.98, 7.15, 7.32, 7.50, 7.68, 7.87, 8.06, 8.25, 8.45, 8.66, 8.87,
-        9.09, 9.31, 9.53, 9.76, 10.0, 10.2, 10.5, 10.7, 11.0, 11.3, 11.5, 11.8,
-        12.1, 12.4, 12.7, 13.0, 13.3, 13.7, 14.0, 14.3, 14.7,
-        15.0, 15.4, 15.8, 16.2, 16.5, 16.9, 17.4, 17.8, 18.2, 18.7, 19.1, 19.6,
-        20.0, 20.5, 21.0, 21.5, 22.1, 22.6, 23.2, 23.7, 24.3, 24.9, 25.5, 26.1,
-        26.7, 27.4, 28.0, 28.7, 29.4, 30.1, 30.9, 31.6, 32.4, 33.2, 34.0, 34.8,
-        35.7, 36.5, 37.4, 38.3, 39.2, 40.2, 41.2, 42.2, 43.2, 44.2, 45.3, 46.4,
-        47.5, 48.7, 49.9, 51.1, 52.3, 53.6, 54.9, 56.2, 57.6, 59.0,
-        60.4, 61.9, 63.4, 64.9, 66.5, 68.1, 69.8, 71.5, 73.2, 75.0, 76.8, 78.7,
-        80.6, 82.5, 84.5, 86.6, 88.7, 90.9, 93.1, 95.3, 97.6,
-        100, 102, 105, 107, 110, 113, 115, 118, 121, 124,
-        127, 130, 133, 137, 140, 143, 147, 150, 154, 158, 162, 165, 169,
-        174, 178, 182, 187, 191, 196,
-        200, 205, 210, 215, 221, 226, 232, 237, 243, 249, 255, 261, 267, 274,
-        280, 287, 294, 301, 309, 316, 324, 332, 340, 348, 357, 365, 374, 383,
-        392, 402, 412, 422, 432, 442, 453, 464, 475, 487, 499,
-        511, 523, 536, 549, 562,
-        576, 590, 604, 619, 634, 649, 665, 681, 698, 715, 732, 750, 768, 787,
-        806, 825, 845, 866, 887, 909, 931, 953, 976,
-        1000, 1020, 1050, 1070, 1100, 1130, 1150, 1180, 1210, 1240, 1270,
-        1300, 1330, 1370, 1400, 1430, 1470, 1500, 1540, 1580, 1620, 1650, 1690,
-        1740, 1780, 1820, 1870, 1910, 1960, 2000, 2050, 2100, 2150, 2210, 2260,
-        2320, 2370, 2430, 2490, 2550, 2610, 2670, 2740, 2800, 2870, 2940,
-        3010, 3090, 3160, 3240, 3320, 3400, 3480, 3570, 3650, 3740, 3830, 3920,
-        4020, 4120, 4220, 4320, 4420, 4530, 4640, 4750, 4870, 4990,
-        5110, 5230, 5360, 5490, 5620, 5760, 5900,
-        6040, 6190, 6340, 6490, 6650, 6810, 6980, 7150, 7320, 7500, 7680, 7870,
-        8060, 8250, 8450, 8660, 8870, 9090, 9310, 9530, 9760,
-        10000, 10200, 10500, 10700, 11000, 11300, 11500, 11800, 12100, 12400,
-        12700, 13000, 13300, 13700, 14000, 14300, 14700, 15000, 15400, 15800,
-        16200, 16500, 16900, 17400, 17800, 18200, 18700, 19100, 19600,
-        20000, 20500, 21000, 21500, 22100, 22600, 23200, 23700, 24300, 24900,
-        25500, 26100, 26700, 27400, 28000, 28700, 29400, 30100, 30900, 31600,
-        32400, 33200, 34000, 34800, 35700, 36500, 37400, 38300, 39200,
-        40200, 41200, 42200, 43200, 44200, 45300, 46400, 47500, 48700, 49900,
-        51100, 52300, 53600, 54900, 56200, 57600, 59000, 60400, 61900, 63400,
-        64900, 66500, 68100, 69800, 71500, 73200, 75000, 76800, 78700,
-        80600, 82500, 84500, 86600, 88700, 90900, 93100, 95300, 97600,
-        100e3, 102e3, 105e3, 107e3, 110e3, 113e3, 115e3, 118e3, 121e3, 124e3,
-        127e3, 130e3, 133e3, 137e3, 140e3, 143e3, 147e3, 150e3, 154e3, 158e3,
-        162e3, 165e3, 169e3, 174e3, 178e3, 182e3, 187e3, 191e3, 196e3,
-        200e3, 205e3, 210e3, 215e3, 221e3, 226e3, 232e3, 237e3, 243e3, 249e3,
-        255e3, 261e3, 267e3, 274e3, 280e3, 287e3, 294e3,
-        301e3, 309e3, 316e3, 324e3, 332e3, 340e3, 348e3, 357e3, 365e3, 374e3,
-        383e3, 392e3,
-        402e3, 412e3, 422e3, 432e3, 442e3, 453e3, 464e3, 475e3, 487e3, 499e3,
-        511e3, 523e3, 536e3, 549e3, 562e3,
-        576e3, 590e3, 604e3, 619e3, 634e3, 649e3, 665e3, 681e3, 698e3,
-        715e3, 732e3, 750e3, 768e3, 787e3, 806e3, 825e3, 845e3, 866e3, 887e3,
-        909e3, 931e3, 953e3, 976e3,
-        1.00e6, 1.02e6, 1.05e6, 1.07e6, 1.10e6, 1.13e6, 1.15e6, 1.18e6,
-        1.21e6, 1.24e6, 1.27e6, 1.30e6, 1.33e6, 1.37e6, 1.40e6, 1.43e6, 1.47e6,
-        1.50e6, 1.54e6, 1.58e6, 1.62e6, 1.65e6, 1.69e6, 1.74e6, 1.78e6,
-        1.82e6, 1.87e6, 1.91e6, 1.96e6,
-        2.00e6, 2.05e6, 2.10e6, 2.15e6, 2.21e6, 2.26e6, 2.32e6, 2.37e6,
-        2.43e6, 2.49e6, 2.55e6, 2.61e6, 2.67e6, 2.74e6, 2.80e6, 2.87e6, 2.94e6,
-        3.01e6, 3.09e6, 3.16e6, 3.24e6, 3.32e6, 3.40e6, 3.48e6, 3.57e6, 3.65e6,
-        3.74e6, 3.83e6, 3.92e6,
-        4.02e6, 4.12e6, 4.22e6, 4.32e6, 4.42e6, 4.53e6, 4.64e6, 4.75e6, 4.87e6,
-        4.99e6, 5.11e6, 5.23e6, 5.36e6, 5.49e6, 5.62e6, 5.76e6, 5.90e6,
-        6.04e6, 6.19e6, 6.34e6, 6.49e6, 6.65e6, 6.81e6, 6.98e6,
-        7.15e6, 7.32e6, 7.50e6, 7.68e6, 7.87e6, 8.06e6, 8.25e6, 8.45e6, 8.66e6,
-        8.87e6, 9.09e6, 9.31e6, 9.53e6, 9.76e6,
-        10.0e6, 10.2e6, 10.5e6, 10.7e6, 11.0e6, 11.3e6, 11.5e6, 11.8e6,
-        12.1e6, 12.4e6, 12.7e6, 13.0e6, 13.3e6, 13.7e6, 14.0e6, 14.3e6, 14.7e6,
-        15.0e6, 15.4e6, 15.8e6, 16.2e6, 16.5e6, 16.9e6, 17.4e6, 17.8e6,
-        18.2e6, 18.7e6, 19.1e6, 19.6e6, 20.0e6, 20.5e6, 21.0e6, 21.5e6,
-        22.1e6, 22.6e6, 23.2e6, 23.7e6, 24.3e6, 24.9e6, 25.5e6, 26.1e6, 26.7e6,
-        27.4e6, 28.0e6, 28.7e6, 29.4e6, 30.1e6, 30.9e6, 31.6e6, 32.4e6, 33.2e6,
-        34.0e6, 34.8e6, 35.7e6, 36.5e6, 37.4e6, 38.3e6, 39.2e6,
-        40.2e6, 41.2e6, 42.2e6, 43.2e6, 44.2e6, 45.3e6, 46.4e6, 47.5e6, 48.7e6,
-        49.9e6, 51.1e6, 52.3e6, 53.6e6, 54.9e6, 56.2e6, 57.6e6, 59.0e6,
-        60.4e6, 61.9e6, 63.4e6, 64.9e6, 66.5e6, 68.1e6, 69.8e6, 71.5e6, 73.2e6,
-        75.0e6, 76.8e6, 78.7e6, 80.6e6, 82.5e6, 84.5e6, 86.6e6, 88.7e6,
-        90.9e6, 93.1e6, 95.3e6, 97.6e6,
-        100e6, 102e6, 105e6, 107e6, 110e6, 113e6, 115e6, 118e6, 121e6, 124e6,
-        127e6, 130e6, 133e6, 137e6, 140e6, 143e6, 147e6, 150e6, 154e6, 158e6,
-        162e6, 165e6, 169e6, 174e6, 178e6, 182e6, 187e6, 191e6, 196e6, 200e6
-    ];
-
-    rv.r_values5band2pct = [
-        1.00, 1.05, 1.10, 1.15, 1.21, 1.27, 1.33, 1.40,
-        1.47, 1.54, 1.62, 1.69, 1.78, 1.87, 1.96,
-        2.05, 2.15, 2.26, 2.37, 2.49, 2.61, 2.74, 2.87,
-        3.01, 3.16, 3.32, 3.48, 3.65, 3.83, 4.02, 4.22, 4.42, 4.64, 4.87,
-        5.11, 5.36, 5.62, 5.90, 6.19, 6.49, 6.81, 7.15, 7.50, 7.87,
-        8.25, 8.66, 9.09, 9.53, 10.0, 10.5, 11.0, 11.5, 12.1, 12.7, 13.3,
-        14.0, 14.7, 15.4, 16.2, 16.9, 17.8, 18.7, 19.6,
-        20.5, 21.5, 22.6, 23.7, 24.9, 26.1, 27.4,
-        28.7, 30.1, 31.6, 33.2, 34.8, 36.5, 38.3, 40.2, 42.2, 44.2, 46.4, 48.7,
-        51.1, 53.6, 56.2, 59.0, 61.9, 64.9, 68.1, 71.5, 75.0, 78.7, 82.5, 86.6,
-        90.9, 95.3, 100, 105, 110, 115, 121, 127, 133, 140, 147, 154, 162, 169,
-        178, 187, 196, 205, 215, 226, 237, 249, 261, 274, 287,
-        301, 316, 332, 348, 365, 383, 402, 422, 442, 464, 487,
-        511, 536, 562, 590, 619, 649, 681, 715, 750, 787, 825, 866, 909, 953,
-        1000, 1050, 1100, 1150, 1210, 1270, 1330, 1400, 1470, 1540, 1620, 1690,
-        1780, 1870, 1960, 2050, 2150, 2260, 2370, 2490, 2610, 2740, 2870,
-        3010, 3160, 3320, 3480, 3650, 3830,
-        4020, 4220, 4420, 4640, 4870, 5110, 5360, 5620, 5900, 6190, 6490, 6810,
-        7150, 7500, 7870, 8250, 8660, 9090, 9530,
-        10000, 10500, 11000, 11500, 12100, 12700, 13300, 14000, 14700, 15400,
-        16200, 16900, 17800, 18700, 19600,
-        20500, 21500, 22600, 23700, 24900, 26100, 27400, 28700,
-        30100, 31600, 33200, 34800, 36500, 38300,
-        40200, 42200, 44200, 46400, 48700,
-        51100, 53600, 56200, 59000, 61900, 64900, 68100, 71500, 75000, 78700,
-        82500, 86600, 90900, 95300, 100e3, 105e3, 110e3, 115e3, 121e3, 127e3,
-        133e3, 140e3, 147e3, 154e3, 162e3, 169e3, 178e3, 187e3, 196e3,
-        205e3, 215e3, 226e3, 237e3, 249e3, 261e3, 274e3, 287e3,
-        301e3, 316e3, 332e3, 348e3, 365e3, 383e3, 402e3, 422e3, 442e3, 464e3,
-        487e3, 511e3, 536e3, 562e3, 590e3, 619e3, 649e3, 681e3,
-        715e3, 750e3, 787e3,
-        825e3, 866e3, 909e3, 953e3, 1e6, 1.05e6, 1.1e6, 1.15e6, 1.21e6, 1.27e6,
-        1.33e6, 1.40e6, 1.47e6, 1.54e6, 1.62e6, 1.69e6, 1.78e6, 1.87e6, 1.96e6,
-        2.05e6, 2.15e6, 2.26e6, 2.37e6, 2.49e6, 2.61e6, 2.74e6, 2.87e6,
-        3.01e6, 3.16e6, 3.32e6, 3.48e6, 3.65e6, 3.83e6,
-        4.02e6, 4.22e6, 4.42e6, 4.64e6, 4.87e6, 5.11e6, 5.36e6, 5.62e6, 5.90e6,
-        6.19e6, 6.49e6, 6.81e6, 7.15e6, 7.50e6, 7.87e6, 8.25e6, 8.66e6,
-        9.09e6, 9.53e6, 10.0e6, 10.5e6, 11.0e6, 11.5e6, 12.1e6, 12.7e6, 13.3e6,
-        14.0e6, 14.7e6, 15.4e6, 16.2e6, 16.9e6, 17.8e6, 18.7e6, 19.6e6,
-        20.5e6, 21.5e6, 22.6e6, 23.7e6, 24.9e6, 26.1e6, 27.4e6, 28.7e6,
-        30.1e6, 31.6e6, 33.2e6, 34.8e6, 36.5e6, 38.3e6,
-        40.2e6, 42.2e6, 44.2e6, 46.4e6, 48.7e6, 51.1e6, 53.6e6, 56.2e6, 59.0e6,
-        61.9e6, 64.9e6, 68.1e6, 71.5e6, 75e6, 78.7e6, 82.5e6, 86.6e6,
-        90.9e6, 95.3e6,
-        100e6, 105e6, 110e6, 115e6, 121e6, 127e6, 133e6, 140e6, 147e6, 154e6,
-        162e6, 169e6, 178e6, 187e6, 196e6
-    ];
-
-    rv.r_values4band5pct = [
-        1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7,
-        3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1,
-        10, 11, 12, 13, 15, 16, 18, 20, 22, 24, 27, 30, 33, 36, 39,
-        43, 47, 51, 56, 62, 68, 75, 82, 91,
-        100, 110, 120, 130, 150, 160, 180, 200, 220, 240, 270,
-        300, 330, 360, 390, 430, 470, 510, 560, 620, 680, 750, 820, 910,
-        1.0e3, 1.1e3, 1.2e3, 1.3e3, 1.5e3, 1.6e3, 1.8e3,
-        2.0e3, 2.2e3, 2.4e3, 2.7e3, 3.0e3, 3.3e3, 3.6e3, 3.9e3,
-        4.3e3, 4.7e3, 5.1e3, 5.6e3, 6.2e3, 6.8e3, 7.5e3, 8.2e3, 9.1e3,
-        10e3, 11e3, 12e3, 13e3, 15e3, 16e3, 18e3, 20e3, 22e3, 24e3, 27e3, 30e3,
-        33e3, 36e3, 39e3, 43e3, 47e3, 51e3, 56e3, 62e3, 68e3, 75e3, 82e3, 91e3,
-        100e3, 110e3, 120e3, 130e3, 150e3, 160e3, 180e3, 200e3, 220e3, 240e3,
-        270e3, 300e3, 330e3, 360e3, 390e3, 430e3, 470e3, 510e3, 560e3,
-        620e3, 680e3, 750e3, 820e3, 910e3,
-        1.0e6, 1.1e6, 1.2e6, 1.3e6, 1.5e6, 1.6e6, 1.8e6, 2.0e6, 2.2e6, 2.4e6,
-        2.7e6, 3.0e6, 3.3e6, 3.6e6, 3.9e6, 4.3e6, 4.7e6, 5.1e6, 5.6e6,
-        6.2e6, 6.8e6, 7.5e6, 8.2e6, 9.1e6, 10e6, 11e6, 12e6, 13e6, 15e6, 16e6,
-        18e6, 20e6, 22e6, 24e6, 27e6, 30e6, 33e6, 36e6, 39e6, 43e6, 47e6,
-        51e6, 56e6, 62e6, 68e6, 75e6, 82e6, 91e6
-    ];
-
-    rv.r_values4band10pct = [
-        1.0, 1.2, 1.5, 1.8, 2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8, 8.2,
-        10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82,
-        100, 120, 150, 180, 220, 270, 330, 390, 470, 560, 680, 820,
-        1.0e3, 1.2e3, 1.5e3, 1.8e3, 2.2e3, 2.7e3, 3.3e3, 3.9e3, 4.7e3, 5.6e3,
-        6.8e3, 8.2e3,
-        10e3, 12e3, 15e3, 18e3, 22e3, 27e3, 33e3, 39e3, 47e3, 56e3, 68e3, 82e3,
-        100e3, 120e3, 150e3, 180e3, 220e3, 270e3, 330e3, 390e3, 470e3, 560e3,
-        680e3, 820e3,
-        1.0e6, 1.2e6, 1.5e6, 1.8e6, 2.2e6, 2.7e6, 3.3e6, 3.9e6, 4.7e6, 5.6e6,
-        6.8e6, 8.2e6,
-        10e6, 12e6, 15e6, 18e6, 22e6, 27e6, 33e6, 39e6, 47e6, 56e6, 68e6, 82e6
-    ];
-
-})();
-
-/* FILE resistor-4band.js */
-
-(function () {
-
-    var circuit = sparks.circuit;
-
-    circuit.Resistor4band = function () {
-        var superclass = sparks.circuit.Resistor4band.uber;
-        superclass.init.apply(this);
-        this.id = 'resistor_4band';
-        this.numBands = 4;
-
-        this.r_values5pct = this.filter(circuit.r_values.r_values4band5pct);
-        this.r_values10pct = this.filter(circuit.r_values.r_values4band10pct);
-    };
-
-    sparks.extend(circuit.Resistor4band, circuit.Resistor, {
-
-        toleranceValues: [0.05, 0.1],
-
-        randomize: function () {
-            var ix = this.randInt(0, 1);
-            var values;
-
-            this.tolerance = this.toleranceValues[ix];
-            if (this.tolerance == 0.05) {
-                values = this.r_values5pct;
-            }
-            else {
-                values = this.r_values10pct;
-            }
-            this.nominalValue = values[this.randInt(0, values.length-1)];
-            this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
-
-            this.updateColors(this.nominalValue, this.tolerance);
-        },
-
-        getColors: function (ohms, tolerance) {
+        getColors4Band: function (ohms, tolerance) {
             var s = ohms.toString();
-            var decIx = s.indexOf('.'); // real location of the dot in the string
+            var decIx = s.indexOf('.');
             var decLoc = decIx > -1 ? decIx : s.length;
-
             s = s.replace('.', '');
             var len = s.length;
-
-            for (var i = 0; i < 2 - len; ++i) {
-                s += '0';
-            }
-
+            for (var i = 0; i < 2 - len; ++i){ s += '0'; }
             var mult = decLoc > 1 ? decLoc - 2 : 10;
-
             return [ this.colorMap[s.charAt(0)],
                      this.colorMap[s.charAt(1)],
                      this.colorMap[decLoc - 2],
                      this.toleranceColorMap[tolerance]
                    ];
-        }
-
-    });
-
-})();
-
-/* FILE resistor-5band.js */
-
-(function () {
-
-    var circuit = sparks.circuit;
-
-    circuit.Resistor5band = function () {
-        var superclass = sparks.circuit.Resistor5band.uber;
-        superclass.init.apply(this);
-        this.id = 'resistor_5band';
-        this.numBands = 5;
-
-        this.r_values1pct = this.filter(circuit.r_values.r_values5band1pct);
-        this.r_values2pct = this.filter(circuit.r_values.r_values5band2pct);
-    };
-
-    sparks.extend(circuit.Resistor5band, circuit.Resistor, {
-
-        randomize : function() {
-          var ix = this.randInt(0, 1);
-          var values;
-
-          this.tolerance = this.toleranceValues[ix];
-          if (this.tolerance == 0.01) {
-              values = this.r_values1pct;
-          }
-          else {
-              values = this.r_values2pct;
-          }
-          this.nominalValue = values[this.randInt(0, values.length-1)];
-          this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
-          this.colors = this.getColors(this.nominalValue, this.tolerance);
-
-          this.updateColors(this.nominalValue, this.tolerance);
         },
-
-        getColors: function(ohms, tolerance) {
+        getColors5Band: function (ohms, tolerance) {
             var s = ohms.toString();
-            var decIx = s.indexOf('.'); // real location of the dot in the string
+            var decIx = s.indexOf('.');
             var decLoc = decIx > -1 ? decIx : s.length;
-
             s = s.replace('.', '');
             var len = s.length;
-
-            for (var i = 0; i < 3 - len; ++i) {
-                s += '0';
-            }
-
+            for (var i = 0; i < 3 - len; ++i) { s += '0'; }
             return [ this.colorMap[s.charAt(0)],
                      this.colorMap[s.charAt(1)],
                      this.colorMap[s.charAt(2)],
                      this.colorMap[decLoc - 3],
                      this.toleranceColorMap[tolerance]
                    ];
+        },
+        colorToNumber : function(color) {
+          for (n in Resistor.colorMap) {
+            if (Resistor.colorMap[n] == color) { return parseInt(n); }
+          }
+        },
+        getResistance: function(colors){
+          var resistance = Resistor.colorToNumber(colors[0]);
+          for ( var i = 1; i < colors.length - 2; i++) {
+            resistance = resistance * 10;
+            resistance += Resistor.colorToNumber(colors[i]);
+          }
+          return resistance * Math.pow(10, Resistor.colorToNumber(colors[i]));
         }
-    });
+      };
+
+
+      this.breadBoard = {};
+
+      var Hole = function Hole( strip, name ){
+        this.type ='hole';
+        this.strip = strip;
+        this.name = name;
+        this.connections = [];
+        return this;
+      };
+
+      Hole.prototype.nodeName = function() {
+        return this.strip && this.strip.name;
+      }
+
+      var GhostHole = function GhostHole(name) {
+        this.name = 'node' + calls;
+        return this;
+      }
+
+      GhostHole.prototype.nodeName = function() {
+        return this.name;
+      }
+
+      var Strip = function Strip( holes, name ){
+        this.type ='strip';
+        this.holes={};
+        this.name = name;
+        if( holes ){
+          for(var i=0, l=holes; i < l; i++){
+            this.holes[''+i] = new Hole();
+            this.holes[''+i].strip = this;
+          }
+        }
+        return this;
+      };
+
+      var Breadboard = function Breadboard(){
+        this.type ='Breadboard';
+
+        this.powerRail = { // I was told these were called power-rails
+          left:{
+            positive: new Strip( null, "powerPosL"),
+            negative: new Strip( null, "powerNegL")
+          },
+          right:{
+            positive: new Strip( null, "powerPosR" ),
+            negative: new Strip( null, "powerNegR" )
+          }
+        };
+
+        for(var i=0, l=defs.powerRailHoles; i < l; i++){
+          for(side in this.powerRail) {
+            for(end in this.powerRail[side]) {
+              var h = side + '_' + end + '_' + i
+              this.powerRail[side][end][h] = this.holes[h] = new Hole(this.powerRail[side][end], h);
+            }
+          }
+        }
+
+        for(var i=0, l=defs.rows; i < l; i++ ){
+          newStripL = this.makeStrip("L" + i);
+          newStripR = this.makeStrip("R" + i);
+          for(var a=0, ll=5; a < ll; a++ ){
+            var mapCode = String.fromCharCode(a+97)+i;
+            newStripL.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripL, mapCode );
+            var mapCode = String.fromCharCode(a+102)+i;
+            newStripR.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripR, mapCode );
+          }
+        }
+        return this;
+      };
+
+      Breadboard.prototype.strips=[];
+      Breadboard.prototype.components={};
+      Breadboard.prototype.holes={};
+
+      Breadboard.prototype.makeStrip = function(name){
+        var stripLen = this.strips.length;
+        this.strips[ stripLen ] = new Strip(null, name);
+        return this.strips[ stripLen ];
+      };
+
+      Breadboard.prototype.component = function component(props){
+        if(typeof props=='string'){
+          return this.components[props];
+        }else {
+          return new Component(props);
+        }
+      };
+
+      Breadboard.prototype.clear = function clear(){
+        var destroyed = 0;
+        for( k in this.components ){
+          destroyed += !!this.component(k).destroy();
+        }
+        return !!destroyed;
+      };
+
+      var Component = function Component(props){
+        for(var i in props){
+          this[i]=props[i];
+        }
+        this.breadBoard = breadBoard;
+        this.breadBoard.components[props.UID] = this;
+
+        this.connections=[];
+        for(var i in props.connections){
+          if (props.connections[i].nodeName) {
+            this.connections[i] = props.connections[i];
+          } else {
+            this.connections[i] = this.breadBoard.holes[props.connections[i]];
+            this.breadBoard.holes[props.connections[i]].connections[this.breadBoard.holes[props.connections[i]].connections.length] = this;
+          }
+        }
+        return this;
+      };
+
+      Component.prototype.move = function move(connections){
+        for(var i in this.connections){
+          for( var j in this.connections[i].connections ){
+            if( this.connections[i].connections[j] === this ){
+              this.connections[i].connections = [];
+            }
+          }
+          this.connections[i] = [];
+        }
+        this.connections = [];
+        for(var i in connections){
+          this.connections[i] = this.breadBoard.holes[connections[i]];
+          this.breadBoard.holes[connections[i]].connections[this.breadBoard.holes[connections[i]].connections.length] = this;
+        }
+        return this;
+      };
+
+      Component.prototype.destroy = function destroy(){
+        for(var i in this.connections){
+          for( var j in this.connections[i].connections ){
+            if( this.connections[i].connections[j] === this ){
+              this.connections[i].connections = [];
+            }
+          }
+          this.connections[i] = [];
+        }
+        this.connections = [];
+        return delete this.breadBoard.components[this.name];
+      };
+
+      var breadBoard = new Breadboard();
+
+      var interfaces = {
+        insert: function(){
+          var props = {
+            UID         : arguments[0]+calls,
+            kind        : arguments[0],
+            connections : arguments[1].split(",")
+          };
+
+          switch(props.kind){
+            case "resistor":
+              if( typeof(arguments[2])==="string" ){
+                props.resistance = Resistor.getResistance( arguments[2].split(",") );
+              }else if( typeof(arguments[2])=="number" ){
+                props.resistance = arguments[2];
+              }
+              break;
+          }
+          var newComponent;
+          newComponent = breadBoard.component(props);
+          return newComponent.UID;
+        },
+        destroy: function(){
+          breadBoard.component(arguments[0]).destroy();
+        },
+        clear: function() {
+          breadBoard.clear();
+        },
+        move: function(){
+          breadBoard.component(arguments[0]).move(arguments[1].split(','));
+        },
+        query: function(){
+
+
+          if (arguments[0] === 'resistance') {
+            var connections = arguments[1].split(',');
+            var ghost = new GhostHole();
+            breadBoard.component({
+              UID: 'meterBat',
+              kind: 'battery',
+              voltage: 1,
+              connections: [connections[0], ghost]});
+            breadBoard.component({
+              UID: 'meter',
+              kind: 'iprobe',
+              connections: [ghost, connections[1]]});
+          } else {
+            breadBoard.component({
+              UID: 'meter',
+              kind: {'current' : 'iprobe', 'voltage' : 'vprobe'}[arguments[0]],
+              connections: arguments[1].split(',')});
+          }
+
+          breadBoard.component({
+            UID: 'bat1',
+            kind: 'battery',
+            voltage: 9,
+            connections: ["left_positive_1", "left_negative_1"]});
+
+          breadBoard.component({
+            UID: 'bat2',
+            kind: 'battery',
+            voltage: 9,
+            connections:  ["right_positive_1", "right_negative_1"]});
+
+          var result;
+
+          sparks.circuit.qucsate(sparks.circuit.qucsate.makeNetlist(breadBoard),
+                  function(r){ result = r.meter; } );
+
+          console.log('result=' + result);
+
+          breadBoard.component('meter').destroy();
+          breadBoard.component('bat1').destroy();
+          breadBoard.component('bat2').destroy();
+
+          if (arguments[0] === 'resistance') {
+            result = (1 / result)
+          }
+          result = -1 * result;
+          document.getElementById('dmm-output').innerHTML = "Meter Reading: " + result;
+          return  result;
+        }
+      };
+
+      var calls=0;
+
+      this.breadModel = function () {
+        debug(arguments);
+
+        calls++;
+        var newArgs = [];
+        for(var i=1,l=arguments.length;i< l;i++){
+          newArgs[newArgs.length] = arguments[i];
+        }
+        var func = arguments[0];
+
+        $('#popup').text('Calculating...');
+        $('#popup').dialog();
+
+        if (func === 'query') {
+            var r = interfaces.query.apply(window, ['resistance', arguments[2], arguments[3]]);
+            $('#resistance').text(r);
+            var c = interfaces.query.apply(window, ['current', arguments[2], arguments[3]]);
+            $('#current').text(c);
+            var v = interfaces.query.apply(window, ['voltage', arguments[2], arguments[3]]);
+            $('#voltage').text(v);
+        }
+        $('#popup').dialog('close');
+
+        return v;
+      };
+
+      /*
+      this.toFlash = function toFlash(){
+        console.log(arguments[0]);
+        document.getElementById('swf').fromBreadModel(arguments[0]);
+      };
+      document.addEventListener('click', function(){ flash("testing!","test2") }, false);
+      */
+
 })();
 
 /* FILE setup-common.js */
 
 (function () {
 
-    this.sparks.activities.mr = {};
-    this.sparks.activities.mr.config = {};
-    this.sparks.activities.mr.assessment = {};
+    this.sparks.activities.sm = {};
+    this.sparks.activities.sm.config = {};
 
-    sparks.activities.mr.config.root_dir = sparks.config.root_dir + '/activities/measuring-resistance';
-
-})();
-
-/* FILE activity-dom-helper.js */
-
-(function () {
-
-    var mr = sparks.activities.mr;
-    var str = sparks.string;
-
-    mr.ActivityDomHelper =  {
-        rated_r_value_id: '#rated_resistance_value_input',
-        rated_r_unit_id: '#rated_resistance_unit_select',
-        rated_t_id: '#rated_tolerance_select',
-        measured_r_value_id: '#measured_r_value_input',
-        measured_r_unit_id: '#measured_r_unit_select',
-        t_range_min_value_id: '#t_range_min_value_input',
-        t_range_max_value_id: '#t_range_max_value_input',
-        t_range_min_unit_id: '#t_range_min_unit_select',
-        t_range_max_unit_id: '#t_range_max_unit_select',
-        within_t_radio_name: 'within_t_radio',
-
-        getAnswer: function (questionNum) {
-            var value, unit, value2, unit2;
-
-            switch (questionNum) {
-            case 1:
-                value = $(this.rated_r_value_id).val();
-                unit = this.selected($(this.rated_r_unit_id));
-                return [value, unit];
-            case 2:
-                return this.selected($(this.rated_t_id));
-            case 3:
-                value = $(this.measured_r_value_id).val();
-                unit = this.selected($(this.measured_r_unit_id));
-                return [value, unit];
-            case 4:
-                value = $(this.t_range_min_value_id).val();
-                unit = this.selected($(this.t_range_min_unit_id));
-                value2 = $(this.t_range_max_value_id).val();
-                unit2 = this.selected($(this.t_range_max_unit_id));
-                return [value, unit, value2, unit2];
-            case 5:
-                return $("input[@name='" + this.within_t_radio_name + "']:checked").val();
-            default:
-                alert('ERROR: ActivityDomHelper.getAnswer: invalid question number ' + questionNum);
-                return null;
-            }
-        },
-
-        validateNumberString: function (s) {
-            var s2 = str.strip(s);
-            return s2 !== '' && !isNaN(Number(s2));
-        },
-
-        selected: function(selectElem) {
-            return selectElem.children('option:selected').val();
-        }
-    };
-
-})();
-
-/* FILE activity-log.js */
-
-(function () {
-
-    var mr = sparks.activities.mr;
-
-    mr.Event = function (name, value, time) {
-        this.name = name;
-        this.value = value;
-        this.time = time;
-    };
-
-    mr.Question = function (id) {
-        this.id = id;
-        this.prompt = '';
-        this.correct_answer = '';
-        this.answer = '';
-        this.unit = '';
-        this.start_time = null;
-        this.end_time = null;
-    };
-
-    mr.Section = function () {
-        this.events = [];
-        this.questions = [];
-        this.start_time = null;
-        this.end_time = null;
-    };
-
-    /* Log object structure
-     * - session is the unit of upload to server
-     *
-     *   SESSION
-     *     start_time:
-     *     end_time:
-     *     sections:
-     *       - section
-     *           start_time:
-     *           end_time:
-     *           events:
-     *             - event
-     *                 name:
-     *                 value:
-     *                 time:
-     *           questions:
-     *             - question
-     *                 id:
-     *                 correct_answer:
-     *                 answer:
-     *                 unit:
-     *                 correct:
-     *                 start_time:
-     *                 end_time:
-     */
-    mr.Session = function () {
-        this.sections = [];
-        this.start_time = null;
-        this.end_time = null;
-    };
-
-    mr.ActivityLog = function ()
-    {
-
-        this.sessions = [];
-        this.numSessions = 0;
-    };
-
-    mr.ActivityLog.prototype =
-    {
-        eventNames : { start_session: 1,
-                       end_session: 1,
-                       start_section: 1,
-                       end_section: 1,
-                       start_question: 1,
-                       end_question: 1,
-                       connect: 1,
-                       disconnect: 1,
-                       make_circuit: 1,
-                       break_circuit: 1,
-                       multimeter_dial: 1,
-                       multimeter_power: 1,
-                       resistor_nominal_value: 1,
-                       resistor_real_value: 1,
-                       resistor_display_value: 1 },
-
-        valueNames : {
-                       resistor_num_bands: 1,
-                       nominal_resistance: 1,
-                       tolerance: 1,
-                       real_resistance: 1,
-                       displayed_resistance: 1 },
-
-        beginNextSession : function() {
-            var session = new mr.Session();
-            var section = new mr.Section();
-            var questions = section.questions;
-
-            questions.push(new mr.Question('rated_resistance'));
-            questions.push(new mr.Question('rated_tolerance'));
-            questions.push(new mr.Question('measured_resistance'));
-            questions.push(new mr.Question('measured_tolerance'));
-            questions.push(new mr.Question('within_tolerance'));
-
-            session.sections.push(section);
-            this.sessions.push(session);
-            this.numSessions += 1;
-        },
-
-        currentSession : function() {
-            return this.sessions[this.numSessions - 1];
-        },
-
-        setValue : function(name, value) {
-            if (this.valueNames[name]) {
-                this.currentSession().sections[0][name] = value;
-            }
-            else {
-                this.currentSession().sections[0].UNREGISTERED_NAME = name;
-            }
-        },
-
-        add : function(name, params) {
-            var now = new Date().valueOf();
-            var section = this.currentSession().sections[0];
-
-            if (!this.eventNames[name]) {
-                console.log('ERROR: add: Unknown log event name ' + name);
-                section.events.push(new mr.Event('UNREGISTERED_NAME', name, now));
-                return;
-            }
-
-            switch (name)
-            {
-            case 'connect':
-                console.log('connect ' + params.conn1 + ' to ' + params.conn2);
-                section.events.push(new mr.Event('connect', params.conn1 + '|' + params.conn2, now));
-                break;
-            case 'make_circuit':
-                section.events.push(new mr.Event('make_circuit', '', now));
-                break;
-            case 'break_circuit':
-                section.events.push(new mr.Event('break_circuit', '', now));
-                break;
-            case 'start_section':
-                section.start_time = now;
-                break;
-            case 'end_section':
-                section.end_time = now;
-                break;
-            case 'start_question':
-                section.questions[params.question-1].start_time = now;
-                break;
-            case 'end_question':
-                section.questions[params.question-1].end_time = now;
-                break;
-            case 'start_session':
-                this.currentSession().start_time = now;
-                break;
-            case 'end_session':
-                this.currentSession().end_time = now;
-                break;
-            default:
-                section.events.push(new mr.Event(name, params.value, now));
-            }
-        }
-    };
-
-})();
-
-/* FILE math.js */
-
-(function () {
-    this.sparks.math = {};
-
-    var math = sparks.math;
-
-    math.equalExceptPowerOfTen = function(x, y) {
-        var sx = sparks.string.stripZerosAndDots(x.toString());
-        var sy = sparks.string.stripZerosAndDots(y.toString());
-
-        return sx === sy;
-    };
-
-     math.leftMostPos = function (x) {
-         x = Number(x);
-         if (isNaN(x) || x < 0) {
-             console.log('ERROR: math.leftMostPos: Invalid input ' + x);
-             return 0;
-         }
-         if (x == 0) {
-             return 0;
-         }
-         var n = 0;
-         var y = x;
-         if (x < 1) {
-             while (y < 1) {
-                 y *= 10;
-                 n -= 1;
-             }
-         }
-         else {
-             while (y >= 10) {
-                 y /= 10;
-                 n += 1;
-             }
-         }
-         return n;
-     };
-
-     math.roundToSigDigits = function(x, n) {
-         var k = Math.pow(10, n - math.leftMostPos(x) - 1);
-         return Math.round(x * k) / k;
-     };
-
-     math.getRoundedSigDigits = function (x, n) {
-         return Math.round(x * Math.pow(10, n - math.leftMostPos(x) - 1));
-     };
-
-})();
-
-/* FILE unit.js */
-
-(function () {
-
-    this.sparks.unit = {};
-
-    var u = sparks.unit;
-
-    u.labels = { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' };
-
-    u.normalizeToOhms = function (value, unit) {
-        switch (unit) {
-        case u.labels.ohms:
-            return value;
-        case u.labels.kilo_ohms:
-            return value * 1000;
-        case u.labels.mega_ohms:
-            return value * 1e6;
-        }
-        return null;
-    };
-
-    u.ohmCompatible = function (unit) {
-        if (unit == u.labels.ohms || unit == u.labels.kilo_ohms ||
-            unit == u.labels.mega_ohms)
-        {
-            return true;
-        }
-        return false;
-    };
-
-    u.res_str = function (value) {
-        var vstr, unit, val;
-
-        if (typeof value !== 'number' || isNaN(Number(value))) {
-            return 'Invalid Value ' + String(value);
-        }
-
-        if (value < 1000) {
-            val = value;
-            unit = u.labels.ohms;
-        }
-        else if (value < 1e6) {
-            val = value / 1000;
-            unit = u.labels.kilo_ohms;
-        }
-        else {
-            val = value / 1e6;
-            unit = u.labels.mega_ohms;
-        }
-
-        if (val.toFixed) {
-            val = val.toFixed(6);
-        }
-
-        vstr = String(val).replace(/(\.[0-9]*[1-9])0*/, '$1');
-        vstr = vstr.replace(/([0-9])\.0+$/, '$1');
-        return vstr + ' ' + unit;
-    };
-
-    u.res_unit_str = function (value, mult) {
-        var vstr;
-        var unit = u.labels.ohms;
-
-        if (mult === 'k') {
-            vstr = String(value / 1000.0);
-            unit = u.labels.kilo_ohms;
-        }
-        else if (mult === 'M') {
-            vstr = String(value / 1000000.0);
-            unit = u.labels.mega_ohms;
-        }
-        else {
-            vstr = String(value);
-            unit = u.labels.ohms;
-        }
-        return vstr + ' ' + unit;
-    };
-
-    u.pct_str = function (value) {
-        return (value * 100) + ' %';
-    };
-
-
-})();
-
-/* FILE feedback.js */
-
-(function () {
-
-    var util = sparks.util;
-    var mr = sparks.activities.mr;
-
-    /**
-     * rubric
-     *   :name
-     *   :version
-     *   :description
-     *   :variables
-     *     :rated_resistance
-     *       :description
-     *       :value
-     *     :rated_tolerance
-     *       :description
-     *       :value
-     *   :max_points
-     *   :items
-     *     :reading
-     *       :description
-     *       :max_points
-     *       :items
-     *         :rated_r_value
-     *           :description
-     *           :max_points
-     *           :feedback
-     *             :messages
-     *               :correct
-     *                 :description
-     *                 :short_message
-     *                 :long_message
-     *               :incorrect
-     *         :rated_t_value
-     *     :measuring
-     *       :items
-     *         :measured_r_value
-     *         :plug_connection
-     *         :probe_connection
-     *         :knob_setting
-     *         :power_switch
-     *         :task_order
-     *     :t_range
-     *       :items
-     *         :range_values
-     *         :in_out
-     *     :time
-     *       :items
-     *         :reading
-     *         :measuring
-     */
-
-    mr.Feedback = function (rubric) {
-        this.root = util.cloneSimpleObject(rubric);
-
-        this.optimal_dial_setting = '';
-        this.initial_dial_setting = '';
-        this.final_dial_setting = '';
-        this.time_reading = 0;
-        this.time_measuring = 0;
-
-        this.root.items.reading.items.rated_r_value.processPatterns = function (key, messages, subs) {
-            if (key === 'power_ten') {
-                messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                        '$1<font color="blue"><i>' + subs[0] +
-                        '</i></font>$2<font color="blue"><i>' + subs[1] + '</i></font>$3');
-            }
-            else if (key === 'unit') {
-                messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
-                        '$1<font color="red"><i>' + subs[0] + '</i></font>$2');
-            }
-            return messages;
-        };
-
-        this.root.items.reading.items.rated_t_value.processPatterns = function (key, messages, subs) {
-            if (key === 'incorrect') {
-                messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                    '$1<font color="red"><i>' + subs[1] +
-                    '</i></font>$2<font color="blue"><i>' + subs[0] + '</i></font>$3');
-            }
-            return messages;
-        };
-
-        this.root.items.measuring.items.measured_r_value.processPatterns = function (key, messages, subs) {
-            if (key === 'incomplete') {
-                messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                        '$1<font color="blue"><i>' + subs[0] +
-                        '</i></font>$2<font color="red"><i>' + subs[1] + '</i></font>$3');
-            }
-            else if (key === 'power_ten') {
-                messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                        '$1<font color="orange"><i>' + subs[0] +
-                        '</i></font>$2<font color="orange"><i>' + subs[1] +
-                        '</i></font>$3<font color="blue"><i>' + subs[2] +
-                        '</i></font>$4<font color="blue"><i>' + subs[3] +
-                        '</i></font>$5<font color="blue"><i>' + subs[4] + '</i></font>$6');
-            }
-            else if (key === 'unit') {
-                messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
-                        '$1<font color="red"><i>' + subs[0] + '</i></font>$2');
-            }
-            return messages;
-        };
-
-        this.root.items.measuring.items.knob_setting.processPatterns = function (key, messages, subs) {
-            if (key === 'suboptimal') {
-                messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                        '$1<font color="orange"><i>' + subs[1] +
-                        '</i></font>$2<font color="blue"><i>' + subs[0] + '</i></font>$3');
-            }
-            return messages;
-        };
-
-        this.root.items.t_range.items.range_values.processPatterns = function (key, messages, subs) {
-            if (key === 'correct' || key === 'rounded' ||
-                key === 'correct_wrong_prev_r' || key === 'correct_wrong_prev_t' ||
-                key === 'correct_wrong_prev_rt' || key === 'rounded_wrong_prev_r' ||
-                key === 'rounded_wrong_prev_t' || key === 'rounded_wrong_prev_rt')
-            {
-                messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                    '$1<font color="blue"><i>' + subs[1] +
-                    '</i></font>$2<font color="blue"><i>' + subs[0] + '</i></font>$3');
-            }
-            else if (key === 'inaccurate' || key === 'wrong' ||
-                key === 'inaccurate_wrong_prev_r' || key === 'inaccurate_wrong_prev_t' ||
-                key === 'inaccurate_wrong_prev_rt')
-            {
-                messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                    '$1<font color="red"><i>' + subs[1] +
-                    '</i></font>$2<font color="blue"><i>' + subs[0] + '</i></font>$3');
-            }
-            return messages;
-        };
-
-        this.root.items.t_range.items.in_out.processPatterns = function (key, messages, subs) {
-            if (key === 'correct' || key === 'incorrect') {
-                messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)\$\{.*\}(.*)/m,
-                        '$1<font color="green"><i>' + subs[0] +
-                        '</i></font>$2<font color="blue"><i>' + subs[1] +
-                        '</i></font>$3<font color="blue"><i>' + subs[2] +
-                        '</i></font>$4<font color="green"><i>' + subs[3] +
-                        '</i></font>$5<font color="green"><i>' + subs[4] + '</i></font>$6');
-            }
-            return messages;
-        };
-
-        this.root.items.time.items.reading.processPatterns = function (key, messages, subs) {
-            if (key === 'slow') {
-                messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
-                        '$1<font color="red"><i>' + subs[0] + '</i></font>$2');
-            }
-            return messages;
-        };
-
-        this.root.items.time.items.measuring.processPatterns = function (key, messages, subs) {
-            if (key === 'slow') {
-                messages[1] = messages[1].replace(/(.*)\$\{.*\}(.*)/m,
-                        '$1<font color="red"><i>' + subs[0] + '</i></font>$2');
-            }
-            return messages;
-        };
-
-    };
-
-    mr.Feedback.prototype = {
-
-        addFeedback: function (node, key) {
-            var messages = [];
-            messages[0] = node.feedback.messages[key].short_message;
-            messages[1] = node.feedback.messages[key].long_message;
-            var subs = Array.prototype.slice.call(arguments, 2);
-            if (!node.feedbacks) { node.feedbacks = []; }
-            if (node.processPatterns) {
-                node.feedbacks.push(node.processPatterns(key, messages, subs));
-            }
-            else {
-                node.feedbacks.push(messages);
-            }
-        },
-
-        updatePoints: function () {
-            this._updatePoints(this.root);
-        },
-
-        _updatePoints: function (node) {
-            var key, pair, points, maxPoints;
-
-            if (node.items) {
-                points = 0;
-                maxPoints = 0;
-                for (key in node.items) {
-                    pair = this._updatePoints(node.items[key]);
-                    points += pair[0];
-                    maxPoints += pair[1];
-                }
-                node.points = points;
-                node.maxPoints = maxPoints;
-            }
-            return [node.points, node.maxPoints];
-        },
-
-        processPatterns: function (key, messages, substitutions) {
-            return messages;
-        }
-    };
-
-})();
-
-/* FILE log-parser.js */
-
-(function () {
-
-    var mr = sparks.activities.mr;
-
-    mr.LogParser = function (session) {
-        this.session = session;
-        this.section = session.sections[0];
-        this.events = this.section.events;
-        this.questions = this.section.questions;
-
-        this.measure_submit_time = this.questions[2].end_time;
-
-        this.submit_red_probe_conn = null;
-        this.submit_black_probe_conn = null;
-        this.submit_red_plug_conn = null;
-        this.submit_black_plug_conn = null;
-        this.initial_dial_setting = 'acv_750'; //DMM dial setting when the swith is first turned on
-        this.submit_dial_setting = 'acv_750'; //DMM dial setting when the user submits the 3rd question
-        this.power_on = false; //Power switch when the user submits the 3rd question
-        this.correct_order = true;
-
-        this.temp_power_on = false;
-        this.temp_red_probe_conn = null;
-        this.temp_black_probe_conn = null;
-        this.temp_red_plug_conn = null;
-        this.temp_black_plug_conn = null;
-        this.temp_dial_setting = null;
-
-        this.initial_dial_setting_set = false;
-        this.correct_order_set = false;
-
-        this.parseEvents();
-    };
-
-    mr.LogParser.prototype = {
-
-        parseEvents: function () {
-            for (var i = 0; i < this.events.length; ++i) {
-                if (this.events[i].name === 'connect') {
-                    this.parseConnect(this.events[i]);
-                }
-                else if (this.events[i].name === 'disconnect') {
-                    this.parseDisconnect(this.events[i]);
-                }
-                else if (this.events[i].name === 'multimeter_power') {
-                    this.parseMultimeterPower(this.events[i]);
-                }
-                else if (this.events[i].name === 'multimeter_dial') {
-                    this.parseMultimeterDial(this.events[i]);
-                }
-            }
-        },
-
-        parseConnect: function (event) {
-            var comps = event.value.split('|');
-            switch (comps[0]) {
-            case 'red_probe':
-                this.parseProbeConnection(event);
-                this.parseRedProbeConnection(comps[1], event.time);
-                break;
-            case 'black_probe':
-                this.parseProbeConnection(event);
-                this.parseBlackProbeConnection(comps[1], event.time);
-                break;
-            case 'red_plug':
-                this.parseRedPlugConnection(comps[1], event.time);
-                break;
-            case 'black_plug':
-                this.parseBlackPlugConnection(comps[1], event.time);
-                break;
-            }
-            if (this.allConnWithNonResDial()) {
-                this.correct_order = false;
-            }
-        },
-
-        parseDisconnect: function (event) {
-        },
-
-        parseMultimeterPower: function (event) {
-            this.temp_power_on = event.value;
-            if (event.time < this.measure_submit_time) {
-                this.power_on = event.value;
-                if (event.value === true && !this.initial_dial_setting_set) {
-                    this.initial_dial_setting = this.submit_dial_setting;
-                    this.initial_dial_setting_set = true;
-                }
-            }
-            if (this.temp_power_on &&
-                event.time < this.measure_submit_time)
-            {
-                if (this.allConnWithNonResDial()) {
-                    this.correct_order = false;
-                }
-            }
-        },
-
-        parseMultimeterDial: function (event) {
-            this.temp_dial_setting = event.value;
-            if (event.time < this.measure_submit_time) {
-                this.submit_dial_setting = event.value;
-            }
-        },
-
-        parseProbeConnection: function (event) {
-        },
-
-        parseRedProbeConnection: function (connectedTo, time) {
-            this.temp_red_probe_conn = connectedTo;
-            if (time < this.measure_submit_time) {
-                this.submit_red_probe_conn = connectedTo;
-            }
-        },
-
-        parseBlackProbeConnection: function (connectedTo, time) {
-            this.temp_black_probe_conn = connectedTo;
-            if (time < this.measure_submit_time) {
-                this.submit_black_probe_conn = connectedTo;
-            }
-        },
-
-        parseRedPlugConnection: function (connectedTo, time) {
-            this.temp_red_plug_conn = connectedTo;
-            if (time < this.measure_submit_time) {
-                this.submit_red_plug_conn = connectedTo;
-            }
-        },
-
-        parseBlackPlugConnection: function (connectedTo, time) {
-            this.temp_black_plug_conn = connectedTo;
-            if (time < this.measure_submit_time) {
-                this.submit_black_plug_conn = connectedTo;
-            }
-        },
-
-        getLastConnection: function (conn1) {
-            var conn2 = null;
-            var values = null;
-            for (var i = 0; i < this.events.length; ++i) {
-                if (this.events[i].name == 'connect') {
-                    values = this.events[i].value.split('|');
-                    if (values[0] == conn1) {
-                        conn2 = values[1];
-                    }
-                }
-            }
-            return conn2;
-        },
-
-        /*
-         * Last time before measured resistance is submitted that the circuit is
-         * all connected.
-         *
-         * Returns +Infinity if there's no 'make_circuit' events.
-         */
-        getLastCircuitMakeTime: function () {
-            var end_time = this.measure_submit_time;
-            var make_time = Infinity;
-            for (var i = 0; i < this.events.length && this.events[i].time < end_time; ++i) {
-                if (this.events[i].name === 'make_circuit') {
-                    make_time = this.events[i].time;
-                }
-            }
-            return make_time;
-        },
-
-        getLastCircuitBreakTime: function () {
-            var end_time = this.measure_submit_time;
-            var break_time = -Infinity;
-            for (var i = 0; i < this.events.length && this.events[i].time < end_time; ++i) {
-                if (this.events[i].name === 'break_circuit') {
-                    break_time = this.events[i].time;
-                }
-            }
-            return break_time;
-        },
-
-        allConnWithNonResDial: function () {
-            return (this.temp_red_probe_conn &&
-                this.temp_black_probe_conn &&
-                this.temp_red_plug_conn &&
-                this.temp_black_plug_conn &&
-                this.temp_dial_setting != 'r_2000k' &&
-                this.temp_dial_setting != 'r_200k' &&
-                this.temp_dial_setting != 'r_20k' &&
-                this.temp_dial_setting != 'r_2000' &&
-                this.temp_dial_setting != 'r_200' &&
-                this.temp_power_on);
-        }
-    };
-
-})();
-
-/* FILE grader.js */
-
-(function () {
-
-    var math = sparks.math;
-    var unit = sparks.unit;
-    var str = sparks.string;
-    var mr = sparks.activities.mr;
-
-    mr.Grader = function (session, rubric) {
-        this.session = session;
-        this.rubric = rubric;
-
-        this.section = this.session.sections[0];
-        this.questions =  this.section.questions;
-
-        this.feedback = new mr.Feedback(rubric);
-        this.parser = new mr.LogParser(session);
-
-        this.resistanceAnswer = null;
-        this.toleranceAnswer = null;
-        this.measuredResistanceAnswer = null;
-        this.rangeMinAnswer = null;
-        this.rangeMaxAnswer = null;
-    };
-
-    mr.Grader.prototype = {
-
-        grade: function () {
-            this.realCorrectMin = this.section.nominal_resistance * (1 - this.section.tolerance);
-            this.realCorrectMax = this.section.nominal_resistance * (1 + this.section.tolerance);
-
-            this.gradeReadingColorBands();
-            this.gradeTolerance();
-            this.gradeResistance();
-            this.gradeToleranceRange();
-            this.gradeWithinTolerance();
-            this.gradeTime();
-            this.gradeSettings();
-
-            this.feedback.updatePoints();
-
-            return this.feedback;
-        },
-
-        gradeReadingColorBands: function () {
-            var question = this.questions[0];
-            var unitCorrect = true;
-            var fb = this.feedback.root.items.reading.items.rated_r_value;
-
-            fb.correct = 0;
-            fb.points = 0;
-
-            if (!unit.ohmCompatible(question.unit)) {
-                this.resistanceAnswer = null;
-                unitCorrect = false;
-                this.feedback.addFeedback(fb, 'unit', question.unit);
-                return;
-            }
-
-            if (question.answer === null || isNaN(question.answer)) {
-                this.resistanceAnswer = null;
-                this.feedback.addFeedback(fb, 'incorrect');
-                return;
-            }
-
-            var parsedValue = unit.normalizeToOhms(question.answer, question.unit);
-            this.resistanceAnswer = parsedValue;
-
-
-            if (question.correct_answer != parsedValue) {
-                if (unitCorrect) {
-                    if (math.equalExceptPowerOfTen(question.correct_answer, parsedValue)) {
-                        fb.points = 10;
-                        fb.correct = 2;
-                        this.feedback.addFeedback(fb, 'power_ten',
-                            this.section.resistor_num_bands - 1,
-                            this.section.resistor_num_bands - 2);
-                        return;
-                    }
-                    else if (this.oneOff(question.correct_answer, parsedValue)) {
-                        fb.points = 2;
-                        fb.correct = 1;
-                        this.feedback.addFeedback(fb, 'difficulty');
-                        return;
-                    }
-                }
-                this.feedback.addFeedback(fb, 'incorrect');
-                return;
-            }
-            fb.points = 20;
-            fb.correct = 4;
-            this.feedback.addFeedback(fb, 'correct');
-        },
-
-        gradeResistance: function () {
-            var question = this.questions[2];
-            var fb = this.feedback.root.items.measuring.items.measured_r_value;
-            var unitCorrect = true;
-
-            fb.points = 0;
-            fb.correct = 0;
-
-            if (!unit.ohmCompatible(question.unit)) {
-                unitCorrect = false;
-                this.feedback.addFeedback(fb, 'unit', question.unit);
-                return;
-            }
-
-            if (question.answer === null || isNaN(question.answer)) {
-                this.feedback.addFeedback(fb, 'incorrect');
-                return;
-            }
-
-            var parsedValue = unit.normalizeToOhms(question.answer, question.unit);
-            this.measuredResistanceAnswer = parsedValue;
-
-            console.log('parsedValue=' + parsedValue + ' correctValue=' + question.correct_answer);
-
-            if (question.correct_answer != parsedValue) {
-                var n = this.section.resistor_num_bands - 2;
-                if (this.roundedMatch(question.correct_answer, parsedValue, n)) {
-                    fb.points = 5;
-                    fb.correct = 3;
-                    this.feedback.addFeedback(fb, 'incomplete', unit.res_str(question.correct_answer),
-                        unit.res_str(parsedValue));
-                    return;
-                }
-                else if (math.equalExceptPowerOfTen(question.correct_answer, parsedValue)) {
-                    fb.points = 3;
-                    fb.correct = 2;
-                    this.feedback.addFeedback(fb, 'power_ten', question.answer, question.unit,
-                            unit.res_unit_str(question.correct_answer),
-                            unit.res_unit_str(question.correct_answer, 'k'),
-                            unit.res_unit_str(question.correct_answer, 'M'));
-                    return;
-                }
-                this.feedback.addFeedback(fb, 'incorrect');
-                return;
-            }
-
-            fb.points = 10;
-            fb.correct = 4;
-            this.feedback.addFeedback(fb, 'correct');
-        },
-
-        gradeTolerance: function () {
-            var question = this.questions[1];
-            var fb = this.feedback.root.items.reading.items.rated_t_value;
-
-            var correctStr = (question.correct_answer * 100) + '%';
-            var answerStr = question.answer + '%';
-
-            fb.correct = 0;
-            fb.points = 0;
-
-            if (question.answer === null || isNaN(question.answer)) {
-                this.feedback.addFeedback(fb, 'incorrect', correctStr, answerStr);
-                return;
-            }
-            this.toleranceAnswer = question.answer / 100.0;
-            if (question.correct_answer != question.answer / 100.0){
-                this.feedback.addFeedback(fb, 'incorrect', correctStr, answerStr);
-                return;
-            }
-
-            fb.correct = 4;
-            fb.points = 5;
-            this.feedback.addFeedback(fb, 'correct');
-        },
-
-        gradeToleranceRange: function () {
-            var question = this.questions[3];
-            var fb = this.feedback.root.items.t_range.items.range_values;
-            var fb_r = this.feedback.root.items.reading.items.rated_r_value;
-            var fb_t = this.feedback.root.items.reading.items.rated_t_value;
-            var nominalResistance;
-            var fbkey;
-
-            question.correct_answer = [this.realCorrectMin, this.realCorrectMax];
-
-            if (this.resistanceAnswer) {
-                nominalResistance = this.resistanceAnswer;
-            }
-            else {
-                nominalResistance = this.section.nominal_resistance;
-            }
-            var tolerance = this.toleranceAnswer;
-
-            fb.points = 0;
-            fb.correct = 0;
-
-            var correctMin = nominalResistance * (1 - tolerance);
-            var correctMax = nominalResistance * (1 + tolerance);
-
-
-            var min = question.answer[0];
-            var max = question.answer[1];
-
-            var correctStr = '[' + unit.res_str(correctMin) + ', ' +
-                unit.res_str(correctMax) + ']';
-            var answerStr = '[' + min + ' ' + question.unit[0] + ', ' +
-                max + ' ' + question.unit[1] + ']';
-
-            if (min === null || isNaN(min) || max === null || isNaN(max)) {
-                this.feedback.addFeedback(fb, 'wrong', correctStr, answerStr);
-                return;
-            }
-
-
-            if (!unit.ohmCompatible(question.unit[0]) ||
-                !unit.ohmCompatible(question.unit[1]))
-            {
-                this.feedback.addFeedback(fb, 'wrong');
-                return;
-            }
-
-            var parsedMin = unit.normalizeToOhms(min, question.unit[0]);
-            var parsedMax = unit.normalizeToOhms(max, question.unit[1]);
-
-            this.rangeMinAnswer = parsedMin;
-            this.rangeMaxAnswer = parsedMax;
-
-            if (parsedMin > parsedMax) {
-                var tmp = parsedMin;
-                parsedMin = parsedMax;
-                parsedMax = tmp;
-            }
-
-            if (this.equalWithTolerance(parsedMin, correctMin, 1e-5) &&
-                this.equalWithTolerance(parsedMax, correctMax, 1e-5))
-            {
-                fb.points = 15;
-                fb.correct = 4;
-                if (fb_r.correct === 4) {
-                    if (fb_t.correct == 4) {
-                        this.feedback.addFeedback(fb, 'correct', unit.res_str(nominalResistance),
-                                unit.pct_str(tolerance));
-                    }
-                    else {
-                        this.feedback.addFeedback(fb, 'correct_wrong_prev_t', unit.res_str(nominalResistance),
-                                unit.pct_str(tolerance));
-                    }
-                }
-                else if (fb_t.correct == 4) {
-                    this.feedback.addFeedback(fb, 'correct_wrong_prev_r', unit.res_str(nominalResistance),
-                            unit.pct_str(tolerance));
-                }
-                else {
-                    this.feedback.addFeedback(fb, 'correct_wrong_prev_rt', unit.res_str(nominalResistance),
-                            unit.pct_str(tolerance));
-                }
-                return;
-            }
-
-            var n = this.section.resistor_num_bands - 2;
-
-            if (math.roundToSigDigits(correctMin, n) ===
-                math.roundToSigDigits(parsedMin, n) &&
-                math.roundToSigDigits(correctMax, n) ===
-                math.roundToSigDigits(parsedMax, n))
-            {
-                fb.points = 10;
-                fb.correct = 3;
-                if (fb_r.correct === 4) {
-                    if (fb_t.correct === 4) {
-                        this.feedback.addFeedback(fb, 'rounded', unit.res_str(nominalResistance),
-                                unit.pct_str(tolerance));
-                    }
-                    else {
-                        this.feedback.addFeedback(fb, 'rounded_wrong_prev_t', unit.res_str(nominalResistance),
-                                unit.pct_str(tolerance));
-                    }
-                }
-                else if (fb_t.correct === 4) {
-                    this.feedback.addFeedback(fb, 'rounded_wrong_prev_r', unit.res_str(nominalResistance),
-                            unit.pct_str(tolerance));
-                }
-                else {
-                    this.feedback.addFeedback(fb, 'rounded_wrong_prev_rt', unit.res_str(nominalResistance),
-                            unit.pct_str(tolerance));
-                }
-                return;
-            }
-
-            if (Math.abs(math.getRoundedSigDigits(correctMin, n) -
-                         math.getRoundedSigDigits(parsedMin, n)) <= 2 &&
-                Math.abs(math.getRoundedSigDigits(correctMax, n) -
-                         math.getRoundedSigDigits(parsedMax, n)) <= 2)
-            {
-                fb.points = 3;
-                fb.correct = 2;
-                if (fb_r.correct === 4) {
-                    if (fb_t.correct === 4) {
-                        this.feedback.addFeedback(fb, 'inaccurate', correctStr, answerStr);
-                    }
-                    else {
-                        this.feedback.addFeedback(fb, 'inaccurate_wrong_prev_t', correctStr, answerStr);
-                    }
-                }
-                else if (fb_t.correct === 4) {
-                    this.feedback.addFeedback(fb, 'inaccurate_wrong_prev_r', correctStr, answerStr);
-                }
-                else {
-                    this.feedback.addFeedback(fb, 'inaccurate_wrong_prev_rt', correctStr, answerStr);
-                }
-                return;
-            }
-            this.feedback.addFeedback(fb, 'wrong', correctStr, answerStr);
-            return;
-        },
-
-        gradeWithinTolerance: function () {
-            var question = this.questions[4];
-            var correctAnswer;
-            var nominalResistance = null;
-
-            if (this.section.displayed_resistance >= this.realCorrectMin &&
-                this.section.displayed_resistance <= this.realCorrectMax)
-            {
-                question.correct_answer = 'yes';
-            }
-            else {
-                question.correct_answer = 'no';
-            }
-
-            var fb = this.feedback.root.items.t_range.items.in_out;
-
-            if (this.feedback.root.items.measuring.items.measured_r_value.correct < 4 ||
-                this.feedback.root.items.t_range.items.range_values < 4)
-            {
-                fb.points = 0;
-                fb.correct = 0;
-                this.feedback.addFeedback(fb, 'undef');
-                return;
-            }
-
-            if (this.resistanceAnswer) {
-                nominalResistance = this.resistanceAnswer;
-            }
-            else {
-                nominalResistance = this.section.nominal_resistance;
-            }
-            var tolerance = this.toleranceAnswer;
-
-            var displayValue = null;
-            if (this.measuredResistanceAnswer) {
-                displayValue = this.measuredResistanceAnswer;
-            }
-            else {
-                displayValue = this.section.displayed_resistance;
-            }
-            var allowance = nominalResistance * tolerance;
-
-            fb.correct = 0;
-            fb.points = 0;
-
-            if (displayValue < nominalResistance - allowance ||
-                displayValue > nominalResistance + allowance)
-            {
-                correctAnswer = 'no';
-            }
-            else {
-                correctAnswer = 'yes';
-            }
-
-            var did = (correctAnswer === 'no') ? 'did not' : 'did';
-            var is = (correctAnswer === 'no') ? 'is not' : 'is';
-
-            if (question.answer !== correctAnswer) {
-                if (question.correct_answer === correctAnswer) {
-                    this.feedback.addFeedback(fb, 'incorrect',
-                        unit.res_str(this.measuredResistanceAnswer),
-                        unit.res_str(this.rangeMinAnswer),
-                        unit.res_str(this.rangeMaxAnswer),
-                        did, is);
-                }
-                else {
-                    this.feedback.addFeedback(fb, 'incorrect_wrong_prev');
-                }
-                return;
-            }
-            fb.points = 5;
-            fb.correct = 4;
-
-            if (question.correct_answer === correctAnswer) {
-                this.feedback.addFeedback(fb, 'correct',
-                    unit.res_str(this.measuredResistanceAnswer),
-                    unit.res_str(this.rangeMinAnswer),
-                    unit.res_str(this.rangeMaxAnswer),
-                    did, is);
-            }
-            else {
-                this.feedback.addFeedback(fb, 'correct_wrong_prev');
-            }
-        },
-
-        gradeTime: function () {
-            var seconds;
-            var fb;
-
-            this.feedback.reading_time = this.questions[1].end_time - this.questions[0].start_time;
-            seconds = this.feedback.reading_time / 1000;
-            fb = this.feedback.root.items.time.items.reading;
-            if (seconds <= 20) {
-                fb.points = 5;
-                fb.correct = 4;
-                this.feedback.addFeedback(fb, 'efficient');
-            }
-            else if (seconds <= 40) {
-                fb.points = 2;
-                fb.correct = 2;
-                this.feedback.addFeedback(fb, 'semi');
-            }
-            else {
-                fb.points = 0;
-                fb.correct = 0;
-                this.feedback.addFeedback(fb, 'slow', Math.round(seconds));
-            }
-
-            this.feedback.measuring_time = this.questions[2].end_time - this.questions[2].start_time;
-            seconds = this.feedback.measuring_time / 1000;
-            fb = this.feedback.root.items.time.items.measuring;
-            if (seconds <= 20) {
-                fb.points = 5;
-                fb.correct = 4;
-                this.feedback.addFeedback(fb, 'efficient');
-            }
-            else if (seconds <= 40) {
-                fb.points = 2;
-                fb.correct = 2;
-                this.feedback.addFeedback(fb, 'semi');
-            }
-            else {
-                fb.points = 0;
-                fb.correct = 0;
-                this.feedback.addFeedback(fb, 'slow', Math.round(seconds));
-            }
-        },
-
-        gradeSettings: function () {
-            var fb = this.feedback.root.items.measuring;
-            var redProbeConn = this.parser.submit_red_probe_conn;
-            var blackProbeConn = this.parser.submit_black_probe_conn;
-            var redPlugConn = this.parser.submit_red_plug_conn;
-            var blackPlugConn = this.parser.submit_black_plug_conn;
-
-
-            if ((redProbeConn == 'resistor_lead1' || redProbeConn == 'resistor_lead2') &&
-                (blackProbeConn == 'resistor_lead1' || blackProbeConn == 'resistor_lead2') &&
-                (redProbeConn != blackProbeConn))
-            {
-                fb.items.probe_connection.correct = 4;
-                fb.items.probe_connection.points = 2;
-                fb.items.probe_connection.desc = 'Correct';
-                this.feedback.addFeedback(fb.items.probe_connection, 'correct');
-            }
-            else {
-                fb.items.probe_connection.correct = 0;
-                fb.items.probe_connection.points = 0;
-                fb.items.probe_connection.desc = 'Incorrect';
-                this.feedback.addFeedback(fb.items.probe_connection, 'incorrect');
-            }
-
-            if (redPlugConn == 'voma_port' && blackPlugConn == 'common_port') {
-                fb.items.plug_connection.points = 5;
-                fb.items.plug_connection.correct = 4;
-                fb.items.plug_connection.desc = 'Correct';
-                this.feedback.addFeedback(fb.items.plug_connection, 'correct');
-            }
-            else {
-                fb.items.plug_connection.correct = 0;
-                if (redPlugConn == 'common_port' && blackPlugConn == 'voma_port') {
-                    fb.items.plug_connection.points = 3;
-                    fb.items.plug_connection.correct = 3;
-                    fb.items.plug_connection.desc = 'Reversed';
-                    this.feedback.addFeedback(fb.items.plug_connection, 'reverse');
-                }
-                else {
-                    fb.items.plug_connection.points = 0;
-                    fb.items.plug_connection.correct = 0;
-                    fb.items.plug_connection.desc = 'Incorrect';
-                    this.feedback.addFeedback(fb.items.plug_connection, 'incorrect');
-                }
-            }
-
-            var i_knob = this.parser.initial_dial_setting;
-            var f_knob = this.parser.submit_dial_setting;
-            var o_knob = this.optimalDial(this.section.displayed_resistance);
-
-            this.feedback.initial_dial_setting = i_knob;
-            this.feedback.submit_dial_setting = f_knob;
-            this.feedback.optimal_dial_setting = o_knob;
-
-            if (f_knob === o_knob) {
-                fb.items.knob_setting.points = 20;
-                fb.items.knob_setting.correct = 4;
-                this.feedback.addFeedback(fb.items.knob_setting, 'correct');
-            }
-            else if (this.isResistanceKnob(f_knob)){
-                fb.items.knob_setting.points = 10;
-                fb.items.knob_setting.correct = 2;
-                this.feedback.addFeedback(fb.items.knob_setting, 'suboptimal', o_knob, f_knob);
-            }
-            else {
-                fb.items.knob_setting.points = 0;
-                fb.items.knob_setting.correct = 0;
-                this.feedback.addFeedback(fb.items.knob_setting, 'incorrect');
-            }
-
-            if (this.parser.power_on) {
-                fb.items.power_switch.points = 2;
-                fb.items.power_switch.correct = 4;
-                this.feedback.addFeedback(fb.items.power_switch, 'correct');
-            }
-            else {
-                fb.items.power_switch.points = 0;
-                fb.items.power_switch.correct = 0;
-                this.feedback.addFeedback(fb.items.power_switch, 'incorrect');
-            }
-            console.log('power_switch.points=' + fb.items.power_switch.points);
-
-            if (this.parser.correct_order) {
-                fb.items.task_order.points = 6;
-                fb.items.task_order.correct = 4;
-                this.feedback.addFeedback(fb.items.task_order, 'correct');
-            }
-            else {
-                fb.items.task_order.points = 0;
-                fb.items.task_order.correct = 0;
-                this.feedback.addFeedback(fb.items.task_order, 'incorrect');
-            }
-            console.log('task_order.points=' + fb.items.task_order.points);
-        },
-
-        equalWithTolerance: function (value1, value2, tolerance) {
-            return Math.abs(value1 - value2) < tolerance;
-        },
-
-        validateNonEmpty: function (inputField, form) {
-            if (inputField === null ||
-                inputField === undefined ||
-                inputField.length < 1)
-            {
-                form.message = "No Value Entered";
-                return false;
-            }
-            return true;
-        },
-
-        validateNumber: function (num, answer) {
-            if (isNaN(num)) {
-                answer.message = "Value entered is not a number";
-                return false;
-            }
-            return true;
-        },
-
-        roundedMatch: function (x, y, numSig) {
-            return math.roundToSigDigits(x, numSig) === y;
-        },
-
-        oneOff: function (x, y) {
-            var sx = x.toString();
-            var sy = y.toString();
-            if (!sx.match(/\./)) {
-                sx = sx + '.';
-            }
-            if (!sy.match(/\./)) {
-                sy = sy + '.';
-            }
-            sx = str.stripZeros(sx);
-            sy = str.stripZeros(sy);
-            if (sx.length != sy.length) {
-                return false;
-            }
-            var numDiff = 0;
-            for (var i = 0; i < sx.length; ++i) {
-                if (sx.charAt(i) !== sy.charAt(i)) {
-                    numDiff += 1;
-                    if (numDiff > 1) {
-                        return false;
-                    }
-                }
-            }
-            return true;
-        },
-
-        sameBeforeDot: function (x, y) {
-            var lx = String(x).split('.')[0].length;
-            var ly = String(y).split('.')[0].length;
-            return lx === ly;
-        },
-
-        semiCorrectDigits: function (x, y, numSigDigits) {
-            var sx = String(x).replace('.', '').substring(0, numSigDigits);
-            var sy = String(y).replace('.', '').substring(0, numSigDigits);
-            if (sx === sy ||
-                sx === this.reverseString(sy) ||
-                this.onlyOneDigitDifferent(sx, sy))
-            {
-                return true;
-            }
-            return false;
-        },
-
-        reverseString: function (s) {
-            return s.split('').reverse().join('');
-        },
-
-        onlyOneDigitDifferent: function (x, y) {
-            var numDiff = 0;
-            for (var i = 0; i < x.length; ++i) {
-                if (x[i] !== y[i]) {
-                    ++numDiff;
-                }
-            }
-            return numDiff == 1;
-        },
-
-        optimalDial: function (r) {
-            if (r < 200) { return 'r_200'; }
-            if (r < 2000) { return 'r_2000'; }
-            if (r < 20e3) { return 'r_20k'; }
-            if (r < 200e3) { return 'r_200k'; }
-            return 'r_2000k';
-        },
-
-        isResistanceKnob: function (setting) {
-            return setting === 'r_200' ||
-                setting === 'r_2000' ||
-                setting === 'r_20k' ||
-                setting === 'r_200k';
-        }
-    };
-
-})();
-
-/* FILE assessment.js */
-
-(function () {
-
-    var mr = sparks.activities.mr;
-
-    /**
-     * Meant to hold everything needed for grading, such as rubric and grading
-     * routines. Since there's no rubric objects defined yet, it may appear to
-     * offer little more than Grader.
-     */
-    mr.Assessment = function (activity) {
-
-        this.activity = activity;
-        this.log = activity.log;
-    };
-
-    mr.Assessment.prototype = {
-
-        grade : function(session, rubric) {
-            var grader = new mr.Grader(session, rubric);
-            return grader.grade();
-        },
-
-        receiveResultFromHTML : function(resultObj) {
-            var section = this.log.currentSession().sections[0];
-            var questions = section.questions;
-            var value = null;
-
-            value = $('#rated_resistance_value_input').val();
-            questions[0].answer = this.fieldIsEmpty(value) ? null : Number(value);
-            questions[0].correct_answer = section.nominal_resistance;
-
-            value  = $('#rated_resistance_unit_select').children('option:selected').val();
-            questions[0].unit = this.fieldIsEmpty(value) ? null : value;
-
-            value = $('#rated_tolerance_select').children('option:selected').val();
-            value = value.replace(/\s*%$/, '');
-
-            questions[1].answer = this.fieldIsEmpty(value) ? null : Number(value);
-            questions[1].unit = '%';
-            questions[1].correct_answer = section.tolerance;
-
-            value = $('#measured_r_value_input').val();
-            questions[2].answer = this.fieldIsEmpty(value) ? null : Number(value);
-
-            value = $('#measured_r_unit_select').children('option:selected').val();
-            questions[2].unit = this.fieldIsEmpty(value) ? null : value;
-
-            questions[2].correct_answer = section.displayed_resistance;
-
-            questions[3].answer = [];
-            value = $('#t_range_min_value_input').val();
-            questions[3].answer[0] = this.fieldIsEmpty(value) ? null : Number(value);
-
-            value = $('#t_range_max_value_input').val();
-            questions[3].answer[1] = this.fieldIsEmpty(value) ? null : Number(value);
-
-            questions[3].unit = [];
-            value = $('#t_range_min_unit_select').children('option:selected').val();
-            questions[3].unit[0] = this.fieldIsEmpty(value) ? null : value;
-
-            value = $('#t_range_max_unit_select').children('option:selected').val();
-            questions[3].unit[1] = this.fieldIsEmpty(value) ? null : value;
-
-            value = $("input[@name='within_t_radio']:checked").val();
-            questions[4].answer = this.fieldIsEmpty(value) ? null : value;
-        },
-
-        sendResultToHTML : function(resultObj, feedback) {
-            var root = feedback.root;
-            resultObj.rated_resistance.correct = root.items.reading.items.rated_r_value.correct;
-            resultObj.rated_tolerance.correct = root.items.reading.items.rated_t_value.correct;
-            resultObj.measured_resistance.correct = root.items.measuring.items.measured_r_value.correct;
-            resultObj.measured_tolerance.correct = root.items.t_range.items.range_values.correct;
-            resultObj.within_tolerance.correct = root.items.t_range.items.in_out.correct;
-        },
-
-        fieldIsEmpty : function(formInput) {
-            return formInput === null || formInput === undefined || formInput.length < 1;
-        }
-    };
-
-})();
-
-/* FILE reporter.js */
-
-(function () {
-
-    var unit = sparks.unit;
-    var mr = sparks.activities.mr;
-
-    mr.Reporter = function (reportElem) {
-        this.template = mr.config.root_dir + '/report-templates/spot-report.html';
-        this.reportElem = reportElem;
-    };
-
-    mr.Reporter.prototype = {
-
-        readingHintPath: sparks.config.root_dir + '/common/resources/hint1_colorcode.html',
-        measuringHintPath: sparks.config.root_dir + '/common/resources/hint1_dmm.html',
-        toleranceHintPath: sparks.config.root_dir + '/common/resources/hint1_calctolerance.html',
-
-        red : '#cc3300',
-        red2 : '#cc9933',
-        orange : '#ff6600',
-        blue : '#0099cc',
-        green :'#339933',
-
-        dialLabels : { r_2000k: '\u2126 - 2000k',
-            r_200k: '\u2126 - 200k',
-            r_20k: '\u2126 - 20k',
-            r_2000: '\u2126 - 2000',
-            r_200: '\u2126 - 200',
-            dcv_1000: 'DCV - 1000',
-            dcv_200: 'DCV - 200',
-            dcv_20: 'DCV - 20',
-            dcv_2000m: 'DCV - 2000m',
-            dcv_200m: 'DCV - 200m',
-            acv_750: 'ACV - 750',
-            acv_200: 'ACV - 200',
-            p_9v: '1.5V 9V',
-            dca_200mc: 'DCA - 200\u03bc',
-            dca_2000mc: 'DCA - 2000\u03bc',
-            dca_20m: 'DCA - 20m',
-            dca_200m: 'DCA - 200m',
-            c_10a: '10A',
-            hfe: 'hFE',
-            diode: 'Diode'
-        },
-
-        report: function (session, feedback, callback) {
-            var reporter = this;
-            this.reportElem.load(this.template, '', function () {
-                reporter.sessionReport(session, feedback);
-            });
-        },
-
-        sessionReport: function (session, feedback) {
-            var studentName = jQuery.cookie('student_name');
-            if (studentName) {
-                $('#student_name').text(studentName.replace('+', ' '));
-            }
-            var activityName = jQuery.cookie('activity_name');
-            if (activityName) {
-                $('#activity_name').text(activityName.replace('+', ' '));
-            }
-            var attemptNum = jQuery.cookie('attempt_num');
-            if (attemptNum) {
-                $('#attempt_num').text(attemptNum);
-            }
-            $('#date').text(new Date().toString().slice(0, 15));
-
-            var text = '';
-            var questions = session.sections[0].questions;
-            var color;
-
-            var fb = feedback.root.items.reading.items.rated_r_value;
-            $('#rated_r_correct').text(unit.res_str(questions[0].correct_answer));
-            text = questions[0].answer ? questions[0].answer + questions[0].unit : 'No Answer';
-            this.setAnswerTextWithColor('#rated_r_answer', text, fb);
-            $('#rated_r_points').text(fb.points + ' / ' + fb.max_points);
-            this.addFeedback($('#rated_r_feedback'), fb, this.readingHintPath);
-
-            fb = feedback.root.items.reading.items.rated_t_value;
-            $('#rated_t_correct').text(questions[1].correct_answer * 100 + '%');
-            text = questions[1].answer ? questions[1].answer + questions[1].unit : 'No Answer';
-            this.setAnswerTextWithColor('#rated_t_answer', text, fb);
-            $('#rated_t_points').text(fb.points + ' / ' + fb.max_points);
-            this.addFeedback($('#rated_t_feedback'), fb, this.readingHintPath);
-
-            fb = feedback.root.items.t_range.items.range_values;
-            $('#t_range_correct').text('[' + unit.res_str(questions[3].correct_answer[0]) + ', ' + unit.res_str(questions[3].correct_answer[1]) + ']');
-            text = (questions[3].answer[0] || questions[3].answer[1]) ? '[' + String(questions[3].answer[0]) + questions[3].unit[0] + ', ' + questions[3].answer[1] + questions[3].unit[1] + ']' : 'No Answer';
-            this.setAnswerTextWithColor('#t_range_answer', text, fb);
-            $('#t_range_value_points').text(fb.points + ' / ' + fb.max_points);
-            this.addFeedback($('#t_range_feedback'), fb, this.toleranceHintPath);
-
-            fb = feedback.root.items.t_range.items.in_out;
-            $('#within_correct').text(questions[4].correct_answer);
-            text = questions[4].answer ? questions[4].answer : 'No Answer';
-            this.setAnswerTextWithColor('#within_answer', text, fb);
-            $('#within_points').text(fb.points + ' / ' + fb.max_points);
-            this.addFeedback($('#within_feedback'), fb, this.toleranceHintPath);
-
-            fb = feedback.root.items.time.items.reading;
-            this.setAnswerTextWithColor('#reading_time', sparks.util.timeLapseStr(questions[0].start_time, questions[1].end_time), fb);
-            $('#reading_time_points').text(fb.points + ' / ' + fb.max_points);
-            this.addFeedback($('#reading_time_feedback'), fb, this.readingHintPath);
-
-            fb = feedback.root.items.time.items.measuring;
-            this.setAnswerTextWithColor('#measuring_time', sparks.util.timeLapseStr(questions[2].start_time, questions[2].end_time), fb);
-            $('#measuring_time_points').text(fb.points + ' / ' + fb.max_points);
-            this.addFeedback($('#measuring_time_feedback'), fb, this.measuringHintPath);
-
-            fb = feedback.root.items.measuring.items.probe_connection;
-            if (fb.correct == 4) {
-                this.setTextWithColor('#probe_connection', fb.desc , this.green);
-            }
-            else {
-                this.setTextWithColor('#probe_connection', fb.desc, this.red);
-            }
-
-            fb = feedback.root.items.measuring.items.plug_connection;
-            if (fb.correct) {
-                this.setTextWithColor('#plug_connection', fb.desc, this.green);
-            }
-            else {
-                this.setTextWithColor('#plug_connection', fb.desc, this.red);
-            }
-
-            fb = feedback.root.items.measuring.items.knob_setting;
-
-            var f_knob = feedback.submit_dial_setting;
-            var o_knob = feedback.optimal_dial_setting;
-
-            $('#knob_setting_correct').text(this.dialLabels[feedback.optimal_dial_setting]);
-
-            /*
-            if (i_knob == o_knob) {
-                color = this.green;
-            }
-            else if (sparks.activities.mr.Grader.prototype.isResistanceKnob(i_knob)) {
-                color = this.orange;
-            }
-            else {
-                color = this.red;
-            }
-            this.setTextWithColor('#initial_knob_answer', this.dialLabels[feedback.initial_dial_setting], color);
-            */
-
-            if (f_knob == o_knob) {
-                color = this.green;
-            }
-            else if (sparks.activities.mr.Grader.prototype.isResistanceKnob(f_knob)) {
-                color = this.orange;
-            }
-            else {
-                color = this.red;
-            }
-            this.setTextWithColor('#knob_setting_answer', this.dialLabels[feedback.submit_dial_setting], color);
-
-            $('#knob_setting_points').text(fb.points + ' / ' + fb.max_points);
-            this.addFeedback($('#knob_setting_feedback'), fb, this.measuringHintPath);
-
-            if (feedback.root.items.measuring.items.power_switch.correct == 4) {
-                this.setTextWithColor('#power_switch', 'On', this.green);
-            }
-            else {
-                this.setTextWithColor('#power_switch', 'Off', this.red);
-            }
-
-
-            fb = feedback.root.items.measuring.items.measured_r_value;
-            $('#measured_r_correct').text(unit.res_str(questions[2].correct_answer));
-            text = questions[2].answer ? questions[2].answer + questions[2].unit : 'No Answer';
-            this.setAnswerTextWithColor('#measured_r_answer', text, fb);
-            $('#measured_r_points').text(fb.points + ' / ' + fb.max_points);
-            this.addFeedback($('#measured_r_feedback'), fb, this.measuringHintPath);
-
-            fb = feedback.root.items.measuring.items.plug_connection;
-            if (fb.correct == 4) {
-                this.setTextWithColor('#plug_connection_answer', 'Correct', this.green);
-            }
-            else {
-                this.setTextWithColor('#plug_connection_answer', 'Incorrect', this.red);
-            }
-            $('#plug_connection_points').text(fb.points + ' / ' + fb.max_points);
-            this.addFeedback($('#plug_connection_feedback'), fb, this.measuringHintPath);
-
-            fb = feedback.root.items.measuring.items.probe_connection;
-            if (fb.correct == 4) {
-                this.setTextWithColor('#probe_connection_answer', 'Correct', this.green);
-            }
-            else {
-                this.setTextWithColor('#probe_connection_answer', 'Incorrect', this.red);
-            }
-            $('#probe_connection_points').text(fb.points + ' / ' + fb.max_points);
-            this.addFeedback($('#probe_connection_feedback'), fb, this.measuringHintPath);
-
-            fb = feedback.root.items.measuring.items.power_switch;
-            if (fb.correct == 4) {
-                this.setTextWithColor('#power_switch_answer', 'Correct', this.green);
-            }
-            else {
-                this.setTextWithColor('#power_switch_answer', 'Incorrect', this.red);
-            }
-            $('#power_switch_points').text(fb.points + ' / ' + fb.max_points);
-            this.addFeedback($('#power_switch_feedback'), fb, this.measuringHintPath);
-
-            fb = feedback.root.items.measuring.items.task_order;
-            if (fb.correct == 4) {
-                this.setTextWithColor('#task_order_answer', 'Correct', this.green);
-            }
-            else {
-                this.setTextWithColor('#task_order_answer', 'Incorrect', this.red);
-            }
-            $('#task_order_points').text(fb.points + ' / ' + fb.max_points);
-            this.addFeedback($('#task_order_feedback'), fb, this.measuringHintPath);
-
-            fb = feedback.root.items.reading;
-            $('#reading_points').html('<b>' + fb.points + ' / ' +
-                    fb.max_points + '</b>');
-
-            fb = feedback.root.items.measuring;
-            $('#measuring_points').html('<b>' + fb.points + ' / ' +
-                    fb.max_points + '</b>');
-
-            fb = feedback.root.items.t_range;
-            $('#t_range_points').html('<b>' + fb.points + ' / ' +
-                    fb.max_points + '</b>');
-
-            fb = feedback.root.items.time;
-            $('#time_points').html('<b>' + fb.points + ' / ' +
-                    fb.max_points + '</b>');
-
-            fb = feedback.root;
-            $('#total_points').html('<b>' + fb.points + ' / ' +
-                    fb.max_points + '</b>');
-
-            this.addHelpLinks(feedback);
-        },
-
-        addHelpLinks: function (feedback) {
-            var rootDir = sparks.config.root_dir;
-
-            var fb = feedback.root.items.reading;
-
-            if (fb.points != fb.max_points) {
-                this.imageLink($('#reading_tutorial_link'),
-                    rootDir + '/common/icons/tutorial.png',
-                    this.readingHintPath);
-            }
-
-            fb = feedback.root.items.measuring;
-            if (fb.points != fb.max_points) {
-                this.imageLink($('#measuring_tutorial_link'),
-                    rootDir + '/common/icons/tutorial.png',
-                    this.measuringHintPath);
-            }
-
-            fb = feedback.root.items.t_range.items.range_values;
-            if (fb.points != fb.max_points) {
-                this.imageLink($('#t_range_tutorial_link'),
-                    rootDir + '/common/icons/tutorial.png',
-                    this.toleranceHintPath);
-            }
-        },
-
-        setAnswerTextWithColor: function (elemId, text, feedback) {
-            var color;
-            switch (feedback.correct)
-            {
-            case 0: color = this.red; break;
-            case 1: color = this.red2; break;
-            case 2: color = this.orange; break;
-            case 3: color = this.blue; break;
-            case 4: color = this.green; break;
-            }
-            this.setTextWithColor(elemId, text, color);
-        },
-
-        setTextWithColor: function (elemId, text, color) {
-            $(elemId).text(text);
-            $(elemId).attr('style', 'color: ' + color + ';');
-        },
-
-        imageLink: function (container, imageUrl, linkUrl) {
-          var a = $('<a></a>').addClass('no_deco');
-          a.attr({ href: linkUrl, title: 'Click for SPARKS Help!', target: 'feedback' });
-          var img = $('<img></img>').addClass('no_border');
-          img.attr({ src: imageUrl, align: 'ABSMIDDLE' });
-          img.css({ margin: '4px' });
-          a.append(img);
-          container.html(a);
-        },
-
-        addFeedback: function (elem, fb, tutorialURL) {
-            var fbs = fb.feedbacks;
-            for (var i = 0; i < fbs.length; ++i) {
-                elem.append(this.getFeedbackLine(fbs[i], tutorialURL));
-                elem.append($('<br />'));
-            }
-        },
-
-        getFeedbackLine: function (fb, tutorialURL) {
-            var imgPath = sparks.config.root_dir + '/common/icons/spark.png';
-            var img = $('<img></img>').addClass('no_border').attr('src', imgPath);
-
-            var a = $('<a></a>').attr('href', '').append(img);
-            a.append(fb[0]);
-            var line = $('<nobr></nobr>');
-            line.append(a);
-
-            var tutorialLink = $('<a>Tutorial</a>');
-            tutorialLink.attr({ href: tutorialURL, target: 'tutorial'});
-            tutorialLink.css('float', 'right');
-            var tutorialButton = tutorialLink.button().addClass('dialog_button');
-
-            var closeButton = $('<button>Close</button>)').button().addClass('dialog_button');
-            closeButton.css('float', 'right');
-            var div = $('<div></div>').html(fb[1]);
-            div.attr('title', '<img src="' + imgPath + '" /> SPARKS Feedback');
-            div.append($('<p />')).append(tutorialButton).append(closeButton);
-            var dialog = div.dialog({ autoOpen: false });
-
-            a.click(function (event) {
-                div.dialog('open');
-                event.preventDefault();
-            });
-            tutorialButton.click(function (event) {
-                div.dialog('close');
-            });
-            closeButton.click(function (event) {
-                div.dialog('close');
-            });
-            return line;
-        }
-    };
+    sparks.activities.sm.config.root_dir = sparks.config.root_dir + '/activities/module-2/series-measuring';
 
 })();
 
@@ -4347,423 +2294,35 @@ sparks.util.getRubric = function (id, callback, local) {
 
 (function () {
 
-    var mr = sparks.activities.mr;
+    var sm = sparks.activities.sm;
     var flash = sparks.flash;
     var str = sparks.string;
     var util = sparks.util;
 
-    sparks.config.debug = jQuery.url.param("debug") !== undefined;
-    sparks.config.debug_nbands = jQuery.url.param("n") ? Number(jQuery.url.param("n")) : null;
-    sparks.config.debug_rvalue = jQuery.url.param("r") ? Number(jQuery.url.param("r")) : null;
-    sparks.config.debug_mvalue = jQuery.url.param("m") ? Number(jQuery.url.param("m")) : null;
-    sparks.config.debug_tvalue = jQuery.url.param("t") ? Number(jQuery.url.param("t")) : null;
-
-    mr.Activity = function () {
-        mr.Activity.uber.init.apply(this);
+    sm.Activity = function () {
+        sm.Activity.uber.init.apply(this);
 
         var activity = this;
-        this.dataService = null;
-        this.log = new mr.ActivityLog();
-        this.assessment = new mr.Assessment(this);
-        this.reporter = new mr.Reporter($('#report_area'));
 
-        this.circuit = null;
-        this.multimeter = null;
-        this.resistor = null;
-
-        this.current_session = 0;
-        this.current_question = 0;
-        this.allResults = [];
-
+        breadModel('insert', 'wire', 'left_positive_1,a23');
+        breadModel('insert', 'wire', 'left_negative_1,c5');
     };
 
-    sparks.config.Activity = sparks.activities.mr.Activity;
+    sparks.config.Activity = sparks.activities.sm.Activity;
 
-    sparks.extend(mr.Activity, sparks.Activity, {
-
-        setDataService: function (ds) {
-            this.dataService = ds;
-        },
+    sparks.extend(sm.Activity, sparks.Activity, {
 
         initDocument: function () {
             var self = this;
 
-            this.dom = mr.ActivityDomHelper;
-
-            this.root_dir = sparks.config.root_dir + '/activities/measuring-resistance';
-            this.sessionTitle = $('#session_title');
-            this.endSessionInstruction = $('.instruction_end_session');
-            this.questionsElem = $('#questions_area');
-            this.reportElem = $('#report_area').hide();
-
-            if (sparks.config.debug) {
-                $('#json_button').click(function () {
-                    $('#json_current_log').html('<pre>' + sparks.util.prettyPrint(activity.log.sessions, 4) + '</pre>' + JSON.stringify(activity.log));
-                });
-            }
-            else {
-                $('#json').hide();
-            }
-
-            this.buttonize();
-
+            this.root_dir = sparks.config.root_dir + '/activities/module-2/series-measuring';
             $('body').scrollTop(0); //scroll to top
 
-            $('input, select').attr("disabled", "true");
-
-            $('.next_button').hide().click(function (event) {
-                self.nextButtonClicked(self, event);
-            });
-
-            $('form').append(
-              "<input name='start_time' type='hidden'></input><input name='stop_time' type='hidden'></input>");
-
-            $('#start_button').click(function (event) {
-                self.startButtonClicked(self, event);
-            });
-            var local = this.dataService ? false : true;
-            this.rubic = util.getRubric(1, function (rubric) { self.rubric = rubric; }, local);
         },
 
         onFlashDone: function () {
-            this.multimeter = new sparks.circuit.Multimeter();
-            this.resistor4band = new sparks.circuit.Resistor4band();
-            this.resistor5band = new sparks.circuit.Resistor5band();
-
-
         },
 
-        resetCircuit: function () {
-            console.log('ENTER ResistorActivity.resetCircuit');
-            if (sparks.config.debug_nbands) {
-                this.setCurrentResistor(sparks.config.debug_nbands == 4 ? this.resistor4band : this.resistor5band);
-            }
-            else {
-                if (Math.random() < 0.75) {
-                    this.setCurrentResistor(this.resistor4band);
-                }
-                else {
-                    this.setCurrentResistor(this.resistor5band);
-                }
-            }
-            flash.sendCommand('set_current_resistor', this.currentResistor.id);
-
-            var r = this.currentResistor;
-
-            if (sparks.config.debug_rvalue || sparks.config.debug_mvalue ||
-                sparks.config.debug_tvalue)
-            {
-                if (sparks.config.debug_rvalue) {
-                    r.setNominalValue(sparks.config.debug_rvalue);
-                }
-                if (sparks.config.debug_mvalue) {
-                    r.setRealValue(sparks.config.debug_mvalue);
-                }
-                if (sparks.config.debug_tvalue) {
-                    r.setTolerance(sparks.config.debug_tvalue);
-                }
-                r.updateColors(r.getNominalValue(), r.getTolerance());
-            }
-            else {
-                r.randomize();
-            }
-            flash.sendCommand('reset_circuit');
-            this.logResistorState();
-            console.log('currentResistor=' + sparks.activity.currentResistor);
-            this.multimeter.update();
-        },
-
-        setCurrentResistor: function (resistor) {
-          this.currentResistor = resistor;
-          flash.sendCommand('set_current_resistor', resistor.id);
-        },
-
-        enableCircuit: function () {
-            flash.sendCommand('enable_circuit');
-        },
-
-        disableCircuit: function () {
-            flash.sendCommand('disable_circuit');
-        },
-
-        completedTry: function () {
-            var result = {};
-
-            $("form").each(function (i) {
-                var form = jQuery(this);
-                result[this.id] = sparks.util.serializeForm(form);
-            });
-
-            if (sparks.config.debug) {
-                var resultString = jQuery.map(this.allResults, function (el, i) {
-                    return jQuery.toJSON(el);
-                }).join("<br/>");
-                $("#result").html("<pre>"+resultString+"</pre>");
-            }
-
-            this.assessment.receiveResultFromHTML(result);
-            this.feedback = this.assessment.grade(this.log.currentSession(), this.rubric);
-            this.assessment.sendResultToHTML(result, this.feedback);
-
-            for (var item in result) {
-                this.updateItem(result, item);
-            }
-
-            this.questionsElem.hide();
-            this.reportElem.show();
-            this.reporter.report(this.log.currentSession(), this.feedback);
-
-            $(".next_button").each(function () {
-                $(this).button('enable');
-            }).show();
-
-            this.updateEndInstruction();
-            this.endSessionInstruction.show();
-            this.log.add('end_section');
-            this.log.add('end_session');
-
-            this.saveStudentData();
-            $('body').scrollTop(this.reportElem.offset().top);
-        },
-
-        updateEndInstruction : function () {
-            var t = 'Click on Next to try another resistor.';
-            this.endSessionInstruction.text(t);
-        },
-
-        updateItem : function (result, name) {
-          var itemForm = $("#" + name);
-          var titleText = '';
-          var image = '';
-
-          if(result[name].message){
-            titleText = "title='" + result[name].message + "' ";
-          }
-
-          if (result[name].correct == 4) {
-            image = 'ok.png';
-            label = 'Correct!';
-          }
-          else if (result[name].correct > 0) {
-            image = 'yellow-circle.png';
-            label = 'Partially correct, Click Help in the report!';
-          }
-          else {
-            image = 'cancel.png';
-            label = 'Incorrect, Click Help in the report!';
-          }
-
-          itemForm.prepend('<img title="' + label + '" class="grade" src="' + sparks.config.root_dir + '/common/icons/' + image + '"'  + titleText + "/>");
-        },
-
-        startTry : function () {
-          ++ this.current_session;
-          this.log.beginNextSession();
-          this.current_question = 1;
-
-          this.reportElem.hide();
-          this.endSessionInstruction.hide();
-          this.questionsElem.show();
-          this.sessionTitle.html('<h3>Resistor #' + this.current_session + '</h3>');
-          $('#rated_r_feedback').hide();
-          $('#rated_t_feedback').hide();
-          $('#measured_r_feedback').hide();
-          $('#t_range_feedback').hide();
-
-          $("form").each(function (i){ this.reset(); });
-
-
-          $(".grade").remove();
-
-
-          this.resetCircuit();
-
-          if (sparks.config.debug) {
-              this.showRccDebugInfo();
-          }
-
-          var form = $("form:first");
-          this.enableForm(form);
-
-          this.disableCircuit();
-
-          this.log.add('start_session');
-          if (this.multimeter.redPlugConnection) {
-            this.log.add('connect', { conn1: 'red_plug', conn2: this.multimeter.redPlugConnection });
-          }
-          if (this.multimeter.blackPlugConnection) {
-            this.log.add('connect', { conn1: 'black_plug', conn2: this.multimeter.blackPlugConnection });
-          }
-          this.log.add('start_section');
-          this.log.add('start_question', { section : this.current_section, question : 1 });
-          $('body').scrollTop(0); //scroll to top
-          this.buttonize();
-        },
-
-        showRccDebugInfo : function () {
-            var resistor = this.currentResistor;
-            var model = $("#rcc_model");
-            var debug_div = $("#rcc_debug");
-            var min = resistor.getNominalValue() * (1 - resistor.getTolerance());
-            var max = resistor.getNominalValue() * (1 + resistor.getTolerance());
-
-
-            var html =
-              'Type: ' + resistor.getNumBands() + '-band<br />' +
-              'Nominal Value: ' + resistor.getNominalValue() + '<br />' +
-              'Tolerance: ' + resistor.getTolerance() * 100.0 + '%<br />' +
-              'Calculated colors: ' + resistor.getColors(resistor.getNominalValue(), resistor.getTolerance()) + '<br />' +
-              'Range: [' + sparks.unit.res_str(min) + ', ' + sparks.unit.res_str(max) + ']<br />' +
-              'Real Value: ' + resistor.getRealValue() + '<br />' +
-              'Display Value: ' + this.multimeter.makeDisplayText(resistor.getRealValue()) + '<br />';
-
-            if (debug_div.length > 0) {
-                debug_div.html(html);
-            }
-            else {
-                model.append('<div id="rcc_debug">' + html + '</div>');
-            }
-        },
-
-        enableForm: function (form) {
-          var self = this;
-          form.append("<button>Submit</button>");
-          this.buttonize();
-          form.find("button").click(function (event) {
-              self.submitButtonClicked(self, event);
-              event.preventDefault();
-          });
-          form.find("input, select").removeAttr("disabled");
-          form.find("input, select").keypress(function (event) {
-              if (event.keyCode == '13') { //13: Enter key
-                return false; //to prevent IE from reloading the page
-              }
-          });
-          form.css("background-color", "rgb(253,255,184)");
-          form.find("input[name='start_time']").attr("value", "" + (new Date()).getTime());
-        },
-
-        disableForm: function (form) {
-          form.find("input[name='stop_time']").attr("value", "" + (new Date()).getTime());
-          form.find("button").remove();
-          form.find("input, select").attr("disabled", "true");
-          form.css("background-color", "");
-        },
-
-        logResistorState : function () {
-            this.log.setValue('resistor_num_bands', this.currentResistor.numBands);
-            this.log.setValue('nominal_resistance', this.currentResistor.nominalValue);
-            this.log.setValue('tolerance', this.currentResistor.tolerance);
-            this.log.setValue('real_resistance', this.currentResistor.realValue);
-            this.log.setValue('displayed_resistance',
-                              this.multimeter.makeDisplayText(this.currentResistor.realValue));
-        },
-
-        saveStudentData : function () {
-            if (this.dataService) {
-                var obj = { learner_id: this.learner_id,
-                            content: JSON.stringify([this.log.currentSession()]),
-                            graded_result: JSON.stringify(this.feedback)
-                };
-                this.dataService.save(obj);
-            }
-            else {
-                alert('Not saving the data:\neither not logged in and/or no data service defined');
-            }
-        },
-
-        validateAnswer: function (questionNum) {
-            var value, unit, msg;
-            var title = 'Alert';
-
-            var answer = this.dom.getAnswer(questionNum);
-
-            switch (questionNum) {
-            case 1:
-            case 3:
-                if (!this.dom.validateNumberString(answer[0])) {
-                    msg = "I can't recognize the value you entered. Please enter a number.";
-                    sparks.ui.alert(title, msg);
-                    return false;
-                }
-                if (answer[1] === 'Units...') {
-                    msg = 'Please select a unit before submitting your answer.';
-                    sparks.ui.alert(title, msg);
-                    return false;
-                }
-                return true;
-            case 2:
-                if (answer === 'Select one') {
-                    msg = 'Please select a tolerance value before submitting your answer.';
-                    sparks.ui.alert(title, msg);
-                    return false;
-                }
-                return true;
-            case 4:
-                if (!this.dom.validateNumberString(answer[0]) ||
-                    !this.dom.validateNumberString(answer[2]))
-                {
-                    msg = "I can't recognize the values you entered. Please enter numbers.";
-                    sparks.ui.alert(title, msg);
-                    return false;
-                }
-                if (answer[1] === 'Units...' ||
-                    answer[3] === 'Units...')
-                {
-                    msg = 'Please select a unit for each value before submitting your answer.';
-                    sparks.ui.alert(title, msg);
-                    return false;
-                }
-                return true;
-            case 5:
-                if (answer === undefined || answer === null || str.strip(answer) === '') {
-                    msg = 'Please check yes or no before submitting your answer.';
-                    sparks.ui.alert(title, msg);
-                    return false;
-                }
-                return true;
-            default:
-                alert('ERROR: wrong question number ' + questionNum);
-                return false;
-            }
-            return true;
-        },
-
-        submitButtonClicked: function (activity, event) {
-            if (!activity.validateAnswer(activity.current_question)) {
-                return;
-            }
-
-            var form = jQuery(event.target).parents('.question_form');
-            activity.disableForm(form);
-            var nextForm = form.nextAll("form:first");
-            activity.log.add('end_question', { question : activity.current_question });
-
-            if (nextForm.size() === 0) { //all questions answered for current session
-                activity.completedTry();
-            }
-            else {
-                activity.enableForm(nextForm);
-                ++activity.current_question;
-                activity.log.add('start_question', { question : activity.current_question });
-                if (activity.current_question === 3) {
-                    activity.enableCircuit();
-                }
-            }
-        },
-
-        startButtonClicked: function (activity, event) {
-            $('#intro_area').hide();
-            activity.startTry();
-        },
-
-        nextButtonClicked: function (activity, event) {
-            $(".next_button").each(function (i){
-              this.disabled = true;
-            });
-            $('.show_report_button').hide();
-            activity.startTry();
-        }
     });
 
 })();

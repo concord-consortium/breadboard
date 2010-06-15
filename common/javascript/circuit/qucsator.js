@@ -12,16 +12,17 @@
     return grouped;
   }
 
-  sparks.circuit.qucsate = function (netlist, callback, type) {
-    debug('netlist=' + JSON.stringify(netlist));
+  sparks.circuit.qucsate = function(netlist, callback, type) {
+    console.log('netlist=' + JSON.stringify(netlist));
+    console.log('url=' + sparks.config.qucsate_server_url);
     type = type || 'qucs';
     var data = {};
     data[type || 'qucs'] = netlist;
     $.ajax({
         async: false,
-        url: qucsate.serverUrl,
+        url: sparks.config.qucsate_server_url,
         data: data,
-        success: qucsate.parser(callback),
+        success: sparks.circuit.qucsate.parser(callback),
         error: function (request, status, error) {
                   debug('ERROR: url=' + qucsate.serverUrl + '\nstatus=' + status + '\nerror=' + error);
               }
@@ -49,6 +50,7 @@
           results[key] = parseFloat(chunks[i][1]);
         }
       }
+      console.log('qucsate.parser results=' + JSON.stringify(results));
       callback(results);
     });
   };
@@ -57,9 +59,7 @@
   // make qucs netlists from breadboard objects
   //
   sparks.circuit.qucsate.makeNetlist = function(board) {
-
     var netlist = '# QUCS Netlist\n';
-    return [];
     $.each(board.components, function(name, component) {
       var line = '';
 

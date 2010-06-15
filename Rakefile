@@ -12,6 +12,7 @@ namespace :combine do
   task :all => [
     :'client:measuring_resistance_activity',
     :'client:measuring_resistance_report',
+    :'client:series_measuring_activity',
     :'server:measuring_resistance_report'
   ]
 
@@ -32,7 +33,15 @@ namespace :combine do
         ],
         'client-mr-report.js')
     end
-    
+
+    desc "Concatenate all JavaScript for Series - Measuring activity (client)"
+    task :series_measuring_activity do
+      sprocket([
+          'activities/module-2/series-measuring/js/activity.js'
+        ],
+        'client-series-measuring-activity.js')
+    end
+
   end
 
   namespace :server do

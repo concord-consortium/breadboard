@@ -62,6 +62,9 @@
         init: function () {
         },
         
+        setDataService: function () {
+        },
+        
         buttonize: function () {
             $('button').button();
         }
