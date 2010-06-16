@@ -2167,11 +2167,12 @@ sparks.util.getRubric = function (id, callback, local) {
             connections : arguments[1].split(",")
           };
 
-          switch(props.kind){
+          switch(props.kind) {
             case "resistor":
-              if( typeof(arguments[2])==="string" ){
+              if (typeof(arguments[2])==="string") {
                 props.resistance = Resistor.getResistance( arguments[2].split(",") );
-              }else if( typeof(arguments[2])=="number" ){
+              }
+              else if (typeof(arguments[2])=="number") {
                 props.resistance = arguments[2];
               }
               $('#rated_values').text($('#rated_values').text() + ' ' + props.resistance);
@@ -2302,6 +2303,14 @@ sparks.util.getRubric = function (id, callback, local) {
 
 /* FILE activity.js */
 
+
+$(document).ready(function () {
+   sparks.activity = new sparks.config.Activity();
+   sparks.activity.onDocumentReady();
+   sparks.activity.onFlashDone();
+});
+
+
 (function () {
 
     var sm = sparks.activities.sm;
@@ -2313,7 +2322,6 @@ sparks.util.getRubric = function (id, callback, local) {
         sm.Activity.uber.init.apply(this);
 
         var activity = this;
-
         breadModel('insert', 'wire', 'left_positive_1,a23');
         breadModel('insert', 'wire', 'left_negative_1,c5');
     };
@@ -2322,7 +2330,7 @@ sparks.util.getRubric = function (id, callback, local) {
 
     sparks.extend(sm.Activity, sparks.Activity, {
 
-        initDocument: function () {
+        onDocumentReady: function () {
             var self = this;
 
             this.root_dir = sparks.config.root_dir + '/activities/module-2/series-measuring';
@@ -2331,7 +2339,15 @@ sparks.util.getRubric = function (id, callback, local) {
         },
 
         onFlashDone: function () {
+            this.startTry();
         },
+
+        startTry: function () {
+
+        },
+
+        resetCircuit: function () {
+        }
 
     });
 
