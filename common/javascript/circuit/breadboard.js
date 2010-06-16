@@ -266,11 +266,12 @@
             connections : arguments[1].split(",")
           };
 
-          switch(props.kind){
+          switch(props.kind) {
             case "resistor":
-              if( typeof(arguments[2])==="string" ){
+              if (typeof(arguments[2])==="string") {
                 props.resistance = Resistor.getResistance( arguments[2].split(",") );
-              }else if( typeof(arguments[2])=="number" ){
+              }
+              else if (typeof(arguments[2])=="number") {
                 props.resistance = arguments[2];
               }
               $('#rated_values').text($('#rated_values').text() + ' ' + props.resistance);
