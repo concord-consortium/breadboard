@@ -18,9 +18,10 @@
     </script>
   </head>
   <body>
-    <script>
-
-    </script>
+    <h2>
+      <img class='no_border' src='../../../common/icons/rgirl.png' />
+      Module 2 - Series: Measuring
+    </h2>
 
     <embed style="width:900px;height:600px;border:1px solid black;float:left;" src="activity1-seriesCircuit.swf" id="swf" quality="high" allowscriptaccess="always" type="application/x-shockwave-flash"></embed>
     <div id="dmm-output" style="font-family: helvetica; float: left; min-width: 10em; height: 1em;  padding: 5px; margin-left: 10px; border:1px solid red;">Meter Reading: </div>
@@ -39,6 +40,145 @@
       </tr>
     </table>
     Rated resistance values: <span id="rated_values"></span>
+    
+    <div id="questions_area">
+      <form id='question_1_form' class="question_form">
+        <span class='prompt'>1. What is the total resistance?</span>
+        &nbsp;&nbsp;
+        <input id="answer_1_value_input" />
+        <select id="answer_1_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select>
+        &nbsp;&nbsp;
+      </form>
+      
+      <form id='question_2_form' class="question_form">
+        <span class='prompt'>2. Measure the voltage drop across</span><br/>
+        <div style="margin-left: 20px; margin-top: 10px;">
+        R<sub>1</sub>:
+        <input id="answer_2_1_value_input" />
+        <select id="answer_2_1_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select><br/>
+        R<sub>2</sub>:
+        <input id="answer_2_2_value_input" />
+        <select id="answer_2_2_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select><br/>
+        R<sub>3</sub>:
+        <input id="answer_2_3_value_input" />
+        <select id="answer_2_3_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select><br/>
+        &nbsp;&nbsp;
+        </div>
+      </form>
+
+      <form id='question_3_form' class="question_form">
+        <span class='prompt'>3. What is the current through</span><br/>
+        <div style="margin-left: 20px; margin-top: 10px;">
+        R<sub>1</sub>:
+        <input id="answer_3_1_value_input" />
+        <select id="answer_3_1_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select><br/>
+        R<sub>2</sub>:
+        <input id="answer_3_2_value_input" />
+        <select id="answer_3_2_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select><br/>
+        R<sub>3</sub>:
+        <input id="answer_3_3_value_input" />
+        <select id="answer_3_3_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select><br/>
+        &nbsp;&nbsp;
+        </div>
+      </form>
+      
+      <form id='question_4_form' class="question_form">
+        <span class='prompt'>4. What is the voltage drop across V<sub>AE</sub> + V<sub>GC</sub>?</span>
+        &nbsp;&nbsp;
+        <input id="answer_4_value_input" />
+        <select id="answer_4_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select>
+        &nbsp;&nbsp;
+      </form>
+      
+    </div>
     
     <div id="popup"></div>
 
