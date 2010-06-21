@@ -1,7 +1,10 @@
 /* FILE qucsator.js */
 
 (function () {
-
+  
+  this.sparks.circuit.qucsator = {};
+  var q = sparks.circuit.qucsator;
+  
   var inGroupsOf = function (ary, n) {
     var grouped = [];
     for(i in ary) {
@@ -10,10 +13,10 @@
       grouped[Math.floor(i / 3)][i % 3] = ary[i];
     }
     return grouped;
-  }
+  };
 
-  sparks.circuit.qucsate = function(netlist, callback, type) {
-    console.log('netlist=' + JSON.stringify(netlist));
+  q.qucsate = function (netlist, callback, type) {
+    console.log('netlist=' + q.ppNetlist(netlist));
     console.log('url=' + sparks.config.qucsate_server_url);
     type = type || 'qucs';
     var data = {};
@@ -22,9 +25,9 @@
         async: false,
         url: sparks.config.qucsate_server_url,
         data: data,
-        success: sparks.circuit.qucsate.parser(callback),
+        success: q.parser(callback),
         error: function (request, status, error) {
-                  debug('ERROR: url=' + qucsate.serverUrl + '\nstatus=' + status + '\nerror=' + error);
+                  debug('ERROR: url=' + sparks.config.qucsate_server_url + '\nstatus=' + status + '\nerror=' + error);
               }
     });
   };
@@ -34,14 +37,14 @@
   // and passes the data to the callback
   //
 
-  sparks.circuit.qucsate.parser = function(callback) {
+  q.parser = function(callback) {
     return(function(data) {
       var results = {};
 
       // for jsonp we simply put the whole string into the 'result' property of the json object
       if ( data.result ) { data = data.result; }
 
-      var chunks = data.split("\n")
+      var chunks = data.split("\n");
       chunks = inGroupsOf(chunks.slice(1, chunks.length - 1), 3);
       for (var i in chunks) {
         var key = /<indep (.+)\./.exec(chunks[i][0]);
@@ -58,7 +61,7 @@
   //
   // make qucs netlists from breadboard objects
   //
-  sparks.circuit.qucsate.makeNetlist = function(board) {
+  q.makeNetlist = function(board) {
     var netlist = '# QUCS Netlist\n';
     $.each(board.components, function(name, component) {
       var line = '';
@@ -104,6 +107,11 @@
       netlist = netlist + "\n" + line;
     });
     return netlist + "\n.DC:DC1"; 
-  }
+  };
+  
+  // Pretty-print netlist
+  q.ppNetlist = function (s) {
+      return s.replace('\\u000a', '\n');
+  };
 
 })();
