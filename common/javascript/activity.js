@@ -35,7 +35,7 @@
      */
     this.initActivity = function () {
     //function onFlashLoad() {
-        //console.log('ENTER initActivity');
+        console.log('ENTER initActivity');
         try {
             var activity = new sparks.config.Activity();
             activity.learner_id = sparks.util.readCookie('learner_id');
@@ -44,8 +44,8 @@
                 console.log('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
                 activity.setDataService(new RestDS(null, null, put_path));
             }
-            activity.initDocument();
-            activity.onFlashDone();
+            activity.onDocumentReady();
+            activity.onFlashReady();
             sparks.activity = activity;
         }
         catch (e) {

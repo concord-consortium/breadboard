@@ -52,7 +52,7 @@
         },
 
         // Initial operation on document when it is loaded
-        initDocument: function () {
+        onDocumentReady: function () {
             var self = this;
 
             this.dom = mr.ActivityDomHelper;
@@ -96,7 +96,7 @@
         },
 
         // Initializations that can be done only when the flash movie is loaded
-        onFlashDone: function () {
+        onFlashReady: function () {
             this.multimeter = new sparks.circuit.Multimeter();
             this.resistor4band = new sparks.circuit.Resistor4band();
             this.resistor5band = new sparks.circuit.Resistor5band();
