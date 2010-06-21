@@ -15,14 +15,20 @@ package org.concord.sparks
             this.setupCallbacks();
         }
         
-        public function setupCallbacks():void {
-            ExternalInterface.addCallback("sendMessageToFlash",
-                    getMessageFromJavaScript);
+        public function call(func:String, ... values) {
+            var args = values;
+            args.unshift(func);
+            ExternalInterface.call.apply(null, args);
         }
         
         public function sendEvent(name:String, ... values) {
             var time = String(new Date().valueOf());
             ExternalInterface.call('receiveEvent', name, values.join('|'), time);
+        }
+        
+        private function setupCallbacks():void {
+            ExternalInterface.addCallback("sendMessageToFlash",
+                    getMessageFromJavaScript);
         }
         
         private function parseParameter(parm) {
