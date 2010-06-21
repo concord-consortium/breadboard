@@ -23,7 +23,7 @@
       Module 2: Measuring a Series Circuit
     </h2>
 
-    <embed style="width:900px;height:600px;border:1px solid black;float:left;" src="activity1-seriesCircuit.swf" id="swf" quality="high" allowscriptaccess="always" type="application/x-shockwave-flash"></embed>
+    <embed style="width:900px;height:600px;border:1px solid black;float:left;" src="breadboardActivity1.swf" id="swf" quality="high" allowscriptaccess="always" type="application/x-shockwave-flash"></embed>
     <div id="dmm-output" style="font-family: helvetica; float: left; min-width: 10em; height: 1em;  padding: 5px; margin-left: 10px; border:1px solid red;">Meter Reading: </div>
 
     <br style="clear:both" />
@@ -40,6 +40,10 @@
       </tr>
     </table>
     Rated resistance values: <span id="rated_values"></span>
+    
+    <p/>
+    <button class='next_button'>Next</button>
+    <span class='instruction_end_session'></span>
     
     <div id="questions_area">
       <form id='question_1_form' class="question_form">
@@ -58,6 +62,7 @@
           <option>mA</option>
           <option>A</option>
         </select>
+        <button id="question_1_submit" class="submit">Submit</button>
         &nbsp;&nbsp;
       </form>
       
@@ -105,7 +110,8 @@
           <option>&#x00b5;A</option>
           <option>mA</option>
           <option>A</option>
-        </select><br/>
+        </select>
+        <button id="question_2_submit" class="submit">Submit</button>
         &nbsp;&nbsp;
         </div>
       </form>
@@ -154,7 +160,8 @@
           <option>&#x00b5;A</option>
           <option>mA</option>
           <option>A</option>
-        </select><br/>
+        </select>
+        <button id="question_3_submit" class="submit">Submit</button>
         &nbsp;&nbsp;
         </div>
       </form>
@@ -175,10 +182,17 @@
           <option>mA</option>
           <option>A</option>
         </select>
+        <button id="question_4_submit" class="submit">Submit</button>
         &nbsp;&nbsp;
       </form>
       
     </div>
+    
+    <div id="report_area" class="report_area"></div>
+
+    <p/>
+    <button class='next_button'>Next</button>
+    <span class='instruction_end_session'></span>
     
     <div id="popup"></div>
 
