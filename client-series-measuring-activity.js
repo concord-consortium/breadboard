@@ -1737,6 +1737,7 @@ sparks.util.getRubric = function (id, callback, local) {
      * initiated from this function.
      */
     this.initActivity = function () {
+        console.log('ENTER initActivity');
         try {
             var activity = new sparks.config.Activity();
             activity.learner_id = sparks.util.readCookie('learner_id');
@@ -1745,8 +1746,8 @@ sparks.util.getRubric = function (id, callback, local) {
                 console.log('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
                 activity.setDataService(new RestDS(null, null, put_path));
             }
-            activity.initDocument();
-            activity.onFlashDone();
+            activity.onDocumentReady();
+            activity.onFlashReady();
             sparks.activity = activity;
         }
         catch (e) {
@@ -1823,6 +1824,9 @@ sparks.util.getRubric = function (id, callback, local) {
 
 (function () {
 
+  this.sparks.circuit.qucsator = {};
+  var q = sparks.circuit.qucsator;
+
   var inGroupsOf = function (ary, n) {
     var grouped = [];
     for(i in ary) {
@@ -1830,10 +1834,10 @@ sparks.util.getRubric = function (id, callback, local) {
       grouped[Math.floor(i / 3)][i % 3] = ary[i];
     }
     return grouped;
-  }
+  };
 
-  sparks.circuit.qucsate = function(netlist, callback, type) {
-    console.log('netlist=' + JSON.stringify(netlist));
+  q.qucsate = function (netlist, callback, type) {
+    console.log('netlist=' + q.ppNetlist(netlist));
     console.log('url=' + sparks.config.qucsate_server_url);
     type = type || 'qucs';
     var data = {};
@@ -1842,21 +1846,21 @@ sparks.util.getRubric = function (id, callback, local) {
         async: false,
         url: sparks.config.qucsate_server_url,
         data: data,
-        success: sparks.circuit.qucsate.parser(callback),
+        success: q.parser(callback),
         error: function (request, status, error) {
-                  debug('ERROR: url=' + qucsate.serverUrl + '\nstatus=' + status + '\nerror=' + error);
+                  debug('ERROR: url=' + sparks.config.qucsate_server_url + '\nstatus=' + status + '\nerror=' + error);
               }
     });
   };
 
 
-  sparks.circuit.qucsate.parser = function(callback) {
+  q.parser = function(callback) {
     return(function(data) {
       var results = {};
 
       if ( data.result ) { data = data.result; }
 
-      var chunks = data.split("\n")
+      var chunks = data.split("\n");
       chunks = inGroupsOf(chunks.slice(1, chunks.length - 1), 3);
       for (var i in chunks) {
         var key = /<indep (.+)\./.exec(chunks[i][0]);
@@ -1870,7 +1874,7 @@ sparks.util.getRubric = function (id, callback, local) {
     });
   };
 
-  sparks.circuit.qucsate.makeNetlist = function(board) {
+  q.makeNetlist = function(board) {
     var netlist = '# QUCS Netlist\n';
     $.each(board.components, function(name, component) {
       var line = '';
@@ -1915,13 +1919,19 @@ sparks.util.getRubric = function (id, callback, local) {
       netlist = netlist + "\n" + line;
     });
     return netlist + "\n.DC:DC1";
-  }
+  };
+
+  q.ppNetlist = function (s) {
+      return s.replace('\\u000a', '\n');
+  };
 
 })();
 
 /* FILE breadboard.js */
 
 (function () {
+
+    var q = sparks.circuit.qucsator;
 
 
       var defs = {
@@ -1992,14 +2002,15 @@ sparks.util.getRubric = function (id, callback, local) {
                      this.toleranceColorMap[tolerance]
                    ];
         },
-        colorToNumber : function(color) {
+        colorToNumber: function (color) {
           for (n in Resistor.colorMap) {
             if (Resistor.colorMap[n] == color) { return parseInt(n); }
           }
+          return null;
         },
         getResistance: function(colors){
           var resistance = Resistor.colorToNumber(colors[0]);
-          for ( var i = 1; i < colors.length - 2; i++) {
+          for (var i = 1; i < colors.length - 2; i++) {
             resistance = resistance * 10;
             resistance += Resistor.colorToNumber(colors[i]);
           }
@@ -2020,23 +2031,23 @@ sparks.util.getRubric = function (id, callback, local) {
 
       Hole.prototype.nodeName = function() {
         return this.strip && this.strip.name;
-      }
+      };
 
       var GhostHole = function GhostHole(name) {
         this.name = 'node' + calls;
         return this;
-      }
+      };
 
       GhostHole.prototype.nodeName = function() {
         return this.name;
-      }
+      };
 
       var Strip = function Strip( holes, name ){
         this.type ='strip';
         this.holes={};
         this.name = name;
-        if( holes ){
-          for(var i=0, l=holes; i < l; i++){
+        if (holes) {
+          for (var i=0, l=holes; i < l; i++) {
             this.holes[''+i] = new Hole();
             this.holes[''+i].strip = this;
           }
@@ -2045,6 +2056,7 @@ sparks.util.getRubric = function (id, callback, local) {
       };
 
       var Breadboard = function Breadboard(){
+        var i;
         this.type ='Breadboard';
 
         this.powerRail = { // I was told these were called power-rails
@@ -2058,22 +2070,22 @@ sparks.util.getRubric = function (id, callback, local) {
           }
         };
 
-        for(var i=0, l=defs.powerRailHoles; i < l; i++){
-          for(side in this.powerRail) {
-            for(end in this.powerRail[side]) {
-              var h = side + '_' + end + '_' + i
+        for (i=0, l=defs.powerRailHoles; i < l; i++) {
+          for (side in this.powerRail) {
+            for (end in this.powerRail[side]) {
+              var h = side + '_' + end + '_' + i;
               this.powerRail[side][end][h] = this.holes[h] = new Hole(this.powerRail[side][end], h);
             }
           }
         }
 
-        for(var i=0, l=defs.rows; i < l; i++ ){
+        for (i=0, l=defs.rows; i < l; i++) {
           newStripL = this.makeStrip("L" + i);
           newStripR = this.makeStrip("R" + i);
-          for(var a=0, ll=5; a < ll; a++ ){
+          for (var a=0, ll=5; a < ll; a++ ) {
             var mapCode = String.fromCharCode(a+97)+i;
             newStripL.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripL, mapCode );
-            var mapCode = String.fromCharCode(a+102)+i;
+            mapCode = String.fromCharCode(a+102)+i;
             newStripR.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripR, mapCode );
           }
         }
@@ -2084,13 +2096,13 @@ sparks.util.getRubric = function (id, callback, local) {
       Breadboard.prototype.components={};
       Breadboard.prototype.holes={};
 
-      Breadboard.prototype.makeStrip = function(name){
+      Breadboard.prototype.makeStrip = function (name) {
         var stripLen = this.strips.length;
         this.strips[ stripLen ] = new Strip(null, name);
         return this.strips[ stripLen ];
       };
 
-      Breadboard.prototype.component = function component(props){
+      Breadboard.prototype.component = function (props) {
         if(typeof props=='string'){
           return this.components[props];
         }else {
@@ -2098,7 +2110,7 @@ sparks.util.getRubric = function (id, callback, local) {
         }
       };
 
-      Breadboard.prototype.clear = function clear(){
+      Breadboard.prototype.clear = function () {
         var destroyed = 0;
         for( k in this.components ){
           destroyed += !!this.component(k).destroy();
@@ -2106,17 +2118,16 @@ sparks.util.getRubric = function (id, callback, local) {
         return !!destroyed;
       };
 
-      var Component = function Component(props){
-        console.log('ENTER Component');
-        for(var i in props){
+      var Component = function (props) {
+        var i;
+        for (i in props) {
           this[i]=props[i];
         }
         this.breadBoard = breadBoard;
         this.breadBoard.components[props.UID] = this;
 
         this.connections=[];
-        for(var i in props.connections){
-          console.log('i=' + i);
+        for (i in props.connections) {
           if (props.connections[i].nodeName) {
             this.connections[i] = props.connections[i];
           } else {
@@ -2127,17 +2138,18 @@ sparks.util.getRubric = function (id, callback, local) {
         return this;
       };
 
-      Component.prototype.move = function move(connections){
-        for(var i in this.connections){
-          for( var j in this.connections[i].connections ){
-            if( this.connections[i].connections[j] === this ){
+      Component.prototype.move = function (connections) {
+        var i;
+        for (i in this.connections) {
+          for (var j in this.connections[i].connections) {
+            if (this.connections[i].connections[j] === this) {
               this.connections[i].connections = [];
             }
           }
           this.connections[i] = [];
         }
         this.connections = [];
-        for(var i in connections){
+        for (i in connections){
           this.connections[i] = this.breadBoard.holes[connections[i]];
           this.breadBoard.holes[connections[i]].connections[this.breadBoard.holes[connections[i]].connections.length] = this;
         }
@@ -2175,6 +2187,7 @@ sparks.util.getRubric = function (id, callback, local) {
               else if (typeof(arguments[2])=="number") {
                 props.resistance = arguments[2];
               }
+              props.resistance = 3;
               $('#rated_values').text($('#rated_values').text() + ' ' + props.resistance);
               break;
           }
@@ -2227,8 +2240,9 @@ sparks.util.getRubric = function (id, callback, local) {
 
           var result;
 
-          sparks.circuit.qucsate(sparks.circuit.qucsate.makeNetlist(breadBoard),
-                  function(r){ result = r.meter; } );
+          debugger;
+          q.qucsate(q.makeNetlist(breadBoard),
+                  function (r) { result = r.meter; } );
 
           console.log('result=' + result);
 
@@ -2237,7 +2251,7 @@ sparks.util.getRubric = function (id, callback, local) {
           breadBoard.component('bat2').destroy();
 
           if (arguments[0] === 'resistance') {
-            result = (1 / result)
+            result = (1 / result);
           }
           result = -1 * result;
           document.getElementById('dmm-output').innerHTML = "Meter Reading: " + result;
@@ -2265,10 +2279,16 @@ sparks.util.getRubric = function (id, callback, local) {
             $('#popup').text('Calculating...');
             $('#popup').dialog();
 
+            debugger;
+            console.log('RESISTANCE:');
             var r = interfaces.query.apply(window, ['resistance', arguments[2], arguments[3]]);
             $('#resistance').text(r);
+
+            console.log('CURRENT:');
             var c = interfaces.query.apply(window, ['current', arguments[2], arguments[3]]);
             $('#current').text(c);
+
+            console.log('VOLTAGE:');
             var v = interfaces.query.apply(window, ['voltage', arguments[2], arguments[3]]);
             $('#voltage').text(v);
 
@@ -2300,16 +2320,19 @@ sparks.util.getRubric = function (id, callback, local) {
     sparks.activities.sm.config.root_dir = sparks.config.root_dir + '/activities/module-2/series-measuring';
 
 })();
+(function () {
+
+    var sm = sparks.activities.sm;
+
+    sm.ActivityLog = function () {
+    };
+
+    sm.ActivityLog.prototype = function () {
+    };
+
+})();
 
 /* FILE activity.js */
-
-
-$(document).ready(function () {
-   sparks.activity = new sparks.config.Activity();
-   sparks.activity.onDocumentReady();
-   sparks.activity.onFlashDone();
-});
-
 
 (function () {
 
@@ -2321,9 +2344,7 @@ $(document).ready(function () {
     sm.Activity = function () {
         sm.Activity.uber.init.apply(this);
 
-        var activity = this;
-        breadModel('insert', 'wire', 'left_positive_1,a23');
-        breadModel('insert', 'wire', 'left_negative_1,c5');
+        this.log = new sm.ActivityLog();
     };
 
     sparks.config.Activity = sparks.activities.sm.Activity;
@@ -2336,19 +2357,62 @@ $(document).ready(function () {
             this.root_dir = sparks.config.root_dir + '/activities/module-2/series-measuring';
             $('body').scrollTop(0); //scroll to top
 
+            this.forms = $('form');
+            this.questionsArea = $('#questions_area');
+            this.reportArea = $('#report_area').hide();
+
+            $('button.submit').click(function (e) {
+                self.submitButtonClicked();
+                e.preventDefault();
+            });
         },
 
-        onFlashDone: function () {
+        onFlashReady: function () {
+            breadModel('insert', 'wire', 'left_positive_1,a23');
+            breadModel('insert', 'wire', 'left_negative_1,c5');
+
             this.startTry();
         },
 
-        startTry: function () {
+        submitButtonClicked: function () {
+            if (this.currentQuestion == 3) {
+                this.completedTry();
+            }
+            else {
+                ++ this.currentQuestion;
+                this.disableForm(this.currentQuestion - 1);
+                this.enableForm(this.currentQuestion);
+            }
+        },
 
+        startTry: function () {
+            this.currentQuestion = 0;
+
+            this.enableForm(0);
+            for (var i = 1; i < this.forms.length; ++i) {
+                this.disableForm(i);
+            }
+        },
+
+        completedTry: function () {
+            this.logResults();
+            this.questionsArea.hide();
+            this.reportArea.show();
         },
 
         resetCircuit: function () {
-        }
+        },
 
+        enableForm: function (k) {
+            $(this.forms[k]).find('input, select, button').attr('disabled', false);
+        },
+
+        disableForm: function (k) {
+            $(this.forms[k]).find('input, select, button').attr('disabled', true);
+        },
+
+        logResults: function () {
+        }
     });
 
 })();

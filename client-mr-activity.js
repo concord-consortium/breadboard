@@ -1737,6 +1737,7 @@ sparks.util.getRubric = function (id, callback, local) {
      * initiated from this function.
      */
     this.initActivity = function () {
+        console.log('ENTER initActivity');
         try {
             var activity = new sparks.config.Activity();
             activity.learner_id = sparks.util.readCookie('learner_id');
@@ -1745,8 +1746,8 @@ sparks.util.getRubric = function (id, callback, local) {
                 console.log('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
                 activity.setDataService(new RestDS(null, null, put_path));
             }
-            activity.initDocument();
-            activity.onFlashDone();
+            activity.onDocumentReady();
+            activity.onFlashReady();
             sparks.activity = activity;
         }
         catch (e) {
@@ -4385,7 +4386,7 @@ sparks.util.getRubric = function (id, callback, local) {
             this.dataService = ds;
         },
 
-        initDocument: function () {
+        onDocumentReady: function () {
             var self = this;
 
             this.dom = mr.ActivityDomHelper;
@@ -4425,7 +4426,7 @@ sparks.util.getRubric = function (id, callback, local) {
             this.rubic = util.getRubric(1, function (rubric) { self.rubric = rubric; }, local);
         },
 
-        onFlashDone: function () {
+        onFlashReady: function () {
             this.multimeter = new sparks.circuit.Multimeter();
             this.resistor4band = new sparks.circuit.Resistor4band();
             this.resistor5band = new sparks.circuit.Resistor5band();
