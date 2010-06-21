@@ -3,6 +3,8 @@
 /* FILE breadboard.js */
 
 (function () {
+    
+    var q = sparks.circuit.qucsator;
 
     ////////////////////////////////////////////////////////////////////////////////
     //// GLOBAL DEFAULTS ///////////////////////////////////////////////////////////
@@ -83,14 +85,15 @@
                      this.toleranceColorMap[tolerance]
                    ];
         },
-        colorToNumber : function(color) {
+        colorToNumber: function (color) {
           for (n in Resistor.colorMap) {
             if (Resistor.colorMap[n] == color) { return parseInt(n); }
           }
+          return null;
         },
         getResistance: function(colors){
           var resistance = Resistor.colorToNumber(colors[0]);
-          for ( var i = 1; i < colors.length - 2; i++) {
+          for (var i = 1; i < colors.length - 2; i++) {
             resistance = resistance * 10;
             resistance += Resistor.colorToNumber(colors[i]);
           }
@@ -115,23 +118,23 @@
 
       Hole.prototype.nodeName = function() {
         return this.strip && this.strip.name;
-      }
+      };
 
       var GhostHole = function GhostHole(name) {
         this.name = 'node' + calls;
         return this;
-      }
+      };
 
       GhostHole.prototype.nodeName = function() {
         return this.name;
-      }
+      };
 
       var Strip = function Strip( holes, name ){
         this.type ='strip';
         this.holes={};
         this.name = name;
-        if( holes ){
-          for(var i=0, l=holes; i < l; i++){
+        if (holes) {
+          for (var i=0, l=holes; i < l; i++) {
             this.holes[''+i] = new Hole();
             this.holes[''+i].strip = this;
           }
@@ -140,6 +143,7 @@
       };
 
       var Breadboard = function Breadboard(){
+        var i;
         this.type ='Breadboard';
 
         // Create power-rails
@@ -154,23 +158,23 @@
           }
         };
 
-        for(var i=0, l=defs.powerRailHoles; i < l; i++){
-          for(side in this.powerRail) {
-            for(end in this.powerRail[side]) {
-              var h = side + '_' + end + '_' + i
+        for (i=0, l=defs.powerRailHoles; i < l; i++) {
+          for (side in this.powerRail) {
+            for (end in this.powerRail[side]) {
+              var h = side + '_' + end + '_' + i;
               this.powerRail[side][end][h] = this.holes[h] = new Hole(this.powerRail[side][end], h);
             }
           }
         }
 
         // Create board
-        for(var i=0, l=defs.rows; i < l; i++ ){
+        for (i=0, l=defs.rows; i < l; i++) {
           newStripL = this.makeStrip("L" + i);
           newStripR = this.makeStrip("R" + i);
-          for(var a=0, ll=5; a < ll; a++ ){
+          for (var a=0, ll=5; a < ll; a++ ) {
             var mapCode = String.fromCharCode(a+97)+i;
             newStripL.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripL, mapCode );
-            var mapCode = String.fromCharCode(a+102)+i;
+            mapCode = String.fromCharCode(a+102)+i;
             newStripR.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripR, mapCode );
           }
         }
@@ -181,13 +185,13 @@
       Breadboard.prototype.components={};
       Breadboard.prototype.holes={};
 
-      Breadboard.prototype.makeStrip = function(name){
+      Breadboard.prototype.makeStrip = function (name) {
         var stripLen = this.strips.length;
         this.strips[ stripLen ] = new Strip(null, name);
         return this.strips[ stripLen ];
       };
 
-      Breadboard.prototype.component = function component(props){
+      Breadboard.prototype.component = function (props) {
         if(typeof props=='string'){
           return this.components[props];
         }else {
@@ -195,7 +199,7 @@
         }
       };
 
-      Breadboard.prototype.clear = function clear(){
+      Breadboard.prototype.clear = function () {
         var destroyed = 0;
         for( k in this.components ){
           destroyed += !!this.component(k).destroy();
@@ -204,17 +208,17 @@
       };
 
       //// COMPONENT MODEL /////////////////////////////////////////////////////////
-      var Component = function Component(props){
-        console.log('ENTER Component');
-        for(var i in props){
+      var Component = function (props) {
+        var i;
+        //console.log('ENTER Component');
+        for (i in props) {
           this[i]=props[i];
         }
         this.breadBoard = breadBoard;
         this.breadBoard.components[props.UID] = this;
 
         this.connections=[];
-        for(var i in props.connections){
-          console.log('i=' + i);
+        for (i in props.connections) {
           if (props.connections[i].nodeName) {
             this.connections[i] = props.connections[i];
           } else {
@@ -225,17 +229,18 @@
         return this;
       };
 
-      Component.prototype.move = function move(connections){
-        for(var i in this.connections){
-          for( var j in this.connections[i].connections ){
-            if( this.connections[i].connections[j] === this ){
+      Component.prototype.move = function (connections) {
+        var i;
+        for (i in this.connections) {
+          for (var j in this.connections[i].connections) {
+            if (this.connections[i].connections[j] === this) {
               this.connections[i].connections = [];
             }
           }
           this.connections[i] = [];
         }
         this.connections = [];
-        for(var i in connections){
+        for (i in connections){
           this.connections[i] = this.breadBoard.holes[connections[i]];
           this.breadBoard.holes[connections[i]].connections[this.breadBoard.holes[connections[i]].connections.length] = this;
         }
@@ -274,6 +279,7 @@
               else if (typeof(arguments[2])=="number") {
                 props.resistance = arguments[2];
               }
+              props.resistance = 3;
               $('#rated_values').text($('#rated_values').text() + ' ' + props.resistance);
               break;
           }
@@ -331,8 +337,8 @@
 
           var result;
           
-          sparks.circuit.qucsate(sparks.circuit.qucsate.makeNetlist(breadBoard),
-                  function(r){ result = r.meter; } );
+          q.qucsate(q.makeNetlist(breadBoard),
+                  function (r) { result = r.meter; } );
 
           console.log('result=' + result);
 
@@ -341,7 +347,7 @@
           breadBoard.component('bat2').destroy();
 
           if (arguments[0] === 'resistance') {
-            result = (1 / result)
+            result = (1 / result);
           }
           result = -1 * result;
           document.getElementById('dmm-output').innerHTML = "Meter Reading: " + result;
@@ -370,11 +376,16 @@
             }
             $('#popup').text('Calculating...');
             $('#popup').dialog();
-            
+          
+            console.log('RESISTANCE:');
             var r = interfaces.query.apply(window, ['resistance', arguments[2], arguments[3]]);
             $('#resistance').text(r);
+            
+            console.log('CURRENT:');
             var c = interfaces.query.apply(window, ['current', arguments[2], arguments[3]]);
             $('#current').text(c);
+            
+            console.log('VOLTAGE:');
             var v = interfaces.query.apply(window, ['voltage', arguments[2], arguments[3]]);
             $('#voltage').text(v);
             
