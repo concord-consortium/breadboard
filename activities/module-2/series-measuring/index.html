@@ -23,23 +23,48 @@
       Module 2: Measuring a Series Circuit
     </h2>
 
-    <embed style="width:900px;height:600px;border:1px solid black;float:left;" src="breadboardActivity1.swf" id="swf" quality="high" allowscriptaccess="always" type="application/x-shockwave-flash"></embed>
+    <embed style="width:900px;height:600px;border:1px solid black;float:left;"
+      src="breadboardActivity1.swf"
+      id="breadboardActivity1"
+      name="breadboardActivity1"
+      quality="high"
+      allowscriptaccess="always"
+      type="application/x-shockwave-flash">
+    </embed>
     <div id="dmm-output" style="font-family: helvetica; float: left; min-width: 10em; height: 1em;  padding: 5px; margin-left: 10px; border:1px solid red;">Meter Reading: </div>
 
     <br style="clear:both" />
-    <p/><p/>
-    <table>
-      <tr>
-        <td>Voltage:</td><td id="voltage"></td>
-      </tr>
-      <tr>
-        <td>Current:</td><td id="current"></td>
-      </tr>
-      <tr>
-        <td>Resistance:</td><td id="resistance"></td>
-      </tr>
-    </table>
-    Rated resistance values: <span id="rated_values"></span>
+    <p/>
+    <div class="debug_area">
+      From qucs:
+      <table>
+        <tr>
+          <td>Voltage:</td><td id="dbg_voltage"></td>
+        </tr>
+        <tr>
+          <td>Current:</td><td id="dbg_current"></td>
+        </tr>
+        <tr>
+          <td>Resistance:</td><td id="dbg_resistance"></td>
+        </tr>
+      </table>
+      <p/>
+      Resistors:
+      <table>
+        <tr>
+          <td></td><td>Rated</td><td>Real</td><td>Displayed</td><td>Tolerance</td>
+        </tr>
+        <tr>
+          <td>Resistor 1</td><td id="dbg_rated_1"></td><td id="dbg_real_1"></td><td id="dbg_displayed_1"></td><td id="dbg_tol_1"></td>
+        </tr>
+        <tr>
+          <td>Resistor 2</td><td id="dbg_rated_2"></td><td id="dbg_real_2"></td><td id="dbg_displayed_2"></td><td id="dbg_tol_2"></td>
+        </tr>
+        <tr>
+          <td>Resistor 3</td><td id="dbg_rated_3"></td><td id="dbg_real_3"></td><td id="dbg_displayed_3"></td><td id="dbg_tol_3"></td>
+        </tr>
+      </table>
+    </div>
     
     <p/>
     <button class='next_button'>Next</button>
