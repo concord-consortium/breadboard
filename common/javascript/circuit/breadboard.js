@@ -273,14 +273,13 @@
 
           switch(props.kind) {
             case "resistor":
+              props.UID = arguments[3];
               if (typeof(arguments[2])==="string") {
                 props.resistance = Resistor.getResistance( arguments[2].split(",") );
               }
               else if (typeof(arguments[2])=="number") {
                 props.resistance = arguments[2];
               }
-              props.resistance = 3;
-              $('#rated_values').text($('#rated_values').text() + ' ' + props.resistance);
               break;
           }
           var newComponent;
@@ -361,7 +360,6 @@
       // The inward interface between Flash's ExternalInterface and JavaScript's BreadBoard prototype model instance
       this.breadModel = function () {
         debug(arguments);
-
         calls++;
         var newArgs = [];
         for(var i=1,l=arguments.length;i< l;i++){
