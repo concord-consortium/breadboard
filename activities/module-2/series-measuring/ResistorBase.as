@@ -15,7 +15,7 @@
 	import Globe;
 	
 	//resistor 4 band
-	
+
 	public class ResistorBase extends DragItShift
 	{
 		private var m_bandCount:int;
@@ -30,11 +30,6 @@
 		
 		private var componentName:String;
 		
-// 		private var redProbeArmatureNumber:Number = 8;
-//		private var redProbeikBoneName:Number = 131;
-//		private var blackProbeArmatureNumber:Number = 16;
-//		private var blackProbeikBoneName:Number = 202;
-		
 		private var probeOnLeft:Boolean = false;
 		private var probeOnRight:Boolean = false;
 		private var blackProbeOnRight:Boolean = false;
@@ -47,14 +42,11 @@
 		private var transform1:SoundTransform=new SoundTransform();
 		
 		//manually set x and y values for probe mc's
-		private var probeRedX:Number = 360.8;
-		private var probeRedY:Number = 40.4;
-		private var probeBlackX:Number = -264.4;
-		private var probeBlackY:Number = 68.8;
+//		private var probeRedX:Number = 360.8;
+//		private var probeRedY:Number = 40.4;
+//		private var probeBlackX:Number = -264.4;
+//		private var probeBlackY:Number = 68.8;
 		
-		//resistor tip variables relative to resistor x value
-		//NEW resistor tip values
-		private var resistorTipLength:Number = 45;
 		private var resistorTipLeftX:Number;
 		private var resistorTipLeftY:Number;
 		private var resistorTipRightX:Number;
@@ -73,22 +65,30 @@
 			
 			//resistor tip variables relative to resistor x value
 			//NEW resistor tip values
-			resistorTipLeftX = this.x + (getChildByName("resistorEndLeft").x - resistorTipLength);
-			resistorTipLeftY = this.y + getChildByName("resistorEndLeft").y;
-			resistorTipRightX = this.x + (getChildByName("resistorEndRight").x + resistorTipLength);
-			resistorTipRightY = this.y + getChildByName("resistorEndRight").y;
+//			resistorTipLeftX = this.x + (getChildByName("resistorEndLeft").x - getChildByName("resistorEndLeft").width);
+//			resistorTipLeftY = this.y + getChildByName("resistorEndLeft").y;
+//			resistorTipRightX = this.x + (getChildByName("resistorEndRight").x + getChildByName("resistorEndRight").width);
+//			resistorTipRightY = this.y + getChildByName("resistorEndRight").y;
 		
 			this.getChildByName("resistor_rollover_left").alpha = 0;
 			this.getChildByName("probe_engaged_left").alpha = 0;
 			this.getChildByName("resistor_rollover_right").alpha = 0;
 			this.getChildByName("probe_engaged_right").alpha = 0;
+			this.getChildByName("resistorEndLeftBroken").alpha = 0;
+			this.getChildByName("resistorEndRightBroken").alpha = 0;
+			this.getChildByName("leftRestore").alpha = 0;
+			this.getChildByName("rightRestore").alpha = 0;
 		
 			randomizeResistance();
-			resistorLocationInitialValues();
 			//testResistorTips();
-			
 			this.addEventListener(Event.ADDED_TO_STAGE, added_to_stage_handler);
 			this.addEventListener(Event.REMOVED_FROM_STAGE, removed_from_stage_handler);
+			this.getChildByName("leftBreak").addEventListener(MouseEvent.MOUSE_UP, breakLeftResistor);
+			this.getChildByName("rightBreak").addEventListener(MouseEvent.MOUSE_UP, breakRightResistor);
+			this.getChildByName("leftRestore").addEventListener(MouseEvent.MOUSE_UP, restoreLeftResistor);
+			this.getChildByName("rightRestore").addEventListener(MouseEvent.MOUSE_UP, restoreRightResistor);
+			this.addEventListener(Event.ENTER_FRAME, resistorLocationInitialValues)
+
 		
 			if (stage != null)
 			{
@@ -99,14 +99,60 @@
 				stage.addEventListener(Event.ENTER_FRAME, resistor_rollovers_right_handler);
 				stage.addEventListener(Event.ENTER_FRAME, resistor_rollovers_left_handler);
 			}
+			
 		}
-		
-		private function resistorLocationInitialValues():void
+		private function breakLeftResistor(event:MouseEvent):void 
 		{
-			resistorOnBoard();
-			//  replace 'color string' with the actual values of the resistors in ohms.
-			//componentName = ExternalInterface.call('breadModel', 'insert', 'resistor', resistorLeftLocation + ',' + resistorRightLocation, bandOneColor + ',' + bandTwoColor + ',' + bandThreeColor + ',' + bandFourColor);
-		}  
+			this.getChildByName("leftBreak").alpha=0;
+			this.getChildByName("leftRestore").alpha=1;
+			this.getChildByName("leftRestore").addEventListener(MouseEvent.MOUSE_UP, restoreLeftResistor);
+			this.getChildByName("resistorEndLeft").alpha=0;
+			this.getChildByName("resistorEndLeft").x += 1000;
+			this.getChildByName("resistorEndLeftBroken").alpha=1;
+			this.resistorTipLeftX -= 45  ;
+			//this.resistorOnBoard();  This line of code is duplicated in the move resistor function 
+	  	 } 
+		 
+		private function breakRightResistor(event:MouseEvent):void 
+		{
+			this.getChildByName("rightBreak").alpha=0;
+			this.getChildByName("rightRestore").alpha=1;
+			this.getChildByName("rightRestore").addEventListener(MouseEvent.MOUSE_UP, restoreRightResistor);
+			this.getChildByName("resistorEndRight").alpha=0;
+			this.getChildByName("resistorEndRight").x += 1000;
+			this.getChildByName("resistorEndRightBroken").alpha=1;
+			this.resistorTipRightX += 45  ;
+			//this.resistorOnBoard();  This line of code is exectued on resistor_move function
+	  	 } 
+		
+		private function restoreLeftResistor(event:MouseEvent):void 
+		{
+
+			this.getChildByName("leftBreak").alpha=1;
+			this.getChildByName("leftRestore").alpha=0;
+			this.getChildByName("leftRestore").removeEventListener(MouseEvent.MOUSE_UP, restoreLeftResistor);
+			this.getChildByName("resistorEndLeft").alpha=1;
+			this.getChildByName("resistorEndLeft").x -= 1000;
+			this.getChildByName("resistorEndLeftBroken").alpha=0;
+			this.resistorTipLeftX += 45  ;
+			//this.resistorOnBoard();  This line of code is exectued on resistor_move function
+	  	 } 
+		 
+		private function restoreRightResistor(event:MouseEvent):void 
+		{
+		
+			this.getChildByName("rightBreak").alpha=1;
+			this.getChildByName("rightRestore").alpha=0;
+			this.getChildByName("rightRestore").removeEventListener(MouseEvent.MOUSE_UP, restoreRightResistor);
+			this.getChildByName("resistorEndRight").alpha=1;
+			this.getChildByName("resistorEndRight").x -= 1000;
+			this.getChildByName("resistorEndRightBroken").alpha=0;
+			this.resistorTipRightX -= 45  ;
+			//this.resistorOnBoard();  This line of code is exectued on resistor_move function
+	  	 } 
+		
+		
+ 
 		
 		private function added_to_stage_handler(evt:Event):void
 		{
@@ -116,8 +162,6 @@
 			stage.addEventListener(MouseEvent.MOUSE_UP, probeQuery_handler);
 			stage.addEventListener(Event.ENTER_FRAME, resistor_rollovers_right_handler);
 			stage.addEventListener(Event.ENTER_FRAME, resistor_rollovers_left_handler);
-			
-			resistorOnBoard();
 		}
 		
 		private function removed_from_stage_handler(evt:Event):void
@@ -128,12 +172,23 @@
 			stage.removeEventListener(MouseEvent.MOUSE_UP, probeQuery_handler);
 			stage.removeEventListener(Event.ENTER_FRAME, resistor_rollovers_right_handler);
 			stage.removeEventListener(Event.ENTER_FRAME, resistor_rollovers_left_handler);
-			
-			resistorOnBoard();
 		}
+		
+		private function resistorLocationInitialValues(event:Event):void
+		{
+			resistorTipLeftX = this.x + (getChildByName("resistorEndLeft").x - getChildByName("resistorEndLeft").width);
+			resistorTipLeftY = this.y + getChildByName("resistorEndLeft").y;
+			resistorTipRightX = this.x + (getChildByName("resistorEndRight").x + getChildByName("resistorEndRight").width);
+			resistorTipRightY = this.y + getChildByName("resistorEndRight").y;
+			resistorOnBoard();
+			//  replace 'color string' with the actual values of the resistors in ohms.
+			//componentName = ExternalInterface.call('breadModel', 'insert', 'resistor', resistorLeftLocation + ',' + resistorRightLocation, bandOneColor + ',' + bandTwoColor + ',' + bandThreeColor + ',' + bandFourColor);
+			removeEventListener(Event.ENTER_FRAME, resistorLocationInitialValues);
+	} 
 		
 		private function resistorOnBoard():void
 		{
+			
 			if (currentHoleOne != null )
 			{
 				currentHoleOne.gotoAndStop(1);
@@ -228,11 +283,11 @@
 		
 		
 		
-		private function onResistorMove_handler(event:MouseEvent):void
+private function onResistorMove_handler(event:MouseEvent):void
 		{
-			var newResistorTipLeftX:Number = this.x + (getChildByName("resistorEndLeft").x - resistorTipLength);
+			var newResistorTipLeftX:Number = this.x + (getChildByName("resistorEndLeft").x - (getChildByName("resistorEndLeft").width) );
 			var newResistorTipLeftY:Number = this.y + getChildByName("resistorEndLeft").y;
-			var newResistorTipRightX:Number = this.x + (getChildByName("resistorEndRight").x + resistorTipLength);
+			var newResistorTipRightX:Number = this.x + (getChildByName("resistorEndRight").x + (getChildByName("resistorEndRight").width) );
 			var newResistorTipRightY:Number = this.y + getChildByName("resistorEndRight").y;
 			
 		//	trace( this.name + " x= " + this.x);	
@@ -248,9 +303,21 @@
 				//ExternalInterface.call('breadModel', 'move', componentName, resistorLeftLocation + ',' + resistorRightLocation);
 				
 				//trace( this.name + " x= " + resistorTipLeftX + " y= " + resistorTipLeftY);
-				
+			}
+			
+			else if ((newResistorTipRightX != resistorTipRightX) || (newResistorTipRightY != resistorTipRightY) )
+			{
+				resistorTipLeftX = newResistorTipLeftX;
+				resistorTipLeftY = newResistorTipLeftY;
+				resistorTipRightX = newResistorTipRightX;
+				resistorTipRightY = newResistorTipRightY;
+				this.resistorOnBoard();
+				//ExternalInterface.call('breadModel', 'move', componentName, resistorLeftLocation + ',' + resistorRightLocation);
+					
+				//trace( this.name + " x= " + resistorTipLeftX + " y= " + resistorTipLeftY);
 			}
 		}
+
 		
 		private const bandColorMap:Array = [
 			"black",					// 0
@@ -286,7 +353,7 @@
 			
 			const toleranceValue:Number = tolerances[Math.floor(Math.random() * 8)];
 			
-			setColorBands(randnumValue, toleranceValue);
+			//setColorBands(randnumValue, toleranceValue);
 		}
 		
 		private var m_bandOneLoader:Loader = null;
@@ -294,14 +361,63 @@
 		private var m_bandThreeLoader:Loader = null;
 		private var m_bandFourLoader:Loader = null;
 		private var m_bandToleranceLoader:Loader = null;
+
+        public function setColorBands(colors:Array) {
+
+            const toleranceBandName:String = (m_bandCount > 4) ? "band5" : "band4";
+            
+            if (m_bandOneLoader != null)
+                Sprite(this.getChildByName("band1")).removeChild(m_bandOneLoader);
+            if (m_bandTwoLoader != null)
+                Sprite(this.getChildByName("band2")).removeChild(m_bandOneLoader);
+            if (m_bandThreeLoader != null)
+                Sprite(this.getChildByName("band3")).removeChild(m_bandOneLoader);
+            if (m_bandFourLoader != null)
+                Sprite(this.getChildByName("band4")).removeChild(m_bandOneLoader);
+            if (m_bandToleranceLoader != null)
+                Sprite(this.getChildByName(toleranceBandName)).removeChild(m_bandToleranceLoader);
+        
+            //load image into Band1
+            m_bandOneLoader = new Loader(); 
+            Sprite(this.getChildByName("band1")).addChild(m_bandOneLoader); 
+            var bandOneBitmap:URLRequest = new URLRequest(m_pngBandSuffix + "/t_" + colors[0] + ".png"); 
+            m_bandOneLoader.load(bandOneBitmap); 
+            
+            //load image into Band2
+            m_bandTwoLoader = new Loader(); 
+            Sprite(this.getChildByName("band2")).addChild(m_bandTwoLoader); 
+            var bandTwoBitmap:URLRequest = new URLRequest(m_pngBandSuffix + "/s_" + colors[1] + ".png"); 
+            m_bandTwoLoader.load(bandTwoBitmap); 
+            
+            //load image into Band3
+            m_bandThreeLoader = new Loader(); 
+            Sprite(this.getChildByName("band3")).addChild(m_bandThreeLoader); 
+            var bandThreeBitmap:URLRequest = new URLRequest(m_pngBandSuffix + "/s_" + colors[2] + ".png"); 
+            m_bandThreeLoader.load(bandThreeBitmap);
+            
+            //load image into Band4
+            m_bandFourLoader = new Loader(); 
+            Sprite(this.getChildByName("band4")).addChild(m_bandFourLoader); 
+            var bandFourBitmap:URLRequest = new URLRequest(m_pngBandSuffix + "/s_" + colors[3] + ".png"); 
+            m_bandFourLoader.load(bandFourBitmap); 
+
+            //load image into Band5
+            if (colors.length > 4) {
+              m_bandToleranceLoader = new Loader();
+              Sprite(this.getChildByName(toleranceBandName)).addChild(m_bandToleranceLoader);
+              var bandToleranceBitmap:URLRequest = new URLRequest(m_pngBandSuffix + "/s_" + colors[4] + ".png");
+              m_bandToleranceLoader.load(bandToleranceBitmap);
+            }
+        }
 			
-		public function setColorBands(bandValues:Vector.<int>, toleranceValue:Number)
+		public function setColorBands_old(bandValues:Vector.<int>, toleranceValue:Number)
 		{
 			//assigns a value into bandThreeColor based on random number
 			bandOneColor = bandColorMap[bandValues[0]];
 			bandTwoColor = bandColorMap[bandValues[1]];
 			bandThreeColor = bandColorMap[bandValues[2]];
-			bandFourColor = bandColorMap[bandValues[3]];
+			if (m_bandCount > 4)
+				bandFourColor = bandColorMap[bandValues[3]];
 			
 			switch(toleranceValue)
 			{
@@ -336,16 +452,27 @@
 			
 			const toleranceBandName:String = (m_bandCount > 4) ? "band5" : "band4";
 			
-			if (m_bandOneLoader != null)
-				Sprite(this.getChildByName("band1")).removeChild(m_bandOneLoader);
-			if (m_bandTwoLoader != null)
-				Sprite(this.getChildByName("band2")).removeChild(m_bandOneLoader);
-			if (m_bandThreeLoader != null)
-				Sprite(this.getChildByName("band3")).removeChild(m_bandOneLoader);
-			if (m_bandFourLoader != null)
-				Sprite(this.getChildByName("band4")).removeChild(m_bandOneLoader);
-			if (m_bandToleranceLoader != null)
-				Sprite(this.getChildByName(toleranceBandName)).removeChild(m_bandToleranceLoader);
+			var bandObject:Sprite;
+			if (m_bandOneLoader != null) {
+				bandObject = Sprite(this.getChildByName("band1"));
+				bandObject.removeChild(m_bandOneLoader);
+			}
+			if (m_bandTwoLoader != null) {
+				bandObject = Sprite(this.getChildByName("band2"));
+				bandObject.removeChild(m_bandTwoLoader);
+			}
+			if (m_bandThreeLoader != null) {
+				bandObject = Sprite(this.getChildByName("band3"));
+				bandObject.removeChild(m_bandThreeLoader);
+			}
+			if (m_bandFourLoader != null) {
+				bandObject = Sprite(this.getChildByName("band4"));
+				bandObject.removeChild(m_bandFourLoader);
+			}
+			if (m_bandToleranceLoader != null) {
+				bandObject = Sprite(this.getChildByName(toleranceBandName));
+				bandObject.removeChild(m_bandToleranceLoader);
+			}
 		
 			//load image into Band1
 			m_bandOneLoader = new Loader(); 
@@ -366,12 +493,12 @@
 			m_bandThreeLoader.load(bandThreeBitmap);
 			
 			//load image into Band4
-			if (m_bandCount > 4)
+			if (m_bandCount > 4 && this.getChildByName("band4") != null)
 			{
-				m_bandFourLoader = new Loader(); 
-				Sprite(this.getChildByName("band4")).addChild(m_bandFourLoader); 
-				var bandFourBitmap:URLRequest = new URLRequest(m_pngBandSuffix + "/s_" + bandFourColor + ".png"); 
-				m_bandFourLoader.load(bandFourBitmap); 
+				m_bandFourLoader = new Loader();
+				Sprite(this.getChildByName("band4")).addChild(m_bandFourLoader);
+				var bandFourBitmap:URLRequest = new URLRequest(m_pngBandSuffix + "/s_" + bandFourColor + ".png");
+				m_bandFourLoader.load(bandFourBitmap);
 			}
 			
 			//load image into Tolerance Band
@@ -398,7 +525,7 @@
 			//trace("hotspot1Right_maxY" + hotspot1Right_maxY);
 			//trace("--------");
 			
-			var hotspot1Right_minX:Number = (parent).x + resistorTipRightX - resistorTipLength;
+			var hotspot1Right_minX:Number = (parent).x + resistorTipRightX - getChildByName("resistorEndRight").width;
 			var hotspot1Right_maxX:Number = (parent).x + resistorTipRightX;
 			var hotspot1Right_minY:Number = (parent).y + (resistorTipRightY - 35);
 			var hotspot1Right_maxY:Number = (parent).y + (resistorTipRightY + 5);
@@ -517,10 +644,10 @@
 		{
 			
 			var hotspot1Left_minX:Number = (parent).x + resistorTipLeftX;
-			var hotspot1Left_maxX:Number = (parent).x + resistorTipLeftX + resistorTipLength;
+			var hotspot1Left_maxX:Number = (parent).x + resistorTipLeftX + getChildByName("resistorEndLeft").width;
 			var hotspot1Left_minY:Number = (parent).y + (resistorTipLeftY - 35);
 			var hotspot1Left_maxY:Number = (parent).y + (resistorTipLeftY + 5);
-			
+
 			
 			//var hotspotWidth:Number = 14;
 			//var hotspotHeight:Number = 7;
@@ -644,11 +771,11 @@
 		
 		private function resistor_rollovers_right_handler(event:Event):void
 		{
-			var hotspot1Right_minX:Number = (parent).x + resistorTipRightX - resistorTipLength;
+			var hotspot1Right_minX:Number = (parent).x + resistorTipRightX - getChildByName("resistorEndRight").width;
 			var hotspot1Right_maxX:Number = (parent).x + resistorTipRightX;
 			var hotspot1Right_minY:Number = (parent).y + (resistorTipRightY - 35);
 			var hotspot1Right_maxY:Number = (parent).y + (resistorTipRightY + 5);
-			
+		
 			var redProbe_tipX = (parent).x + MovieClip(parent).probe_red.x;
 			var redProbe_tipY = (parent).y + MovieClip(parent).probe_red.y;
 			
@@ -677,10 +804,10 @@
 		private function resistor_rollovers_left_handler(event:Event):void{
 			
 			var hotspot1Left_minX:Number = (parent).x + resistorTipLeftX;
-			var hotspot1Left_maxX:Number = (parent).x + resistorTipLeftX + resistorTipLength;
+			var hotspot1Left_maxX:Number = (parent).x + resistorTipLeftX + getChildByName("resistorEndLeft").width;
 			var hotspot1Left_minY:Number = (parent).y + (resistorTipLeftY - 35);
 			var hotspot1Left_maxY:Number = (parent).y + (resistorTipLeftY + 5);
-			
+		
 			
 			var redProbe_tipX = (parent).x + MovieClip(parent).probe_red.x;
 			var redProbe_tipY = (parent).y + MovieClip(parent).probe_red.y;
