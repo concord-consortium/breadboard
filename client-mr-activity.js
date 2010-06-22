@@ -1465,7 +1465,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
         for (var i = 0; i < arguments.length; ++i) {
           params[i] = arguments[i];
         }
-        var flash = sparks.flash.getFlashMovie("resistor_colors");
+        var flash = sparks.flash.getFlashMovie(sparks.config.flash_id);
         var retVal = flash.sendMessageToFlash.apply(flash, params).split('|');
         console.log('Returned by flash: ' + retVal);
         if (retVal[0] == 'flash_error') {
@@ -1478,7 +1478,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
     };
 
     this.receiveEvent = function (name, value, time) {
-      console.log('received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
+      console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
       var activity = sparks.activity;
       var multimeter = activity.multimeter;
       var wasConnected = multimeter.allConnected();
@@ -2109,7 +2109,8 @@ sparks.util.getRubric = function (id, callback, local) {
 
         toleranceValues: [ 0.01, 0.02 ],
 
-        init: function () {
+        init: function (id) {
+              this.id = id;
               this.nominalValue = 0.0; //resistance value specified by band colors;
               this.realValue = 0.0; //real resistance value in Ohms
               this.tolerance = 0.0; //tolerance value
@@ -2146,7 +2147,7 @@ sparks.util.getRubric = function (id, callback, local) {
 
         updateColors: function (resistance, tolerance) {
             this.colors = this.getColors(resistance, tolerance);
-            flash.sendCommand('set_resistor_label', this.colors);
+            flash.sendCommand('set_resistor_colors', this.id, this.colors);
         },
 
         show : function() {
@@ -2388,9 +2389,9 @@ sparks.util.getRubric = function (id, callback, local) {
 
     var circuit = sparks.circuit;
 
-    circuit.Resistor4band = function () {
+    circuit.Resistor4band = function (id) {
         var superclass = sparks.circuit.Resistor4band.uber;
-        superclass.init.apply(this);
+        superclass.init.apply(this, id);
         this.id = 'resistor_4band';
         this.numBands = 4;
 
@@ -2450,9 +2451,9 @@ sparks.util.getRubric = function (id, callback, local) {
 
     var circuit = sparks.circuit;
 
-    circuit.Resistor5band = function () {
+    circuit.Resistor5band = function (id) {
         var superclass = sparks.circuit.Resistor5band.uber;
-        superclass.init.apply(this);
+        superclass.init.apply(this, id);
         this.id = 'resistor_5band';
         this.numBands = 5;
 
@@ -4352,6 +4353,8 @@ sparks.util.getRubric = function (id, callback, local) {
     var flash = sparks.flash;
     var str = sparks.string;
     var util = sparks.util;
+
+    sparks.config.flash_id = 'resistor_colors';
 
     sparks.config.debug = jQuery.url.param("debug") !== undefined;
     sparks.config.debug_nbands = jQuery.url.param("n") ? Number(jQuery.url.param("n")) : null;
