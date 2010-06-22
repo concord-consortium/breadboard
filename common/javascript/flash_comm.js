@@ -17,7 +17,7 @@
         for (var i = 0; i < arguments.length; ++i) {
           params[i] = arguments[i];
         }
-        var flash = sparks.flash.getFlashMovie("resistor_colors");
+        var flash = sparks.flash.getFlashMovie(sparks.config.flash_id);
         var retVal = flash.sendMessageToFlash.apply(flash, params).split('|');
         console.log('Returned by flash: ' + retVal);
         if (retVal[0] == 'flash_error') {
@@ -31,7 +31,7 @@
 
     // To be called from Flash thru ExternalInterface
     this.receiveEvent = function (name, value, time) {
-      console.log('received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
+      console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
       var activity = sparks.activity;
       var multimeter = activity.multimeter;
       var wasConnected = multimeter.allConnected();
