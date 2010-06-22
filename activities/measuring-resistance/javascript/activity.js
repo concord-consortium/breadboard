@@ -18,6 +18,8 @@
     var str = sparks.string;
     var util = sparks.util;
     
+    sparks.config.flash_id = 'resistor_colors';
+    
     sparks.config.debug = jQuery.url.param("debug") !== undefined;
     sparks.config.debug_nbands = jQuery.url.param("n") ? Number(jQuery.url.param("n")) : null;
     sparks.config.debug_rvalue = jQuery.url.param("r") ? Number(jQuery.url.param("r")) : null;
@@ -98,8 +100,8 @@
         // Initializations that can be done only when the flash movie is loaded
         onFlashReady: function () {
             this.multimeter = new sparks.circuit.Multimeter();
-            this.resistor4band = new sparks.circuit.Resistor4band();
-            this.resistor5band = new sparks.circuit.Resistor5band();
+            this.resistor4band = new sparks.circuit.Resistor4band('resistor_4band');
+            this.resistor5band = new sparks.circuit.Resistor5band('resistor_5band');
 
             //console.log('Nominal Resistance=' + this.resistor.nominalValue);
             //console.log('Tolerance=' + this.resistor.tolerance * 100 + '%');

@@ -21,7 +21,8 @@
 
         toleranceValues: [ 0.01, 0.02 ],
 
-        init: function () {
+        init: function (id) {
+              this.id = id;
               this.nominalValue = 0.0; //resistance value specified by band colors;
               this.realValue = 0.0; //real resistance value in Ohms
               this.tolerance = 0.0; //tolerance value

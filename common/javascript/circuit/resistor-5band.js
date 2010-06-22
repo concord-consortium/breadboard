@@ -7,10 +7,9 @@
 
     var circuit = sparks.circuit;
     
-    circuit.Resistor5band = function () {
+    circuit.Resistor5band = function (id) {
         var superclass = sparks.circuit.Resistor5band.uber;
-        superclass.init.apply(this);
-        this.id = 'resistor_5band';
+        superclass.init.apply(this, [id]);
         this.numBands = 5;
 
         this.r_values1pct = this.filter(circuit.r_values.r_values5band1pct);
