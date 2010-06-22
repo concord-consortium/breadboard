@@ -60,7 +60,7 @@
             //console.log('colors=' + this.colors);
             //console.log('Sending colors=' + this.colors.join('|'));
             this.colors = this.getColors(resistance, tolerance);
-            flash.sendCommand('set_resistor_label', this.colors);
+            flash.sendCommand('set_resistor_colors', this.id, this.colors);
         },
 
         show : function() {

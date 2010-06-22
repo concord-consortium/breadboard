@@ -63,8 +63,8 @@ package org.concord.sparks.activities {
             trace('currentResistor=' + currentResistor);
             var command:String = args[0];
             switch (command) {
-                case 'set_resistor_label':
-                    currentResistor.setColors(args[1]);
+                case 'set_resistor_colors':
+                    currentResistor.setColors(args[2]);
                     return currentResistor.getColors().join('|');
                 case 'set_multimeter_display':
                     multimeter.setDisplayText(args[1]);
