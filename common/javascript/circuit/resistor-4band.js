@@ -20,19 +20,30 @@
 
         toleranceValues: [0.05, 0.1],
         
-        randomize: function () {
+        randomize: function (options) {
             var ix = this.randInt(0, 1);
             var values;
 
             this.tolerance = this.toleranceValues[ix];
-            if (this.tolerance == 0.05) {
+            
+            if (options && options.rvalues) {
+                values = options.rvalues;
+            }
+            else if (this.tolerance == 0.05) {
                 values = this.r_values5pct;
             }
             else {
                 values = this.r_values10pct;
             }
+
             this.nominalValue = values[this.randInt(0, values.length-1)];
-            this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
+
+            if (options && options.realEqualsNominal) {
+                this.realValue = this.nominalValue;
+            }
+            else {
+                this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
+            }
             //console.log('r=' + this.nominalValue + ' t=' + this.tolerance);
             
             this.updateColors(this.nominalValue, this.tolerance);

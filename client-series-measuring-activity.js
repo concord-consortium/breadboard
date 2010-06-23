@@ -1478,6 +1478,10 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
     };
 
     this.receiveEvent = function (name, value, time) {
+      if (sparks.flash.activity) {
+          return sparks.flash.activity.receiveEvent(name, value, time);
+      }
+
       console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
       var activity = sparks.activity;
       var multimeter = activity.multimeter;
@@ -2189,6 +2193,9 @@ sparks.util.getRubric = function (id, callback, local) {
                 props.resistance = arguments[2];
               }
               break;
+            case "wire":
+              props.UID = arguments[2];
+              break;
           }
           var newComponent;
           newComponent = breadBoard.component(props);
@@ -2270,25 +2277,11 @@ sparks.util.getRubric = function (id, callback, local) {
 
         if (func === 'query') {
             var conns = arguments[2].split(',');
+
             if (conns[0] === 'null' || conns[1] === 'null') {
                 return 0;
             }
-            $('#popup').text('Calculating...');
-            $('#popup').dialog();
-
-            console.log('RESISTANCE:');
-            var r = interfaces.query.apply(window, ['resistance', arguments[2], arguments[3]]);
-            $('#resistance').text(r);
-
-            console.log('CURRENT:');
-            var c = interfaces.query.apply(window, ['current', arguments[2], arguments[3]]);
-            $('#current').text(c);
-
-            console.log('VOLTAGE:');
-            var v = interfaces.query.apply(window, ['voltage', arguments[2], arguments[3]]);
-            $('#voltage').text(v);
-
-            $('#popup').dialog('close');
+            var v = interfaces.query.apply(window, newArgs);
             return v;
         }
         else {
@@ -2621,19 +2614,30 @@ sparks.util.getRubric = function (id, callback, local) {
 
         toleranceValues: [0.05, 0.1],
 
-        randomize: function () {
+        randomize: function (options) {
             var ix = this.randInt(0, 1);
             var values;
 
             this.tolerance = this.toleranceValues[ix];
-            if (this.tolerance == 0.05) {
+
+            if (options && options.rvalues) {
+                values = options.rvalues;
+            }
+            else if (this.tolerance == 0.05) {
                 values = this.r_values5pct;
             }
             else {
                 values = this.r_values10pct;
             }
+
             this.nominalValue = values[this.randInt(0, values.length-1)];
-            this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
+
+            if (options && options.realEqualsNominal) {
+                this.realValue = this.nominalValue;
+            }
+            else {
+                this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
+            }
 
             this.updateColors(this.nominalValue, this.tolerance);
         },
@@ -2934,7 +2938,6 @@ sparks.util.getRubric = function (id, callback, local) {
         },
 
         report: function (session, feedback) {
-            alert('template=' + this.template + ' elem=' + this.reportElem);
             var reporter = this;
             this.reportElem.load(this.template, '', function () {
                 reporter.sessionReport(session, feedback);
@@ -3003,6 +3006,7 @@ sparks.util.getRubric = function (id, callback, local) {
         sm.Activity.uber.init.apply(this);
         this.log = new sm.ActivityLog();
         this.reporter = new sm.Reporter($('#report_area'));
+        sparks.flash.activity = this;
     };
 
     sparks.config.Activity = sparks.activities.sm.Activity;
@@ -3027,8 +3031,8 @@ sparks.util.getRubric = function (id, callback, local) {
         },
 
         onFlashReady: function () {
-            breadModel('insert', 'wire', 'left_positive_1,a23');
-            breadModel('insert', 'wire', 'left_negative_1,c5');
+            breadModel('insert', 'wire', 'left_positive_1,a23', 'wire1');
+            breadModel('insert', 'wire', 'left_negative_1,c5', 'wire2');
 
             this.startTry();
         },
@@ -3049,9 +3053,10 @@ sparks.util.getRubric = function (id, callback, local) {
             this.resistor2 = new sparks.circuit.Resistor4band('resistor2');
             this.resistor3 = new sparks.circuit.Resistor4band('resistor3');
 
-            this.resistor1.randomize();
-            this.resistor2.randomize();
-            this.resistor3.randomize();
+            var options = { rvalues: [ 100, 200, 300, 400, 500 ], realEqualsNominal: true };
+            this.resistor1.randomize(options);
+            this.resistor2.randomize(options);
+            this.resistor3.randomize(options);
 
             breadModel('insert', 'resistor', 'a23,a17', this.resistor1.getRealValue(), 'resistor1');
             breadModel('insert', 'resistor', 'b17,b11', this.resistor2.getRealValue(), 'resistor2');
@@ -3060,9 +3065,9 @@ sparks.util.getRubric = function (id, callback, local) {
             $('#dbg_rated_1').text(this.resistor1.getNominalValue());
             $('#dbg_rated_2').text(this.resistor2.getNominalValue());
             $('#dbg_rated_3').text(this.resistor3.getNominalValue());
-            $('#dbg_real_1').text(this.resistor1.getRealValue().toFixed(4));
-            $('#dbg_real_2').text(this.resistor2.getRealValue().toFixed(4));
-            $('#dbg_real_3').text(this.resistor3.getRealValue().toFixed(4));
+            $('#dbg_real_1').text(this.resistor1.getRealValue().toFixed(3));
+            $('#dbg_real_2').text(this.resistor2.getRealValue().toFixed(3));
+            $('#dbg_real_3').text(this.resistor3.getRealValue().toFixed(3));
             $('#dbg_tol_1').text(this.resistor1.getTolerance());
             $('#dbg_tol_2').text(this.resistor2.getTolerance());
             $('#dbg_tol_3').text(this.resistor3.getTolerance());
@@ -3077,7 +3082,6 @@ sparks.util.getRubric = function (id, callback, local) {
 
         completedTry: function () {
             this.logResults();
-            debugger;
             grader = new sm.Grader(this.log.session, {});
             feedback = grader.grade();
             this.reporter.report(this.log.session, feedback);
@@ -3097,7 +3101,58 @@ sparks.util.getRubric = function (id, callback, local) {
         },
 
         logResults: function () {
+        },
+
+        receiveEvent: function (name, value, time) {
+            console.log('ENTER sm.Activity#receiveEvent');
+            console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
+
+            var v;
+            var t = '';
+
+            if (name === 'probe') {
+                $('#popup').dialog();
+
+                v = breadModel('query', 'voltage', 'a23,a17');
+                t += v.toFixed(3);
+                v = breadModel('query', 'voltage', 'b17,b11');
+                t += ' ' + v.toFixed(3);
+                v = breadModel('query', 'voltage', 'c11,c5');
+                t += ' ' + v.toFixed(3);
+                $('#dbg_voltage').text(t);
+
+                breadModel('move', 'wire1', 'left_positive_1,a22');
+
+                v = breadModel('query', 'resistance', 'a23,a17');
+                t = v.toFixed(3);
+                v = breadModel('query', 'resistance', 'b17,b11');
+                t += ' ' + v.toFixed(3);
+                v = breadModel('query', 'resistance', 'c11,c5');
+                t += ' ' + v.toFixed(3);
+
+                $('#dbg_resistance').text(t);
+
+                v = breadModel('query', 'current', 'a22,a23');
+                t = v.toFixed(3);
+
+                breadModel('move', 'wire1', 'left_positive_1,a23');
+                breadModel('move', 'resistor1', 'a23,a16');
+                v = breadModel('query', 'current', 'a16,b17');
+                t += ' ' + v.toFixed(3);
+
+                breadModel('move', 'resistor1', 'a23,a17');
+                breadModel('move', 'resistor2', 'b17,b10');
+                v = breadModel('query', 'current', 'b10,c11');
+                t += ' ' + v.toFixed(3);
+
+                breadModel('move', 'resistor2', 'b17,b11');
+
+                $('#dbg_current').text(t);
+
+                $('#popup').dialog('close');
+            }
         }
+
     });
 
 })();

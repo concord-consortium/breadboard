@@ -10,12 +10,13 @@ package org.concord.sparks
         protected var javascript;
         protected var rootPath = ''; //prepended to path before accessing an external file
         
-        public function Activity(name:String, root, topDir):void {
+        public function Activity(name:String, root, topDir): void {
             trace("\nActivity: " + name + ' - ' + new Date());
             this.name = name;
             this.root = root;
             rootPath = topDir;
-            this.javascript = new JavaScript(this);
+            javascript = JavaScript.instance();
+            javascript.setActivity(this);
         }
         
         public function processMessageFromJavaScript(args) {

@@ -31,6 +31,10 @@
 
     // To be called from Flash thru ExternalInterface
     this.receiveEvent = function (name, value, time) {
+      if (sparks.flash.activity) {
+          return sparks.flash.activity.receiveEvent(name, value, time);
+      }
+        
       console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
       var activity = sparks.activity;
       var multimeter = activity.multimeter;

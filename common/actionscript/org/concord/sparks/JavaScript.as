@@ -1,18 +1,37 @@
-package org.concord.sparks
-{
+package org.concord.sparks {
+
     import flash.events.ErrorEvent;
     import flash.external.ExternalInterface;
     
     import org.concord.sparks.Activity;
     
     // Interface with external JavaScript
-    public class JavaScript
-    {
-        var activity:Activity;
-        
-        public function JavaScript(activity) {
+    public class JavaScript {
+  
+        private static var _instance:JavaScript;
+        private static var _fromWithin:Boolean = false;
+
+        private var activity:Activity;
+
+        public static function instance() {
+          if (! _instance) {
+            _fromWithin = true;
+            _instance = new JavaScript();
+            _fromWithin = false;
+          }
+          return _instance;
+        }
+
+        public function JavaScript() {
+            if (! _fromWithin) {
+              throw new Error("Constructor JavaScript() is not supposed to be called from outside.");
+            }
             this.activity = activity;
-            this.setupCallbacks();
+            setupCallbacks();
+        }
+
+        public function setActivity(activity:Activity) {
+            this.activity = activity;
         }
         
         public function call(func:String, ... values) {

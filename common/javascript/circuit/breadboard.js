@@ -281,6 +281,9 @@
                 props.resistance = arguments[2];
               }
               break;
+            case "wire":
+              props.UID = arguments[2];
+              break;
           }
           var newComponent;
           newComponent = breadBoard.component(props);
@@ -369,25 +372,11 @@
         
         if (func === 'query') {
             var conns = arguments[2].split(',');
+
             if (conns[0] === 'null' || conns[1] === 'null') {
                 return 0;
             }
-            $('#popup').text('Calculating...');
-            $('#popup').dialog();
-          
-            console.log('RESISTANCE:');
-            var r = interfaces.query.apply(window, ['resistance', arguments[2], arguments[3]]);
-            $('#resistance').text(r);
-            
-            console.log('CURRENT:');
-            var c = interfaces.query.apply(window, ['current', arguments[2], arguments[3]]);
-            $('#current').text(c);
-            
-            console.log('VOLTAGE:');
-            var v = interfaces.query.apply(window, ['voltage', arguments[2], arguments[3]]);
-            $('#voltage').text(v);
-            
-            $('#popup').dialog('close');
+            var v = interfaces.query.apply(window, newArgs);
             return v;
         }
         else {

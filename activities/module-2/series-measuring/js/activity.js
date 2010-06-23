@@ -25,6 +25,7 @@
         sm.Activity.uber.init.apply(this);
         this.log = new sm.ActivityLog();
         this.reporter = new sm.Reporter($('#report_area'));
+        sparks.flash.activity = this;
     };
     
     sparks.config.Activity = sparks.activities.sm.Activity;
@@ -51,8 +52,8 @@
 
         // Initializations that can be done only when the flash movie is loaded
         onFlashReady: function () {
-            breadModel('insert', 'wire', 'left_positive_1,a23');
-            breadModel('insert', 'wire', 'left_negative_1,c5');
+            breadModel('insert', 'wire', 'left_positive_1,a23', 'wire1');
+            breadModel('insert', 'wire', 'left_negative_1,c5', 'wire2');
             
             this.startTry();
         },
@@ -73,9 +74,10 @@
             this.resistor2 = new sparks.circuit.Resistor4band('resistor2');
             this.resistor3 = new sparks.circuit.Resistor4band('resistor3');
             
-            this.resistor1.randomize();
-            this.resistor2.randomize();
-            this.resistor3.randomize();
+            var options = { rvalues: [ 100, 200, 300, 400, 500 ], realEqualsNominal: true };
+            this.resistor1.randomize(options);
+            this.resistor2.randomize(options);
+            this.resistor3.randomize(options);
             
             breadModel('insert', 'resistor', 'a23,a17', this.resistor1.getRealValue(), 'resistor1');
             breadModel('insert', 'resistor', 'b17,b11', this.resistor2.getRealValue(), 'resistor2');
@@ -84,9 +86,9 @@
             $('#dbg_rated_1').text(this.resistor1.getNominalValue());
             $('#dbg_rated_2').text(this.resistor2.getNominalValue());
             $('#dbg_rated_3').text(this.resistor3.getNominalValue());
-            $('#dbg_real_1').text(this.resistor1.getRealValue().toFixed(4));
-            $('#dbg_real_2').text(this.resistor2.getRealValue().toFixed(4));
-            $('#dbg_real_3').text(this.resistor3.getRealValue().toFixed(4));
+            $('#dbg_real_1').text(this.resistor1.getRealValue().toFixed(3));
+            $('#dbg_real_2').text(this.resistor2.getRealValue().toFixed(3));
+            $('#dbg_real_3').text(this.resistor3.getRealValue().toFixed(3));
             $('#dbg_tol_1').text(this.resistor1.getTolerance());
             $('#dbg_tol_2').text(this.resistor2.getTolerance());
             $('#dbg_tol_3').text(this.resistor3.getTolerance());
@@ -120,7 +122,59 @@
         },
         
         logResults: function () {
+        },
+        
+        receiveEvent: function (name, value, time) {
+            console.log('ENTER sm.Activity#receiveEvent');
+            console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
+            
+            var v;
+            var t = '';
+            
+            if (name === 'probe') {
+                $('#popup').dialog();
+                
+                v = breadModel('query', 'voltage', 'a23,a17');
+                t += v.toFixed(3);
+                v = breadModel('query', 'voltage', 'b17,b11');
+                t += ' ' + v.toFixed(3);
+                v = breadModel('query', 'voltage', 'c11,c5');
+                t += ' ' + v.toFixed(3);
+                $('#dbg_voltage').text(t);
+
+                // Disconnect wire1
+                breadModel('move', 'wire1', 'left_positive_1,a22');
+                
+                v = breadModel('query', 'resistance', 'a23,a17');
+                t = v.toFixed(3);
+                v = breadModel('query', 'resistance', 'b17,b11');
+                t += ' ' + v.toFixed(3);
+                v = breadModel('query', 'resistance', 'c11,c5');
+                t += ' ' + v.toFixed(3);
+                
+                $('#dbg_resistance').text(t);
+                
+                v = breadModel('query', 'current', 'a22,a23');
+                t = v.toFixed(3);
+                
+                breadModel('move', 'wire1', 'left_positive_1,a23');
+                breadModel('move', 'resistor1', 'a23,a16');
+                v = breadModel('query', 'current', 'a16,b17');
+                t += ' ' + v.toFixed(3);
+                
+                breadModel('move', 'resistor1', 'a23,a17');
+                breadModel('move', 'resistor2', 'b17,b10');
+                v = breadModel('query', 'current', 'b10,c11');
+                t += ' ' + v.toFixed(3);
+                
+                breadModel('move', 'resistor2', 'b17,b11');
+                
+                $('#dbg_current').text(t);
+
+                $('#popup').dialog('close');
+            }
         }
+        
     });
     
 })();

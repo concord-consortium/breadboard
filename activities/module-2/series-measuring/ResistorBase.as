@@ -12,6 +12,8 @@
 	import flash.media.SoundChannel;
 	import flash.media.SoundTransform;
 	
+    import org.concord.sparks.JavaScript;
+
 	import Globe;
 	
 	//resistor 4 band
@@ -761,7 +763,8 @@ private function onResistorMove_handler(event:MouseEvent):void
 			{
 				trace(Globe.probeBlackLocation);
 				trace(Globe.probeRedLocation);
-				Globe.resistance = ExternalInterface.call('breadModel', 'query', 'voltage', Globe.probeBlackLocation + ',' + Globe.probeRedLocation, '200k');
+				//Globe.resistance = ExternalInterface.call('breadModel', 'query', 'voltage', Globe.probeBlackLocation + ',' + Globe.probeRedLocation, '200k');
+                JavaScript.instance().sendEvent('probe', Globe.probeBlackLocation, Globe.probeRedLocation);
 			}
 		}
 		
