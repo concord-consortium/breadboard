@@ -12,8 +12,6 @@
 	import flash.media.SoundChannel;
 	import flash.media.SoundTransform;
 	
-    import org.concord.sparks.JavaScript;
-
 	import Globe;
 	
 	//resistor 4 band
@@ -34,10 +32,12 @@
 		
 		private var probeOnLeft:Boolean = false;
 		private var probeOnRight:Boolean = false;
-		private var blackProbeOnRight:Boolean = false;
-		private var redProbeOnRight:Boolean = false;
-		private var blackProbeOnLeft:Boolean = false;
-		private var redProbeOnLeft:Boolean = false;
+		
+		//////////public variables for breadboard probeQuery_handler
+		public var blackProbeOnRight:Boolean = false;
+		public var redProbeOnRight:Boolean = false;
+		public var blackProbeOnLeft:Boolean = false;
+		public var redProbeOnLeft:Boolean = false;
 		
 		private var sndClickIt:clickit3;
 		private var sndClickItChannel:SoundChannel;
@@ -60,6 +60,16 @@
 		private var resistorLeftLocation:String;
 		private var resistorRightLocation:String;
 		
+		//variables to hold value of resistorLeft and RightLocations for probe functions
+		private var resistorLeftCoordinates:String;
+		private var resistorRightCoordinates:String;
+		
+		private var localProbeBlackLeftLocation:String = null;
+		private var localProbeBlackRightLocation:String = null;
+		private var localProbeRedLeftLocation:String = null;
+		private var localProbeRedRightLocation:String = null;
+		
+	
 		public function ResistorBase(bandCount:int, pngBandSuffix:String)
 		{
 			m_bandCount = bandCount;
@@ -81,7 +91,7 @@
 			this.getChildByName("leftRestore").alpha = 0;
 			this.getChildByName("rightRestore").alpha = 0;
 		
-			randomizeResistance();
+			//randomizeResistance();
 			//testResistorTips();
 			this.addEventListener(Event.ADDED_TO_STAGE, added_to_stage_handler);
 			this.addEventListener(Event.REMOVED_FROM_STAGE, removed_from_stage_handler);
@@ -94,14 +104,23 @@
 		
 			if (stage != null)
 			{
-				stage.addEventListener(MouseEvent.MOUSE_UP, onResistorMove_handler);
-				stage.addEventListener(MouseEvent.MOUSE_UP, clip_it_right_handler);
-				stage.addEventListener(MouseEvent.MOUSE_UP, clip_it_left_handler);
-				stage.addEventListener(MouseEvent.MOUSE_UP, probeQuery_handler);
-				stage.addEventListener(Event.ENTER_FRAME, resistor_rollovers_right_handler);
-				stage.addEventListener(Event.ENTER_FRAME, resistor_rollovers_left_handler);
+				stage.addEventListener(MouseEvent.MOUSE_UP, mouseUpHandler);
+				stage.addEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
 			}
 			
+		}
+		private function mouseUpHandler(mevt:MouseEvent):void
+		{
+			onResistorMove_handler(mevt);
+			probeLeft_handler(mevt);
+			probeRight_handler(mevt);
+			probeLocationAssignment_handler(mevt);
+			//probeQuery_handler(mevt);
+		}
+		private function mouseMoveHandler(mevt:MouseEvent):void
+		{
+			resistor_rollovers_right_handler(mevt);
+			resistor_rollovers_left_handler(mevt);
 		}
 		private function breakLeftResistor(event:MouseEvent):void 
 		{
@@ -134,7 +153,7 @@
 			this.getChildByName("leftRestore").alpha=0;
 			this.getChildByName("leftRestore").removeEventListener(MouseEvent.MOUSE_UP, restoreLeftResistor);
 			this.getChildByName("resistorEndLeft").alpha=1;
-			this.getChildByName("resistorEndLeft").x -= 1000;
+			this.getChildByName("resistorEndLeft").x = 44.45;
 			this.getChildByName("resistorEndLeftBroken").alpha=0;
 			this.resistorTipLeftX += 45  ;
 			//this.resistorOnBoard();  This line of code is exectued on resistor_move function
@@ -147,33 +166,22 @@
 			this.getChildByName("rightRestore").alpha=0;
 			this.getChildByName("rightRestore").removeEventListener(MouseEvent.MOUSE_UP, restoreRightResistor);
 			this.getChildByName("resistorEndRight").alpha=1;
-			this.getChildByName("resistorEndRight").x -= 1000;
+			this.getChildByName("resistorEndRight").x = 130.45;
 			this.getChildByName("resistorEndRightBroken").alpha=0;
 			this.resistorTipRightX -= 45  ;
 			//this.resistorOnBoard();  This line of code is exectued on resistor_move function
 	  	 } 
 		
-		
- 
-		
 		private function added_to_stage_handler(evt:Event):void
 		{
-			stage.addEventListener(MouseEvent.MOUSE_UP, onResistorMove_handler);
-			stage.addEventListener(MouseEvent.MOUSE_UP, clip_it_right_handler);
-			stage.addEventListener(MouseEvent.MOUSE_UP, clip_it_left_handler);
-			stage.addEventListener(MouseEvent.MOUSE_UP, probeQuery_handler);
-			stage.addEventListener(Event.ENTER_FRAME, resistor_rollovers_right_handler);
-			stage.addEventListener(Event.ENTER_FRAME, resistor_rollovers_left_handler);
+			stage.addEventListener(MouseEvent.MOUSE_UP, mouseUpHandler);
+			stage.addEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
 		}
 		
 		private function removed_from_stage_handler(evt:Event):void
 		{
-			stage.removeEventListener(MouseEvent.MOUSE_UP, onResistorMove_handler);
-			stage.removeEventListener(MouseEvent.MOUSE_UP, clip_it_right_handler);
-			stage.removeEventListener(MouseEvent.MOUSE_UP, clip_it_left_handler);
-			stage.removeEventListener(MouseEvent.MOUSE_UP, probeQuery_handler);
-			stage.removeEventListener(Event.ENTER_FRAME, resistor_rollovers_right_handler);
-			stage.removeEventListener(Event.ENTER_FRAME, resistor_rollovers_left_handler);
+			stage.removeEventListener(MouseEvent.MOUSE_UP, mouseUpHandler);
+			stage.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
 		}
 		
 		private function resistorLocationInitialValues(event:Event):void
@@ -186,7 +194,7 @@
 			//  replace 'color string' with the actual values of the resistors in ohms.
 			//componentName = ExternalInterface.call('breadModel', 'insert', 'resistor', resistorLeftLocation + ',' + resistorRightLocation, bandOneColor + ',' + bandTwoColor + ',' + bandThreeColor + ',' + bandFourColor);
 			removeEventListener(Event.ENTER_FRAME, resistorLocationInitialValues);
-	} 
+		}
 		
 		private function resistorOnBoard():void
 		{
@@ -277,9 +285,21 @@
 							resistorLeftLocation = "empty";
 							resistorRightLocation = "empty";
 						}
+					
+						if (resistorLeftLocation != "empty")
+						{
+							resistorLeftCoordinates = resistorLeftLocation;
+						}
+						
+						if (resistorRightLocation != "empty")
+						{
+							resistorRightCoordinates = resistorRightLocation;
+						}
 					}
 				}
 			}
+			//trace(this.name  +  " " + "resistorLeftCoordinates" +  " " + resistorLeftCoordinates);
+//			trace(this.name  +  " " + "resistorRightCoordinates" + " " + resistorRightCoordinates);
 			//Globe.resistance = ExternalInterface.call('breadModel', 'query', 'voltage', resistorLeftLocation + "," + resistorRightLocation, '200k');
 		}
 		
@@ -363,7 +383,7 @@ private function onResistorMove_handler(event:MouseEvent):void
 		private var m_bandThreeLoader:Loader = null;
 		private var m_bandFourLoader:Loader = null;
 		private var m_bandToleranceLoader:Loader = null;
-
+			
         public function setColorBands(colors:Array) {
 
             const toleranceBandName:String = (m_bandCount > 4) ? "band5" : "band4";
@@ -411,7 +431,7 @@ private function onResistorMove_handler(event:MouseEvent):void
               m_bandToleranceLoader.load(bandToleranceBitmap);
             }
         }
-			
+            
 		public function setColorBands_old(bandValues:Vector.<int>, toleranceValue:Number)
 		{
 			//assigns a value into bandThreeColor based on random number
@@ -511,154 +531,13 @@ private function onResistorMove_handler(event:MouseEvent):void
 		}
 		
 		
-		private function clip_it_right_handler(event:MouseEvent):void
+		private function probeLeft_handler(event:MouseEvent):void
 		{	
-			
-			//MovieClip(parent).probe_red.alpha=.5;
-			
-			//trace("parent =" + (parent).x);
-			//trace("resistor rolloverY = " + ((this).y + resistor_rollover_left.y));
-			//trace("(parent).x" + (parent).x);
-			//trace("(parent.parent).x" + (parent.parent).x);
-			//trace(resistor_rollover_right.x);
-			//trace("hotspot1Right_minX" + hotspot1Right_minX);
-			//trace("hotspot1Right_maxX" + hotspot1Right_maxX);
-			//trace("hotspot1Right_minY" + hotspot1Right_minY);
-			//trace("hotspot1Right_maxY" + hotspot1Right_maxY);
-			//trace("--------");
-			
-			var hotspot1Right_minX:Number = (parent).x + resistorTipRightX - getChildByName("resistorEndRight").width;
-			var hotspot1Right_maxX:Number = (parent).x + resistorTipRightX;
-			var hotspot1Right_minY:Number = (parent).y + (resistorTipRightY - 35);
-			var hotspot1Right_maxY:Number = (parent).y + (resistorTipRightY + 5);
-			//trace(hotspot1Right_minX + hotspot1Right_maxX);
-			
-			var redProbe_tipX = (parent).x + MovieClip(parent).probe_red.x;
-			var redProbe_tipY = (parent).y + MovieClip(parent).probe_red.y;
-			
-			//trace("resistor rolloverX = " + ((parent).x +(this).x + hotspotWidth + resistorBodyWidth));
-			//trace("red probetipX = " + redProbe_tipX);
-			//trace("red probetipY = " + redProbe_tipY);
-			
-			var blackProbe_tipX = (parent).x + MovieClip(parent).probe_black.x;
-			var blackProbe_tipY = (parent).y + MovieClip(parent).probe_black.y;
-			
-			var probeBlackTempLocation:String = null;
-			var probeRedTempLocation:String = null;
-			
-			if (  (redProbe_tipX > hotspot1Right_minX && redProbe_tipX < hotspot1Right_maxX) 
-				&& (redProbe_tipY > hotspot1Right_minY && redProbe_tipY < hotspot1Right_maxY)
-				&& this.probeOnRight == false )
-			{
-				sndClickIt=new clickit3();
-				sndClickItChannel=sndClickIt.play(); 
-				transform1.volume=.75;
-				sndClickItChannel.soundTransform=transform1;
-				probeOnRight = true;
-				redProbeOnRight = true;
-				this.getChildByName("probe_engaged_right").alpha = 1;
-				//var clip_coordinate_x:Number = redProbe_tipX;
-				//var clip_coordinate_y:Number = redProbe_tipY;
-				//trace(redProbe_tipX);
-				//trace(redProbe_tipY);
-				//trace(clip_coordinate_x);
-				//trace(clip_coordinate_y);
-				//left_clip.alpha=1;
-				//left_clip.x = clip_coordinate_x;
-				//left_clip.y = clip_coordinate_y;
-			} 
-				
-			else if ( (blackProbe_tipX > hotspot1Right_minX && blackProbe_tipX < hotspot1Right_maxX) 
-				&& (blackProbe_tipY > hotspot1Right_minY && blackProbe_tipY < hotspot1Right_maxY)
-				&& this.probeOnRight == false)
-			{
-				sndClickIt=new clickit3();
-				sndClickItChannel=sndClickIt.play(); 
-				transform1.volume=.75;
-				sndClickItChannel.soundTransform=transform1;
-				probeOnRight = true;
-				blackProbeOnRight = true;
-				this.getChildByName("probe_engaged_right").alpha = 1;
-			}
-				
-			else if (  (redProbe_tipX > hotspot1Right_minX && redProbe_tipX < hotspot1Right_maxX) 
-				&& (redProbe_tipY > hotspot1Right_minY && redProbe_tipY < hotspot1Right_maxY)
-				&& redProbeOnRight == true )
-				
-			{ 
-				probeOnRight = true;
-				redProbeOnRight = true;
-				this.getChildByName("probe_engaged_right").alpha = 1;
-			}
-				
-			else if ( (blackProbe_tipX > hotspot1Right_minX && blackProbe_tipX < hotspot1Right_maxX) 
-				&& (blackProbe_tipY > hotspot1Right_minY && blackProbe_tipY < hotspot1Right_maxY)
-				&& blackProbeOnRight == true ) 
-			{
-				probeOnRight = true;
-				blackProbeOnRight = true;
-				this.getChildByName("probe_engaged_right").alpha = 1;
-			}
-				
-			else 
-			{
-				probeOnRight = false;
-				blackProbeOnRight = false;
-				redProbeOnRight = false;
-				this.getChildByName("probe_engaged_right").alpha = 0;
-			}
-			
-			//	trace(this.name + " probeOnRight = " + probeOnRight);
-			//	trace(this.name + "redProbeOnRight = " + redProbeOnRight);
-			//	trace(this.name + " blackProbeOnRight = " + blackProbeOnRight);
-			
-			if ( redProbeOnRight == true )
-			{
-				probeRedTempLocation = this.resistorRightLocation;
-			}
-				
-			else if (blackProbeOnRight == true )
-			{
-				probeBlackTempLocation = this.resistorRightLocation;
-			}
-				
-			else 
-			{
-				probeBlackTempLocation = null;
-			}
-			//trace ( probeBlackTempLocation);
-			
-			if (probeRedTempLocation != null )
-			{
-				Globe.probeRedLocation = probeRedTempLocation;
-			}
-				
-			else if ( probeBlackTempLocation != null )
-			{
-				Globe.probeBlackLocation = probeBlackTempLocation;
-			}
-		}
-		
-		
-		///////////////////////////////
-		
-		private function clip_it_left_handler(event:MouseEvent):void
-		{
-			
+									
 			var hotspot1Left_minX:Number = (parent).x + resistorTipLeftX;
 			var hotspot1Left_maxX:Number = (parent).x + resistorTipLeftX + getChildByName("resistorEndLeft").width;
 			var hotspot1Left_minY:Number = (parent).y + (resistorTipLeftY - 35);
 			var hotspot1Left_maxY:Number = (parent).y + (resistorTipLeftY + 5);
-
-			
-			//var hotspotWidth:Number = 14;
-			//var hotspotHeight:Number = 7;
-			//
-			//var rolloverLeft_x:Number = (parent).x +(this).x + resistor_rollover_left.x;
-			//var rolloverLeft_y:Number = (parent).x +(this).x + resistor_rollover_left.y;
-			//set position of probe_red and probe_black movie clips manually
-			//because function doesn't recognize these mc's
-			
 			
 			var redProbe_tipX = (parent).x + MovieClip(parent).probe_red.x;
 			var redProbe_tipY = (parent).y + MovieClip(parent).probe_red.y;
@@ -668,7 +547,9 @@ private function onResistorMove_handler(event:MouseEvent):void
 			
 			var probeBlackTempLocation:String = null;
 			var probeRedTempLocation:String = null;
-			
+
+	
+		///TEST FOR PROBES ON LEFT SIDE RESISTOR
 			if (  (redProbe_tipX > hotspot1Left_minX && redProbe_tipX < hotspot1Left_maxX) 
 				&& (redProbe_tipY > hotspot1Left_minY && redProbe_tipY < hotspot1Left_maxY)
 				&& probeOnLeft == false )  
@@ -679,10 +560,29 @@ private function onResistorMove_handler(event:MouseEvent):void
 				sndClickItChannel.soundTransform=transform1;
 				probeOnLeft = true;
 				redProbeOnLeft = true;
+				localProbeRedLeftLocation = this.resistorLeftCoordinates;
 				this.getChildByName("probe_engaged_left").alpha = 1;	
-			} 
+			}
+//			
+//			//No Action - Probe Already Engaged
+			else if (  (redProbe_tipX > hotspot1Left_minX && redProbe_tipX < hotspot1Left_maxX) 
+				&& (redProbe_tipY > hotspot1Left_minY && redProbe_tipY < hotspot1Left_maxY)
+				&& probeOnLeft == true )
 				
-			else if ((blackProbe_tipX > hotspot1Left_minX && blackProbe_tipX < hotspot1Left_maxX) 
+			{ 
+				probeOnLeft = true;
+				redProbeOnLeft = true;
+				this.getChildByName("probe_engaged_left").alpha = 1;
+			}
+			
+			else 
+			{
+				redProbeOnLeft = false;
+				localProbeRedLeftLocation = null;
+				//this.getChildByName("probe_engaged_right").alpha = 0;
+			}
+				
+			if ((blackProbe_tipX > hotspot1Left_minX && blackProbe_tipX < hotspot1Left_maxX) 
 				&& (blackProbe_tipY > hotspot1Left_minY && blackProbe_tipY < hotspot1Left_maxY)
 				&& probeOnLeft == false )
 			{
@@ -692,22 +592,14 @@ private function onResistorMove_handler(event:MouseEvent):void
 				sndClickItChannel.soundTransform=transform1;
 				probeOnLeft = true;
 				blackProbeOnLeft = true;
+				localProbeBlackLeftLocation = this.resistorLeftCoordinates;
 				this.getChildByName("probe_engaged_left").alpha = 1;	
 			}
-				
-			else if (  (redProbe_tipX > hotspot1Left_minX && redProbe_tipX < hotspot1Left_maxX) 
-				&& (redProbe_tipY > hotspot1Left_minY && redProbe_tipY < hotspot1Left_maxY)
-				&& redProbeOnLeft == true )
-				
-			{ 
-				probeOnLeft = true;
-				redProbeOnLeft = true;
-				this.getChildByName("probe_engaged_left").alpha = 1;
-			}
-				
+			
+//			//Sound Off Probe already engaged
 			else if ((blackProbe_tipX > hotspot1Left_minX && blackProbe_tipX < hotspot1Left_maxX) 
 				&& (blackProbe_tipY > hotspot1Left_minY && blackProbe_tipY < hotspot1Left_maxY)
-				&& blackProbeOnLeft == true ) 
+				&& probeOnLeft == true ) 
 			{
 				probeOnLeft = true;
 				blackProbeOnLeft = true;
@@ -715,58 +607,157 @@ private function onResistorMove_handler(event:MouseEvent):void
 			}
 				
 			else 
-				
+			{
+				blackProbeOnLeft = false;
+				localProbeBlackLeftLocation = null;
+			}	
+					
+			if (blackProbeOnLeft == false && redProbeOnLeft == false)
 			{
 				probeOnLeft = false;
-				redProbeOnLeft = false;
-				blackProbeOnLeft = false;
 				this.getChildByName("probe_engaged_left").alpha = 0;
 			}
+		}
+		
+		
+		private function probeRight_handler(event:MouseEvent):void
+		{	
+			var hotspot1Right_minX:Number = (parent).x + resistorTipRightX - getChildByName("resistorEndRight").width;
+			var hotspot1Right_maxX:Number = (parent).x + resistorTipRightX;
+			var hotspot1Right_minY:Number = (parent).y + (resistorTipRightY - 35);
+			var hotspot1Right_maxY:Number = (parent).y + (resistorTipRightY + 5);
+			//trace(hotspot1Right_minX + hotspot1Right_maxX);
 			
-		//	trace(this.name + " probeOnLeft = " + probeOnLeft);
-		//	trace(this.name + "redProbeOnLeft = " + redProbeOnLeft);
-		//	trace(this.name + " blackProbeOnLeft = " + blackProbeOnLeft);
+			var redProbe_tipX = (parent).x + MovieClip(parent).probe_red.x;
+			var redProbe_tipY = (parent).y + MovieClip(parent).probe_red.y;
 			
-			if ( redProbeOnLeft == true )
+			var blackProbe_tipX = (parent).x + MovieClip(parent).probe_black.x;
+			var blackProbe_tipY = (parent).y + MovieClip(parent).probe_black.y;
+			
+			var probeBlackTempLocation:String = null;
+			var probeRedTempLocation:String = null;
+
+	
+		//  TEST FOR PROBES ON RIGHT SIDE OF RESISTOR
+			
+			if (  (redProbe_tipX > hotspot1Right_minX && redProbe_tipX < hotspot1Right_maxX) 
+				&& (redProbe_tipY > hotspot1Right_minY && redProbe_tipY < hotspot1Right_maxY)
+				&& probeOnRight == false )
 			{
-				probeRedTempLocation = this.resistorLeftLocation;
+				sndClickIt=new clickit3();
+				sndClickItChannel=sndClickIt.play(); 
+				transform1.volume=.75;
+				sndClickItChannel.soundTransform=transform1;
+				probeOnRight = true;
+				redProbeOnRight = true;
+				localProbeRedRightLocation = this.resistorRightCoordinates;
+				//trace(this.resistorRightCoordinates);
+				this.getChildByName("probe_engaged_right").alpha = 1;
+			} 
+			
+			//Probe already engaged Sound Off
+			else if (  (redProbe_tipX > hotspot1Right_minX && redProbe_tipX < hotspot1Right_maxX) 
+				&& (redProbe_tipY > hotspot1Right_minY && redProbe_tipY < hotspot1Right_maxY)
+				&& probeOnRight == true )
+				
+			{ 
+				probeOnRight = true;
+				redProbeOnRight = true;
+				this.getChildByName("probe_engaged_right").alpha = 1;
+			}
+			
+			else 
+			{
+				redProbeOnRight = false;
+				localProbeRedRightLocation = null;
+				//this.getChildByName("probe_engaged_right").alpha = 0;
 			}
 				
-			else if (blackProbeOnLeft == true )
+				
+			if ( (blackProbe_tipX > hotspot1Right_minX && blackProbe_tipX < hotspot1Right_maxX) 
+				&& (blackProbe_tipY > hotspot1Right_minY && blackProbe_tipY < hotspot1Right_maxY)
+				&& probeOnRight == false)
 			{
-				probeBlackTempLocation = this.resistorLeftLocation;
+				sndClickIt=new clickit3();
+				sndClickItChannel=sndClickIt.play(); 
+				transform1.volume=.75;
+				sndClickItChannel.soundTransform=transform1;
+				probeOnRight = true;
+				blackProbeOnRight = true;
+				localProbeBlackRightLocation = this.resistorRightCoordinates;
+				this.getChildByName("probe_engaged_right").alpha = 1;
+			}
+				
+			// No Action -- Probe Engaged
+			else if ( (blackProbe_tipX > hotspot1Right_minX && blackProbe_tipX < hotspot1Right_maxX) 
+				&& (blackProbe_tipY > hotspot1Right_minY && blackProbe_tipY < hotspot1Right_maxY)
+				&& probeOnRight == true ) 
+			{
+				probeOnRight = true;
+				blackProbeOnRight = true;
+				//probeBlackTempLocation = this.resistorRightCoordinates;
+				this.getChildByName("probe_engaged_right").alpha = 1;
 			}
 				
 			else 
 			{
-				probeBlackTempLocation = null;
+				blackProbeOnRight = false;
+				localProbeBlackRightLocation = null;
+				//this.getChildByName("probe_engaged_right").alpha = 0;
 			}
-			//trace ( "click it left" + probeBlackTempLocation);
 			
-			
-			if (probeRedTempLocation != null )
+			if (blackProbeOnRight == false && redProbeOnRight == false)
 			{
-				Globe.probeRedLocation = probeRedTempLocation;
-			}
-				
-			else if ( probeBlackTempLocation != null )
-			{
-				Globe.probeBlackLocation = probeBlackTempLocation;
+				probeOnRight = false;
+				this.getChildByName("probe_engaged_right").alpha = 0;
 			}
 		}
 		
 		
 		
-		private function probeQuery_handler(event:MouseEvent):void
+		private function probeLocationAssignment_handler(event:MouseEvent):void
+		
 		{
-			if ( redProbeOnLeft == true || blackProbeOnLeft == true || redProbeOnRight == true || blackProbeOnRight == true )
+			if (localProbeRedLeftLocation != null)
 			{
-				trace(Globe.probeBlackLocation);
-				trace(Globe.probeRedLocation);
-				//Globe.resistance = ExternalInterface.call('breadModel', 'query', 'voltage', Globe.probeBlackLocation + ',' + Globe.probeRedLocation, '200k');
-                JavaScript.instance().sendEvent('probe', Globe.probeBlackLocation, Globe.probeRedLocation);
+				Globe.probeRedLocation = localProbeRedLeftLocation;
 			}
+			
+			else if (localProbeRedRightLocation != null)
+			{
+				Globe.probeRedLocation = localProbeRedRightLocation;
+			}
+			
+			if (localProbeBlackLeftLocation != null)
+			{
+				Globe.probeBlackLocation = localProbeBlackLeftLocation;
+			}
+			
+			else if (localProbeBlackRightLocation != null)
+			{
+				Globe.probeBlackLocation = localProbeBlackRightLocation;
+			}
+			
+			//if (localProbeRedLeftLocation == null && localProbeRedRightLocation == null )
+//			{
+//				Globe.probeRedLocation = null;
+//			}
+//			
+//			if (localProbeBlackLeftLocation == null && localProbeBlackRightLocation == null )
+//			{
+//				Globe.probeBlackLocation = null;
+//			}
 		}
+		
+//		private function probeQuery_handler(event:MouseEvent):void
+//		{
+//			if ( redProbeOnLeft == true || blackProbeOnLeft == true || redProbeOnRight == true || blackProbeOnRight == true) 
+//			{
+//				trace("black probe on " + Globe.probeBlackLocation);
+//				trace("red probe on " + Globe.probeRedLocation);
+//				//Globe.resistance = ExternalInterface.call('breadModel', 'query', 'voltage', Globe.probeBlackLocation + ',' + Globe.probeRedLocation, '200k');
+//			}
+//		}
 		
 		
 		
