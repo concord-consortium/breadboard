@@ -15,7 +15,7 @@ package org.concord.sparks.util {
          */
         public static function traceDisplayList(container:DisplayObjectContainer, indentString:String = ""):void {
             var child:DisplayObject;
-            trace(indentString + container, container.name);
+            trace(indentString + container, container.name, 'x=' + container.x + ' y=' + container.y);
             for (var i:uint=0; i < container.numChildren; i++) { 
                 child = container.getChildAt(i); 
                 if (container.getChildAt(i) is DisplayObjectContainer) { 
