@@ -1,23 +1,26 @@
-﻿package
-{
-	import flash.external.*;
+﻿﻿package {
+
 	import flash.events.MouseEvent;
 	import flash.events.Event;
 	import flash.display.MovieClip;
+	import flash.display.Sprite;
 	import flash.display.Loader;
 	import flash.net.URLRequest;
-	import flash.display.*;
-//	import fl.ik.*;
 	import flash.media.Sound;
 	import flash.media.SoundChannel;
 	import flash.media.SoundTransform;
 	
 	import Globe;
 	
-	//resistor 4 band
-
+	// Resistor 4 band
 	public class ResistorBase extends DragItShift
 	{
+	    public static const LEFT:Number = 0;
+	    public static const RIGHT:Number = 1;
+	    
+	    private var leftEnd:ResistorLead = null;
+	    private var rightEnd:ResistorLead = null;
+	    
 		private var m_bandCount:int;
 		private var m_resistanceValue:Number = NaN;
 		private var m_pngBandSuffix:String;
@@ -43,12 +46,6 @@
 		private var sndClickItChannel:SoundChannel;
 		private var transform1:SoundTransform=new SoundTransform();
 		
-		//manually set x and y values for probe mc's
-//		private var probeRedX:Number = 360.8;
-//		private var probeRedY:Number = 40.4;
-//		private var probeBlackX:Number = -264.4;
-//		private var probeBlackY:Number = 68.8;
-		
 		private var resistorTipLeftX:Number;
 		private var resistorTipLeftY:Number;
 		private var resistorTipRightX:Number;
@@ -69,9 +66,19 @@
 		private var localProbeRedLeftLocation:String = null;
 		private var localProbeRedRightLocation:String = null;
 		
-	
 		public function ResistorBase(bandCount:int, pngBandSuffix:String)
 		{
+		    leftEnd = new ResistorLeftLead(this.name + '_lead1',
+		        this.getChildByName('resistorEndLeft'),
+		        this.getChildByName('resistor_rollover_left'),
+		        this.getChildByName('probe_engaged_left'),
+		        this.getChildByName('resistorEndLeftBroken'));
+		    rightEnd = new ResistorRightLead(this.name + '_lead2',
+		        this.getChildByName('resistorEndRight'),
+		        this.getChildByName('resistor_rollover_right'),
+		        this.getChildByName('probe_engaged_right'),
+		        this.getChildByName('resistorEndRightBroken'));
+
 			m_bandCount = bandCount;
 			m_pngBandSuffix = pngBandSuffix;
 			
@@ -81,18 +88,12 @@
 //			resistorTipLeftY = this.y + getChildByName("resistorEndLeft").y;
 //			resistorTipRightX = this.x + (getChildByName("resistorEndRight").x + getChildByName("resistorEndRight").width);
 //			resistorTipRightY = this.y + getChildByName("resistorEndRight").y;
-		
-			this.getChildByName("resistor_rollover_left").alpha = 0;
-			this.getChildByName("probe_engaged_left").alpha = 0;
-			this.getChildByName("resistor_rollover_right").alpha = 0;
-			this.getChildByName("probe_engaged_right").alpha = 0;
-			this.getChildByName("resistorEndLeftBroken").alpha = 0;
-			this.getChildByName("resistorEndRightBroken").alpha = 0;
+
 			this.getChildByName("leftRestore").alpha = 0;
 			this.getChildByName("rightRestore").alpha = 0;
-		
-			//randomizeResistance();
+
 			//testResistorTips();
+			
 			this.addEventListener(Event.ADDED_TO_STAGE, added_to_stage_handler);
 			this.addEventListener(Event.REMOVED_FROM_STAGE, removed_from_stage_handler);
 			this.getChildByName("leftBreak").addEventListener(MouseEvent.MOUSE_UP, breakLeftResistor);
@@ -100,7 +101,6 @@
 			this.getChildByName("leftRestore").addEventListener(MouseEvent.MOUSE_UP, restoreLeftResistor);
 			this.getChildByName("rightRestore").addEventListener(MouseEvent.MOUSE_UP, restoreRightResistor);
 			this.addEventListener(Event.ENTER_FRAME, resistorLocationInitialValues)
-
 		
 			if (stage != null)
 			{
@@ -109,11 +109,35 @@
 			}
 			
 		}
+		
+		public function getLeftEnd() {
+		    return leftEnd;
+		}
+		
+		public function getRightEnd() {
+		    return rightEnd;
+		}
+		
+        public function onProbeConnect(whichEnd:Number, probe:Probe) {
+            if (whichEnd === LEFT) {
+                probeOnLeft = true;
+                redProbeOnLeft = true;
+                localProbeRedLeftLocation = this.resistorLeftCoordinates;
+                this.getChildByName("probe_engaged_left").alpha = 1;
+            }
+            else if (whichEnd === RIGHT) {
+                
+            }
+            else {
+                trace('ERROR ResistorBase#onProbeConnect');
+            }
+        }
+
 		private function mouseUpHandler(mevt:MouseEvent):void
 		{
 			onResistorMove_handler(mevt);
-			probeLeft_handler(mevt);
-			probeRight_handler(mevt);
+			//probeLeft_handler(mevt);
+			//probeRight_handler(mevt);
 			probeLocationAssignment_handler(mevt);
 			//probeQuery_handler(mevt);
 		}
@@ -533,6 +557,7 @@ private function onResistorMove_handler(event:MouseEvent):void
 		
 		private function probeLeft_handler(event:MouseEvent):void
 		{	
+            trace('ENTER ResistorBase#probeLeft_handler');
 									
 			var hotspot1Left_minX:Number = (parent).x + resistorTipLeftX;
 			var hotspot1Left_maxX:Number = (parent).x + resistorTipLeftX + getChildByName("resistorEndLeft").width;
@@ -544,7 +569,7 @@ private function onResistorMove_handler(event:MouseEvent):void
 			
 			var blackProbe_tipX = (parent).x + MovieClip(parent).probe_black.x;
 			var blackProbe_tipY = (parent).y + MovieClip(parent).probe_black.y;
-			
+
 			var probeBlackTempLocation:String = null;
 			var probeRedTempLocation:String = null;
 

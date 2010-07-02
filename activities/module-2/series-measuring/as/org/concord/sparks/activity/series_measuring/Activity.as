@@ -12,21 +12,22 @@ package org.concord.sparks.activity.series_measuring {
     
     public class Activity extends org.concord.sparks.Activity {
 
-        public var multimeter:DmmCentech2;
-        
-        private var breadboard_mc:MovieClip;
+        private var circuit:Circuit;
+        //public var multimeter:DmmCentech2;
+        //private var breadboard:MovieClip;
 
         public function Activity(name:String, root, topDir):void {
             trace('ENTER Activity: ' + new Date());
             super(name, root, topDir);
             
             //Debug.traceDisplayList(root);
+
+            circuit = new Circuit(this, root);
             
-            breadboard_mc = root.outer_breadboard_mc.breadboard_mc;
-            trace('BREADBOARD_MC=' + breadboard_mc);
+            //breadboard = root.outer_breadboard_mc.breadboard_mc;
             
-            multimeter = new DmmCentech2({ activity: this, root: root });
-            multimeter.setDisplayText('  9.0 0');
+            //multimeter = new DmmCentech2({ activity: this, root: root });
+            //multimeter.setDisplayText('  9.0 0');
             
             // initActivity must be called after the ExternalInterface is 
             // ready to communicate with JavaScript.
@@ -38,7 +39,7 @@ package org.concord.sparks.activity.series_measuring {
             var command:String = args[0];
             switch (command) {
                 case 'set_resistor_colors':
-                    var resistor = getResistor(args[1]);
+                    var resistor = circuit.getResistor(args[1]);
                     resistor.setColorBands(args[2]);
                     return 'OK';
             }
@@ -78,8 +79,9 @@ package org.concord.sparks.activity.series_measuring {
             //trace('ENTER ResistorColors.handleMouseUp');
         }
 
+/*
         private function getResistor(id:String) {
-            return breadboard_mc[id];
-        }
+            return breadboard[id];
+        }*/
     }
 }
