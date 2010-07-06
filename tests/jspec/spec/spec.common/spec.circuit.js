@@ -92,11 +92,11 @@ describe 'Circuit'
             multimeter.powerOn = true
             multimeter.dialPosition = 'r_2000'
             
-            multimeter.value = 100
+            multimeter.r_value = 100
             multimeter.updateDisplay()
             multimeter.getDisplayText().should.be '  1 0 0'
             
-            multimeter.value = 1024
+            multimeter.r_value = 1024
             multimeter.dialPosition = 'r_200'
             multimeter.updateDisplay()
             multimeter.getDisplayText().should.be ' 1   . '
