@@ -1,4 +1,4 @@
-﻿﻿package {
+﻿﻿﻿package {
 
 	import flash.events.MouseEvent;
 	import flash.events.Event;
@@ -118,21 +118,6 @@
 		    return rightEnd;
 		}
 		
-        public function onProbeConnect(whichEnd:Number, probe:Probe) {
-            if (whichEnd === LEFT) {
-                probeOnLeft = true;
-                redProbeOnLeft = true;
-                localProbeRedLeftLocation = this.resistorLeftCoordinates;
-                this.getChildByName("probe_engaged_left").alpha = 1;
-            }
-            else if (whichEnd === RIGHT) {
-                
-            }
-            else {
-                trace('ERROR ResistorBase#onProbeConnect');
-            }
-        }
-
 		private function mouseUpHandler(mevt:MouseEvent):void
 		{
 			onResistorMove_handler(mevt);
@@ -220,8 +205,9 @@
 			removeEventListener(Event.ENTER_FRAME, resistorLocationInitialValues);
 		}
 		
-		private function resistorOnBoard():void
+		public function resistorOnBoard():void
 		{
+		    trace('ENTER ResistorBase#resistorOnBoard');
 			
 			if (currentHoleOne != null )
 			{
@@ -325,6 +311,9 @@
 			//trace(this.name  +  " " + "resistorLeftCoordinates" +  " " + resistorLeftCoordinates);
 //			trace(this.name  +  " " + "resistorRightCoordinates" + " " + resistorRightCoordinates);
 			//Globe.resistance = ExternalInterface.call('breadModel', 'query', 'voltage', resistorLeftLocation + "," + resistorRightLocation, '200k');
+			
+			leftEnd.setLocation(resistorLeftCoordinates);
+			rightEnd.setLocation(resistorRightCoordinates);
 		}
 		
 		

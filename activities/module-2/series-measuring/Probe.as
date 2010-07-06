@@ -77,7 +77,7 @@ package {
         }
         
         private function disConnect():void {
-            JavaScript.instance().sendEvent('disconnect', getId(), connection.getId());
+            JavaScript.instance().sendEvent('disconnect', 'probe', getId(), connection.getId());
             connection = null;
         }
     }

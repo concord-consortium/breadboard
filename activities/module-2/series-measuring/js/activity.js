@@ -3,6 +3,7 @@
 //= require <ui>
 //= require <flash_comm>
 //= require <circuit/breadboard>
+//= require <circuit/multimeter2>
 //= require <circuit/resistor-4band>
 //= require <circuit/resistor-5band>
 //= require "setup-common"
@@ -21,6 +22,8 @@
     
     sparks.config.flash_id = 'breadboardActivity1';
     
+    sparks.config.debug = jQuery.url.param("debug") !== undefined;
+    
     sm.Activity = function () {
         sm.Activity.uber.init.apply(this);
         this.log = new sm.ActivityLog();
@@ -36,6 +39,17 @@
         onDocumentReady: function () {
             var self = this;
             console.log('this=' + this + ' self=' + self);
+            
+            if (sparks.config.debug) {
+                $('.debug_area').show();
+            }
+            else {
+                $('.debug_area').hide();
+            }
+            $('#popup').hide();
+            $('.next_button').click(function () {
+                window.location.reload();
+            });
 
             this.root_dir = sparks.config.root_dir + '/activities/module-2/series-measuring';
             $('body').scrollTop(0); //scroll to top
@@ -54,6 +68,7 @@
         onFlashReady: function () {
             breadModel('insert', 'wire', 'left_positive_1,a23', 'wire1');
             breadModel('insert', 'wire', 'left_negative_1,c5', 'wire2');
+            this.multimeter = new sparks.circuit.Multimeter2();
             
             this.startTry();
         },
@@ -70,11 +85,14 @@
         },
         
         startTry: function () {
+            $('.next_button').hide();
+            
             this.resistor1 = new sparks.circuit.Resistor4band('resistor1');
             this.resistor2 = new sparks.circuit.Resistor4band('resistor2');
             this.resistor3 = new sparks.circuit.Resistor4band('resistor3');
             
-            var options = { rvalues: [ 100, 200, 300, 400, 500 ], realEqualsNominal: true };
+            //var options = { rvalues: [ 100, 200, 300, 400, 500 ], realEqualsNominal: true };
+            var options = null;
             this.resistor1.randomize(options);
             this.resistor2.randomize(options);
             this.resistor3.randomize(options);
@@ -108,6 +126,7 @@
             this.reporter.report(this.log.session, feedback);
             this.questionsArea.hide();
             this.reportArea.show();
+            $('.next_button').show();
         },
 
         resetCircuit: function () {
@@ -130,6 +149,36 @@
             
             var v;
             var t = '';
+            var args = value.split('|');
+            
+            if (name === 'connect') {
+                if (args[0] === 'probe') {
+                    if (args[1] === 'probe_red') {
+                        this.multimeter.redProbeConnection = args[2];
+                    }
+                    else if (args[1] === 'probe_black') {
+                        this.multimeter.blackProbeConnection = args[2];
+                    }
+                    else {
+                        alert('Activity#receiveEvent: connect: unknonw probe name ' + args[1]);
+                    }
+                }
+                this.multimeter.update();
+            }
+            else if (name === 'disconnect') {
+                if (args[0] === 'probe') {
+                    if (args[1] === 'probe_red') {
+                        this.multimeter.redProbeConnection = null;
+                    }
+                    else if (args[1] === 'probe_black') {
+                        this.multimeter.blackProbeConnection = null;
+                    }
+                    else {
+                        alert('Activity#receiveEvent: disconnect: Unknonw probe name ' + args[1]);
+                    }
+                }
+                this.multimeter.update();
+            }
             
             if (name === 'probe') {
                 $('#popup').dialog();

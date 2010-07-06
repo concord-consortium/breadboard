@@ -37,12 +37,16 @@ package {
             resistors.push(breadboard.resistor1);
             resistors.push(breadboard.resistor2);
             resistors.push(breadboard.resistor3);
-
+            
             multimeter.setDisplayText('  9.0 0');
         }
 
         public function getResistor(id:String) {
             return breadboard[id];
+        }
+        
+        public function getMultimeter():DmmCentech2 {
+            return multimeter;
         }
 
         public function updateProbeConnection(probe:Probe) {
@@ -64,7 +68,7 @@ package {
             if (connection !== oldConnection) {
                 clickSound();
                 probe.setConnection(connection);
-                JavaScript.instance().sendEvent('connect', 'probe', probe.getId(), connection.getId());
+                JavaScript.instance().sendEvent('connect', 'probe', probe.getId(), connection.getLocation());
             }
         }
         

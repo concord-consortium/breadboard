@@ -1545,6 +1545,8 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
       else if (name == 'not_ready') {
           alert('Sorry, you can only access the circuit after you have answered question #1.');
       }
+
+      return null;
     };
 
 })();
@@ -1755,7 +1757,7 @@ sparks.util.getRubric = function (id, callback, local) {
             sparks.activity = activity;
         }
         catch (e) {
-            alert(e);
+            alert('ERROR: initActivity: ' + e);
         }
     };
 
@@ -2259,7 +2261,6 @@ sparks.util.getRubric = function (id, callback, local) {
             result = (1 / result);
           }
           result = -1 * result;
-          document.getElementById('dmm-output').innerHTML = "Meter Reading: " + result;
           return  result;
         }
       };
@@ -2296,6 +2297,334 @@ sparks.util.getRubric = function (id, callback, local) {
       };
       document.addEventListener('click', function(){ flash("testing!","test2") }, false);
       */
+
+})();
+/* FILE multimeter-base.js */
+
+(function () {
+
+    var flash = sparks.flash;
+
+    /*
+     * Digital Multimeter
+     * Base for the Centech DMM
+     */
+    sparks.circuit.MultimeterBase = function () {
+    };
+
+    sparks.circuit.MultimeterBase.prototype = {
+
+        modes : { ohmmeter : 0, voltmeter : 1, ammeter : 2 },
+
+        init: function () {
+            this.mode = this.modes.ohmmeter;
+
+            this.v_value = 0; //voltage value
+            this.i_value = 0; //current value
+            this.r_value = 0; //resistance value
+
+            this.displayText = '       ';
+
+            this.redProbeConnection = null;
+            this.blackProbeConnection = null;
+            this.redPlugConnection = null;
+            this.blackPlugConnecton = null;
+            this.dialPosition = 'acv_750';
+            this.powerOn = false;
+        },
+
+        update : function () {
+            console.log('ENTER MultimeterBase#update');
+        },
+
+        updateDisplay : function () {
+            if (!this.powerOn) {
+                this.displayText = '       ';
+                flash.sendCommand('set_multimeter_display', '       ');
+                return;
+            }
+            console.log('Multimeter.update: v=' + this.v_value + ' i=' + this.i_value + ' r=' + this.r_value + ' dial=' + this.dialPosition);
+
+            var text = '';
+            if (this.allConnected()) {
+                if (this.dialPosition === 'dcv_20') {
+                    if (this.v_value < 19.995) {
+                        text = (Math.round(this.v_value * 100) * 0.01).toString();
+                        text = this.toDisplayString(text, 2);
+                    }
+                    else {
+                        text = ' 1 .   ';
+                    }
+
+                }
+                else if (this.dialPosition === 'r_200') {
+                    if (this.r_value < 199.95) {
+                        text = (Math.round(this.r_value * 10) * 0.1).toString();
+                        text = this.toDisplayString(text, 1);
+                    }
+                    else {
+                        text = ' 1   . ';
+                    }
+                }
+                else if (this.dialPosition === 'r_2000' || this.dialPosition === 'diode') {
+                    if (this.r_value < 1999.5) {
+                        text = Math.round(this.r_value).toString();
+                        text = this.toDisplayString(text, 0);
+                    }
+                    else {
+                        text = ' 1     ';
+                    }
+                }
+                else if (this.dialPosition === 'r_20k') {
+                    if (this.r_value < 19995) {
+                        text = (Math.round(this.r_value * 0.1) * 0.01).toString();
+                        text = this.toDisplayString(text, 2);
+                    }
+                    else {
+                        text = ' 1 .   ';
+                    }
+                }
+                else if (this.dialPosition === 'r_200k') {
+                    if (this.r_value < 199950) {
+                        text = (Math.round(this.r_value * 0.01) * 0.1).toString();
+                        text = this.toDisplayString(text, 1);
+                    }
+                    else {
+                        text = ' 1   . ';
+                    }
+                }
+                else if (this.dialPosition === 'r_2000k') {
+                    if (this.r_value < 1999500) {
+                        text = Math.round(this.r_value * 0.001).toString();
+                        text = this.toDisplayString(text, 0);
+                    }
+                    else {
+                        text = ' 1     ';
+                    }
+                }
+                else if (this.dialPosition === 'dcv_200m' || this.dialPosition === 'dcv_200' ||
+                        this.dialPosition === 'acv_200' || this.dialPosition === 'p_9v' ||
+                        this.dialPosition === 'dca_200mc' || this.dialPosition === 'dca_200m') {
+                    text = '  0 0.0';
+                }
+                else if (this.dialPosition === 'dcv_2000m' || this.dialPosition === 'dca_2000mc' ||
+                        this.dialPosition === 'hfe') {
+                    text = '  0 0 0';
+                }
+                else if (this.dialPosition === 'dcv_20' || this.dialPosition === 'dca_20m' ||
+                        this.dialPosition === 'c_10a') {
+                    text = '  0.0 0';
+                }
+                else if (this.dialPosition === 'dcv_1000' || this.dialPosition === 'acv_750') {
+                    text = 'h 0 0 0';
+                }
+                else {
+                    text = '       ';
+                }
+            }
+            else {
+                if (this.dialPosition === 'dcv_20') {
+                    text = '  0.0 0';
+                }
+                else if (this.dialPosition === 'r_200') {
+                    text = ' 1   . ';
+                }
+                else if (this.dialPosition === 'r_2000' || this.dialPosition === 'diode') {
+                    text = ' 1     ';
+                }
+                else if (this.dialPosition === 'r_20k') {
+                    text = ' 1 .   ';
+                }
+                else if (this.dialPosition === 'r_200k') {
+                    text = ' 1   . ';
+                }
+                else if (this.dialPosition === 'r_2000k') {
+                    text = ' 1     ';
+                }
+                else if (this.dialPosition === 'dcv_200m' || this.dialPosition === 'dcv_200' ||
+                        this.dialPosition === 'acv_200' || this.dialPosition === 'p_9v' ||
+                        this.dialPosition === 'dca_200mc' || this.dialPosition === 'dca_200m') {
+                    text = '  0 0.0';
+                }
+                else if (this.dialPosition === 'dcv_2000m' || this.dialPosition === 'dca_2000mc' ||
+                        this.dialPosition === 'hfe') {
+                    text = '  0 0 0';
+                }
+                else if (this.dialPosition === 'dcv_20' || this.dialPosition === 'dca_20m' ||
+                        this.dialPosition === 'c_10a') {
+                    text = '  0.0 0';
+                }
+                else if (this.dialPosition === 'dcv_1000' || this.dialPosition === 'acv_750') {
+                    text = 'h 0 0 0';
+                }
+                else {
+                    text = '       ';
+                }
+            }
+            console.log('text=' + text);
+            flash.sendCommand('set_multimeter_display', text);
+            this.displayText = text;
+        },
+
+        toDisplayString : function (s, dec) {
+            var i;
+            var sign = s.charAt(0) === '-' ? s.charAt(0) : ' ';
+            s = s.replace('-', '');
+
+            var pointLoc = s.indexOf('.');
+            var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
+            if (decLen === 0) {
+                s = s.concat('.');
+            }
+            if (dec < decLen) {
+                s = s.substring(0, pointLoc + dec + 1);
+            }
+            else {
+                for (i = 0; i < dec - decLen; ++i) {
+                    s = s.concat('0');
+                }
+            }
+            s = s.replace('.', '');
+            var len = s.length;
+            if (len < 4) {
+                for (i = 0; i < 3 - len; ++i) {
+                    s = '0' + s;
+                }
+                s = ' ' + s;
+            }
+
+            var dot1;
+            var dot2;
+
+            switch (dec) {
+            case 0:
+                dot1 = ' ';
+                dot2 = ' ';
+                break;
+            case 1:
+                dot1 = ' ';
+                dot2 = '.';
+                break;
+            case 2:
+                dot1 = '.';
+                dot2 = ' ';
+                break;
+            default:
+                console.log('ERROR: invalid dec ' + dec);
+            }
+
+            s = sign + s.substring(0, 2) + dot1 + s.charAt(2) + dot2 + s.charAt(3);
+            return s;
+
+        },
+
+        formatDecimalString : function (s, dec) {
+            var pointLoc = s.indexOf('.');
+            var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
+            if (decLen === 0) {
+                s = s.concat('.');
+            }
+            if (dec < decLen) {
+                s = s.substring(0, pointLoc + dec + 1);
+            }
+            else {
+                for (var i = 0; i < dec - decLen; ++i) {
+                    s = s.concat('0');
+                }
+            }
+            return s;
+        },
+
+        getDisplayText : function () {
+            return this.displayText;
+        },
+
+        /*
+         * Return value to be shown under optimal setting.
+         * This value is to be compared with the student answer for grading.
+         *
+         * Take three significant digits, four if the first digit is 1.
+         */
+        makeDisplayText : function (value) {
+            var text;
+            if (value < 199.95) {
+                text = (Math.round(value * 10) * 0.1).toString();
+                text = this.formatDecimalString(text, 1);
+            }
+            else if (value < 1999.5) {
+                text = Math.round(value).toString();
+                text = this.formatDecimalString(text, 0);
+            }
+            else if (value < 19995) {
+                text = (Math.round(value * 0.1) * 10).toString();
+            }
+            else if (value < 199950) {
+                text = (Math.round(value * 0.01) * 100).toString();
+            }
+            else if (value < 1999500) {
+                text = (Math.round(value * 0.001) * 1000).toString();
+            }
+            else {
+                text = 'NaN';
+            }
+            return parseFloat(text);
+        },
+
+        allConnected : function () {
+            return this.redProbeConnection !== null &&
+                this.blackProbeConnection !== null &&
+                this.redProbeConnection !== this.blackProbeConnection &&
+                (this.redPlugConnection === 'voma_port' &&
+                 this.blackPlugConnection === 'common_port' ||
+                 this.redPlugConnection === 'common_port' &&
+                 this.blackPlugConnection === 'voma_port') &&
+                this.powerOn;
+        }
+    };
+
+})();
+
+/* FILE multimeter2.js */
+
+(function () {
+
+    var circuit = sparks.circuit;
+    var flash = sparks.flash;
+
+    /*
+     * Digital Multimeter for breadboard activities
+     *
+     */
+    circuit.Multimeter2 = function () {
+        circuit.Multimeter2.uber.init.apply(this);
+        this.dialPosition = 'dcv_20';
+        this.powerOn = true;
+        this.update();
+    };
+
+    sparks.extend(circuit.Multimeter2, circuit.MultimeterBase, {
+
+        update: function () {
+            console.log('ENTER Multimeter2#update');
+            console.log('redProbeConnection=' + this.redProbeConnection);
+            console.log('blackProbeConnection=' + this.blackProbeConnection);
+
+            if (this.redProbeConnection && this.blackProbeConnection) {
+                this.v_value = Math.abs(breadModel('query', 'voltage', this.redProbeConnection + ',' + this.blackProbeConnection));
+                console.log('v=' + this.v_value);
+            }
+            else {
+                this.v_value = 0;
+            }
+            this.updateDisplay();
+        },
+
+        allConnected: function () {
+            return this.redProbeConnection !== null &&
+                this.blackProbeConnection !== null &&
+                this.powerOn;
+        }
+    });
 
 })();
 /* FILE resistor.js */
@@ -3002,6 +3331,8 @@ sparks.util.getRubric = function (id, callback, local) {
 
     sparks.config.flash_id = 'breadboardActivity1';
 
+    sparks.config.debug = jQuery.url.param("debug") !== undefined;
+
     sm.Activity = function () {
         sm.Activity.uber.init.apply(this);
         this.log = new sm.ActivityLog();
@@ -3016,6 +3347,17 @@ sparks.util.getRubric = function (id, callback, local) {
         onDocumentReady: function () {
             var self = this;
             console.log('this=' + this + ' self=' + self);
+
+            if (sparks.config.debug) {
+                $('.debug_area').show();
+            }
+            else {
+                $('.debug_area').hide();
+            }
+            $('#popup').hide();
+            $('.next_button').click(function () {
+                window.location.reload();
+            });
 
             this.root_dir = sparks.config.root_dir + '/activities/module-2/series-measuring';
             $('body').scrollTop(0); //scroll to top
@@ -3033,6 +3375,7 @@ sparks.util.getRubric = function (id, callback, local) {
         onFlashReady: function () {
             breadModel('insert', 'wire', 'left_positive_1,a23', 'wire1');
             breadModel('insert', 'wire', 'left_negative_1,c5', 'wire2');
+            this.multimeter = new sparks.circuit.Multimeter2();
 
             this.startTry();
         },
@@ -3049,11 +3392,13 @@ sparks.util.getRubric = function (id, callback, local) {
         },
 
         startTry: function () {
+            $('.next_button').hide();
+
             this.resistor1 = new sparks.circuit.Resistor4band('resistor1');
             this.resistor2 = new sparks.circuit.Resistor4band('resistor2');
             this.resistor3 = new sparks.circuit.Resistor4band('resistor3');
 
-            var options = { rvalues: [ 100, 200, 300, 400, 500 ], realEqualsNominal: true };
+            var options = null;
             this.resistor1.randomize(options);
             this.resistor2.randomize(options);
             this.resistor3.randomize(options);
@@ -3087,6 +3432,7 @@ sparks.util.getRubric = function (id, callback, local) {
             this.reporter.report(this.log.session, feedback);
             this.questionsArea.hide();
             this.reportArea.show();
+            $('.next_button').show();
         },
 
         resetCircuit: function () {
@@ -3109,6 +3455,36 @@ sparks.util.getRubric = function (id, callback, local) {
 
             var v;
             var t = '';
+            var args = value.split('|');
+
+            if (name === 'connect') {
+                if (args[0] === 'probe') {
+                    if (args[1] === 'probe_red') {
+                        this.multimeter.redProbeConnection = args[2];
+                    }
+                    else if (args[1] === 'probe_black') {
+                        this.multimeter.blackProbeConnection = args[2];
+                    }
+                    else {
+                        alert('Activity#receiveEvent: connect: unknonw probe name ' + args[1]);
+                    }
+                }
+                this.multimeter.update();
+            }
+            else if (name === 'disconnect') {
+                if (args[0] === 'probe') {
+                    if (args[1] === 'probe_red') {
+                        this.multimeter.redProbeConnection = null;
+                    }
+                    else if (args[1] === 'probe_black') {
+                        this.multimeter.blackProbeConnection = null;
+                    }
+                    else {
+                        alert('Activity#receiveEvent: disconnect: Unknonw probe name ' + args[1]);
+                    }
+                }
+                this.multimeter.update();
+            }
 
             if (name === 'probe') {
                 $('#popup').dialog();

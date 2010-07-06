@@ -49,7 +49,7 @@
             sparks.activity = activity;
         }
         catch (e) {
-            alert(e);
+            alert('ERROR: initActivity: ' + e);
         }
     };
     

@@ -352,7 +352,7 @@
             result = (1 / result);
           }
           result = -1 * result;
-          document.getElementById('dmm-output').innerHTML = "Meter Reading: " + result;
+          //document.getElementById('dmm-output').innerHTML = "Meter Reading: " + result;
           return  result;
         }
       };

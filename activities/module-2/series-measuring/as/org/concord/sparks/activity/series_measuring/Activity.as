@@ -27,7 +27,7 @@ package org.concord.sparks.activity.series_measuring {
             //breadboard = root.outer_breadboard_mc.breadboard_mc;
             
             //multimeter = new DmmCentech2({ activity: this, root: root });
-            //multimeter.setDisplayText('  9.0 0');
+            //multimeter.setDisplayText('       ');
             
             // initActivity must be called after the ExternalInterface is 
             // ready to communicate with JavaScript.
@@ -38,10 +38,13 @@ package org.concord.sparks.activity.series_measuring {
             trace('processMessageFromJavaScript args=' + args);
             var command:String = args[0];
             switch (command) {
+                case 'set_multimeter_display':
+                    circuit.getMultimeter().setDisplayText(args[1]);
+                    return 'ok';
                 case 'set_resistor_colors':
                     var resistor = circuit.getResistor(args[1]);
                     resistor.setColorBands(args[2]);
-                    return 'OK';
+                    return 'ok';
             }
             return 'UNKNOWN';
         }

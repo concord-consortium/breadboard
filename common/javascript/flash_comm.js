@@ -98,6 +98,8 @@
       else if (name == 'not_ready') {
           alert('Sorry, you can only access the circuit after you have answered question #1.');
       }
+      
+      return null;
     };
 
 })();

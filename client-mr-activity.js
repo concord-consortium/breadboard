@@ -1478,6 +1478,10 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
     };
 
     this.receiveEvent = function (name, value, time) {
+      if (sparks.flash.activity) {
+          return sparks.flash.activity.receiveEvent(name, value, time);
+      }
+
       console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
       var activity = sparks.activity;
       var multimeter = activity.multimeter;
@@ -1541,6 +1545,8 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
       else if (name == 'not_ready') {
           alert('Sorry, you can only access the circuit after you have answered question #1.');
       }
+
+      return null;
     };
 
 })();
@@ -1751,7 +1757,7 @@ sparks.util.getRubric = function (id, callback, local) {
             sparks.activity = activity;
         }
         catch (e) {
-            alert(e);
+            alert('ERROR: initActivity: ' + e);
         }
     };
 
@@ -1820,7 +1826,7 @@ sparks.util.getRubric = function (id, callback, local) {
     };
 
 })();
-/* FILE multimeter.js */
+/* FILE multimeter-base.js */
 
 (function () {
 
@@ -1828,28 +1834,34 @@ sparks.util.getRubric = function (id, callback, local) {
 
     /*
      * Digital Multimeter
+     * Base for the Centech DMM
      */
-    sparks.circuit.Multimeter = function () {
-        this.mode = this.modes.ohmmeter;
-        this.value = 0; //real value
-        this.displayText = '       ';
-
-        this.redProbeConnection = null;
-        this.blackProbeConnection = null;
-        this.redPlugConnection = null;
-        this.blackPlugConnecton = null;
-        this.dialPosition = 'acv_750';
-        this.powerOn = false;
+    sparks.circuit.MultimeterBase = function () {
     };
 
-    sparks.circuit.Multimeter.prototype = {
+    sparks.circuit.MultimeterBase.prototype = {
 
         modes : { ohmmeter : 0, voltmeter : 1, ammeter : 2 },
 
+        init: function () {
+            this.mode = this.modes.ohmmeter;
+
+            this.v_value = 0; //voltage value
+            this.i_value = 0; //current value
+            this.r_value = 0; //resistance value
+
+            this.displayText = '       ';
+
+            this.redProbeConnection = null;
+            this.blackProbeConnection = null;
+            this.redPlugConnection = null;
+            this.blackPlugConnecton = null;
+            this.dialPosition = 'acv_750';
+            this.powerOn = false;
+        },
+
         update : function () {
-            console.log('ENTER update powerOn=', this.powerOn + ' ' + (typeof this.powerOn));
-            this.value = sparks.activity.currentResistor.getRealValue();
-            this.updateDisplay();
+            console.log('ENTER MultimeterBase#update');
         },
 
         updateDisplay : function () {
@@ -1858,14 +1870,23 @@ sparks.util.getRubric = function (id, callback, local) {
                 flash.sendCommand('set_multimeter_display', '       ');
                 return;
             }
-            console.log('Multimeter.update: resistance=' + this.value + ' dialPosition=' + this.dialPosition);
+            console.log('Multimeter.update: v=' + this.v_value + ' i=' + this.i_value + ' r=' + this.r_value + ' dial=' + this.dialPosition);
 
             var text = '';
             if (this.allConnected()) {
-                console.log('pos=' + this.dialPosition + ' val=' + this.value);
-                if (this.dialPosition === 'r_200') {
-                    if (this.value < 199.95) {
-                        text = (Math.round(this.value * 10) * 0.1).toString();
+                if (this.dialPosition === 'dcv_20') {
+                    if (this.v_value < 19.995) {
+                        text = (Math.round(this.v_value * 100) * 0.01).toString();
+                        text = this.toDisplayString(text, 2);
+                    }
+                    else {
+                        text = ' 1 .   ';
+                    }
+
+                }
+                else if (this.dialPosition === 'r_200') {
+                    if (this.r_value < 199.95) {
+                        text = (Math.round(this.r_value * 10) * 0.1).toString();
                         text = this.toDisplayString(text, 1);
                     }
                     else {
@@ -1873,8 +1894,8 @@ sparks.util.getRubric = function (id, callback, local) {
                     }
                 }
                 else if (this.dialPosition === 'r_2000' || this.dialPosition === 'diode') {
-                    if (this.value < 1999.5) {
-                        text = Math.round(this.value).toString();
+                    if (this.r_value < 1999.5) {
+                        text = Math.round(this.r_value).toString();
                         text = this.toDisplayString(text, 0);
                     }
                     else {
@@ -1882,8 +1903,8 @@ sparks.util.getRubric = function (id, callback, local) {
                     }
                 }
                 else if (this.dialPosition === 'r_20k') {
-                    if (this.value < 19995) {
-                        text = (Math.round(this.value * 0.1) * 0.01).toString();
+                    if (this.r_value < 19995) {
+                        text = (Math.round(this.r_value * 0.1) * 0.01).toString();
                         text = this.toDisplayString(text, 2);
                     }
                     else {
@@ -1891,8 +1912,8 @@ sparks.util.getRubric = function (id, callback, local) {
                     }
                 }
                 else if (this.dialPosition === 'r_200k') {
-                    if (this.value < 199950) {
-                        text = (Math.round(this.value * 0.01) * 0.1).toString();
+                    if (this.r_value < 199950) {
+                        text = (Math.round(this.r_value * 0.01) * 0.1).toString();
                         text = this.toDisplayString(text, 1);
                     }
                     else {
@@ -1900,8 +1921,8 @@ sparks.util.getRubric = function (id, callback, local) {
                     }
                 }
                 else if (this.dialPosition === 'r_2000k') {
-                    if (this.value < 1999500) {
-                        text = Math.round(this.value * 0.001).toString();
+                    if (this.r_value < 1999500) {
+                        text = Math.round(this.r_value * 0.001).toString();
                         text = this.toDisplayString(text, 0);
                     }
                     else {
@@ -1929,7 +1950,10 @@ sparks.util.getRubric = function (id, callback, local) {
                 }
             }
             else {
-                if (this.dialPosition === 'r_200') {
+                if (this.dialPosition === 'dcv_20') {
+                    text = '  0.0 0';
+                }
+                else if (this.dialPosition === 'r_200') {
                     text = ' 1   . ';
                 }
                 else if (this.dialPosition === 'r_2000' || this.dialPosition === 'diode') {
@@ -2084,6 +2108,43 @@ sparks.util.getRubric = function (id, callback, local) {
                 this.powerOn;
         }
     };
+
+})();
+
+/* FILE multimeter.js */
+
+(function () {
+
+    var circuit = sparks.circuit;
+    var flash = sparks.flash;
+
+    /*
+     * Digital Multimeter
+     * Used by Module-1 "Measuring Resistance"
+     */
+    circuit.Multimeter = function () {
+        circuit.Multimeter.uber.init.apply(this);
+    };
+
+    sparks.extend(circuit.Multimeter, circuit.MultimeterBase, {
+
+        update : function () {
+            console.log('ENTER update powerOn=', this.powerOn + ' ' + (typeof this.powerOn));
+            this.r_value = sparks.activity.currentResistor.getRealValue();
+            this.updateDisplay();
+        },
+
+        allConnected : function () {
+            return this.redProbeConnection !== null &&
+                this.blackProbeConnection !== null &&
+                this.redProbeConnection !== this.blackProbeConnection &&
+                (this.redPlugConnection === 'voma_port' &&
+                 this.blackPlugConnection === 'common_port' ||
+                 this.redPlugConnection === 'common_port' &&
+                 this.blackPlugConnection === 'voma_port') &&
+                this.powerOn;
+        }
+    });
 
 })();
 /* FILE resistor.js */
@@ -2391,8 +2452,7 @@ sparks.util.getRubric = function (id, callback, local) {
 
     circuit.Resistor4band = function (id) {
         var superclass = sparks.circuit.Resistor4band.uber;
-        superclass.init.apply(this, id);
-        this.id = 'resistor_4band';
+        superclass.init.apply(this, [id]);
         this.numBands = 4;
 
         this.r_values5pct = this.filter(circuit.r_values.r_values4band5pct);
@@ -2403,19 +2463,30 @@ sparks.util.getRubric = function (id, callback, local) {
 
         toleranceValues: [0.05, 0.1],
 
-        randomize: function () {
+        randomize: function (options) {
             var ix = this.randInt(0, 1);
             var values;
 
             this.tolerance = this.toleranceValues[ix];
-            if (this.tolerance == 0.05) {
+
+            if (options && options.rvalues) {
+                values = options.rvalues;
+            }
+            else if (this.tolerance == 0.05) {
                 values = this.r_values5pct;
             }
             else {
                 values = this.r_values10pct;
             }
+
             this.nominalValue = values[this.randInt(0, values.length-1)];
-            this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
+
+            if (options && options.realEqualsNominal) {
+                this.realValue = this.nominalValue;
+            }
+            else {
+                this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
+            }
 
             this.updateColors(this.nominalValue, this.tolerance);
         },
@@ -2453,8 +2524,7 @@ sparks.util.getRubric = function (id, callback, local) {
 
     circuit.Resistor5band = function (id) {
         var superclass = sparks.circuit.Resistor5band.uber;
-        superclass.init.apply(this, id);
-        this.id = 'resistor_5band';
+        superclass.init.apply(this, [id]);
         this.numBands = 5;
 
         this.r_values1pct = this.filter(circuit.r_values.r_values5band1pct);
@@ -4431,8 +4501,8 @@ sparks.util.getRubric = function (id, callback, local) {
 
         onFlashReady: function () {
             this.multimeter = new sparks.circuit.Multimeter();
-            this.resistor4band = new sparks.circuit.Resistor4band();
-            this.resistor5band = new sparks.circuit.Resistor5band();
+            this.resistor4band = new sparks.circuit.Resistor4band('resistor_4band');
+            this.resistor5band = new sparks.circuit.Resistor5band('resistor_5band');
 
 
         },

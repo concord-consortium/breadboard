@@ -18,6 +18,8 @@ package {
         private var engaged:DisplayObject; //to be shown when the lead is connected to another component
         private var brokenLead:DisplayObject;
     
+        private var location:String; //coordinate on breadboard, e.g. c21
+    
         public function ResistorLead(id:String, lead:DisplayObject,
             rollover:DisplayObject, engaged:DisplayObject, brokenLead:DisplayObject)
         {
@@ -37,6 +39,14 @@ package {
         
         public function getId():String {
             return id;
+        }
+        
+        public function getLocation():String {
+            return location;
+        }
+        
+        public function setLocation(loc:String):void {
+            location = loc;
         }
         
         public function showRollOver():void {

@@ -73,10 +73,10 @@ package org.concord.sparks.circuit.multimeter.dmm_centech {
             imagePath = activity.getRootPath() + '/common/images/multimeter/dmm_centech'
             
             dial = container.dial
-            dial.addEventListener(MouseEvent.MOUSE_DOWN, handleDialMouseDown);
-            dial.addEventListener(MouseEvent.MOUSE_MOVE, handleDialMouseMove);
+            //dial.addEventListener(MouseEvent.MOUSE_DOWN, handleDialMouseDown);
+            //dial.addEventListener(MouseEvent.MOUSE_MOVE, handleDialMouseMove);
             
-            setDial('acv_750', false);
+            setDial('dcv_20', false);
 
             //powerSwitch = root[names.power_switch];
             
