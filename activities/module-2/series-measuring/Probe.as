@@ -67,7 +67,10 @@ package {
             if (! _down) {
                 return;
             }
-            if (! _dragging) {
+            if (_dragging) {
+                circuit.updateResistorEndColors(this);
+            }
+            else {
                 _dragging = true;
                 this.startDrag();
                 if (connection) {

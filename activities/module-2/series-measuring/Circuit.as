@@ -49,19 +49,27 @@ package {
             return multimeter;
         }
 
-        public function updateProbeConnection(probe:Probe) {
+        public function updateProbeConnection(probe:Probe):void {
             trace('ENTER Circuit#updateProbeConnection');
             var oldConnection:Object = probe.getConnection();
             var connection:Object = null;
+            var ends;
             
             for (var i = 0; i < resistors.length; ++i) {
-                if (resistors[i].getLeftEnd().inHotSpot(probe.getTipPos())) {
-                    trace('Probe ' + probe.getId() + 'on left of resistor ' + i);
-                    connection = resistors[i].getLeftEnd();
-                }
-                else if (resistors[i].getRightEnd().inHotSpot(probe.getTipPos())) {
-                    trace('Probe ' + probe.getId() + 'on right of resistor ' + i);
-                    connection = resistors[i].getRightEnd();
+                ends = resistors[i].getEnds();
+                for (var j = 0; j < 2; ++j) {
+                    if (ends[j].isBroken()) {
+                        if (ends[j].inBrokenHotSpot(probe)) {
+                            connection = ends[j];
+                            ends[j].setBrokenEngaged();
+                        }
+                    }
+                    else {
+                        if (ends[j].inHotSpot(probe.getTipPos())) {
+                            connection = ends[j];
+                            ends[j].setEngaged();
+                        }
+                    }
                 }
             }
             
@@ -72,13 +80,50 @@ package {
             }
         }
         
-        private function clickSound() {
+        public function updateResistorEndColors(probe:Probe):void {
+            //trace('ENTER Circuit#updateResistorEndColor');
+            var ends;
+            for (var i = 0; i < resistors.length; ++i) {
+                ends = resistors[i].getEnds();
+                for (var j = 0; j < 2; ++j) {
+                    if (ends[j].isBroken()) {
+                        if (ends[j].inBrokenHotSpot(probe)) {
+                            if (ends[j].getBrokenState() !== ResistorLead.ROLL_OVER) {
+                                ends[j].setBrokenRollOver();
+                            }
+                        }
+                        else {
+                            if (!probeConnected(ends[j]) && ends[j].getBrokenState() !== ResistorLead.ORIGINAL) {
+                                ends[j].setBrokenOriginal();
+                            }
+                        }
+                    }
+                    else {
+                        if (ends[j].inHotSpot(probe.getTipPos())) {
+                            if (ends[j].getState() !== ResistorLead.ROLL_OVER) {
+                                ends[j].setRollOver();
+                            }
+                        }
+                        else {
+                            if (!probeConnected(ends[j]) && ends[j].getState() !== ResistorLead.ORIGINAL) {
+                                ends[j].setOriginal();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        private function probeConnected(end:ResistorLead):Boolean {
+            return redProbe.getConnection() == end || blackProbe.getConnection() == end;
+        }
+
+        private function clickSound():void {
             sndClickIt=new clickit3();
             sndClickItChannel=sndClickIt.play(); 
             transform1.volume=.75;
             sndClickItChannel.soundTransform=transform1;
         }
-
     }
 
 }

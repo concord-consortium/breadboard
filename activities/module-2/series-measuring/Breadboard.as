@@ -99,7 +99,7 @@ package {
         function mouseUpHandler(mevt:MouseEvent):void {
             //trace('Breadboard#mouseUpHandler x=' + mevt.stageX + ' y=' + mevt.stageY);
             powerWires(mevt);
-            probeQuery_handler(mevt);
+            //probeQuery_handler(mevt);
         }
 
         function wireOnPositive():void
@@ -406,6 +406,7 @@ package {
             }           
         }
 
+        /* skim
         function probeQuery_handler(event:MouseEvent):void
         {
             var blackProbeEngaged:Boolean = false;
@@ -452,6 +453,6 @@ package {
 
             }
         }
-
+        */
     }
 }
