@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <link type="text/css" rel="stylesheet" href="lib/jspec.css" />
+
+    <script type="text/javascript" src="../../../lib/jquery/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="../../../lib/jquery/plugins/jquery.url.packed.js"></script>
+    <script type="text/javascript" src="../../../lib/json2.js"></script>
+    <script type="text/javascript" src="../../../client-mr-activity.js"></script>
+    <script src="lib/jspec.js"></script>
+    <script src="lib/jspec.timers.js"></script>
+    <script src="lib/jspec.jquery.js"></script>
+    <script src="lib/jspec.xhr.js"></script>
+    <script src="lib/jspec.nodejs.js"></script>
+    <!--<script src="lib/jspec.growl.js"></script>-->
+    <script src="lib/jspec.shell.js"></script>
+    <script type="text/javascript" src="../lib/common.js"></script>
+
+    <script>
+      function runSuites() {
+        JSpec
+        .exec('spec.common/spec.util.js')
+        .exec('spec.common/spec.circuit.js')
+        .exec('spec.common/spec.string.js')
+        .exec('spec.activities/spec.resistor_colors.js')
+        .run({ fixturePath: 'fixtures' })
+        .report()
+      }
+    </script>
+  </head>
+  <body class="jspec" onLoad="runSuites();">
+    <div id="jspec-top"><h2 id="jspec-title">JSpec <em><script>document.write(JSpec.version)</script></em></h2></div>
+    <div id="jspec"></div>
+    <div id="jspec-bottom"></div>
+  </body>
+</html>

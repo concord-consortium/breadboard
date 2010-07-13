@@ -23,6 +23,7 @@ describe 'Activity 1: Resistor Colors'
       // mr_data1.json: perfect answers
       var session = JSON.parse(fixture('mr_data_1.json'))
       var rubric = JSON.parse(fixture('rubric-mr.json'))
+
       var grader = new sparks.activities.mr.Grader(session, rubric);
       var feedback = grader.grade();
       
