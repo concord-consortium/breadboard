@@ -1,0 +1,24 @@
+# run this apache instance with:
+#   apachectl -f "`pwd`/proxy/apache.conf" -k start
+# shutdown the server with:
+#   apachectl -f "`pwd`/proxy/apache.conf" -k stop
+
+Listen 0.0.0.0:1234
+
+LoadModule headers_module libexec/apache2/mod_headers.so
+LoadModule dir_module libexec/apache2/mod_dir.so
+LoadModule mime_module libexec/apache2/mod_mime.so
+LoadModule mime_magic_module libexec/apache2/mod_mime_magic.so
+LoadModule proxy_module libexec/apache2/mod_proxy.so
+LoadModule proxy_connect_module libexec/apache2/mod_proxy_connect.so
+LoadModule proxy_http_module libexec/apache2/mod_proxy_http.so
+
+# replace this with the location of qucs
+ProxyPass        /qucs/ http://geniverse.dev.concord.org/geniverse/
+ProxyPassReverse /qucs/ http://geniverse.dev.concord.org/geniverse/
+
+# replace these paths with the location of your sparks environment
+DocumentRoot /Users/scytacki/Development/sparks
+PidFile /Users/scytacki/Development/sparks/proxy/apache.pid
+ErrorLog /Users/scytacki/Development/sparks/proxy/apache-error.log
+LockFile /Users/scytacki/Development/sparks/proxy/accept.lock
