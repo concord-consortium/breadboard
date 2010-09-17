@@ -14,8 +14,8 @@ LoadModule proxy_connect_module libexec/apache2/mod_proxy_connect.so
 LoadModule proxy_http_module libexec/apache2/mod_proxy_http.so
 
 # replace this with the location of qucs
-ProxyPass        /qucs/ http://geniverse.dev.concord.org/geniverse/
-ProxyPassReverse /qucs/ http://geniverse.dev.concord.org/geniverse/
+ProxyPass        /sparks/ http://sparks.portal.concord.org/sparks/
+ProxyPassReverse /sparks/ http://sparks.portal.concord.org/sparks/
 
 # replace these paths with the location of your sparks environment
 DocumentRoot /Users/scytacki/Development/sparks
