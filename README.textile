@@ -1,10 +1,41 @@
+h1. Build
+
+Sparks uses Sprockets (http://getsprockets.org) to manage the javascript code.
+
+rake combine:all 
+
+or just "rake" generates several combined javascript files at the top folder.
+
+h1. Deployment
+
+This whole sparks folder should be embedded into the sparks branch of the
+rigse portal.
+
+So either manually or with capistrano tasks, rigse should be first cloned 
+from http://github.com/stepheneb/rigse/tree/sparks.
+
+Then clone sparks under the "public" folder and rename the "spark" folder to
+"sparks-content".
+
 h1. Activities
 
-h2. Measuring Resistance
+h3. Measuring Resistance
 
 Main: activities/measuring-resistance/index.html
 
+h3. Module 2 - Measuring Series
+
+
 <hr/>
+
+h1. Qucs Server
+
+The PHP server is at otto:/web/otto.concord.org/qucs/index.php, which invokes
+the qucs command line at ~skim/local/app/qucs-0.0.15/bin.
+
+To download qucs: http://qucs.sourceforge.net/
+
+<hr />
 
 h1. JSpec Testing
 
