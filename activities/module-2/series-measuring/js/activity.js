@@ -15,6 +15,7 @@
 
 (function () {
 
+
     var sm = sparks.activities.sm;
     var flash = sparks.flash;
     var str = sparks.string;
@@ -44,7 +45,7 @@
                 $('.debug_area').show();
             }
             else {
-                $('.debug_area').hide();
+               $('.debug_area').hide();
             }
             $('#popup').hide();
             $('.next_button').click(function () {
@@ -152,6 +153,7 @@
             var args = value.split('|');
             
             if (name === 'connect') {
+                console.log('connected!!!!');
                 if (args[0] === 'probe') {
                     if (args[1] === 'probe_red') {
                         this.multimeter.redProbeConnection = args[2];
@@ -163,9 +165,11 @@
                         alert('Activity#receiveEvent: connect: unknonw probe name ' + args[1]);
                     }
                 }
+                if (args[0] === 'resistor') {
+                    console.log('resistor_connected!!!!!!');
+                }
                 this.multimeter.update();
-            }
-            else if (name === 'disconnect') {
+            } else if (name === 'disconnect') {
                 if (args[0] === 'probe') {
                     if (args[1] === 'probe_red') {
                         this.multimeter.redProbeConnection = null;
@@ -178,9 +182,7 @@
                     }
                 }
                 this.multimeter.update();
-            }
-            
-            if (name === 'probe') {
+            } else if (name === 'probe') {
                 $('#popup').dialog();
                 
                 v = breadModel('query', 'voltage', 'a23,a17');
@@ -221,6 +223,20 @@
                 $('#dbg_current').text(t);
 
                 $('#popup').dialog('close');
+            } else if (name == 'multimeter_dial') {
+                console.log('changed multimeter dial'+value);
+                this.multimeter.dialPosition = value;
+                this.multimeter.update();
+                activity.log.add(name, { value: this.multimeter.dialPosition });
+            } else if (name == 'multimeter_power') {
+                this.multimeter.powerOn = value == 'true' ? true : false;
+                this.multimeter.update();
+                activity.log.add(name, { value: this.multimeter.powerOn });
+                if (value === 'true' && this.multimeter.allConnected()) {
+                    activity.log.add('make_circuit');
+                } else if (value == 'false' && wasConnected) {
+                    activity.log.add('break_circuit');
+                }
             }
         }
         

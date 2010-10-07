@@ -2012,6 +2012,7 @@ sparks.util.getRubric = function (id, callback, local) {
           for (n in Resistor.colorMap) {
             if (Resistor.colorMap[n] == color) { return parseInt(n); }
           }
+          if (color == "gray") return 8;
           return null;
         },
         getResistance: function(colors){
@@ -2178,16 +2179,15 @@ sparks.util.getRubric = function (id, callback, local) {
       var breadBoard = new Breadboard();
 
       var interfaces = {
-        insert: function(){
+        insert: function(type, connections){
           var props = {
-            UID         : arguments[0]+calls,
-            kind        : arguments[0],
-            connections : arguments[1].split(",")
+            UID         : type+calls,
+            kind        : type,
+            connections : connections.split(",")
           };
 
           switch(props.kind) {
             case "resistor":
-              props.UID = arguments[3];
               if (typeof(arguments[2])==="string") {
                 props.resistance = Resistor.getResistance( arguments[2].split(",") );
               }
@@ -2196,55 +2196,62 @@ sparks.util.getRubric = function (id, callback, local) {
               }
               break;
             case "wire":
-              props.UID = arguments[2];
+              break;
+            case 'battery':
+              props.voltage = arguments[2];
               break;
           }
           var newComponent;
           newComponent = breadBoard.component(props);
           return newComponent.UID;
         },
-        destroy: function(){
-          breadBoard.component(arguments[0]).destroy();
+        destroy: function(component){
+          breadBoard.component(component).destroy();
         },
         clear: function() {
           breadBoard.clear();
         },
-        move: function(){
-          breadBoard.component(arguments[0]).move(arguments[1].split(','));
+        move: function(component, connections){
+          breadBoard.component(component).move(connections.split(','));
         },
-        query: function(){
+        query: function(type, connections){
+          console.log("query! thui = "+type);
 
 
-          if (arguments[0] === 'resistance') {
-            var connections = arguments[1].split(',');
+          var tempComponents = [];
+
+          if (type === 'resistance') {
+            connections = connections.split(',');
             var ghost = new GhostHole();
-            breadBoard.component({
-              UID: 'meterBat',
+            var ohmmeterBattery = breadBoard.component({
+              UID: 'ohmmeterBattery',
               kind: 'battery',
               voltage: 1,
               connections: [connections[0], ghost]});
-            breadBoard.component({
+            var currentProbe = breadBoard.component({
               UID: 'meter',
               kind: 'iprobe',
               connections: [ghost, connections[1]]});
+            tempComponents.push(ohmmeterBattery, currentProbe);
           } else {
-            breadBoard.component({
+            var probe = breadBoard.component({
               UID: 'meter',
               kind: {'current' : 'iprobe', 'voltage' : 'vprobe'}[arguments[0]],
-              connections: arguments[1].split(',')});
+              connections: connections.split(',')});
+            tempComponents.push(probe);
           }
 
-          breadBoard.component({
-            UID: 'bat1',
+          tempComponents.push(breadBoard.component({
+            UID: 'leftRailPower',
             kind: 'battery',
             voltage: 9,
-            connections: ["left_positive_1", "left_negative_1"]});
+            connections: ["left_positive_1", "left_negative_1"]}));
 
-          breadBoard.component({
-            UID: 'bat2',
+          tempComponents.push(breadBoard.component({
+            UID: 'rightRailPower',
             kind: 'battery',
             voltage: 9,
-            connections:  ["right_positive_1", "right_negative_1"]});
+            connections:  ["right_positive_1", "right_negative_1"]}));
 
           var result;
 
@@ -2253,11 +2260,11 @@ sparks.util.getRubric = function (id, callback, local) {
 
           console.log('result=' + result);
 
-          breadBoard.component('meter').destroy();
-          breadBoard.component('bat1').destroy();
-          breadBoard.component('bat2').destroy();
+          $.each(tempComponents, function(i, component){
+            component.destroy();
+          });
 
-          if (arguments[0] === 'resistance') {
+          if (type === 'resistance') {
             result = (1 / result);
           }
           result = -1 * result;
@@ -2288,6 +2295,10 @@ sparks.util.getRubric = function (id, callback, local) {
         else {
           return interfaces[func].apply(window, newArgs);
         }
+      };
+
+      this.getBreadBoard = function() {
+        return breadBoard;
       };
 
       /*
@@ -3324,6 +3335,7 @@ sparks.util.getRubric = function (id, callback, local) {
 
 (function () {
 
+
     var sm = sparks.activities.sm;
     var flash = sparks.flash;
     var str = sparks.string;
@@ -3352,7 +3364,7 @@ sparks.util.getRubric = function (id, callback, local) {
                 $('.debug_area').show();
             }
             else {
-                $('.debug_area').hide();
+               $('.debug_area').hide();
             }
             $('#popup').hide();
             $('.next_button').click(function () {
@@ -3458,6 +3470,7 @@ sparks.util.getRubric = function (id, callback, local) {
             var args = value.split('|');
 
             if (name === 'connect') {
+                console.log('connected!!!!');
                 if (args[0] === 'probe') {
                     if (args[1] === 'probe_red') {
                         this.multimeter.redProbeConnection = args[2];
@@ -3469,9 +3482,11 @@ sparks.util.getRubric = function (id, callback, local) {
                         alert('Activity#receiveEvent: connect: unknonw probe name ' + args[1]);
                     }
                 }
+                if (args[0] === 'resistor') {
+                    console.log('resistor_connected!!!!!!');
+                }
                 this.multimeter.update();
-            }
-            else if (name === 'disconnect') {
+            } else if (name === 'disconnect') {
                 if (args[0] === 'probe') {
                     if (args[1] === 'probe_red') {
                         this.multimeter.redProbeConnection = null;
@@ -3484,9 +3499,7 @@ sparks.util.getRubric = function (id, callback, local) {
                     }
                 }
                 this.multimeter.update();
-            }
-
-            if (name === 'probe') {
+            } else if (name === 'probe') {
                 $('#popup').dialog();
 
                 v = breadModel('query', 'voltage', 'a23,a17');
@@ -3526,6 +3539,20 @@ sparks.util.getRubric = function (id, callback, local) {
                 $('#dbg_current').text(t);
 
                 $('#popup').dialog('close');
+            } else if (name == 'multimeter_dial') {
+                console.log('changed multimeter dial'+value);
+                this.multimeter.dialPosition = value;
+                this.multimeter.update();
+                activity.log.add(name, { value: this.multimeter.dialPosition });
+            } else if (name == 'multimeter_power') {
+                this.multimeter.powerOn = value == 'true' ? true : false;
+                this.multimeter.update();
+                activity.log.add(name, { value: this.multimeter.powerOn });
+                if (value === 'true' && this.multimeter.allConnected()) {
+                    activity.log.add('make_circuit');
+                } else if (value == 'false' && wasConnected) {
+                    activity.log.add('break_circuit');
+                }
             }
         }
 
