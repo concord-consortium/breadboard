@@ -35,10 +35,14 @@ describe 'Creating a breadboard'
       netlist.search(/TLIN:wire.* L1 L2 Z=\"0 Ohm\" L=\"1 mm\" Alpha=\"0 dB\"/).should.be_at_least 0    
       
       // We can remove the wire
-      breadModel('insert', 'battery', 'b2,b3', '3');
+      breadModel('remove', 'wire', 'a1,a2');
       netlist = sparks.circuit.qucsator.makeNetlist(board);
-      netlist.search(/Vdc:battery.* L2 L3 U=\"3 V\"/).should.be_at_least 0   
-      netlist.search(/TLIN:wire.* L1 L2 Z=\"0 Ohm\" L=\"1 mm\" Alpha=\"0 dB\"/).should.be_at_least 0
+      netlist.search(/TLIN:wire.*/).should.be -1
+      
+      // Removing a battery from wrong location should do nothing
+      breadModel('remove', 'battery', 'b2,a2');
+      netlist = sparks.circuit.qucsator.makeNetlist(board);
+      netlist.search(/Vdc:battery.*/).should.be_at_least 0
     end
     
     it "should correctly add resistors with colors"

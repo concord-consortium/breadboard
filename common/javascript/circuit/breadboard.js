@@ -121,6 +121,10 @@
       Hole.prototype.nodeName = function() {
         return this.strip && this.strip.name;
       };
+      
+      Hole.prototype.getName = function() {
+        return this.name;
+      };
 
       var GhostHole = function GhostHole(name) {
         this.name = 'node' + calls;
@@ -297,6 +301,28 @@
           var newComponent;
           newComponent = breadBoard.component(props);
           return newComponent.UID;
+        },
+        remove: function(type, connections){
+          var comp = interfaces.findComponent(type, connections)
+          if (!!comp){
+            comp.destroy();
+          }
+        },
+        findComponent: function(type, connections){
+          if (!!type && !!connections && connections.split(",").length === 2){
+            connections = connections.split(",");
+            for (i in breadBoard.components){
+              var component = breadBoard.components[i];
+              if (component.kind === type && !!component.connections[0] && 
+                ((component.connections[0].getName() === connections[0]
+                && component.connections[1].getName() === connections[1]) || 
+                (component.connections[0].getName() === connections[1]
+                  && component.connections[1].getName() === connections[0]))){
+                  return component;
+                }
+            }
+          }
+          return null;
         },
         destroy: function(component){
           breadBoard.component(component).destroy();
