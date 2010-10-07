@@ -121,7 +121,7 @@
                     text = '       ';
                 }
             }
-            else {
+            else {    // if not connected
                 if (this.dialPosition === 'dcv_20') {
                     text = '  0.0 0';
                 }

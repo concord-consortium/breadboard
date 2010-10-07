@@ -28,8 +28,29 @@
             console.log('blackProbeConnection=' + this.blackProbeConnection);
 
             if (this.redProbeConnection && this.blackProbeConnection) {
-                this.v_value = Math.abs(breadModel('query', 'voltage', this.redProbeConnection + ',' + this.blackProbeConnection));
-                console.log('v=' + this.v_value);
+                var measurement = null;
+                if (this.dialPosition.indexOf('dcv_') > -1){
+                  measurement = "voltage"
+                } else if (this.dialPosition.indexOf('dca_') > -1){
+                   measurement = "current"
+                } else if (this.dialPosition.indexOf('r_') > -1){
+                      measurement = "resistance"
+                }
+                console.log("measurement = "+measurement+", this.dialPosition = "+this.dialPosition);
+                
+                if (!!measurement){
+                  if (measurement === "voltage"){
+                    console.log("going to measure voltage, m="+measurement);
+                    this.v_value = Math.abs(breadModel('query', measurement, this.redProbeConnection + ',' + this.blackProbeConnection));
+                  } else if (measurement === "current"){
+                      console.log("going to measure current, m="+measurement);
+                    this.i_value = Math.abs(breadModel('query', measurement, this.redProbeConnection + ',' + this.blackProbeConnection));
+                  } else if (measurement === "resistance"){
+                      console.log("going to measure resistance, m="+measurement);
+                    this.r_value = Math.abs(breadModel('query', measurement, this.redProbeConnection + ',' + this.blackProbeConnection));
+                    console.log("r_value = "+this.r_value);
+                  }
+                }
             }
             else {
                 this.v_value = 0;
