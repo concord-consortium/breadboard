@@ -89,6 +89,8 @@
           for (n in Resistor.colorMap) {
             if (Resistor.colorMap[n] == color) { return parseInt(n); }
           }
+          // alternate spelling...
+          if (color == "gray") return 8;
           return null;
         },
         getResistance: function(colors){
@@ -264,16 +266,20 @@
       var breadBoard = new Breadboard();
 
       var interfaces = {
-        insert: function(){
+        // inserts a new component into the breadboard. Expects a type, the connections,
+        // and other arguments as needed
+        // e.g. insert('battery', 'a1,a2', '5')
+        // e.g. insert('resistor, 'a1,left_positive_1', 'green,black,black,gold')
+        insert: function(type, connections){
           var props = {
-            UID         : arguments[0]+calls,
-            kind        : arguments[0],
-            connections : arguments[1].split(",")
+            UID         : type+calls,
+            kind        : type,
+            connections : connections.split(",")
           };
 
           switch(props.kind) {
             case "resistor":
-              props.UID = arguments[3];
+             // props.UID = arguments[3];
               if (typeof(arguments[2])==="string") {
                 props.resistance = Resistor.getResistance( arguments[2].split(",") );
               }
@@ -282,60 +288,70 @@
               }
               break;
             case "wire":
-              props.UID = arguments[2];
+             // props.UID = arguments[2];
+              break;
+            case 'battery':
+              props.voltage = arguments[2];
               break;
           }
           var newComponent;
           newComponent = breadBoard.component(props);
           return newComponent.UID;
         },
-        destroy: function(){
-          breadBoard.component(arguments[0]).destroy();
+        destroy: function(component){
+          breadBoard.component(component).destroy();
         },
         clear: function() {
           breadBoard.clear();
         },
-        move: function(){
-          breadBoard.component(arguments[0]).move(arguments[1].split(','));
+        move: function(component, connections){
+          breadBoard.component(component).move(connections.split(','));
         },
-        query: function(){
+        query: function(type, connections){
+          console.log("query! thui = "+type);
           // Current dummy function will pass query to model
           // Model will then compile SPICE net list and send to server
           // Server will respond with voltage at queried points
           // Power and MultiMeter settings will be assumed
 
           //debug( breadBoard.query( arguments[1].split(',') ) );
-
-          if (arguments[0] === 'resistance') {
-            var connections = arguments[1].split(',');
+          
+          var tempComponents = [];
+          
+          if (type === 'resistance') {
+            connections = connections.split(',');
             var ghost = new GhostHole();
-            breadBoard.component({
-              UID: 'meterBat', 
+            var ohmmeterBattery = breadBoard.component({
+              UID: 'ohmmeterBattery', 
               kind: 'battery', 
               voltage: 1,
               connections: [connections[0], ghost]});
-            breadBoard.component({
+            var currentProbe = breadBoard.component({
               UID: 'meter', 
               kind: 'iprobe',
               connections: [ghost, connections[1]]});
+            tempComponents.push(ohmmeterBattery, currentProbe);
           } else {
-            breadBoard.component({
-              UID: 'meter', 
+            var probe = breadBoard.component({
+              UID: 'meter',
               kind: {'current' : 'iprobe', 'voltage' : 'vprobe'}[arguments[0]],
-              connections: arguments[1].split(',')});
+              connections: connections.split(',')});
+            tempComponents.push(probe);
           }
-
-          breadBoard.component({
-            UID: 'bat1', 
+          
+          // attach batteries to rails on the fly. This is wierd -- why don't we
+          // attach the batteries from the start, or when user attaches them?
+          tempComponents.push(breadBoard.component({
+            UID: 'leftRailPower', 
             kind: 'battery', 
             voltage: 9,
-            connections: ["left_positive_1", "left_negative_1"]});
+            connections: ["left_positive_1", "left_negative_1"]}));
 
-          breadBoard.component({
-            UID: 'bat2', 
+          tempComponents.push(breadBoard.component({
+            UID: 'rightRailPower', 
             kind: 'battery', 
             voltage: 9,
-            connections:  ["right_positive_1", "right_negative_1"]});
+            connections:  ["right_positive_1", "right_negative_1"]}));
 
           var result;
           
@@ -343,12 +359,12 @@
                   function (r) { result = r.meter; } );
 
           console.log('result=' + result);
+          
+          $.each(tempComponents, function(i, component){
+            component.destroy();
+          });
 
-          breadBoard.component('meter').destroy();
-          breadBoard.component('bat1').destroy();
-          breadBoard.component('bat2').destroy();
-
-          if (arguments[0] === 'resistance') {
+          if (type === 'resistance') {
             result = (1 / result);
           }
           result = -1 * result;
@@ -382,6 +398,10 @@
         else {
           return interfaces[func].apply(window, newArgs);
         }
+      };
+      
+      this.getBreadBoard = function() {
+        return breadBoard;
       };
 
       // The outward interface between JS & Flash
