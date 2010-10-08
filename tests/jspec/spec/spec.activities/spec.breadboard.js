@@ -1,6 +1,7 @@
 describe 'Creating a breadboard'
     before
-      sparks.config.qucsate_server_url = "http://localhost:1234/sparks/qucsator/solve"
+      sparks.config.qucsate_server_url = "http://localhost:1234/sparks/qucsator/solve";
+      getBreadBoard().holeMap = {};
     end
 
     it "should correctly add components"
@@ -59,4 +60,51 @@ describe 'Creating a breadboard'
       netlist = sparks.circuit.qucsator.makeNetlist(board);
       netlist.search(/R:resistor.* L2 L3 R=\"4200 Ohm\"/).should.be_at_least 0
     end 
+    
+    it 'should be able to add a component with a ghost hole'
+      breadModel('clear');
+      
+      breadModel('insert', 'resistor', 'a1,xx', 'brown,black,brown,gold');
+      var board = getBreadBoard();
+      var netlist = sparks.circuit.qucsator.makeNetlist(board);
+      netlist.search(/R:resistor.* L1 xx R="100 Ohm/).should.be_at_least 0
+    end
+    
+    it 'should be able to get holes from breadboard'
+      // board holes should be mapped to strip
+      var a1Hole = getBreadBoard().getHole('a1');
+      a1Hole.nodeName().should.be 'L1'
+      
+      // board holes in a strip should be the same node
+      var b1Hole = getBreadBoard().getHole('a1');
+      b1Hole.should.be a1Hole
+      
+      // should be able to get a hole by passing in a hole instead of a string
+      var A1Hole = getBreadBoard().getHole(a1Hole);
+      A1Hole.should.be a1Hole
+      
+      // should be able to make ghost holes
+      var xHole = getBreadBoard().getHole('x');
+      xHole.nodeName().should.be 'x'
+      
+      // should be able to map holes to ghost holes
+      breadModel('mapHole', 'a2', 'y');
+      var a2Hole = getBreadBoard().getHole('a2');
+      a2Hole.nodeName().should.be 'y'
+    end
+    
+    it 'should be able to map hole to a ghost hole'
+      breadModel('clear');
+      
+      breadModel('insert', 'resistor', 'a1,yy', 'brown,black,brown,gold');
+      breadModel('mapHole', "a4", "yy");
+      breadModel('insert', 'wire', 'a4,a6');
+      
+      var board = getBreadBoard();
+      var netlist = sparks.circuit.qucsator.makeNetlist(board);
+      netlist.search(/TLIN:wire.* yy L6/).should.be_at_least 0
+    end
+    
+    
+    
 end

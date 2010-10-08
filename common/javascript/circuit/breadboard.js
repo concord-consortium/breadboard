@@ -127,7 +127,7 @@
       };
 
       var GhostHole = function GhostHole(name) {
-        this.name = 'node' + calls;
+        this.name = !!name ? name : 'node' + calls;
         return this;
       };
 
@@ -166,9 +166,9 @@
 
         for (i=0, l=defs.powerRailHoles; i < l; i++) {
           for (side in this.powerRail) {
-            for (end in this.powerRail[side]) {
-              var h = side + '_' + end + '_' + i;
-              this.powerRail[side][end][h] = this.holes[h] = new Hole(this.powerRail[side][end], h);
+            for (sign in this.powerRail[side]) {
+              var h = side + '_' + sign + '_' + i;
+              this.powerRail[side][sign][h] = this.holes[h] = new Hole(this.powerRail[side][sign], h);
             }
           }
         }
@@ -190,6 +190,7 @@
       Breadboard.prototype.strips=[];
       Breadboard.prototype.components={};
       Breadboard.prototype.holes={};
+      Breadboard.prototype.holeMap={};  // map of holes where one replaces the other, e.g. {a1: 'newGhostHole'}
 
       Breadboard.prototype.makeStrip = function (name) {
         var stripLen = this.strips.length;
@@ -212,6 +213,32 @@
         }
         return !!destroyed;
       };
+      
+      // can pass either a hole or a string
+      Breadboard.prototype.getHole = function(hole) {
+        if (hole.nodeName){
+          if (!!this.holeMap[hole.nodeName]){
+            return this.getHole(this.holeMap[hole.nodeName]);
+          }
+          return hole;
+        }
+        
+        // should be a string
+        
+        // replace with mapped name
+        if (!!this.holeMap[hole]){
+          hole = this.holeMap[hole]
+        }
+        
+        // return hole if it is in breadboard
+        if (!!this.holes[hole]){
+          return this.holes[hole];
+        }
+        
+        // otherwise, make a new ghosthole
+        return new GhostHole(hole);
+        
+      };
 
       //// COMPONENT MODEL /////////////////////////////////////////////////////////
       var Component = function (props) {
@@ -222,16 +249,16 @@
         }
         this.breadBoard = breadBoard;
         this.breadBoard.components[props.UID] = this;
-
+        
         this.connections=[];
         for (i in props.connections) {
-          if (props.connections[i].nodeName) {
-            this.connections[i] = props.connections[i];
-          } else {
-            this.connections[i] = this.breadBoard.holes[props.connections[i]];
+          this.connections[i] = this.breadBoard.getHole(props.connections[i]);
+          
+          if (!!this.breadBoard.holes[props.connections[i]]) {
             this.breadBoard.holes[props.connections[i]].connections[this.breadBoard.holes[props.connections[i]].connections.length] = this;
           }
         }
+        
         return this;
       };
 
@@ -333,14 +360,23 @@
         move: function(component, connections){
           breadBoard.component(component).move(connections.split(','));
         },
+        getGhostHole: function(name){
+          return new GhostHole(name);
+        },
+        mapHole: function(oldHoleName, newHoleName){
+          breadBoard.holeMap[oldHoleName] = newHoleName;
+        },
         query: function(type, connections){
-          console.log("query! thui = "+type);
+          console.log("query! type = "+type);
           // Current dummy function will pass query to model
           // Model will then compile SPICE net list and send to server
           // Server will respond with voltage at queried points
           // Power and MultiMeter settings will be assumed
 
           //debug( breadBoard.query( arguments[1].split(',') ) );
+          
+          console.log("at time of measuring, netlist = ");
+          console.log(q.makeNetlist(breadBoard));
           
           var tempComponents = [];
           
@@ -365,8 +401,9 @@
             tempComponents.push(probe);
           }
           
-          // attach batteries to rails on the fly. This is wierd -- why don't we
+          // attach batteries to rails on the fly. This is weird -- why don't we
           // attach the batteries from the start, or when user attaches them?
+          // if (type != 'resistance') {
           tempComponents.push(breadBoard.component({
             UID: 'leftRailPower', 
             kind: 'battery', 
@@ -378,6 +415,7 @@
             kind: 'battery', 
             voltage: 9,
             connections:  ["right_positive_1", "right_negative_1"]}));
+          // }
 
           var result;
           

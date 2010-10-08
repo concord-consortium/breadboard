@@ -1,6 +1,7 @@
 describe 'Measuring breadboard components with QUCS'
     before
-      sparks.config.qucsate_server_url = "http://localhost:1234/sparks/qucsator/solve"
+      sparks.config.qucsate_server_url = "http://localhost:1234/sparks/qucsator/solve";
+      getBreadBoard().holeMap = {};
     end
     
     it "should correctly measure resistance"
