@@ -100,6 +100,46 @@
                     else {
                         text = ' 1     ';
                     }
+                } 
+                else if (this.dialPosition === 'dca_200mc') {
+                  var imc = this.i_value * 1000000
+                  if (imc < 195){
+                    text = (Math.round(imc * 100) * 0.01).toString();
+                    text = this.toDisplayString(text, 1);
+                  }
+                  else {
+                      text = ' 1     ';
+                  }
+                }
+                else if (this.dialPosition === 'dca_2000mc') {
+                  var imc = this.i_value * 1000000
+                  if (imc < 1950){
+                    text = (Math.round(imc * 10) * 0.1).toString();
+                    text = this.toDisplayString(text, 0);
+                  }
+                  else {
+                      text = ' 1     ';
+                  }
+                }
+                else if (this.dialPosition === 'dca_20m') {
+                  var im = this.i_value * 1000
+                  if (im < 19.5){
+                    text = (Math.round(im * 100) * 0.01).toString();
+                    text = this.toDisplayString(text, 2);
+                  }
+                  else {
+                      text = ' 1     ';
+                  }
+                }
+                else if (this.dialPosition === 'dca_200m') {
+                  var im = this.i_value * 1000
+                  if (im < 195){
+                    text = (Math.round(im * 10) * 0.1).toString();
+                    text = this.toDisplayString(text, 1);
+                  }
+                  else {
+                      text = ' 1     ';
+                  }
                 }
                 else if (this.dialPosition === 'dcv_200m' || this.dialPosition === 'dcv_200' ||
                         this.dialPosition === 'acv_200' || this.dialPosition === 'p_9v' ||
