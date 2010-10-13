@@ -244,16 +244,16 @@
                 console.log('changed multimeter dial'+value);
                 this.multimeter.dialPosition = value;
                 this.multimeter.update();
-                activity.log.add(name, { value: this.multimeter.dialPosition });
+                // activity.log.add(name, { value: this.multimeter.dialPosition });
             } else if (name == 'multimeter_power') {
                 this.multimeter.powerOn = value == 'true' ? true : false;
                 this.multimeter.update();
-                activity.log.add(name, { value: this.multimeter.powerOn });
-                if (value === 'true' && this.multimeter.allConnected()) {
-                    activity.log.add('make_circuit');
-                } else if (value == 'false' && wasConnected) {
-                    activity.log.add('break_circuit');
-                }
+                // activity.log.add(name, { value: this.multimeter.powerOn });
+                //                 if (value === 'true' && this.multimeter.allConnected()) {
+                //                     activity.log.add('make_circuit');
+                //                 } else if (value == 'false' && wasConnected) {
+                //                     activity.log.add('break_circuit');
+                //                 }
             }
         }
         

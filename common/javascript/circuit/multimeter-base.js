@@ -65,7 +65,7 @@
                         text = ' 1   . ';
                     }
                 }
-                else if (this.dialPosition === 'r_2000' || this.dialPosition === 'diode') {
+                else if (this.dialPosition === 'r_2000') {
                     if (this.r_value < 1999.5) {
                         text = Math.round(this.r_value).toString();
                         text = this.toDisplayString(text, 0);
@@ -156,6 +156,9 @@
                 }
                 else if (this.dialPosition === 'dcv_1000' || this.dialPosition === 'acv_750') {
                     text = 'h 0 0 0';
+                }
+                else if (this.dialPosition === 'diode') {
+                  text = ' 1     ';
                 }
                 else {
                     text = '       ';
