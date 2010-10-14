@@ -92,6 +92,11 @@
             this.resistor2 = new sparks.circuit.Resistor4band('resistor2');
             this.resistor3 = new sparks.circuit.Resistor4band('resistor3');
             
+            //insert resistor examples added by jonah
+            //flash.sendCommand('insert_component','resistor','c23,c17','5band','green,blue,blue,red,red');
+            //flash.sendCommand('insert_component','resistor','d17,d11','4band','blue,orange,blue,green');
+            //flash.sendCommand('insert_component','resistor','e11,e5','4band','blue,red,green,green');
+            
             //var options = { rvalues: [ 100, 200, 300, 400, 500 ], realEqualsNominal: true };
             var options = null;
             this.resistor1.randomize(options);
