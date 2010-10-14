@@ -88,34 +88,32 @@
         startTry: function () {
             $('.next_button').hide();
             
-            this.resistor1 = new sparks.circuit.Resistor4band('resistor1');
-            this.resistor2 = new sparks.circuit.Resistor4band('resistor2');
-            this.resistor3 = new sparks.circuit.Resistor4band('resistor3');
-            
-            //insert resistor examples added by jonah
-            //flash.sendCommand('insert_component','resistor','c23,c17','5band','green,blue,blue,red,red');
-            //flash.sendCommand('insert_component','resistor','d17,d11','4band','blue,orange,blue,green');
-            //flash.sendCommand('insert_component','resistor','e11,e5','4band','blue,red,green,green');
-            
-            //var options = { rvalues: [ 100, 200, 300, 400, 500 ], realEqualsNominal: true };
             var options = null;
-            this.resistor1.randomize(options);
-            this.resistor2.randomize(options);
-            this.resistor3.randomize(options);
+            // this.resistor1 = new sparks.circuit.Resistor4band('resistor1');
+            //             this.resistor1.randomize(options);
+            //             breadModel('insert', 'resistor', 'b23,b17', this.resistor1.getRealValue(), 'resistor1');
+            //             flash.sendCommand('insert_component', 'resistor', 'b23,b17','4band',this.resistor1.colors);
             
-            breadModel('insert', 'resistor', 'a23,a17', this.resistor1.getRealValue(), 'resistor1');
-            breadModel('insert', 'resistor', 'b17,b11', this.resistor2.getRealValue(), 'resistor2');
-            breadModel('insert', 'resistor', 'c11,c5', this.resistor3.getRealValue(), 'resistor3');
+            var resistor1 = breadModel('addRandomResistor', 'resistor1', 'c17,c11');
+            flash.sendCommand('insert_component', 'resistor', 'c17,c11','4band',resistor1.colors);
             
-            $('#dbg_rated_1').text(this.resistor1.getNominalValue());
-            $('#dbg_rated_2').text(this.resistor2.getNominalValue());
-            $('#dbg_rated_3').text(this.resistor3.getNominalValue());
-            $('#dbg_real_1').text(this.resistor1.getRealValue().toFixed(3));
-            $('#dbg_real_2').text(this.resistor2.getRealValue().toFixed(3));
-            $('#dbg_real_3').text(this.resistor3.getRealValue().toFixed(3));
-            $('#dbg_tol_1').text(this.resistor1.getTolerance());
-            $('#dbg_tol_2').text(this.resistor2.getTolerance());
-            $('#dbg_tol_3').text(this.resistor3.getTolerance());
+            var resistor2 = breadModel('addRandomResistor', 'resistor2', 'e17,e11');
+            flash.sendCommand('insert_component', 'resistor', 'e17,e11','4band',resistor2.colors);
+            
+            // this.resistor4 = new sparks.circuit.Resistor4band('resistor4');
+            //            this.resistor4.randomize(options);
+            //            breadModel('insert', 'resistor', 'c11,c5', this.resistor4.getRealValue(), 'resistor3');
+            //            flash.sendCommand('insert_component', 'resistor', 'c11,c5','4band',this.resistor4.colors);
+            // 
+            // $('#dbg_rated_1').text(this.resistor1.getNominalValue());
+            // $('#dbg_rated_2').text(this.resistor2.getNominalValue());
+            // $('#dbg_rated_3').text(this.resistor3.getNominalValue());
+            // $('#dbg_real_1').text(this.resistor1.getRealValue().toFixed(3));
+            // $('#dbg_real_2').text(this.resistor2.getRealValue().toFixed(3));
+            // $('#dbg_real_3').text(this.resistor3.getRealValue().toFixed(3));
+            // $('#dbg_tol_1').text(this.resistor1.getTolerance());
+            // $('#dbg_tol_2').text(this.resistor2.getTolerance());
+            // $('#dbg_tol_3').text(this.resistor3.getTolerance());
             
             this.currentQuestion = 0;
         

@@ -61,6 +61,17 @@ describe 'Creating a breadboard'
       netlist.search(/R:resistor.* L2 L3 R=\"4200 Ohm\"/).should.be_at_least 0
     end 
     
+    it "should be able to add a random resistor"
+      breadModel('clear');
+      
+      // we can add a random resistor
+      var res = breadModel('addRandomResistor', 'resistor1', 'a1,a6');
+      var board = getBreadBoard();
+      var netlist = sparks.circuit.qucsator.makeNetlist(board);
+      var regexp = new RegExp("R:resistor.* L1 L6 R=\""+res.getRealValue()+" Ohm\"");
+      netlist.search(regexp).should.be_at_least 0
+    end
+    
     it 'should be able to add a component with a ghost hole'
       breadModel('clear');
       
@@ -93,16 +104,23 @@ describe 'Creating a breadboard'
       a2Hole.nodeName().should.be 'y'
     end
     
-    it 'should be able to map hole to a ghost hole'
+    it 'should be able to map and unmap hole to a ghost hole'
       breadModel('clear');
       
-      breadModel('insert', 'resistor', 'a1,yy', 'brown,black,brown,gold');
+      // breadModel('insert', 'resistor', 'a1,yy', 'brown,black,brown,gold');
       breadModel('mapHole', "a4", "yy");
       breadModel('insert', 'wire', 'a4,a6');
       
       var board = getBreadBoard();
       var netlist = sparks.circuit.qucsator.makeNetlist(board);
       netlist.search(/TLIN:wire.* yy L6/).should.be_at_least 0
+      
+      breadModel('clear');
+      breadModel('unmapHole', "a4");
+      breadModel('insert', 'wire', 'a4,a6');
+      
+      var netlist = sparks.circuit.qucsator.makeNetlist(board);
+      netlist.search(/TLIN:wire.* L4 L6/).should.be_at_least 0
     end
     
     

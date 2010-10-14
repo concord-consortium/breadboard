@@ -46,7 +46,7 @@
             }
             //console.log('r=' + this.nominalValue + ' t=' + this.tolerance);
             
-            this.updateColors(this.nominalValue, this.tolerance);
+            this.colors = this.getColors(this.nominalValue, this.tolerance);
         },
         
         // rvalue: resistance value

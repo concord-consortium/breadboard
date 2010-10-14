@@ -134,6 +134,10 @@
       GhostHole.prototype.nodeName = function() {
         return this.name;
       };
+      
+      GhostHole.prototype.getName = function() {
+        return this.name;
+      };
 
       var Strip = function Strip( holes, name ){
         this.type ='strip';
@@ -216,9 +220,9 @@
       
       // can pass either a hole or a string
       Breadboard.prototype.getHole = function(hole) {
-        if (hole.nodeName){
-          if (!!this.holeMap[hole.nodeName]){
-            return this.getHole(this.holeMap[hole.nodeName]);
+        if (hole.name){
+          if (!!this.holeMap[hole.name]){
+            return this.getHole(this.holeMap[hole.getName()]);
           }
           return hole;
         }
@@ -238,6 +242,19 @@
         // otherwise, make a new ghosthole
         return new GhostHole(hole);
         
+      };
+      
+      // Resets all connections, used when holeMap changes
+      Breadboard.prototype.resetConnections = function(hole) {
+        console.log("resetting!")
+        for( i in this.components ){
+          var comp = this.component(i);
+          for (j in comp.connections){
+            if (!!comp.connections[j])
+              console.log("resetting "+comp.connections[j]+", "+comp.connections[j].nodeName+", "+comp.connections[j].name);
+              comp.connections[j] = this.getHole(comp.connections[j]);
+          }
+        }
       };
 
       //// COMPONENT MODEL /////////////////////////////////////////////////////////
@@ -365,6 +382,16 @@
         },
         mapHole: function(oldHoleName, newHoleName){
           breadBoard.holeMap[oldHoleName] = newHoleName;
+          breadBoard.resetConnections();
+        },
+        unmapHole: function(oldHoleName){
+          breadBoard.holeMap[oldHoleName] = undefined;
+        },
+        addRandomResistor: function(name, location, options){
+          var resistor = new sparks.circuit.Resistor4band(name);
+          resistor.randomize((options | null));
+          interfaces.insert('resistor', location, resistor.getRealValue(), name);
+          return resistor;
         },
         query: function(type, connections){
           console.log("query! type = "+type);
