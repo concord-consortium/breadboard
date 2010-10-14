@@ -39,7 +39,6 @@
         // Initial operation on document when it is loaded
         onDocumentReady: function () {
             var self = this;
-            console.log('this=' + this + ' self=' + self);
             
             if (sparks.config.debug) {
                 $('.debug_area').show();
@@ -168,7 +167,10 @@
                     }
                 }
                 if (args[0] === 'resistor') {
-                    console.log('resistor_connected!!!!!!');
+                    // for now, we're just dealing with the situation of replacing one lead that had been lifted
+                    if (!!args[3]){
+                      breadModel('unmapHole', args[3]);
+                    }
                 }
                 this.multimeter.update();
             } else if (name === 'disconnect') {
@@ -187,19 +189,8 @@
                   var hole = args[3];
                   var remainingHole = location[0] === hole ? location[1] : location[0];
                   var newHole = breadModel('getGhostHole', hole+"ghost");
-                  var resistor = breadModel('findComponent', 'resistor', args[2]);
-                  breadModel('destroy', resistor);
-                  breadModel('insert', 'resistor', remainingHole+","+newHole.nodeName(), resistor.resistance);
                   
                   breadModel('mapHole', hole, newHole.nodeName());
-                  
-                  var netlist = sparks.circuit.qucsator.makeNetlist(getBreadBoard());
-                  console.log("^^^^^^^^^^^" + netlist)
-                  // breadModel('remove', 'resistor', args[2]);
-                  // breadModel('insert', 'resistor', 'a1,a2', 'brown,black,brown,gold');
-                  // remove res
-                  // re-add res with new holes
-                  // add new hole to map
                 }
                 this.multimeter.update();
             } else if (name === 'probe') {

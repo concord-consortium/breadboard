@@ -245,14 +245,13 @@
       };
       
       // Resets all connections, used when holeMap changes
-      Breadboard.prototype.resetConnections = function(hole) {
-        console.log("resetting!")
+      Breadboard.prototype.resetConnections = function(oldHoleName, newHoleName) {
         for( i in this.components ){
           var comp = this.component(i);
           for (j in comp.connections){
-            if (!!comp.connections[j])
-              console.log("resetting "+comp.connections[j]+", "+comp.connections[j].nodeName+", "+comp.connections[j].name);
-              comp.connections[j] = this.getHole(comp.connections[j]);
+            if (!!comp.connections[j] && comp.connections[j].getName() === oldHoleName) {
+              comp.connections[j] = this.getHole(newHoleName);
+            }
           }
         }
       };
@@ -382,10 +381,12 @@
         },
         mapHole: function(oldHoleName, newHoleName){
           breadBoard.holeMap[oldHoleName] = newHoleName;
-          breadBoard.resetConnections();
+          breadBoard.resetConnections(oldHoleName, newHoleName);
         },
         unmapHole: function(oldHoleName){
+          var newHoleName = breadBoard.holeMap[oldHoleName];
           breadBoard.holeMap[oldHoleName] = undefined;
+          breadBoard.resetConnections(newHoleName, oldHoleName);
         },
         addRandomResistor: function(name, location, options){
           var resistor = new sparks.circuit.Resistor4band(name);
