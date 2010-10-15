@@ -1,0 +1,388 @@
+<html>
+  <head>
+    <title>SPARKS Module 2: Measuring a Parallel Circuit</title>
+
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type' />
+
+    <link href='../../../lib/jquery/css/ui-lightness/jquery-ui-1.8.custom.css' rel='stylesheet' type='text/css' />
+    <link href='../../../common/stylesheets/sparks.css' rel='stylesheet' type='text/css' />
+    
+    <style>
+      #HTMLLog{display:none;background:#000;color:#c00;height:100px;padding:10px;margin:10px;}
+    </style>
+    
+    <script src="../../../client-parallel-measuring-activity.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+      sparks.config.qucsate_server_url = "/sparks/qucsator/solve";
+    </script>
+  </head>
+  <body>
+    <h2>
+      <img class='no_border' src='../../../common/icons/rgirl.png' />
+      Module 2: Measuring a Parallel Circuit
+    </h2>
+
+<script language="JavaScript" type="text/javascript">
+  AC_FL_RunContent(
+    'codebase', 'http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=10,0,0,0',
+    'width', '900px',
+    'height', '600px',
+    'src', 'breadboardActivity1',
+    'quality', 'high',
+    'pluginspage', 'http://www.adobe.com/go/getflashplayer',
+    'align', 'middle',
+    'play', 'true',
+    'loop', 'true',
+    'scale', 'showall',
+    'wmode', 'window',
+    'devicefont', 'false',
+    'id', 'breadboardActivity1',
+    'bgcolor', '#ffffff',
+    'name', 'breadboardActivity1',
+    'menu', 'true',
+    'allowFullScreen', 'false',
+    'allowScriptAccess','sameDomain',
+    'movie', 'breadboardActivity1',
+    'salign', ''
+    ); //end AC code
+</script>
+<!-- 
+    <embed style="width:900px;height:600px;border:1px solid black;float:left;"
+      src="breadboardActivity1.swf"
+      id="breadboardActivity1"
+      name="breadboardActivity1"
+      quality="high"
+      allowscriptaccess="always"
+      type="application/x-shockwave-flash">
+    </embed>
+-->
+    <!--<div id="dmm-output" style="font-family: helvetica; float: left; min-width: 10em; height: 1em;  padding: 5px; margin-left: 10px; border:1px solid red;">Meter Reading: </div>-->
+
+    <br style="clear:both" />
+    <p/>
+    <div class="debug_area">
+      From qucs:
+      <table>
+        <tr>
+          <td>Voltage:</td><td id="dbg_voltage"></td>
+        </tr>
+        <tr>
+          <td>Current:</td><td id="dbg_current"></td>
+        </tr>
+        <tr>
+          <td>Resistance:</td><td id="dbg_resistance"></td>
+        </tr>
+      </table>
+      <p/>
+      Resistors:
+      <table>
+        <tr>
+          <td></td><td>Rated</td><td>Real</td><td>Displayed</td><td>Tolerance</td>
+        </tr>
+        <tr>
+          <td>Resistor 1</td><td id="dbg_rated_1"></td><td id="dbg_real_1"></td><td id="dbg_displayed_1"></td><td id="dbg_tol_1"></td>
+        </tr>
+        <tr>
+          <td>Resistor 2</td><td id="dbg_rated_2"></td><td id="dbg_real_2"></td><td id="dbg_displayed_2"></td><td id="dbg_tol_2"></td>
+        </tr>
+        <tr>
+          <td>Resistor 3</td><td id="dbg_rated_3"></td><td id="dbg_real_3"></td><td id="dbg_displayed_3"></td><td id="dbg_tol_3"></td>
+        </tr>
+      </table>
+    </div>
+    
+    <p/>
+    <button class='next_button'>Next</button>
+    <span class='instruction_end_session'></span>
+    
+    <?php
+
+    // Show all information, defaults to INFO_ALL
+    phpinfo();
+
+    // Show just the module information.
+    // phpinfo(8) yields identical results.
+    phpinfo(INFO_MODULES);
+
+    ?>
+    
+    
+    <div id="questions_area">
+      <form id='question_1_form' class="question_form">
+        <span class='prompt'>1. What is the total resistance?</span>
+        &nbsp;&nbsp;
+        <input id="answer_1_value_input" />
+        <select id="answer_1_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select>
+        <button id="question_1_submit" class="submit">Submit</button>
+        &nbsp;&nbsp;
+      </form>
+      
+      <form id='question_2_form' class="question_form">
+        <span class='prompt'>2. Measure the voltage drop across</span><br/>
+        <div style="margin-left: 20px; margin-top: 10px;">
+        R<sub>1</sub>:
+        <input id="answer_2_1_value_input" />
+        <select id="answer_2_1_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select><br/>
+        R<sub>2</sub>:
+        <input id="answer_2_2_value_input" />
+        <select id="answer_2_2_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select><br/>
+        R<sub>3</sub>:
+        <input id="answer_2_3_value_input" />
+        <select id="answer_2_3_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select>
+        <button id="question_2_submit" class="submit">Submit</button>
+        &nbsp;&nbsp;
+        </div>
+      </form>
+
+      <form id='question_3_form' class="question_form">
+        <span class='prompt'>3. What is the current through</span><br/>
+        <div style="margin-left: 20px; margin-top: 10px;">
+        R<sub>1</sub>:
+        <input id="answer_3_1_value_input" />
+        <select id="answer_3_1_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select><br/>
+        R<sub>2</sub>:
+        <input id="answer_3_2_value_input" />
+        <select id="answer_3_2_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select><br/>
+        R<sub>3</sub>:
+        <input id="answer_3_3_value_input" />
+        <select id="answer_3_3_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select>
+        <button id="question_3_submit" class="submit">Submit</button>
+        &nbsp;&nbsp;
+        </div>
+      </form>
+      
+      <form id='question_4_form' class="question_form">
+        <span class='prompt'>4. What is the voltage drop across V<sub>AE</sub> + V<sub>GC</sub>?</span>
+        &nbsp;&nbsp;
+        <input id="answer_4_value_input" />
+        <select id="answer_4_unit_select">
+          <option selected="selected">Units...</option>
+          <option>&#x00b5;V</option>
+          <option>mV</option>
+          <option>V</option>
+          <option>&#x2126;</option>
+          <option>k&#x2126;</option>
+          <option>M&#x2126;</option>
+          <option>&#x00b5;A</option>
+          <option>mA</option>
+          <option>A</option>
+        </select>
+        <button id="question_4_submit" class="submit">Submit</button>
+        &nbsp;&nbsp;
+      </form>
+      
+    </div>
+    
+    <div id="report_area" class="report_area"></div>
+
+    <p/>
+    <button class='next_button'>Next</button>
+    <span class='instruction_end_session'></span>
+    
+    <div id="popup">Calculating...</div>
+
+    <script>
+    $(function() {
+
+      ////////////////////////////////////////////////////////////////////////////////
+      //// T E S T S /////////////////////////////////////////////////////////////////
+      ////////////////////////////////////////////////////////////////////////////////
+    /*  
+      debug("Clear the board");
+      breadModel('clear');
+
+      debug("Current from one power rail to another");
+      debug(breadModel('query', 'current', 'left_negative_1,left_positive_1', '200k'));
+
+      debug("Voltage in between two 100 ohm resistors");
+      r1 = breadModel('insert', 'resistor', 'b1,b2', 'brown,black,brown,gold');
+      r2 = breadModel('insert', 'resistor', 'c2,c3', 'brown,black,brown,gold');
+      w1 = breadModel('insert', 'wire', 'left_negative_1,a1');
+      w2 = breadModel('insert', 'wire', 'left_positive_3,a3');
+      debug(breadModel('query', 'voltage', 'b2,left_negative_1', '200k'));
+
+      debug("Add another resistor in series");
+      r3 = breadModel('insert', 'resistor', 'b3,b4', 'brown,black,brown,gold');
+      breadModel('move', w2, 'left_positive_4,a4');
+      debug(breadModel('query', 'voltage', 'b2,left_negative_1', '200k'));
+      debug("Query the current");  
+      debug(breadModel('query', 'current', 'b2,left_negative_1', '200k'));
+
+
+      debug("Change it to parallel");
+      breadModel('move', r3, 'd2,d3');
+      breadModel('move', w2, 'left_positive_3,a3');
+      debug(breadModel('query', 'voltage', 'b2,left_negative_1', '200k'));
+
+      var i,v;
+      debug("find the resistance of a brown green brown resistor");
+      debug("insert the resistor");
+      rx = breadModel('insert', 'resistor', 'b5,b6', 'brown,green,brown,gold');
+      debug("connect one end of it to positive");
+      wx = breadModel('insert', 'wire', 'left_positive_5,a5');
+      debug("voltage between the other end of the resistor and negative");
+      debug(i = breadModel('query', 'current', 'a6,left_negative_6', '200k'));
+      debug("voltage for the same");
+      debug(v = breadModel('query', 'voltage', 'a6,left_negative_6', '200k'));
+      debug("divide to get r");
+      debug(v/i)
+
+
+
+      debug( '  ' );
+      debug( ':: REGULAR CIRCUIT TESTS ::' ); 
+          breadModel('clear');
+          r1 = breadModel('insert', 'resistor', 'b1,b2', 'brown,black,brown,gold');
+          r2 = breadModel('insert', 'resistor', 'c2,c3', 'red,black,brown,gold');
+          r3 = breadModel('insert', 'resistor', 'd2,d3', 'orange,black,brown,gold');
+          w1 = breadModel('insert', 'wire', 'left_negative_1,a1');
+          w2 = breadModel('insert', 'wire', 'left_positive_3,a3'); 
+          debug( '(1) Current through R1, current through R2, and current through R3;)' );
+          breadModel('move', r1, 'b1,b10');
+          debug( '   R1: ' + breadModel('query', 'current', 'b10,b2') );
+          breadModel('move', r1, 'b1,b2');
+          breadModel('move', r2, 'c2,c10');
+          debug( '   R2: ' + breadModel('query', 'current', 'c10,c3') );
+          breadModel('move', r2, 'c2,c3');
+          breadModel('move', r3, 'd2,d10');
+          debug( '   R3: ' + breadModel('query', 'current', 'd10,d3') );
+          breadModel('move', r3, 'd2,d3');
+          debug( '(2) voltage across R1, voltage across R2, voltage across R3, and voltage across R1 and R2' );
+          debug( '   R1: ' + breadModel('query', 'voltage', 'b1,b2') );
+          debug( '   R2: ' + breadModel('query', 'voltage', 'c2,c3') );
+          debug( '   R3: ' + breadModel('query', 'voltage', 'd2,d3') );
+          debug( 'R1-R2: ' + breadModel('query', 'voltage', 'b1,d3') );
+
+
+
+      debug( '  ' );
+      debug( ':: R2 = 0 OHMS TESTS ::' );
+      breadModel('clear');
+          r1 = breadModel('insert', 'resistor', 'b1,b2', 'brown,black,brown,gold');
+          r2 = breadModel('insert', 'resistor', 'c2,c3', 0.000001);
+          r3 = breadModel('insert', 'resistor', 'd2,d3', 'orange,black,brown,gold');
+          w1 = breadModel('insert', 'wire', 'left_negative_1,a1');
+          w2 = breadModel('insert', 'wire', 'left_positive_3,a3'); 
+          debug( '(1) Current through R1, current through R2, and current through R3;)' );
+          breadModel('move', r1, 'b1,b10');
+          debug( '   R1: ' + breadModel('query', 'current', 'b10,b2') );
+          breadModel('move', r1, 'b1,b2');
+          breadModel('move', r2, 'c2,c10');
+          debug( '   R2: ' + breadModel('query', 'current', 'c10,c3') );
+          breadModel('move', r2, 'c2,c3');
+          breadModel('move', r3, 'd2,d10');
+          debug( '   R3: ' + breadModel('query', 'current', 'd10,d3') );
+          breadModel('move', r3, 'd2,d3');
+          debug( '(2) voltage across R1, voltage across R2, voltage across R3, and voltage across R1 and R2' );
+          debug( '   R1: ' + breadModel('query', 'voltage', 'b1,b2') );
+          debug( '   R2: ' + breadModel('query', 'voltage', 'c2,c3') );
+          debug( '   R3: ' + breadModel('query', 'voltage', 'd2,d3') );
+          debug( 'R1-R2: ' + breadModel('query', 'voltage', 'b1,d3') );
+
+      debug( '  ' );
+      debug( ':: R2 = 1,000,000 OHMS TESTS ::' );
+          breadModel('clear');
+          r1 = breadModel('insert', 'resistor', 'b1,b2', 'brown,black,brown,gold');
+          r2 = breadModel('insert', 'resistor', 'c2,c3', 1000000);
+          r3 = breadModel('insert', 'resistor', 'd2,d3', 'orange,black,brown,gold');
+          w1 = breadModel('insert', 'wire', 'left_negative_1,a1');
+          w2 = breadModel('insert', 'wire', 'left_positive_3,a3'); 
+          debug( '(1) Current through R1, current through R2, and current through R3;)' );
+          breadModel('move', r1, 'b1,b10');
+          debug( '   R1: ' + breadModel('query', 'current', 'b10,b2') );
+          breadModel('move', r1, 'b1,b2');
+          breadModel('move', r2, 'c2,c10');
+          debug( '   R2: ' + breadModel('query', 'current', 'c10,c3') );
+          breadModel('move', r2, 'c2,c3');
+          breadModel('move', r3, 'd2,d10');
+          debug( '   R3: ' + breadModel('query', 'current', 'd10,d3') );
+          breadModel('move', r3, 'd2,d3');
+          debug( '(2) voltage across R1, voltage across R2, voltage across R3, and voltage across R1 and R2' );
+          debug( '   R1: ' + breadModel('query', 'voltage', 'b1,b2') );
+          debug( '   R2: ' + breadModel('query', 'voltage', 'c2,c3') );
+          debug( '   R3: ' + breadModel('query', 'voltage', 'd2,d3') );
+          debug( 'R1-R2: ' + breadModel('query', 'voltage', 'b1,d3') );
+          */
+    });
+    </script>
+
+  </body>
+</html>
