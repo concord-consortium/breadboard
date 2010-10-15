@@ -99,8 +99,8 @@
             var resistor2 = breadModel('addRandomResistor', 'resistor2', 'c17,c11');
             flash.sendCommand('insert_component', 'resistor', 'c17,c11','4band',resistor2.colors);
             
-            var resistor3 = breadModel('addRandomResistor', 'resistor2', 'd11,d11');
-            flash.sendCommand('insert_component', 'resistor', 'd11,d11','4band',resistor3.colors);
+            var resistor3 = breadModel('addRandomResistor', 'resistor2', 'd11,d5');
+            flash.sendCommand('insert_component', 'resistor', 'd11,d5','4band',resistor3.colors);
             
             // this.resistor4 = new sparks.circuit.Resistor4band('resistor4');
             //            this.resistor4.randomize(options);
