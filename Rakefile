@@ -41,6 +41,14 @@ namespace :combine do
         ],
         'client-series-measuring-activity.js')
     end
+    
+    desc "Concatenate all JavaScript for Parallel - Measuring activity (client)"
+    task :series_measuring_activity do
+      sprocket([
+          'activities/module-2/series-measuring/js/activity-parallel.js'
+        ],
+        'client-parallel-measuring-activity.js')
+    end
 
   end
 
