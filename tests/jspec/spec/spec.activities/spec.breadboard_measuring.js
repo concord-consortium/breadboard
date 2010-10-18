@@ -55,8 +55,8 @@ describe 'Measuring breadboard components with QUCS'
       // we add a 100 ohm resistor and 800 ohm resistor to 9V rails
       breadModel('insert', 'resistor', 'a1,a2', 'brown,black,brown,gold');
       breadModel('insert', 'resistor', 'a2,a3', 'gray,black,brown,gold');
-      breadModel('insert', 'wire', 'a1,left_positive_1');
-      breadModel('insert', 'wire', 'a3,left_negative_1');
+      breadModel('insert', 'wire', 'a1,left_positive1');
+      breadModel('insert', 'wire', 'a3,left_negative1');
       var result = breadModel('query', 'voltage', 'a2,a1')
       result.should.be 1
       var result = breadModel('query', 'voltage', 'a3,a2')

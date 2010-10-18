@@ -171,7 +171,7 @@
         for (i=0, l=defs.powerRailHoles; i < l; i++) {
           for (side in this.powerRail) {
             for (sign in this.powerRail[side]) {
-              var h = side + '_' + sign + '_' + i;
+              var h = side + '_' + sign + i;
               this.powerRail[side][sign][h] = this.holes[h] = new Hole(this.powerRail[side][sign], h);
             }
           }
@@ -436,13 +436,13 @@
             UID: 'leftRailPower', 
             kind: 'battery', 
             voltage: 9,
-            connections: ["left_positive_1", "left_negative_1"]}));
+            connections: ["left_positive1", "left_negative1"]}));
 
           tempComponents.push(breadBoard.component({
             UID: 'rightRailPower', 
             kind: 'battery', 
             voltage: 9,
-            connections:  ["right_positive_1", "right_negative_1"]}));
+            connections:  ["right_positive1", "right_negative1"]}));
           // }
 
           var result;
