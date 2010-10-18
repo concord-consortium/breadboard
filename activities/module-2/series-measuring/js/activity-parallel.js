@@ -94,16 +94,16 @@
             //             flash.sendCommand('insert_component', 'resistor', 'b23,b17','4band',this.resistor1.colors);
             
             var resistor1 = breadModel('addRandomResistor', 'resistor1', 'b23,b17');
-            flash.sendCommand('insert_component', 'resistor', 'b23,b17','4band',resistor1.colors);
+            flash.sendCommand('insert_component', 'resistor', 'resistor1', 'b23,b17','4band',resistor1.colors);
             
             var resistor2 = breadModel('addRandomResistor', 'resistor2', 'c17,c11');
-            flash.sendCommand('insert_component', 'resistor', 'c17,c11','4band',resistor2.colors);
+            flash.sendCommand('insert_component', 'resistor', 'resistor2', 'c17,c11','4band',resistor2.colors);
             
             var resistor3 = breadModel('addRandomResistor', 'resistor3', 'a17,a11');
-            flash.sendCommand('insert_component', 'resistor', 'a17,a11','4band',resistor3.colors);
+            flash.sendCommand('insert_component', 'resistor', 'resistor3','a17,a11','4band',resistor3.colors);
             
             var resistor4 = breadModel('addRandomResistor', 'resistor4', 'd11,d5');
-            flash.sendCommand('insert_component', 'resistor', 'd11,d5','4band',resistor4.colors);
+            flash.sendCommand('insert_component', 'resistor', 'resistor4','d11,d5','4band',resistor4.colors);
             
             // this.resistor4 = new sparks.circuit.Resistor4band('resistor4');
             //            this.resistor4.randomize(options);
