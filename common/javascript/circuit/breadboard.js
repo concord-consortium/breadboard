@@ -171,7 +171,7 @@
         for (i=0, l=defs.powerRailHoles; i < l; i++) {
           for (side in this.powerRail) {
             for (sign in this.powerRail[side]) {
-              var h = side + '_' + sign + '_' + i;
+              var h = side + '_' + sign + i;
               this.powerRail[side][sign][h] = this.holes[h] = new Hole(this.powerRail[side][sign], h);
             }
           }
@@ -422,9 +422,17 @@
               connections: [ghost, connections[1]]});
             tempComponents.push(ohmmeterBattery, currentProbe);
           } else {
+            if (type === 'voltage'){
+              var voltmeterResistor = breadBoard.component({
+                UID: 'voltmeterResistor', 
+                kind: 'resistor', 
+                resistance: 1000000000000,
+                connections: connections.split(',')});
+              tempComponents.push(voltmeterResistor);
+            }
             var probe = breadBoard.component({
               UID: 'meter',
-              kind: {'current' : 'iprobe', 'voltage' : 'vprobe'}[arguments[0]],
+              kind: {'current' : 'iprobe', 'voltage' : 'vprobe'}[type],
               connections: connections.split(',')});
             tempComponents.push(probe);
           }
@@ -436,13 +444,13 @@
             UID: 'leftRailPower', 
             kind: 'battery', 
             voltage: 9,
-            connections: ["left_positive_1", "left_negative_1"]}));
+            connections: ["left_positive1", "left_negative1"]}));
 
           tempComponents.push(breadBoard.component({
             UID: 'rightRailPower', 
             kind: 'battery', 
             voltage: 9,
-            connections:  ["right_positive_1", "right_negative_1"]}));
+            connections:  ["right_positive1", "right_negative1"]}));
           // }
 
           var result;
@@ -460,6 +468,9 @@
             result = (1 / result);
           }
           result = -1 * result;
+          
+          // round to 5 decimal places
+          result = Math.round(result*Math.pow(10,5))/Math.pow(10,5);
           //document.getElementById('dmm-output').innerHTML = "Meter Reading: " + result;
           return  result;
         }

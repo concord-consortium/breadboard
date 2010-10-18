@@ -87,7 +87,7 @@ describe 'Using multimeter with mock Flash connection'
       
     end
     
-    it "should send a voltage to flash when in res mode and both probes added"
+    it "should send a voltage to flash when in voltage mode and both probes added"
      
       // we add a 100 ohm resistor
       breadModel('insert', 'resistor', 'a1,a2', 'brown,black,brown,gold');
