@@ -422,9 +422,17 @@
               connections: [ghost, connections[1]]});
             tempComponents.push(ohmmeterBattery, currentProbe);
           } else {
+            if (type === 'voltage'){
+              var voltmeterResistor = breadBoard.component({
+                UID: 'voltmeterResistor', 
+                kind: 'resistor', 
+                resistance: 1000000000000,
+                connections: connections.split(',')});
+              tempComponents.push(voltmeterResistor);
+            }
             var probe = breadBoard.component({
               UID: 'meter',
-              kind: {'current' : 'iprobe', 'voltage' : 'vprobe'}[arguments[0]],
+              kind: {'current' : 'iprobe', 'voltage' : 'vprobe'}[type],
               connections: connections.split(',')});
             tempComponents.push(probe);
           }
@@ -460,6 +468,9 @@
             result = (1 / result);
           }
           result = -1 * result;
+          
+          // round to 5 decimal places
+          result = Math.round(result*Math.pow(10,5))/Math.pow(10,5);
           //document.getElementById('dmm-output').innerHTML = "Meter Reading: " + result;
           return  result;
         }

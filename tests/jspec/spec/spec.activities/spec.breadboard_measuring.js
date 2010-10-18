@@ -63,6 +63,25 @@ describe 'Measuring breadboard components with QUCS'
       result.should.be 8
     end
     
+    // previously, this circuit would show a positive voltage in the voltmeter, because
+    // we weren't simulating a resistance in parallel with the voltmeter:
+    //
+    //     +9 ___________      __R2__
+    //              |   |__V__|
+    //            R1
+    //     0 _____|
+    it "should correctly measure voltage even with a disconnected resistor"
+      breadModel('clear');
+      
+      // we add a 100 ohm resistor and a 9V battery
+      breadModel('insert', 'resistor', 'a1,a2', 'brown,black,brown,gold');
+      breadModel('insert', 'resistor', 'a3,a4', 'brown,black,brown,gold');
+      breadModel('insert', 'battery', 'a2,a1', '9');
+      var result = breadModel('query', 'voltage', 'a1,a3')
+      result.should.be 0
+    end
+    
+    
     it "should correctly measure current"
       breadModel('clear');
       
