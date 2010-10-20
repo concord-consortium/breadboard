@@ -108,6 +108,11 @@
             var resistor4 = breadModel('addRandomResistor', 'resistor4', 'd11,d5');
             flash.sendCommand('insert_component', 'resistor', 'resistor4','d11,d5','4band',resistor4.colors);
             
+            breadModel('insert', 'wire', 'left_positive20,a23', 'wire1');
+            flash.sendCommand('insert_component', 'wire', 'wire1', 'left_positive20,a23','0xaa0000');
+            breadModel('insert', 'wire', 'left_negative3,a5', 'wire2');
+            flash.sendCommand('insert_component', 'wire', 'wire2', 'left_negative3,a5','0x000000');
+            
             // this.resistor4 = new sparks.circuit.Resistor4band('resistor4');
             //            this.resistor4.randomize(options);
             //            breadModel('insert', 'resistor', 'c11,c5', this.resistor4.getRealValue(), 'resistor3');

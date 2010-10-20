@@ -66,6 +66,8 @@
 
         // Initializations that can be done only when the flash movie is loaded
         onFlashReady: function () {
+            sparks.flash.sendCommand('set_multimeter_visibility','true');
+            sparks.flash.sendCommand('set_probe_visibility','true');
             breadModel('insert', 'wire', 'left_positive1,a23', 'wire1');
             breadModel('insert', 'wire', 'left_negative1,c5', 'wire2');
             this.multimeter = new sparks.circuit.Multimeter2();

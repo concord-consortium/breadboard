@@ -66,9 +66,6 @@
 
         // Initializations that can be done only when the flash movie is loaded
         onFlashReady: function () {
-            sparks.flash.sendCommand('set_multimeter_visibility','true');
-            sparks.flash.sendCommand('set_probe_visibility','true');
-            
             breadModel('insert', 'wire', 'left_positive1,a23', 'wire1');
             breadModel('insert', 'wire', 'left_negative1,c5', 'wire2');
             this.multimeter = new sparks.circuit.Multimeter2();
@@ -100,13 +97,15 @@
             flash.sendCommand('insert_component', 'resistor', 'resistor1', 'b23,b17','4band',resistor1.colors);
             
             var resistor2 = breadModel('addRandomResistor', 'resistor2', 'c17,c11');
-            flash.sendCommand('insert_component', 'resistor', 'resistor2', 'c17,c11','4band',resistor2.colors);
+            flash.sendCommand('insert_component', 'resistor', 'resistor', 'c17,c11','4band',resistor2.colors);
             
-            var resistor3 = breadModel('addRandomResistor', 'resistor3', 'a17,a11');
-            flash.sendCommand('insert_component', 'resistor', 'resistor3','a17,a11','4band',resistor3.colors);
+            var resistor3 = breadModel('addRandomResistor', 'resistor3', 'd11,d5');
+            flash.sendCommand('insert_component', 'resistor', 'resistor3', 'd11,d5','4band',resistor3.colors);
             
-            var resistor4 = breadModel('addRandomResistor', 'resistor4', 'd11,d5');
-            flash.sendCommand('insert_component', 'resistor', 'resistor4','d11,d5','4band',resistor4.colors);
+            breadModel('insert', 'wire', 'left_positive20,a23', 'wire1');
+            flash.sendCommand('insert_component', 'wire', 'wire1', 'left_positive20,a23','0xaa0000');
+            breadModel('insert', 'wire', 'left_negative3,a5', 'wire2');
+            flash.sendCommand('insert_component', 'wire', 'wire2', 'left_negative3,a5','0x000000');
             
             // this.resistor4 = new sparks.circuit.Resistor4band('resistor4');
             //            this.resistor4.randomize(options);
