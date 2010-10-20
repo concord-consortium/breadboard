@@ -329,9 +329,11 @@
              // props.UID = arguments[3];
               if (typeof(arguments[2])==="string") {
                 props.resistance = Resistor.getResistance( arguments[2].split(",") );
+                props.colors = arguments[2];
               }
               else if (typeof(arguments[2])=="number") {
                 props.resistance = arguments[2];
+                props.colors = Resistor.getColors4Band( arguments[2], 0.01);
               }
               break;
             case "wire":
@@ -473,6 +475,35 @@
           result = Math.round(result*Math.pow(10,5))/Math.pow(10,5);
           //document.getElementById('dmm-output').innerHTML = "Meter Reading: " + result;
           return  result;
+        },
+        updateFlash: function() {
+          $.each(breadBoard.components, function(name, component) {
+            
+            if (!!component.connections[0] && !!component.connections[1]){
+              var location = component.connections[0].getName() + "," + component.connections[1].getName();
+            
+              switch (component.kind) {
+                case "resistor":
+                  sparks.flash.sendCommand('insert_component', 'resistor', component.UID, location,'4band',component.colors);
+                  break;
+                case "wire":
+                  var color;
+                  if (location.indexOf("positive") > -1){
+                    color = "0xaa0000";
+                  } else if (location.indexOf("negative") > -1){
+                    color = "0x000000";
+                  } else {
+                    if (Math.random() < 0.5){
+                      color = "0x008800";
+                    } else {
+                      color = "0x000088";
+                    }
+                  }
+                  sparks.flash.sendCommand('insert_component', 'wire', component.UID, location, color);
+                  break;
+              }
+            }
+          });
         }
       };
 

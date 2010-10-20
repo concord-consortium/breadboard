@@ -85,29 +85,14 @@
         startTry: function () {
             $('.next_button').hide();
             
-            var options = null;
-            // this.resistor1 = new sparks.circuit.Resistor4band('resistor1');
-            //             this.resistor1.randomize(options);
-            //             breadModel('insert', 'resistor', 'b23,b17', this.resistor1.getRealValue(), 'resistor1');
-            //             flash.sendCommand('insert_component', 'resistor', 'b23,b17','4band',this.resistor1.colors);
-            
-            
-            
             var resistor1 = breadModel('addRandomResistor', 'resistor1', 'a21,a15');
-            flash.sendCommand('insert_component', 'resistor', 'resistor1', 'a21,a15','4band',resistor1.colors);
-            
             var resistor2 = breadModel('addRandomResistor', 'resistor2', 'c21,c15');
-            flash.sendCommand('insert_component', 'resistor', 'resistor2', 'c21,c15','4band',resistor2.colors);
-            
             var resistor3 = breadModel('addRandomResistor', 'resistor3', 'e21,e15');
-            flash.sendCommand('insert_component', 'resistor', 'resistor3', 'e21,e15','4band',resistor3.colors);
-            
-            
             
             breadModel('insert', 'wire', 'left_positive20,b21', 'wire1');
-            flash.sendCommand('insert_component', 'wire', 'wire1', 'left_positive20,b21','0xaa0000');
             breadModel('insert', 'wire', 'left_negative10,d15', 'wire2');
-            flash.sendCommand('insert_component', 'wire', 'wire2', 'left_negative10,d15','0x000000');
+            
+            breadModel('updateFlash');
             
             // this.resistor4 = new sparks.circuit.Resistor4band('resistor4');
             //            this.resistor4.randomize(options);

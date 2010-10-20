@@ -16,7 +16,9 @@ specResults = JSpec
 // .exec('spec/spec.common/spec.circuit.js')
 // .exec('spec/spec.common/spec.string.js')
 // .exec('spec/spec.common/spec.util.js')
-// .exec('spec/spec.activities/spec.resistor_colors.js')
+
+.exec('spec/spec.activities/spec.resistor_colors.js')
 .exec('spec/spec.activities/spec.breadboard.js')
 .exec('spec/spec.activities/spec.breadboard_measuring.js')
-.exec('spec/spec.activities/spec.flash_multimeter.js');
+.exec('spec/spec.activities/spec.flash_multimeter.js')
+.exec('spec/spec.activities/spec.flash_breadboard.js');

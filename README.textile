@@ -17,6 +17,11 @@ from http://github.com/stepheneb/rigse/tree/sparks.
 Then clone sparks under the "public" folder and rename the "spark" folder to
 "sparks-content".
 
+from rigse/
+  cap sparks-production import:create_or_update_sparks_content
+  
+This will put the content in seyomour:/web/production/sparks/current/public/sparks-content
+
 h1. Activities
 
 h3. Measuring Resistance
