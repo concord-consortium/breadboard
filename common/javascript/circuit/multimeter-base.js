@@ -55,8 +55,45 @@
                         text = ' 1 .   ';
                     }
                     
-                }
-                else if (this.dialPosition === 'r_200') {
+                } else if (this.dialPosition === 'dcv_200') {
+                     if (this.v_value < 199.95) {
+                        text = (Math.round(this.v_value * 10) * 0.1).toString();
+                        text = this.toDisplayString(text, 1);
+                    }
+                    else {
+                        text = ' 1 .   ';
+                    }
+
+                } else if (this.dialPosition === 'dcv_1000') {
+                     if (this.v_value < 999.95) {
+                        text = Math.round(this.v_value).toString();
+                        text = this.toDisplayString(text, 0);
+                    }
+                    else {
+                        text = 'h1 .   ';
+                    }
+
+                } else if (this.dialPosition === 'dcv_2000m') {
+                    var vm = this.v_value * 1000;
+                    if (vm < 1999.5) {
+                        text = Math.round(vm).toString();
+                        text = this.toDisplayString(text, 0);
+                    }
+                    else {
+                        text = ' 1 .   ';
+                    }
+
+                } else if (this.dialPosition === 'dcv_200m') {
+                    var vm = this.v_value * 1000;
+                    if (vm < 195){
+                      text = (Math.round(vm * 100) * 0.01).toString();
+                      text = this.toDisplayString(text, 1);
+                    }
+                    else {
+                        text = ' 1 .   ';
+                    }
+
+                } else if (this.dialPosition === 'r_200') {
                     if (this.r_value < 199.95) {
                         text = (Math.round(this.r_value * 10) * 0.1).toString();
                         text = this.toDisplayString(text, 1);
@@ -64,8 +101,7 @@
                     else {
                         text = ' 1   . ';
                     }
-                }
-                else if (this.dialPosition === 'r_2000') {
+                } else if (this.dialPosition === 'r_2000') {
                     if (this.r_value < 1999.5) {
                         text = Math.round(this.r_value).toString();
                         text = this.toDisplayString(text, 0);
