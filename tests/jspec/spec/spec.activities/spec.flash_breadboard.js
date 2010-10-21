@@ -25,11 +25,33 @@ describe 'Using breadboard with mock Flash connection'
         arguments[2].search(/resistor..*/).should.be_at_least 0
         arguments[3].should.be "a1,a2"
         arguments[4].should.be "4band"
-        arguments[5].should.be "brown,black,brown,gold"
+        arguments[5].should.be undefined
+        arguments[6].should.be "brown,black,brown,gold"
       }
      
       // we add a 100 ohm resistor
       breadModel('insert', 'resistor', 'a1,a2', 'brown,black,brown,gold');
+      breadModel('updateFlash');
+      sendCalled.should.be true
+      
+      
+      breadModel('clear');
+      sendCalled = false;
+      
+      sparks.flash.sendCommand = function() {
+        sendCalled = true;
+        
+        arguments[0].should.be "insert_component"
+        arguments[1].should.be "resistor"
+        arguments[2].search(/resistor..*/).should.be_at_least 0
+        arguments[3].should.be "a1,a2"
+        arguments[4].should.be "4band"
+        arguments[5].should.be "R1"
+        arguments[6].should.be "brown,black,brown,gold"
+      }
+     
+      // we add a 100 ohm resistor with a label
+      breadModel('insert', 'resistor', 'a1,a2', 'brown,black,brown,gold', 'resistorX/R1');
       breadModel('updateFlash');
       sendCalled.should.be true
       
