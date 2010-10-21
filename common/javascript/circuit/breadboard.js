@@ -338,7 +338,8 @@
               
               // need better system for this
               if (typeof(arguments[3])==="string") {
-                props.UID = arguments[3];
+                props.UID = arguments[3].split("/")[0];
+                props.label = !!arguments[3].split("/")[1] ? arguments[3].split("/")[1] : null;
               }
               break;
             case "wire":
@@ -486,17 +487,13 @@
             
             if (!!component.connections[0] && !!component.connections[1]){
               var location = component.connections[0].getName() + "," + component.connections[1].getName();
-              
-              var name = component.UID.split("/")[0];
-              var label = !!component.UID.split("/")[1] ? component.UID.split("/")[1] : null;
-              console.log("name = "+name+", label = "+label);
             
               switch (component.kind) {
                 case "resistor":
                   if (component.resistance > 0){
-                    sparks.flash.sendCommand('insert_component', 'resistor', name, location, '4band', label, component.colors);
+                    sparks.flash.sendCommand('insert_component', 'resistor', name, location, '4band', component.label, component.colors);
                   } else {
-                    sparks.flash.sendCommand('insert_component', 'resistor', name, location, 'wire', label, null);
+                    sparks.flash.sendCommand('insert_component', 'resistor', name, location, 'wire', component.label, null);
                   }
                   break;
                 case "wire":
