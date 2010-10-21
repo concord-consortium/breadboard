@@ -85,12 +85,16 @@
         startTry: function () {
             $('.next_button').hide();
             
-            var resistor1 = breadModel('addRandomResistor', 'resistor1', 'a21,a15');
-            var resistor2 = breadModel('addRandomResistor', 'resistor2', 'c21,c15');
-            var resistor3 = breadModel('addRandomResistor', 'resistor3', 'e21,e15');
+            var resistor1 = breadModel('addRandomResistor', 'resistor1', 'a15,a9');
+            var resistor2 = breadModel('addRandomResistor', 'resistor2', 'c15,c9');
+            var resistor3 = breadModel('addRandomResistor', 'resistor3', 'e15,e9');
             
-            breadModel('insert', 'wire', 'left_positive20,b21', 'wire1');
-            breadModel('insert', 'wire', 'left_negative10,d15', 'wire2');
+            // "resistor-wires." probably" Hopefully temporary
+            breadModel('insert', 'resistor', 'b21,b15', 0, 'wire1');
+            breadModel('insert', 'resistor', 'd9,d3', 0, 'wire2');
+            
+            breadModel('insert', 'wire', 'left_positive20,c21', 'wire1');
+            breadModel('insert', 'wire', 'left_negative2,a3', 'wire2');
             
             breadModel('updateFlash');
             
