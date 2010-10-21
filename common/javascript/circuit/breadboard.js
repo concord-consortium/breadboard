@@ -335,6 +335,11 @@
                 props.resistance = arguments[2];
                 props.colors = Resistor.getColors4Band( arguments[2], 0.01);
               }
+              
+              // need better system for this
+              if (typeof(arguments[3])==="string") {
+                props.UID = arguments[3];
+              }
               break;
             case "wire":
              // props.UID = arguments[2];
@@ -481,13 +486,17 @@
             
             if (!!component.connections[0] && !!component.connections[1]){
               var location = component.connections[0].getName() + "," + component.connections[1].getName();
+              
+              var name = component.UID.split("/")[0];
+              var label = !!component.UID.split("/")[1] ? component.UID.split("/")[1] : null;
+              console.log("name = "+name+", label = "+label);
             
               switch (component.kind) {
                 case "resistor":
                   if (component.resistance > 0){
-                    sparks.flash.sendCommand('insert_component', 'resistor', component.UID, location, '4band', component.colors);
+                    sparks.flash.sendCommand('insert_component', 'resistor', name, location, '4band', label, component.colors);
                   } else {
-                    sparks.flash.sendCommand('insert_component', 'resistor', component.UID, location, 'wire', null);
+                    sparks.flash.sendCommand('insert_component', 'resistor', name, location, 'wire', label, null);
                   }
                   break;
                 case "wire":
