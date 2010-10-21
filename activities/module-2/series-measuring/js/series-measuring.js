@@ -93,9 +93,9 @@
             //             breadModel('insert', 'resistor', 'b23,b17', this.resistor1.getRealValue(), 'resistor1');
             //             flash.sendCommand('insert_component', 'resistor', 'b23,b17','4band',this.resistor1.colors);
             
-            var resistor1 = breadModel('addRandomResistor', 'resistor1', 'b23,b17');
-            var resistor2 = breadModel('addRandomResistor', 'resistor2', 'c17,c11');
-            var resistor3 = breadModel('addRandomResistor', 'resistor3', 'd11,d5');
+            var resistor1 = breadModel('addRandomResistor', 'resistor1/R1', 'b23,b17');
+            var resistor2 = breadModel('addRandomResistor', 'resistor2/R2', 'c17,c11');
+            var resistor3 = breadModel('addRandomResistor', 'resistor3/R3', 'd11,d5');
             
             breadModel('insert', 'wire', 'left_positive20,a23', 'wire1');
             breadModel('insert', 'wire', 'left_negative3,a5', 'wire2');

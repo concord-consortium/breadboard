@@ -89,10 +89,10 @@
             $('.next_button').hide();
             
             
-            var resistor1 = breadModel('addRandomResistor', 'resistor1', 'b23,b17');
-            var resistor2 = breadModel('addRandomResistor', 'resistor2', 'c17,c11');
-            var resistor3 = breadModel('addRandomResistor', 'resistor3', 'a17,a11');
-            var resistor4 = breadModel('addRandomResistor', 'resistor4', 'd11,d5');
+            var resistor1 = breadModel('addRandomResistor', 'resistor1/R1', 'b23,b17');
+            var resistor2 = breadModel('addRandomResistor', 'resistor2/R2', 'a17,a11');
+            var resistor3 = breadModel('addRandomResistor', 'resistor3/R3', 'c17,c11');
+            var resistor4 = breadModel('addRandomResistor', 'resistor4/R4', 'd11,d5');
             
             breadModel('insert', 'wire', 'left_positive20,a23', 'wire1');
             breadModel('insert', 'wire', 'left_negative3,a5', 'wire2');

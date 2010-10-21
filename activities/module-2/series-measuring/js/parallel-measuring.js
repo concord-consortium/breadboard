@@ -88,9 +88,9 @@
         startTry: function () {
             $('.next_button').hide();
             
-            var resistor1 = breadModel('addRandomResistor', 'resistor1', 'a15,a9');
-            var resistor2 = breadModel('addRandomResistor', 'resistor2', 'c15,c9');
-            var resistor3 = breadModel('addRandomResistor', 'resistor3', 'e15,e9');
+            var resistor1 = breadModel('addRandomResistor', 'resistor1/R1', 'a15,a9');
+            var resistor2 = breadModel('addRandomResistor', 'resistor2/R2', 'c15,c9');
+            var resistor3 = breadModel('addRandomResistor', 'resistor3/R3', 'e15,e9');
             
             // "resistor-wires." probably" Hopefully temporary
             breadModel('insert', 'resistor', 'b21,b15', 0, 'wire1');
