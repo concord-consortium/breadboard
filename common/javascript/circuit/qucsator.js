@@ -74,7 +74,8 @@
 
       switch (component.kind) {
         case "resistor":
-          if (!(nodes.length == 2 && component.resistance && component.UID)) { return; }
+          if (!(nodes.length == 2 && component.UID)) { return; }
+          var resistance = !component.resistance ? 0 : component.resistance;
           line = 'R:' + component.UID + ' ';
           line = line + nodes.join(' ');
           line = line + ' R="' + component.resistance + ' Ohm"' ;

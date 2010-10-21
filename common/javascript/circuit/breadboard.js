@@ -484,7 +484,11 @@
             
               switch (component.kind) {
                 case "resistor":
-                  sparks.flash.sendCommand('insert_component', 'resistor', component.UID, location,'4band',component.colors);
+                  if (component.resistance > 0){
+                    sparks.flash.sendCommand('insert_component', 'resistor', component.UID, location, '4band', component.colors);
+                  } else {
+                    sparks.flash.sendCommand('insert_component', 'resistor', component.UID, location, 'wire', null);
+                  }
                   break;
                 case "wire":
                   var color;
