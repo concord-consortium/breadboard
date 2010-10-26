@@ -43,26 +43,21 @@
         return ta.value;
       }
       
-      function round(num, dec) {
-      	var result = Math.round( Math.round( num * Math.pow( 10, dec + 1 ) ) / Math.pow( 10, 1 ) ) / Math.pow(10,dec);
-      	return result;
-      }
-      
       if (value >= 1000000){
         var MUnits = html_entity_decode('M'+units);
-        this.addQuestion(prompt, round(value/1000000,2), MUnits, score);
+        this.addQuestion(prompt, this._round(value/1000000,2), MUnits, score);
       } else if (value >= 1000){
         var kUnits = html_entity_decode('k'+units);
-        this.addQuestion(prompt, round(value/1000,2), kUnits, score);
+        this.addQuestion(prompt, this._round(value/1000,2), kUnits, score);
       } else if (value < 0.001){
         var uUnits = html_entity_decode('&#x00b5;'+units);
-        this.addQuestion(prompt, round(value * 1000000,2), uUnits, score);
+        this.addQuestion(prompt, this._round(value * 1000000,2), uUnits, score);
       } else if (value < 1) {
         var mUnits = html_entity_decode('m'+units);
-        this.addQuestion(prompt, round(value * 1000,2), mUnits, score);
+        this.addQuestion(prompt, this._round(value * 1000,2), mUnits, score);
       } else {
-        var units = html_entity_decode(units);
-        this.addQuestion(prompt, round(value,2), units, score);
+        units = html_entity_decode(units);
+        this.addQuestion(prompt, this._round(value,2), units, score);
       }
     },
     
@@ -92,7 +87,11 @@
         if (!!self.userQuestions[i]){
           var userQuestion = self.userQuestions[i];
           question.answer = userQuestion.input;
-          if (question.answer == question.correct_answer){
+          question.answer = parseFloat(question.answer);
+          
+          // first get numbers to 3 sig figs, then allow errors of 0.05 (rounding differences)
+          var dif = self._sigFigs(question.answer,3) - self._sigFigs(question.correct_answer,3);
+          if (dif <= 0.5 && dif >= -0.05){
             question.answerIsCorrect = true;
           }
           
@@ -164,6 +163,18 @@
       );
       
       return $tbl;
+    },
+    
+    _round: function(num, dec) {
+    	var result = Math.round( Math.round( num * Math.pow( 10, dec + 1 ) ) / Math.pow( 10, 1 ) ) / Math.pow(10,dec);
+    	return result;
+    },
+    
+    _sigFigs: function(n, sig) {
+        var mult = Math.pow(10,
+            sig - Math.floor(Math.log(n) / Math.LN10) - 1);
+        return Math.round(n * mult) / mult;
     }
+    
   };
 })();
