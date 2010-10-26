@@ -10,6 +10,8 @@
 //= require "activity-log"
 //= require "grader"
 //= require "reporter"
+//= require <assessment/activity-log>
+//= require <assessment/assessment>
 
 /* FILE activity.js */
 
@@ -28,7 +30,8 @@
     sm.Activity = function () {
         sm.Activity.uber.init.apply(this);
         this.log = new sm.ActivityLog();
-        this.reporter = new sm.Reporter($('#report_area'));
+        this.assessment = new sparks.Activity.Assessment();
+        // this.reporter = new sm.Reporter($('#report_area'));
         sparks.flash.activity = this;
     };
     
@@ -58,9 +61,9 @@
             this.questionsArea = $('#questions_area');
             this.reportArea = $('#report_area').hide();
             
-            $('button.submit').click(function (e) {
-                self.submitButtonClicked();
-                e.preventDefault();
+            $('button.submit').click(function (event) {
+                self.submitButtonClicked(self, event);
+                event.preventDefault();
             });
         },
 
@@ -74,14 +77,17 @@
             this.startTry();
         },
         
-        submitButtonClicked: function () {
-            if (this.currentQuestion == 3) {
+        submitButtonClicked: function (activity, event) {
+            var form = jQuery(event.target).parents('.question_form');
+            activity.disableForm(this.currentQuestion);
+            var nextForm = form.nextAll("form:first");
+
+            if (nextForm.size() === 0) { //all questions answered for current session
                 this.completedTry();
             }
             else {
-                ++ this.currentQuestion;
-                this.disableForm(this.currentQuestion - 1);
-                this.enableForm(this.currentQuestion);
+              this.currentQuestion++;
+              this.enableForm(this.currentQuestion);
             }
         },
         
@@ -124,13 +130,30 @@
             for (var i = 1; i < this.forms.length; ++i) {
                 this.disableForm(i);
             }
+            
+            var r1 = resistor1.getRealValue();
+            var r2 = resistor2.getRealValue();
+            var r3 = resistor3.getRealValue();
+            var rTot = 1/((1/r1)+(1/r2)+(1/r3));
+
+            this.assessment.addMeasurmentQuestion("Resistance of R1", r1, "&#x2126;", 1);
+            this.assessment.addMeasurmentQuestion("Resistance of R2", r2, "&#x2126;", 1);
+            this.assessment.addMeasurmentQuestion("Resistance of R3", r3, "&#x2126;", 1);
+
+            this.assessment.addMeasurmentQuestion("Total Resistance", rTot, "&#x2126;", 2);
+
+            this.assessment.addMeasurmentQuestion("Voltage across R1", 9, "V", 1);
+            this.assessment.addMeasurmentQuestion("Voltage across R2", 9, "V", 1);
+
+            this.assessment.addMeasurmentQuestion("Current through R1", 9 / r1, "A", 1);
+            this.assessment.addMeasurmentQuestion("Current through R2", 9 / r2, "A", 1);
         },
         
         completedTry: function () {
             this.logResults();
-            grader = new sm.Grader(this.log.session, {});
-            feedback = grader.grade();
-            this.reporter.report(this.log.session, feedback);
+            // grader = new sm.Grader(this.log.session, {});
+            // feedback = grader.grade();
+            // this.reporter.report(this.log.session, feedback);
             this.questionsArea.hide();
             this.reportArea.show();
             $('.next_button').show();
@@ -141,13 +164,20 @@
         
         enableForm: function (k) {
             $(this.forms[k]).find('input, select, button').attr('disabled', false);
+            $(this.forms[k]).css("background-color", "rgb(253,255,184)");
         },
         
         disableForm: function (k) {
             $(this.forms[k]).find('input, select, button').attr('disabled', true);
+            $(this.forms[k]).css("background-color", "");
         },
         
         logResults: function () {
+          console.log("generatingReport");
+          this.assessment.serializeQuestions($("form"));
+          this.assessment.scoreAnswers();
+          var table = this.assessment.generateReport();
+          this.reportArea.append(table);
         },
         
         receiveEvent: function (name, value, time) {
