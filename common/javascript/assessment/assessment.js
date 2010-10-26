@@ -35,6 +35,37 @@
       this.questions.push(question);
     },
     
+    addMeasurmentQuestion: function (prompt, value, units, score){
+      
+      function html_entity_decode(str) {
+        var ta=document.createElement("textarea");
+        ta.innerHTML=str.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        return ta.value;
+      }
+      
+      function round(num, dec) {
+      	var result = Math.round( Math.round( num * Math.pow( 10, dec + 1 ) ) / Math.pow( 10, 1 ) ) / Math.pow(10,dec);
+      	return result;
+      }
+      
+      if (value >= 1000000){
+        var MUnits = html_entity_decode('M'+units);
+        this.addQuestion(prompt, round(value/1000000,2), MUnits, score);
+      } else if (value >= 1000){
+        var kUnits = html_entity_decode('k'+units);
+        this.addQuestion(prompt, round(value/1000,2), kUnits, score);
+      } else if (value < 0.001){
+        var uUnits = html_entity_decode('&#x00b5;'+units);
+        this.addQuestion(prompt, round(value * 1000000,2), uUnits, score);
+      } else if (value < 1) {
+        var mUnits = html_entity_decode('m'+units);
+        this.addQuestion(prompt, round(value * 1000,2), mUnits, score);
+      } else {
+        var units = html_entity_decode(units);
+        this.addQuestion(prompt, round(value,2), units, score);
+      }
+    },
+    
     serializeQuestions: function(jqForms) {
       var self = this;
       jqForms.each(function (i) {
@@ -94,8 +125,8 @@
       var totalPossibleScore = 0;
         
       $.each(this.questions, function(i, question){
-        var answer = !!question.answer ? question.answer + (!!question.units ? question.units : '') : '';
-        var correctAnswer = question.correct_answer + (!!question.correct_units ? question.correct_units : '');
+        var answer = !!question.answer ? question.answer + (!!question.units ? " "+question.units : '') : '';
+        var correctAnswer = question.correct_answer + (!!question.correct_units ? " "+question.correct_units : '');
         var score = question.answerIsCorrect && question.unitsIsCorrect ? question.score : 0;
         totalScore += score;
         totalPossibleScore += question.score;

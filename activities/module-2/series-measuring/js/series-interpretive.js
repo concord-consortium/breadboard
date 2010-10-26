@@ -119,48 +119,17 @@
             var r3 = resistor3.getNominalValue();
             var rTot = r1+r2+r3;
             
-            this.addMeasurmentQuestion("Resistance of R1", r1, "&#x2126;", 1);
-            this.addMeasurmentQuestion("Resistance of R2", r2, "&#x2126;", 1);
-            this.addMeasurmentQuestion("Resistance of R3", r3, "&#x2126;", 1);
+            this.assessment.addMeasurmentQuestion("Resistance of R1", r1, "&#x2126;", 1);
+            this.assessment.addMeasurmentQuestion("Resistance of R2", r2, "&#x2126;", 1);
+            this.assessment.addMeasurmentQuestion("Resistance of R3", r3, "&#x2126;", 1);
             
-            this.addMeasurmentQuestion("Total Resistance", rTot, "&#x2126;", 2);
+            this.assessment.addMeasurmentQuestion("Total Resistance", rTot, "&#x2126;", 2);
             
-            this.addMeasurmentQuestion("Voltage across R1", 9 * (r1/rTot), "V", 1);
-            this.addMeasurmentQuestion("Voltage across R2", 9 * (r2/rTot), "V", 1);
+            this.assessment.addMeasurmentQuestion("Voltage across R1", 9 * (r1/rTot), "V", 1);
+            this.assessment.addMeasurmentQuestion("Voltage across R2", 9 * (r2/rTot), "V", 1);
             
-            this.addMeasurmentQuestion("Current through R1", 9 / rTot, "A", 1);
-            this.addMeasurmentQuestion("Current through R2", 9 / rTot, "A", 1);
-        },
-        
-        addMeasurmentQuestion: function (prompt, value, units, score){
-          
-          function html_entity_decode(str) {
-            var ta=document.createElement("textarea");
-            ta.innerHTML=str.replace(/</g,"&lt;").replace(/>/g,"&gt;");
-            return ta.value;
-          }
-          
-          function round(num, dec) {
-          	var result = Math.round( Math.round( num * Math.pow( 10, dec + 1 ) ) / Math.pow( 10, 1 ) ) / Math.pow(10,dec);
-          	return result;
-          }
-          
-          if (value >= 1000000){
-            var MUnits = html_entity_decode('M'+units);
-            this.assessment.addQuestion(prompt, round(value/1000000,2), MUnits, score);
-          } else if (value >= 1000){
-            var kUnits = html_entity_decode('k'+units);
-            this.assessment.addQuestion(prompt, round(value/1000,2), kUnits, score);
-          } else if (value < 0.001){
-            var uUnits = html_entity_decode('&#x00b5;'+units);
-            this.assessment.addQuestion(prompt, round(value * 1000000,2), uUnits, score);
-          } else if (value < 1) {
-            var mUnits = html_entity_decode('m'+units);
-            this.assessment.addQuestion(prompt, round(value * 1000,2), mUnits, score);
-          } else {
-            var units = html_entity_decode(units);
-            this.assessment.addQuestion(prompt, round(value,2), units, score);
-          }
+            this.assessment.addMeasurmentQuestion("Current through R1", 9 / rTot, "A", 1);
+            this.assessment.addMeasurmentQuestion("Current through R2", 9 / rTot, "A", 1);
         },
         
         completedTry: function () {
