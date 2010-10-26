@@ -10,6 +10,8 @@
 //= require "activity-log"
 //= require "grader"
 //= require "reporter"
+//= require <assessment/activity-log>
+//= require <assessment/assessment>
 
 /* FILE activity.js */
 
@@ -28,7 +30,8 @@
     sm.Activity = function () {
         sm.Activity.uber.init.apply(this);
         this.log = new sm.ActivityLog();
-        this.reporter = new sm.Reporter($('#report_area'));
+        this.assessment = new sparks.Activity.Assessment();
+        // this.reporter = new sm.Reporter($('#report_area'));
         sparks.flash.activity = this;
     };
     
@@ -104,34 +107,67 @@
             
             breadModel('updateFlash');
             
-            // this.resistor4 = new sparks.circuit.Resistor4band('resistor4');
-            //            this.resistor4.randomize(options);
-            //            breadModel('insert', 'resistor', 'c11,c5', this.resistor4.getRealValue(), 'resistor3');
-            //            flash.sendCommand('insert_component', 'resistor', 'c11,c5','4band',this.resistor4.colors);
-            // 
-            // $('#dbg_rated_1').text(this.resistor1.getNominalValue());
-            // $('#dbg_rated_2').text(this.resistor2.getNominalValue());
-            // $('#dbg_rated_3').text(this.resistor3.getNominalValue());
-            // $('#dbg_real_1').text(this.resistor1.getRealValue().toFixed(3));
-            // $('#dbg_real_2').text(this.resistor2.getRealValue().toFixed(3));
-            // $('#dbg_real_3').text(this.resistor3.getRealValue().toFixed(3));
-            // $('#dbg_tol_1').text(this.resistor1.getTolerance());
-            // $('#dbg_tol_2').text(this.resistor2.getTolerance());
-            // $('#dbg_tol_3').text(this.resistor3.getTolerance());
-            
             this.currentQuestion = 0;
         
             this.enableForm(0);
             for (var i = 1; i < this.forms.length; ++i) {
                 this.disableForm(i);
             }
+            
+            var r1 = resistor1.getNominalValue();
+            var r2 = resistor2.getNominalValue();
+            var r3 = resistor3.getNominalValue();
+            var rTot = r1+r2+r3;
+            
+            this.addMeasurmentQuestion("Resistance of R1", r1, "&#x2126;", 1);
+            this.addMeasurmentQuestion("Resistance of R2", r2, "&#x2126;", 1);
+            this.addMeasurmentQuestion("Resistance of R3", r3, "&#x2126;", 1);
+            
+            this.addMeasurmentQuestion("Total Resistance", rTot, "&#x2126;", 2);
+            
+            this.addMeasurmentQuestion("Voltage across R1", 9 * (r1/rTot), "V", 1);
+            this.addMeasurmentQuestion("Voltage across R2", 9 * (r2/rTot), "V", 1);
+            
+            this.addMeasurmentQuestion("Current through R1", 9 / rTot, "A", 1);
+            this.addMeasurmentQuestion("Current through R2", 9 / rTot, "A", 1);
+        },
+        
+        addMeasurmentQuestion: function (prompt, value, units, score){
+          
+          function html_entity_decode(str) {
+            var ta=document.createElement("textarea");
+            ta.innerHTML=str.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+            return ta.value;
+          }
+          
+          function round(num, dec) {
+          	var result = Math.round( Math.round( num * Math.pow( 10, dec + 1 ) ) / Math.pow( 10, 1 ) ) / Math.pow(10,dec);
+          	return result;
+          }
+          
+          if (value >= 1000000){
+            var MUnits = html_entity_decode('M'+units);
+            this.assessment.addQuestion(prompt, round(value/1000000,2), MUnits, score);
+          } else if (value >= 1000){
+            var kUnits = html_entity_decode('k'+units);
+            this.assessment.addQuestion(prompt, round(value/1000,2), kUnits, score);
+          } else if (value < 0.001){
+            var uUnits = html_entity_decode('&#x00b5;'+units);
+            this.assessment.addQuestion(prompt, round(value * 1000000,2), uUnits, score);
+          } else if (value < 1) {
+            var mUnits = html_entity_decode('m'+units);
+            this.assessment.addQuestion(prompt, round(value * 1000,2), mUnits, score);
+          } else {
+            var units = html_entity_decode(units);
+            this.assessment.addQuestion(prompt, round(value,2), units, score);
+          }
         },
         
         completedTry: function () {
             this.logResults();
-            grader = new sm.Grader(this.log.session, {});
-            feedback = grader.grade();
-            this.reporter.report(this.log.session, feedback);
+            // grader = new sm.Grader(this.log.session, {});
+            // feedback = grader.grade();
+            // this.reporter.report(this.log.session, feedback);
             this.questionsArea.hide();
             this.reportArea.show();
             $('.next_button').show();
@@ -153,6 +189,11 @@
         },
         
         logResults: function () {
+          console.log("generatingReport");
+          this.assessment.serializeQuestions($("form"));
+          this.assessment.scoreAnswers();
+          var table = this.assessment.generateReport();
+          this.reportArea.append(table);
         },
         
         receiveEvent: function (name, value, time) {

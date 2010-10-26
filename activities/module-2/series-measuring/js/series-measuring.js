@@ -6,6 +6,8 @@
 //= require <circuit/multimeter2>
 //= require <circuit/resistor-4band>
 //= require <circuit/resistor-5band>
+//= require <assessment/activity-log>
+//= require <assessment/assessment>
 //= require "setup-common"
 //= require "activity-log"
 //= require "grader"

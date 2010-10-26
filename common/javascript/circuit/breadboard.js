@@ -336,6 +336,11 @@
                 props.colors = Resistor.getColors4Band( arguments[2], 0.01);
               }
               
+              // blargh
+              if (!!arguments[4]) {
+                props.colors = arguments[4].toString();
+              }
+              
               // need better system for this
               if (typeof(arguments[3])==="string") {
                 props.UID = arguments[3].split("/")[0];
@@ -399,7 +404,7 @@
         addRandomResistor: function(name, location, options){
           var resistor = new sparks.circuit.Resistor4band(name);
           resistor.randomize((options | null));
-          interfaces.insert('resistor', location, resistor.getRealValue(), name);
+          interfaces.insert('resistor', location, resistor.getRealValue(), name, resistor.colors);
           return resistor;
         },
         query: function(type, connections){
