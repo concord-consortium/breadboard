@@ -37,7 +37,6 @@
             }
 
             this.nominalValue = values[this.randInt(0, values.length-1)];
-
             if (options && options.realEqualsNominal) {
                 this.realValue = this.nominalValue;
             }
