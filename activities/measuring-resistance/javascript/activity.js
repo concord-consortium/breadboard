@@ -144,9 +144,10 @@
             else {
                 r.randomize();
             }
+            flash.sendCommand('set_resistor_colors', this.currentResistor.id, this.currentResistor.colors);
             flash.sendCommand('reset_circuit');
             this.logResistorState();
-            console.log('currentResistor=' + sparks.activity.currentResistor);
+            console.log('currentResistor=' + sparks.activity.currentResistor.colors);
             this.multimeter.update();
         },
 
