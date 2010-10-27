@@ -329,15 +329,25 @@
             props.connections = props.connections.split(",");
           }
           
+          function ensureInt(val){
+            if (!!props[val] && typeof(props[val]) === "string")
+              props[val] = parseInt(props[val]);
+          }
+          
+          ensureInt("resistance");
+          ensureInt("voltage");
+          
           switch(kind) {
             case "resistor":
-              if (!props.colors && !props.resistance) {
-                console.log("ERROR: resistor "+props.UID+" must have either color or resistrance")
-                props.resistance = 0;
+              if (!props.resistance && props.colors){
+                props.resistance = Resistor.getResistance( props.colors.split(",") );
               }
               
-              if (!props.resistance){
-                props.resistance = Resistor.getResistance( props.colors.split(",") );
+              if (!props.resistance && !props.colors) {
+                var resistor = new sparks.circuit.Resistor4band(name);
+                resistor.randomize(null);
+                props.resistance = resistor.getRealValue()
+                props.colors = resistor.colors;
               }
               
               if (!props.colors){
@@ -348,6 +358,11 @@
           var newComponent;
           newComponent = breadBoard.component(props);
           return newComponent.UID;
+        },
+        createCircuit: function(jsonCircuit){
+          $.each(jsonCircuit, function(i, spec){
+            interfaces.insertComponent(spec.type, spec);
+          });
         },
         // inserts a new component into the breadboard. Expects a type, the connections,
         // and other arguments as needed
