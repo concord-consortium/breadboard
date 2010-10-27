@@ -98,12 +98,36 @@
             //             breadModel('insert', 'resistor', 'b23,b17', this.resistor1.getRealValue(), 'resistor1');
             //             flash.sendCommand('insert_component', 'resistor', 'b23,b17','4band',this.resistor1.colors);
             
-            var resistor1 = breadModel('addRandomResistor', 'resistor1/R1', 'b23,b17');
-            var resistor2 = breadModel('addRandomResistor', 'resistor2/R2', 'c17,c11');
-            var resistor3 = breadModel('addRandomResistor', 'resistor3/R3', 'd11,d5');
+            var jsonCircuit = [
+                {
+                  "type": "resistor",
+                  "UID": "r1",
+                  "connections": "b23,b17",
+                  "label": "R4"
+                },
+                {
+                  "type": "resistor",
+                  "UID": "r2",
+                  "connections": "c17,c11",
+                  "label": "R5"
+                },
+                {
+                  "type": "resistor",
+                  "UID": "r3",
+                  "connections": "d11,d5",
+                  "label": "R6"
+                },
+                {
+                  "type": "wire",
+                  "connections": "left_positive20,a23"
+                },
+                {
+                  "type": "wire",
+                  "connections": "left_negative3,a5"
+                }
+             ];
             
-            breadModel('insert', 'wire', 'left_positive20,a23', 'wire1');
-            breadModel('insert', 'wire', 'left_negative3,a5', 'wire2');
+            breadModel("createCircuit", jsonCircuit);
             
             breadModel('updateFlash');
             
@@ -114,9 +138,10 @@
                 this.disableForm(i);
             }
             
-            var r1 = resistor1.getNominalValue();
-            var r2 = resistor2.getNominalValue();
-            var r3 = resistor3.getNominalValue();
+            components = getBreadBoard().components;
+            var r1 = components['r1'].nominalResistance;
+            var r2 = components['r2'].nominalResistance;
+            var r3 = components['r3'].nominalResistance;
             var rTot = r1+r2+r3;
             
             this.assessment.addMeasurmentQuestion("Resistance of R1", r1, "&#x2126;", 1);

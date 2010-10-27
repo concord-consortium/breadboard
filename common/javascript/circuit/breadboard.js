@@ -352,6 +352,8 @@
               if (!props.colors){
                 props.colors = Resistor.getColors4Band( props.resistance, (!!props.tolerance ? props.tolerance : 0.05));
               }
+              
+              props.nominalResistance =  Resistor.getResistance( props.colors );
           }
           
           var newComponent;
