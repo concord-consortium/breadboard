@@ -215,6 +215,7 @@
         for( k in this.components ){
           destroyed += !!this.component(k).destroy();
         }
+        this.components = {};
         return !!destroyed;
       };
       
@@ -313,11 +314,47 @@
       var breadBoard = new Breadboard();
 
       var interfaces = {
+        insertComponent: function(kind, props){
+          props.kind = kind;
+          
+          if (!props.UID){
+            props.UID = kind+calls;
+          }
+          
+          if (!props.label){
+            props.label = !!props.UID.split("/")[1] ? props.UID.split("/")[1] : null;
+          }
+          
+          if (typeof(props.connections) === "string"){
+            props.connections = props.connections.split(",");
+          }
+          
+          switch(kind) {
+            case "resistor":
+              if (!props.colors && !props.resistance) {
+                console.log("ERROR: resistor "+props.UID+" must have either color or resistrance")
+                props.resistance = 0;
+              }
+              
+              if (!props.resistance){
+                props.resistance = Resistor.getResistance( props.colors.split(",") );
+              }
+              
+              if (!props.colors){
+                props.colors = Resistor.getColors4Band( props.resistance, (!!props.tolerance ? props.tolerance : 0.05));
+              }
+          }
+          
+          var newComponent;
+          newComponent = breadBoard.component(props);
+          return newComponent.UID;
+        },
         // inserts a new component into the breadboard. Expects a type, the connections,
         // and other arguments as needed
         // e.g. insert('battery', 'a1,a2', '5')
         // e.g. insert('resistor, 'a1,left_positive_1', 'green,black,black,gold')
         insert: function(type, connections){
+          console.log("WARNING: 'insert' is deprecated. Use 'insertComponent'");
           var props = {
             UID         : type+calls,
             kind        : type,

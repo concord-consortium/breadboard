@@ -23,6 +23,42 @@ describe 'Creating a breadboard'
       netlist.search(/TLIN:wire.* L1 L2 Z=\"0 Ohm\" L=\"1 mm\" Alpha=\"0 dB\"/).should.be_at_least 0    
     end
     
+    it "should correctly add components with json props"
+    
+      // We can add a wire
+      breadModel('insertComponent', 'wire', {"connections": "a1,a2"});
+      var board = getBreadBoard();
+      var netlist = sparks.circuit.qucsator.makeNetlist(board);
+      netlist.search(/TLIN:wire.* L1 L2 Z=\"0 Ohm\" L=\"1 mm\" Alpha=\"0 dB\"/).should.be_at_least 0
+      
+      // We can add a battery with a UID
+      breadModel('insertComponent', 'battery', {"UID": "myBattery", "connections": "b2,b3", "voltage": "6"});
+      netlist = sparks.circuit.qucsator.makeNetlist(board);
+      netlist.search(/Vdc:myBattery L2 L3 U=\"6 V\"/).should.be_at_least 0   
+      netlist.search(/TLIN:wire.* L1 L2 Z=\"0 Ohm\" L=\"1 mm\" Alpha=\"0 dB\"/).should.be_at_least 0
+      
+      // We can add a resistor with colors
+      breadModel('insertComponent', 'resistor', {"UID": "myResistor", "connections": "b3,b4", "colors": "brown,black,brown,gold"});
+      var netlist = sparks.circuit.qucsator.makeNetlist(board);
+      netlist.search(/R:myResistor L3 L4 R=\"100 Ohm\"/).should.be_at_least 0
+      board.components["myResistor"].colors.should.be "brown,black,brown,gold"
+      
+      // We can add a resistor with a resistance
+      breadModel('insertComponent', 'resistor', {"UID": "myResistor2", "connections": "b5,b6", "resistance": "200"});
+      var netlist = sparks.circuit.qucsator.makeNetlist(board);
+      netlist.search(/R:myResistor2 L5 L6 R=\"200 Ohm\"/).should.be_at_least 0
+      board.components["myResistor2"].colors[0].should.be "red"
+      board.components["myResistor2"].colors[3].should.be "gold"
+      
+      // We can add a resistor with a resistance
+      breadModel('insertComponent', 'resistor', {"UID": "myResistor2", "connections": "b5,b6", "resistance": "200", "tolerance": "0.01"});
+      var netlist = sparks.circuit.qucsator.makeNetlist(board);
+      netlist.search(/R:myResistor2 L5 L6 R=\"200 Ohm\"/).should.be_at_least 0
+      board.components["myResistor2"].colors[0].should.be "red"
+      board.components["myResistor2"].colors[3].should.be "brown"
+
+    end
+    
     it "should correctly remove components"
     
       // We can add a wire
