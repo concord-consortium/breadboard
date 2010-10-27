@@ -50,14 +50,19 @@ describe 'Creating a breadboard'
       board.components["myResistor2"].colors[0].should.be "red"
       board.components["myResistor2"].colors[3].should.be "gold"
       
+      // We can add a resistor with same UID, it will be changed
+      breadModel('insertComponent', 'resistor', {"UID": "myResistor2", "connections": "b5,b6", "resistance": "200"});
+      var netlist = sparks.circuit.qucsator.makeNetlist(board);
+      netlist.search(/R:myResistor20/).should.be_at_least 0
+      
       // We can add a resistor with a resistance, tolerance and label
-      breadModel('insertComponent', 'resistor', {"UID": "myResistor2", "connections": "b5,b6", "resistance": "200", 
+      breadModel('insertComponent', 'resistor', {"UID": "myResistor3", "connections": "b5,b6", "resistance": "200", 
                                         "tolerance": "0.01", "label": "R1"});
       var netlist = sparks.circuit.qucsator.makeNetlist(board);
-      netlist.search(/R:myResistor2 L5 L6 R=\"200 Ohm\"/).should.be_at_least 0
-      board.components["myResistor2"].colors[0].should.be "red"
-      board.components["myResistor2"].colors[3].should.be "brown"
-      board.components["myResistor2"].label.should.be "R1"
+      netlist.search(/R:myResistor3 L5 L6 R=\"200 Ohm\"/).should.be_at_least 0
+      board.components["myResistor3"].colors[0].should.be "red"
+      board.components["myResistor3"].colors[3].should.be "brown"
+      board.components["myResistor3"].label.should.be "R1"
 
     end
     

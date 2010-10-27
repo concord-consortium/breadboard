@@ -22,7 +22,7 @@ describe 'Using breadboard with mock Flash connection'
         
         arguments[0].should.be "insert_component"
         arguments[1].should.be "resistor"
-        arguments[2].search(/resistor..*/).should.be_at_least 0
+        arguments[2].search(/resistor.*/).should.be_at_least 0
         arguments[3].should.be "a1,a2"
         arguments[4].should.be "4band"
         arguments[5].should.be undefined
@@ -43,7 +43,7 @@ describe 'Using breadboard with mock Flash connection'
         
         arguments[0].should.be "insert_component"
         arguments[1].should.be "resistor"
-        arguments[2].search(/resistor..*/).should.be_at_least 0
+        arguments[2].search(/resistor.*/).should.be_at_least 0
         arguments[3].should.be "a1,a2"
         arguments[4].should.be "4band"
         arguments[5].should.be "R1"
@@ -64,7 +64,7 @@ describe 'Using breadboard with mock Flash connection'
         
         arguments[0].should.be "insert_component"
         arguments[1].should.be "wire"
-        arguments[2].search(/wire..*/).should.be_at_least 0
+        arguments[2].search(/wire.*/).should.be_at_least 0
         arguments[3].should.be "left_positive1,a2"
         arguments[4].should.be "0xaa0000"
       }

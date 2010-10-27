@@ -106,6 +106,29 @@ describe 'Circuit Constructor'
      batteryExists.should.be true
    end
    
+   it 'should be able to make a circuit with multiple unnamed resistors'
+     var jsonCircuit = [
+         {
+           "type": "resistor",
+           "connections": "b23,b17"
+         },
+         {
+           "type": "resistor",
+           "connections": "c17,c11"
+         },
+         {
+           "type": "resistor",
+           "connections": "d11,d5"
+         }
+      ];
+     
+     breadModel("createCircuit", jsonCircuit);
+     
+     var components = getBreadBoard().components;
+     
+     size(components).should.be 3
+   end
+   
    it 'should be able to create a resistor with random resistances'
       var jsonCircuit = [
         {

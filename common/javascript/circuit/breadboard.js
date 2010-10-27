@@ -127,7 +127,7 @@
       };
 
       var GhostHole = function GhostHole(name) {
-        this.name = !!name ? name : 'node' + calls;
+        this.name = !!name ? name : interfaces.getUID('node');
         return this;
       };
 
@@ -317,9 +317,8 @@
         insertComponent: function(kind, props){
           props.kind = kind;
           
-          if (!props.UID){
-            props.UID = kind+calls;
-          }
+          // ensure no dupes, using either passed UID or type
+          props.UID = interfaces.getUID(!!props.UID ? props.UID : props.kind);
           
           if (!props.label){
             props.label = !!props.UID.split("/")[1] ? props.UID.split("/")[1] : null;
@@ -371,7 +370,7 @@
         insert: function(type, connections){
           console.log("WARNING: 'insert' is deprecated. Use 'insertComponent'");
           var props = {
-            UID         : type+calls,
+            UID         : interfaces.getUID(type),
             kind        : type,
             connections : connections.split(",")
           };
@@ -409,6 +408,17 @@
           var newComponent;
           newComponent = breadBoard.component(props);
           return newComponent.UID;
+        },
+        getUID: function(name){
+          if (!breadBoard.components[name]){
+            return name;
+          }
+          
+          var i = 0;
+          while (!!breadBoard.components[""+name+i]){
+            i++;
+          }
+          return ""+name+i;
         },
         remove: function(type, connections){
           var comp = interfaces.findComponent(type, connections)
@@ -574,13 +584,9 @@
         }
       };
 
-      //Stored the number of calls made to the Model: used to create UID
-      var calls=0;
-
       // The inward interface between Flash's ExternalInterface and JavaScript's BreadBoard prototype model instance
       this.breadModel = function () {
         debug(arguments);
-        calls++;
         var newArgs = [];
         for(var i=1,l=arguments.length;i< l;i++){
           newArgs[newArgs.length] = arguments[i];
