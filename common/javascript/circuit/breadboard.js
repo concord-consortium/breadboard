@@ -94,6 +94,9 @@
           return null;
         },
         getResistance: function(colors){
+          if (typeof(colors)==="string"){
+            colors = colors.split(",");
+          }
           var resistance = Resistor.colorToNumber(colors[0]);
           for (var i = 1; i < colors.length - 2; i++) {
             resistance = resistance * 10;
@@ -339,7 +342,7 @@
           switch(kind) {
             case "resistor":
               if (!props.resistance && props.colors){
-                props.resistance = Resistor.getResistance( props.colors.split(",") );
+                props.resistance = Resistor.getResistance( props.colors );
               }
               
               if (!props.resistance && !props.colors) {
