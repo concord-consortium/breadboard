@@ -31,7 +31,10 @@
       question.prompt = prompt;
       question.correct_answer = correct_answer;
       question.correct_units = correct_units;
-      question.score = score;
+      if (question.correct_units === "ohms"){
+        question.correct_units = "&#x2126;";
+      }
+      question.score = (score | 1);
       this.questions.push(question);
     },
     
@@ -174,7 +177,10 @@
         var mult = Math.pow(10,
             sig - Math.floor(Math.log(n) / Math.LN10) - 1);
         return Math.round(n * mult) / mult;
-    }
+    },
+    
+    readingHintPath: sparks.config.root_dir + '/common/resources/hint1_colorcode.html',
+    measuringHintPath: sparks.config.root_dir + '/common/resources/hint1_dmm.html'
     
   };
 })();
