@@ -16,7 +16,7 @@ describe 'Logging and Reporting'
       activityLog.endSession();
       
       var startTime = activityLog.currentSession().start_time;
-      activityLog.currentSession().end_time.should.be_at_least (startTime + 1)
+      activityLog.currentSession().end_time.should.be_at_least (startTime)
     end
     
     it "should be able to start a session and log some stuff"
@@ -54,8 +54,8 @@ describe 'Logging and Reporting'
     it "should be able to score questions"
     
       var assessment = new sparks.Activity.Assessment();
-      assessment.addQuestion("prompt", "1", "mV");
-      assessment.addQuestion("prompt", "3", null);
+      assessment.addQuestion({"prompt": "prompt", "correct_answer": "1", "correct_units": "mV"});
+      assessment.addQuestion({"prompt": "prompt", "correct_answer": "3"});
       
       
       var questionsHtml = $(fixture('questions'));
@@ -75,18 +75,34 @@ describe 'Logging and Reporting'
       
     end
     
+    it "should be able to convert units on measurment questions"
+    
+      var assessment = new sparks.Activity.Assessment();
+      assessment.addQuestion({"prompt": "prompt", "correct_answer": "1", "correct_units": "V"});
+      assessment.addQuestion({"prompt": "prompt", "correct_answer": "0.1", "correct_units": "V"});
+      assessment.addQuestion({"prompt": "prompt", "correct_answer": "1000", "correct_units": "&#x2126;"});
+      
+      assessment.questions[0].correct_answer.should.be 1
+      assessment.questions[0].correct_units.should.be "V"
+      assessment.questions[1].correct_answer.should.be 100
+      assessment.questions[1].correct_units.should.be "mV"
+      assessment.questions[2].correct_answer.should.be 1
+      assessment.questions[2].correct_units.search(/k./).should.be 0
+      
+    end
+    
     it "should be able to generate a report"
     
       var assessment = new sparks.Activity.Assessment();
-      assessment.addQuestion("Q1", "1", "mV");
-      assessment.addQuestion("Q2", "3", null);
-      assessment.addQuestion("Q3", "5", "V");
+      assessment.addQuestion({"prompt": "Q1", "correct_answer": "1", "correct_units": "V"});
+      assessment.addQuestion({"prompt": "Q2", "correct_answer": "3"});
+      assessment.addQuestion({"prompt": "Q3", "correct_answer": "5", "correct_units": "V"});
       
       
       var questionsHtml = $(fixture('questions'));
       
       questionsHtml.find('#answer_1_1_value_input').val("1");
-      questionsHtml.find('#answer_1_1_unit_select').val("mV");
+      questionsHtml.find('#answer_1_1_unit_select').val("V");
       questionsHtml.find('#answer_1_2_value_input').val("2");
       questionsHtml.find('#answer_1_3_value_input').val("5");
       questionsHtml.find('#answer_1_3_unit_select').val("A");
@@ -107,8 +123,8 @@ describe 'Logging and Reporting'
       var tableData = table.find('td');
       
       tableData[0].innerHTML.should.be "Q1"
-      tableData[1].innerHTML.should.be "1 mV"
-      tableData[2].innerHTML.should.be "1 mV"
+      tableData[1].innerHTML.should.be "1 V"
+      tableData[2].innerHTML.should.be "1 V"
       tableData[3].innerHTML.should.be "1/1"
       tableData[4].innerHTML.should.be ""
       
