@@ -1,4 +1,5 @@
 //= require <activity>
+//= require <activity-creator>
 //= require <string>
 //= require <ui>
 //= require <flash_comm>

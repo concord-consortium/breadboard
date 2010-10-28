@@ -23,5 +23,6 @@ specResults = JSpec
 .exec('spec/spec.activities/spec.flash_multimeter.js')
 .exec('spec/spec.activities/spec.flash_breadboard.js')
 .exec('spec/spec.common/spec.logging_and_reporting.js')
-.exec('spec/spec.common/spec.circuit_constructor.js');
+.exec('spec/spec.common/spec.circuit_constructor.js')
+.exec('spec/spec.common/spec.activity_creator.js');
 
