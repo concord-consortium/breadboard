@@ -54,8 +54,8 @@ describe 'Logging and Reporting'
     it "should be able to score questions"
     
       var assessment = new sparks.Activity.Assessment();
-      assessment.addQuestion(0, "1", "mV");
-      assessment.addQuestion(1, "3", null);
+      assessment.addQuestion("prompt", "1", "mV");
+      assessment.addQuestion("prompt", "3", null);
       
       
       var questionsHtml = $(fixture('questions'));
@@ -78,9 +78,9 @@ describe 'Logging and Reporting'
     it "should be able to generate a report"
     
       var assessment = new sparks.Activity.Assessment();
-      assessment.addQuestion(0, "1", "mV");
-      assessment.addQuestion(1, "3", null);
-      assessment.addQuestion(2, "5", "V");
+      assessment.addQuestion("Q1", "1", "mV");
+      assessment.addQuestion("Q2", "3", null);
+      assessment.addQuestion("Q3", "5", "V");
       
       
       var questionsHtml = $(fixture('questions'));
@@ -97,10 +97,26 @@ describe 'Logging and Reporting'
       
       var table = assessment.generateReport();
       
-      // table.find('th').each(function(i, value){
-      //   console.log(i);
-      //   console.log($(value).html());
-      // });
+      // Table should be:
+      /*
+        Q1  | 1 mV  | 1 mV  | 1/1  | 
+        Q2  | 2     | 3     | 0/1  | The value was wrong
+        Q3  | 5 A   | 5V    | 0/1  | The units were wrong
+      */  
+      
+      var tableData = table.find('td');
+      
+      tableData[0].innerHTML.should.be "Q1"
+      tableData[1].innerHTML.should.be "1 mV"
+      tableData[2].innerHTML.should.be "1 mV"
+      tableData[3].innerHTML.should.be "1/1"
+      tableData[4].innerHTML.should.be ""
+      
+      tableData[6].innerHTML.should.be "2"
+      tableData[8].innerHTML.should.be "0/1"
+      tableData[9].innerHTML.should.be "The value was wrong"
+      
+      tableData[14].innerHTML.should.be "The units were wrong"
       
     end
     
