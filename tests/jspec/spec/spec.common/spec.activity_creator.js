@@ -53,6 +53,43 @@ describe 'Activity Creator'
           assessment.questions[0].correct_answer.should.be 100
           assessment.questions[0].correct_units.should.be "V"
       end
+      
+      it 'should be able to create nested questions'
+        var jsonActivity =
+          {
+            "questions": [
+              {
+                "prompt": "What is the rated resistance of",
+                "subquestions": [
+                  {
+                    "prompt": "R<sub>1</sub>:",
+                    "correct_answer": "100",
+                    "correct_units": "ohms"
+                  },
+                  {
+                    "prompt": "R<sub>2</sub>:",
+                    "correct_answer": "200",
+                    "correct_units": "ohms"
+                  }
+                ]
+              },
+              {
+                "prompt": "What is the voltage across R1?",
+                "correct_answer": "100",
+                "correct_units": "V"
+              }
+            ]
+          };
+      
+          var assessment = new sparks.Activity.Assessment();
+          var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+          ac.createQuestions();
+          
+          assessment.questions.length.should.be 3
+          assessment.questions[0].prompt.should.be "What is the rated resistance of R<sub>1</sub>:"
+          assessment.questions[1].prompt.should.be "What is the rated resistance of R<sub>2</sub>:"
+          assessment.questions[2].prompt.should.be "What is the voltage across R1?"
+      end
   
       it 'should be able to substitute a circuit variable in an answer'
         
@@ -173,13 +210,12 @@ describe 'Activity Creator'
       $forms.length.should.be 2
       
       $forms.each(function(i, val){
-        console.log(i + " > " + val);
         $(val).find('.prompt').length.should.be 1
         
         if (i === 0){
-          $(val).find('.prompt')[0].innerHTML.should.be "What is the resistance of R1?"
+          $(val).find('.prompt')[0].innerHTML.should.be "1.  What is the resistance of R1?"
         } else {
-            $(val).find('.prompt')[0].innerHTML.should.be "What question is this?"
+            $(val).find('.prompt')[0].innerHTML.should.be "2.  What question is this?"
         }
         
         $(val).find('input').length.should.be 1
@@ -196,6 +232,60 @@ describe 'Activity Creator'
         
       })
       
+    end
+    
+    it 'should be able to embed nested questions in an activity'
+      var jsonActivity =
+        {
+          "questions": [
+            {
+              "prompt": "What is the rated resistance of",
+              "subquestions": [
+                {
+                  "prompt": "R<sub>1</sub>:",
+                  "correct_answer": "100",
+                  "correct_units": "ohms"
+                },
+                {
+                  "prompt": "R<sub>2</sub>:",
+                  "correct_answer": "200",
+                  "correct_units": "ohms"
+                }
+              ]
+            },
+            {
+              "prompt": "What is the voltage across R1?",
+              "correct_answer": "100",
+              "correct_units": "V"
+            }
+          ]
+        };
+        
+        var $questionsDiv = $("<div>");
+    
+        var assessment = new sparks.Activity.Assessment();
+        var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+        ac.createQuestions($questionsDiv);
+        
+        var $forms = $questionsDiv.find('form');
+
+        $forms.length.should.be 2
+        
+        $nested = $($forms[0]);
+        
+        $($forms[0]).children('.prompt').length.should.be 1
+        $($forms[0]).children('.prompt')[0].innerHTML.should.be "1.  What is the rated resistance of"
+        
+        $nested = $($($forms[0]).find('div')[0]);
+        
+        $nested.find('.prompt').length.should.be 2
+        $nested.find('input').length.should.be 2
+        $nested.find('select').length.should.be 2
+        
+        $nested.find('.prompt')[0].innerHTML.should.be "R<sub>1</sub>:"
+        $nested.find('.prompt')[1].innerHTML.should.be "R<sub>2</sub>:"
+        
+        $($forms[0]).find('button').length.should.be 1
     end
       
   end

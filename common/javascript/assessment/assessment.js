@@ -30,7 +30,7 @@
     addQuestion: function(jsonQuestion) {
       var question = new activity.Question();
       question.prompt = jsonQuestion.prompt;
-      question.shortPrompt = (jsonQuestion.shortPrompt | jsonQuestion.prompt);
+      question.shortPrompt = (jsonQuestion.shortPrompt || jsonQuestion.prompt);
       question.correct_answer = jsonQuestion.correct_answer;
       question.correct_units = jsonQuestion.correct_units;
       if (question.correct_units === "ohms"){
@@ -166,7 +166,7 @@
         
         $tbl.append(
           $('<tr>').append(
-            $('<td>').text(question.prompt),
+            $('<td>').text(question.shortPrompt),
             $('<td>').text(answer),
             $('<td>').text(correctAnswer),
             $('<td>').text(score +"/" + question.score),
