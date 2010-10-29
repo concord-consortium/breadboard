@@ -1,10 +1,55 @@
-h1. Build
+h1. Building SPARKS and setting up local environment
 
-Sparks uses Sprockets (http://getsprockets.org) to manage the javascript code.
+h2. Building Javascript code
 
-rake combine:all 
+Sparks uses Sprockets (http://getsprockets.org) to manage the javascript code.  Sprockets combines the individual JS files into a single file per activity. To avoid duplication, these files aren't managed by git.
 
-or just "rake" generates several combined javascript files at the top folder.
+To build the combined JS files:
+
+ // install sprockets if necessary
+ gem install sprockets
+ 
+ // build using sprockets, from top folder
+ rake
+ 
+"rake" will need to be called each time a Javascript file is changed.
+
+h2. Setting up QUCS proxy
+
+SPARKS will try to access the QUCS application (used for circuit solving)  at the url 
+ 
+ /sparks/qucsator/solve
+ 
+You can proxy this URL to the QUCS application running on otto, by setting up Apache to proxy
+
+ /sparks/
+ 
+to
+ 
+ http://sparks.portal.concord.org/sparks/
+ 
+The simplest way to do this is to modify the file proxy/apache.conf.sample with your information, and run it with
+
+ apachectl -f "`pwd`/proxy/apache.conf" -k start
+ 
+Alternatively, you can install QUCS from http://qucs.sourceforge.net/, update the PHP file lib/qucsator/solve/index.php to point to your local install of QUCS if it is not in /usr/local/bin/, place the file somewhere where it can be served by PHP, such as ~/Sites/qucsator/solve, and modify the proxy file accordingly
+
+h2. Launch the application
+
+Go to http://localhost:1234/ (or whatever port you set in the step above) in your browser to get open the main index file, or directly open any html file to go directly to an activity.
+
+
+h1. Running the tests
+
+This application is mostly tested using JSPEC. You can install JSPEC with
+
+ gem install jspec
+ 
+To run the tests on the command line with Rhino:
+
+ cd tests/jspec
+ java -jar spec/support/js.jar -opt -1 spec/rhino-terminal.js
+
 
 h1. Deployment
 
@@ -32,6 +77,10 @@ h3. Module 2 - Measuring Series
 
 
 <hr/>
+<hr/>
+<hr/>
+
+h1. Notes from SPARKS initial meeting with Seong, Sam and Jonah
 
 h1. Qucs Server
 
@@ -44,10 +93,6 @@ To download qucs: http://qucs.sourceforge.net/
 
 h1. JSpec Testing
 
-h3. Installing JSpec
-
-Download the zip file from http://visionmedia.github.com/jspec/, unzip it, and follow the instructions
-in readme.rdoc.
 
 h3. Running the specs
 
