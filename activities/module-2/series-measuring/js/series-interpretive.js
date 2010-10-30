@@ -1,4 +1,5 @@
 //= require <activity>
+//= require <activity-creator>
 //= require <string>
 //= require <ui>
 //= require <flash_comm>
@@ -17,7 +18,103 @@
 
 (function () {
 
-
+    sparks.jsonActivity = {
+      "circuit": [
+          {
+            "type": "resistor",
+            "UID": "r1",
+            "connections": "b23,b17",
+            "label": "R1"
+          },
+          {
+            "type": "resistor",
+            "UID": "r2",
+            "connections": "c17,c11",
+            "label": "R2"
+          },
+          {
+            "type": "resistor",
+            "UID": "r3",
+            "connections": "d11,d5",
+            "label": "R3"
+          },
+          {
+            "type": "wire",
+            "connections": "left_positive20,a23"
+          },
+          {
+            "type": "wire",
+            "connections": "left_negative3,a5"
+          }
+       ],
+      "questions": [
+        {
+          "prompt": "What is the rated resistance of",
+          "subquestions": [
+            {
+              "prompt": "R<sub>1</sub>:",
+              "shortPrompt": "Resistance of R1",
+              "correct_answer": "${r1.nominalResistance}",
+              "correct_units": "ohms"
+            },
+            {
+              "prompt": "R<sub>2</sub>:",
+              "shortPrompt": "Resistance of R2",
+              "correct_answer": "${r2.nominalResistance}",
+              "correct_units": "ohms"
+            },
+            {
+              "prompt": "R<sub>3</sub>:",
+              "shortPrompt": "Resistance of R3",
+              "correct_answer": "${r3.nominalResistance}",
+              "correct_units": "ohms"
+            }
+          ]
+        },
+        {
+          "prompt": "What is the total rated resistance across all the resistors? ",
+          "shortPrompt": "Total resistance",
+          "correct_answer": " 9 * ${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance}",
+          "correct_units": "ohms"
+        },
+        {
+          "prompt": "Given that the battery is producing 9 Volts, what is the voltage drop across",
+          "subquestions": [
+            {
+              "prompt": "R<sub>1</sub>:",
+              "shortPrompt": "Voltage across R1",
+              "correct_answer": " 9 * ${r1.nominalResistance} / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})",
+              "correct_units": "ohms"
+            },
+            {
+              "prompt": "R<sub>2</sub>:",
+              "shortPrompt": "Voltage across R2",
+              "correct_answer": " 9 * ${r2.nominalResistance} / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})",
+              "correct_units": "ohms"
+            }
+          ]
+        },
+        {
+          "prompt": "What is the current through",
+          "subquestions": [
+            {
+              "prompt": "R<sub>1</sub>:",
+              "shortPrompt": "Current through R1",
+              "correct_answer": " 9 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})",
+              "correct_units": "ohms"
+            },
+            {
+              "prompt": "R<sub>2</sub>:",
+              "shortPrompt": "Current through R2",
+              "correct_answer": " 9 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})",
+              "correct_units": "ohms"
+            }
+          ]
+        }
+      ]
+    };
+    
+    
     var sm = sparks.activities.sm;
     var flash = sparks.flash;
     var str = sparks.string;
@@ -42,6 +139,11 @@
         // Initial operation on document when it is loaded
         onDocumentReady: function () {
             var self = this;
+            
+            var ac = new sparks.ActivityConstructor(sparks.jsonActivity, this.assessment);
+            ac.createBreadboard();
+            var $qa = $('#questions_area');
+            ac.createQuestions($qa);
             
             if (sparks.config.debug) {
                 $('.debug_area').show();
@@ -98,36 +200,6 @@
             //             breadModel('insert', 'resistor', 'b23,b17', this.resistor1.getRealValue(), 'resistor1');
             //             flash.sendCommand('insert_component', 'resistor', 'b23,b17','4band',this.resistor1.colors);
             
-            var jsonCircuit = [
-                {
-                  "type": "resistor",
-                  "UID": "r1",
-                  "connections": "b23,b17",
-                  "label": "R4"
-                },
-                {
-                  "type": "resistor",
-                  "UID": "r2",
-                  "connections": "c17,c11",
-                  "label": "R5"
-                },
-                {
-                  "type": "resistor",
-                  "UID": "r3",
-                  "connections": "d11,d5",
-                  "label": "R6"
-                },
-                {
-                  "type": "wire",
-                  "connections": "left_positive20,a23"
-                },
-                {
-                  "type": "wire",
-                  "connections": "left_negative3,a5"
-                }
-             ];
-            
-            breadModel("createCircuit", jsonCircuit);
             
             breadModel('updateFlash');
             
@@ -138,23 +210,23 @@
                 this.disableForm(i);
             }
             
-            components = getBreadBoard().components;
-            var r1 = components['r1'].nominalResistance;
-            var r2 = components['r2'].nominalResistance;
-            var r3 = components['r3'].nominalResistance;
-            var rTot = r1+r2+r3;
-            
-            this.assessment.addMeasurmentQuestion("Resistance of R1", r1, "&#x2126;", 1);
-            this.assessment.addMeasurmentQuestion("Resistance of R2", r2, "&#x2126;", 1);
-            this.assessment.addMeasurmentQuestion("Resistance of R3", r3, "&#x2126;", 1);
-            
-            this.assessment.addMeasurmentQuestion("Total Resistance", rTot, "&#x2126;", 2);
-            
-            this.assessment.addMeasurmentQuestion("Voltage across R1", 9 * (r1/rTot), "V", 1);
-            this.assessment.addMeasurmentQuestion("Voltage across R2", 9 * (r2/rTot), "V", 1);
-            
-            this.assessment.addMeasurmentQuestion("Current through R1", 9 / rTot, "A", 1);
-            this.assessment.addMeasurmentQuestion("Current through R2", 9 / rTot, "A", 1);
+            // components = getBreadBoard().components;
+            // var r1 = components['r1'].nominalResistance;
+            // var r2 = components['r2'].nominalResistance;
+            // var r3 = components['r3'].nominalResistance;
+            // var rTot = r1+r2+r3;
+            // 
+            // this.assessment.addMeasurmentQuestion("Resistance of R1", r1, "&#x2126;", 1);
+            // this.assessment.addMeasurmentQuestion("Resistance of R2", r2, "&#x2126;", 1);
+            // this.assessment.addMeasurmentQuestion("Resistance of R3", r3, "&#x2126;", 1);
+            // 
+            // this.assessment.addMeasurmentQuestion("Total Resistance", rTot, "&#x2126;", 2);
+            // 
+            // this.assessment.addMeasurmentQuestion("Voltage across R1", 9 * (r1/rTot), "V", 1);
+            // this.assessment.addMeasurmentQuestion("Voltage across R2", 9 * (r2/rTot), "V", 1);
+            // 
+            // this.assessment.addMeasurmentQuestion("Current through R1", 9 / rTot, "A", 1);
+            // this.assessment.addMeasurmentQuestion("Current through R2", 9 / rTot, "A", 1);
         },
         
         completedTry: function () {

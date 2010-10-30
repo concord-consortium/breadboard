@@ -6,6 +6,7 @@
   
   activity.Question = function () {
       this.prompt = '';
+      this.shortPrompt = '';
       this.correct_answer = '';
       this.answer = '';
       this.correct_units = '';
@@ -26,16 +27,52 @@
   
   activity.Assessment.prototype = 
   {
-    addQuestion: function(prompt, correct_answer, correct_units, score) {
+    addQuestion: function(jsonQuestion) {
       var question = new activity.Question();
-      question.prompt = prompt;
-      question.correct_answer = correct_answer;
-      question.correct_units = correct_units;
+      question.prompt = jsonQuestion.prompt;
+      question.shortPrompt = (jsonQuestion.shortPrompt || jsonQuestion.prompt);
+      question.correct_answer = jsonQuestion.correct_answer;
+      question.correct_units = jsonQuestion.correct_units;
       if (question.correct_units === "ohms"){
         question.correct_units = "&#x2126;";
       }
-      question.score = (score | 1);
+      question.score = (jsonQuestion.score | 1);
+      
+      if (!!question.correct_units){
+        this.makeMeasurmentQuestion(question);
+      }
+      
       this.questions.push(question);
+    },
+    
+    makeMeasurmentQuestion: function(question){
+      function html_entity_decode(str) {
+        return $("<div>").html(str).text();
+      }
+      
+      var value = question.correct_answer;
+      var units = question.correct_units;
+      
+      if (value >= 1000000){
+        var MUnits = html_entity_decode('M'+units);
+        question.correct_units = MUnits;
+        question.correct_answer = this._round(value/1000000,2);
+      } else if (value >= 1000){
+        var kUnits = html_entity_decode('k'+units);
+        question.correct_units = kUnits;
+        question.correct_answer = this._round(value/1000,2);
+      } else if (value < 0.001){
+        var uUnits = html_entity_decode('&#x00b5;'+units);
+        question.correct_units = uUnits;
+        question.correct_answer = this._round(value * 1000000,2);
+      } else if (value < 1) {
+        var mUnits = html_entity_decode('m'+units);
+        question.correct_units = mUnits;
+        question.correct_answer = this._round(value * 1000,2);
+      } else {
+        question.correct_units = html_entity_decode(units);
+        question.correct_answer = this._round(value,2);
+      }
     },
     
     addMeasurmentQuestion: function (prompt, value, units, score){
@@ -44,23 +81,6 @@
         var ta=document.createElement("textarea");
         ta.innerHTML=str.replace(/</g,"&lt;").replace(/>/g,"&gt;");
         return ta.value;
-      }
-      
-      if (value >= 1000000){
-        var MUnits = html_entity_decode('M'+units);
-        this.addQuestion(prompt, this._round(value/1000000,2), MUnits, score);
-      } else if (value >= 1000){
-        var kUnits = html_entity_decode('k'+units);
-        this.addQuestion(prompt, this._round(value/1000,2), kUnits, score);
-      } else if (value < 0.001){
-        var uUnits = html_entity_decode('&#x00b5;'+units);
-        this.addQuestion(prompt, this._round(value * 1000000,2), uUnits, score);
-      } else if (value < 1) {
-        var mUnits = html_entity_decode('m'+units);
-        this.addQuestion(prompt, this._round(value * 1000,2), mUnits, score);
-      } else {
-        units = html_entity_decode(units);
-        this.addQuestion(prompt, this._round(value,2), units, score);
       }
     },
     
@@ -146,7 +166,7 @@
         
         $tbl.append(
           $('<tr>').append(
-            $('<td>').text(question.prompt),
+            $('<td>').text(question.shortPrompt),
             $('<td>').text(answer),
             $('<td>').text(correctAnswer),
             $('<td>').text(score +"/" + question.score),
