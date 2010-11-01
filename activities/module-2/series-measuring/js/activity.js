@@ -1,4 +1,5 @@
 //= require <activity>
+//= require <activity-creator>
 //= require <string>
 //= require <ui>
 //= require <flash_comm>
@@ -10,12 +11,13 @@
 //= require "activity-log"
 //= require "grader"
 //= require "reporter"
+//= require <assessment/activity-log>
+//= require <assessment/assessment>
 
 /* FILE activity.js */
 
 (function () {
-
-
+    
     var sm = sparks.activities.sm;
     var flash = sparks.flash;
     var str = sparks.string;
@@ -28,7 +30,8 @@
     sm.Activity = function () {
         sm.Activity.uber.init.apply(this);
         this.log = new sm.ActivityLog();
-        this.reporter = new sm.Reporter($('#report_area'));
+        this.assessment = new sparks.Activity.Assessment();
+        // this.reporter = new sm.Reporter($('#report_area'));
         sparks.flash.activity = this;
     };
     
@@ -40,49 +43,81 @@
         onDocumentReady: function () {
             var self = this;
             
-            if (sparks.config.debug) {
-                $('.debug_area').show();
+            var jsonActivityName = window.location.hash;
+            jsonActivityName = jsonActivityName.substring(1,jsonActivityName.length);
+            if (!jsonActivityName){
+              jsonActivityName = "series-interpretive";
             }
-            else {
-               $('.debug_area').hide();
-            }
-            $('#popup').hide();
-            $('.next_button').click(function () {
-                window.location.reload();
+            
+            console.log("getting script for "+jsonActivityName);
+            
+            var self = this;
+            
+            $.getScript("activities/"+jsonActivityName + '.js', function() {
+              console.log("got it");
+              self.onActivityReady();
+              self.startTry();
             });
+        },
+        
+        onActivityReady: function () {
+          $('#title').text(sparks.jsonActivity.title);
+          
+          var ac = new sparks.ActivityConstructor(sparks.jsonActivity, this.assessment);
+          ac.createBreadboard();
+          
+          if (sparks.jsonActivity.show_multimeter === "true"){
+            console.log("doing it anyway");
+            sparks.flash.sendCommand('set_multimeter_visibility','true');
+            sparks.flash.sendCommand('set_probe_visibility','true');
+          }
+          
+          var $qa = $('#questions_area');
+          ac.createQuestions($qa);
+          
+          if (sparks.config.debug) {
+              $('.debug_area').show();
+          }
+          else {
+             $('.debug_area').hide();
+          }
+          $('#popup').hide();
+          $('.next_button').click(function () {
+              window.location.reload();
+          });
 
-            this.root_dir = sparks.config.root_dir + '/activities/module-2/series-measuring';
-            $('body').scrollTop(0); //scroll to top
-            
-            this.forms = $('form');
-            this.questionsArea = $('#questions_area');
-            this.reportArea = $('#report_area').hide();
-            
-            $('button.submit').click(function (e) {
-                self.submitButtonClicked();
-                e.preventDefault();
-            });
+          this.root_dir = sparks.config.root_dir + '/activities/module-2/series-measuring';
+          $('body').scrollTop(0); //scroll to top
+          
+          this.forms = $('form');
+          this.questionsArea = $('#questions_area');
+          this.reportArea = $('#report_area').hide();
+          
+          var self = this;
+          $('button.submit').click(function (event) {
+            console.log("click! "+self);
+              self.submitButtonClicked(self, event);
+              event.preventDefault();
+          });
         },
 
         // Initializations that can be done only when the flash movie is loaded
         onFlashReady: function () {
-            sparks.flash.sendCommand('set_multimeter_visibility','true');
-            sparks.flash.sendCommand('set_probe_visibility','true');
-            breadModel('insert', 'wire', 'left_positive1,a23', 'wire1');
-            breadModel('insert', 'wire', 'left_negative1,c5', 'wire2');
             this.multimeter = new sparks.circuit.Multimeter2();
-            
-            this.startTry();
         },
         
-        submitButtonClicked: function () {
-            if (this.currentQuestion == 3) {
+        submitButtonClicked: function (activity, event) {
+            
+            var form = jQuery(event.target).parents('.question_form');
+            activity.disableForm(this.currentQuestion);
+            var nextForm = form.nextAll("form:first");
+            
+            if (nextForm.size() === 0) { //all questions answered for current session
                 this.completedTry();
             }
             else {
-                ++ this.currentQuestion;
-                this.disableForm(this.currentQuestion - 1);
-                this.enableForm(this.currentQuestion);
+              this.currentQuestion++;
+              this.enableForm(this.currentQuestion);
             }
         },
         
@@ -95,29 +130,8 @@
             //             breadModel('insert', 'resistor', 'b23,b17', this.resistor1.getRealValue(), 'resistor1');
             //             flash.sendCommand('insert_component', 'resistor', 'b23,b17','4band',this.resistor1.colors);
             
-            var resistor1 = breadModel('addRandomResistor', 'resistor1', 'b23,b17');
-            flash.sendCommand('insert_component', 'resistor', 'resistor1', 'b23,b17','4band',resistor1.colors);
             
-            var resistor2 = breadModel('addRandomResistor', 'resistor2', 'c17,c11');
-            flash.sendCommand('insert_component', 'resistor', 'resistor', 'c17,c11','4band',resistor2.colors);
-            
-            var resistor3 = breadModel('addRandomResistor', 'resistor3', 'd11,d5');
-            flash.sendCommand('insert_component', 'resistor', 'resistor3', 'd11,d5','4band',resistor3.colors);
-            
-            // this.resistor4 = new sparks.circuit.Resistor4band('resistor4');
-            //            this.resistor4.randomize(options);
-            //            breadModel('insert', 'resistor', 'c11,c5', this.resistor4.getRealValue(), 'resistor3');
-            //            flash.sendCommand('insert_component', 'resistor', 'c11,c5','4band',this.resistor4.colors);
-            // 
-            // $('#dbg_rated_1').text(this.resistor1.getNominalValue());
-            // $('#dbg_rated_2').text(this.resistor2.getNominalValue());
-            // $('#dbg_rated_3').text(this.resistor3.getNominalValue());
-            // $('#dbg_real_1').text(this.resistor1.getRealValue().toFixed(3));
-            // $('#dbg_real_2').text(this.resistor2.getRealValue().toFixed(3));
-            // $('#dbg_real_3').text(this.resistor3.getRealValue().toFixed(3));
-            // $('#dbg_tol_1').text(this.resistor1.getTolerance());
-            // $('#dbg_tol_2').text(this.resistor2.getTolerance());
-            // $('#dbg_tol_3').text(this.resistor3.getTolerance());
+            breadModel('updateFlash');
             
             this.currentQuestion = 0;
         
@@ -125,13 +139,31 @@
             for (var i = 1; i < this.forms.length; ++i) {
                 this.disableForm(i);
             }
+            
+            // components = getBreadBoard().components;
+            // var r1 = components['r1'].nominalResistance;
+            // var r2 = components['r2'].nominalResistance;
+            // var r3 = components['r3'].nominalResistance;
+            // var rTot = r1+r2+r3;
+            // 
+            // this.assessment.addMeasurmentQuestion("Resistance of R1", r1, "&#x2126;", 1);
+            // this.assessment.addMeasurmentQuestion("Resistance of R2", r2, "&#x2126;", 1);
+            // this.assessment.addMeasurmentQuestion("Resistance of R3", r3, "&#x2126;", 1);
+            // 
+            // this.assessment.addMeasurmentQuestion("Total Resistance", rTot, "&#x2126;", 2);
+            // 
+            // this.assessment.addMeasurmentQuestion("Voltage across R1", 9 * (r1/rTot), "V", 1);
+            // this.assessment.addMeasurmentQuestion("Voltage across R2", 9 * (r2/rTot), "V", 1);
+            // 
+            // this.assessment.addMeasurmentQuestion("Current through R1", 9 / rTot, "A", 1);
+            // this.assessment.addMeasurmentQuestion("Current through R2", 9 / rTot, "A", 1);
         },
         
         completedTry: function () {
             this.logResults();
-            grader = new sm.Grader(this.log.session, {});
-            feedback = grader.grade();
-            this.reporter.report(this.log.session, feedback);
+            // grader = new sm.Grader(this.log.session, {});
+            // feedback = grader.grade();
+            // this.reporter.report(this.log.session, feedback);
             this.questionsArea.hide();
             this.reportArea.show();
             $('.next_button').show();
@@ -142,13 +174,22 @@
         
         enableForm: function (k) {
             $(this.forms[k]).find('input, select, button').attr('disabled', false);
+            
+            $(this.forms[k]).css("background-color", "rgb(253,255,184)");
         },
         
         disableForm: function (k) {
             $(this.forms[k]).find('input, select, button').attr('disabled', true);
+            
+            $(this.forms[k]).css("background-color", "");
         },
         
         logResults: function () {
+          console.log("generatingReport");
+          this.assessment.serializeQuestions($("form"));
+          this.assessment.scoreAnswers();
+          var table = this.assessment.generateReport();
+          this.reportArea.append(table);
         },
         
         receiveEvent: function (name, value, time) {
@@ -198,47 +239,6 @@
                   breadModel('mapHole', hole, newHole.nodeName());
                 }
                 this.multimeter.update();
-            } else if (name === 'probe') {
-                $('#popup').dialog();
-                
-                v = breadModel('query', 'voltage', 'a23,a17');
-                t += v.toFixed(3);
-                v = breadModel('query', 'voltage', 'b17,b11');
-                t += ' ' + v.toFixed(3);
-                v = breadModel('query', 'voltage', 'c11,c5');
-                t += ' ' + v.toFixed(3);
-                $('#dbg_voltage').text(t);
-
-                // Disconnect wire1
-                breadModel('move', 'wire1', 'left_positive1,a22');
-                
-                v = breadModel('query', 'resistance', 'a23,a17');
-                t = v.toFixed(3);
-                v = breadModel('query', 'resistance', 'b17,b11');
-                t += ' ' + v.toFixed(3);
-                v = breadModel('query', 'resistance', 'c11,c5');
-                t += ' ' + v.toFixed(3);
-                
-                $('#dbg_resistance').text(t);
-                
-                v = breadModel('query', 'current', 'a22,a23');
-                t = v.toFixed(3);
-                
-                breadModel('move', 'wire1', 'left_positive1,a23');
-                breadModel('move', 'resistor1', 'a23,a16');
-                v = breadModel('query', 'current', 'a16,b17');
-                t += ' ' + v.toFixed(3);
-                
-                breadModel('move', 'resistor1', 'a23,a17');
-                breadModel('move', 'resistor2', 'b17,b10');
-                v = breadModel('query', 'current', 'b10,c11');
-                t += ' ' + v.toFixed(3);
-                
-                breadModel('move', 'resistor2', 'b17,b11');
-                
-                $('#dbg_current').text(t);
-
-                $('#popup').dialog('close');
             } else if (name == 'multimeter_dial') {
                 console.log('changed multimeter dial'+value);
                 this.multimeter.dialPosition = value;
@@ -247,12 +247,6 @@
             } else if (name == 'multimeter_power') {
                 this.multimeter.powerOn = value == 'true' ? true : false;
                 this.multimeter.update();
-                // activity.log.add(name, { value: this.multimeter.powerOn });
-                //                 if (value === 'true' && this.multimeter.allConnected()) {
-                //                     activity.log.add('make_circuit');
-                //                 } else if (value == 'false' && wasConnected) {
-                //                     activity.log.add('break_circuit');
-                //                 }
             }
         }
         

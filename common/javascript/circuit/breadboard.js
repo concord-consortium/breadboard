@@ -341,11 +341,11 @@
           
           switch(kind) {
             case "resistor":
-              if (!props.resistance && props.colors){
+              if ((props.resistance === undefined) && props.colors){
                 props.resistance = Resistor.getResistance( props.colors );
               }
               
-              if (!props.resistance && !props.colors) {
+              if ((props.resistance === undefined) && !props.colors) {
                 var resistor = new sparks.circuit.Resistor4band(name);
                 resistor.randomize(null);
                 props.resistance = resistor.getRealValue()

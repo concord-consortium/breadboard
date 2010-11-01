@@ -13,6 +13,7 @@ namespace :combine do
     :'client:measuring_resistance_activity',
     :'client:measuring_resistance_report',
     :'client:series_measuring_activity',
+    :'client:breadboard_activity',
     :'server:measuring_resistance_report'
   ]
 
@@ -32,6 +33,14 @@ namespace :combine do
           'activities/measuring-resistance/javascript/assessment/learner-session-report.js'
         ],
         'client-mr-report.js')
+    end
+    
+    desc "Concatenate all JavaScript for breadboard activity (client)"
+    task :breadboard_activity do
+      sprocket([
+          'activities/module-2/series-measuring/js/activity.js'
+        ],
+        'client-breadboard-activity.js')
     end
     
     desc "Concatenate all JavaScript for Series - Interpretive activity (client)"
