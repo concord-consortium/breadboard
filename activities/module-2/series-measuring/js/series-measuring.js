@@ -201,9 +201,9 @@
                         alert('Activity#receiveEvent: connect: unknonw probe name ' + args[1]);
                     }
                 }
-                if (args[0] === 'resistor') {
+                if (args[0] === 'component') {
                     // for now, we're just dealing with the situation of replacing one lead that had been lifted
-                    if (!!args[3]){
+                    if (!!args[2]){
                       breadModel('unmapHole', args[3]);
                     }
                 }
