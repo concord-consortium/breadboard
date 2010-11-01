@@ -204,7 +204,7 @@
                 if (args[0] === 'component') {
                     // for now, we're just dealing with the situation of replacing one lead that had been lifted
                     if (!!args[2]){
-                      breadModel('unmapHole', args[3]);
+                      breadModel('unmapHole', args[2]);
                     }
                 }
                 this.multimeter.update();
