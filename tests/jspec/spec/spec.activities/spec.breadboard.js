@@ -50,7 +50,7 @@ describe 'Creating a breadboard'
       board.components["myResistor2"].colors[0].should.be "red"
       board.components["myResistor2"].colors[3].should.be "gold"
       
-      // We can add a resistor with same UID, it will be changed
+      // We can add a resistor with same UID, UID will be changed
       breadModel('insertComponent', 'resistor', {"UID": "myResistor2", "connections": "b5,b6", "resistance": "200"});
       var netlist = sparks.circuit.qucsator.makeNetlist(board);
       netlist.search(/R:myResistor20/).should.be_at_least 0
@@ -64,6 +64,10 @@ describe 'Creating a breadboard'
       board.components["myResistor3"].colors[3].should.be "brown"
       board.components["myResistor3"].label.should.be "R1"
 
+      // We can add a resistor with a zero resistance
+      breadModel('insertComponent', 'resistor', {"UID": "myResistor00", "connections": "b5,b6", "resistance": "0"});
+      var netlist = sparks.circuit.qucsator.makeNetlist(board);
+      netlist.search(/R:myResistor00 L5 L6 R=\"0 Ohm\"/).should.be_at_least 0
     end
     
     it "should correctly remove components"
