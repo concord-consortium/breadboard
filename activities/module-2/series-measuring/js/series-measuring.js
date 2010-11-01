@@ -219,10 +219,8 @@
                     else {
                         alert('Activity#receiveEvent: disconnect: Unknonw probe name ' + args[1]);
                     }
-                } else if (args[0] === 'resistor') {
-                  var location = args[2].split(",");
-                  var hole = args[3];
-                  var remainingHole = location[0] === hole ? location[1] : location[0];
+                } else if (args[0] === 'component') {
+                  var hole = args[2];
                   var newHole = breadModel('getGhostHole', hole+"ghost");
                   
                   breadModel('mapHole', hole, newHole.nodeName());
