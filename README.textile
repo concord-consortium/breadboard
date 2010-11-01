@@ -50,6 +50,7 @@ To run the tests on the command line with Rhino:
  cd tests/jspec
  java -jar spec/support/js.jar -opt -1 spec/rhino-terminal.js
 
+Note that some of the tests, 'Measuring breadboard components with QUCS' and 'Using multimeter with mock Flash connection' require a response from the QUCS applications. The rest should run fine as long as the code has been built (section 1 above).
 
 h1. Deployment
 
