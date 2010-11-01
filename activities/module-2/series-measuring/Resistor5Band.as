@@ -1,8 +1,8 @@
-﻿package
+package
 {
 	import flash.display.MovieClip;
 	
-	class Resistor5Band extends ResistorBase
+	class Resistor5Band extends ComponentResistor
 	{
 		public function Resistor5Band()
 		{
