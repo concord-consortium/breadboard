@@ -5,6 +5,7 @@
   var activity = sparks.Activity;
   
   activity.Question = function () {
+  	  this.id = 0;
       this.prompt = '';
       this.shortPrompt = '';
       this.correct_answer = '';
@@ -27,8 +28,9 @@
   
   activity.Assessment.prototype = 
   {
-    addQuestion: function(jsonQuestion) {
+    addQuestion: function(jsonQuestion,id) {
       var question = new activity.Question();
+      question.id = id;
       question.prompt = jsonQuestion.prompt;
       question.shortPrompt = (jsonQuestion.shortPrompt || jsonQuestion.prompt);
       question.correct_answer = jsonQuestion.correct_answer;
@@ -36,6 +38,10 @@
       if (question.correct_units === "ohms"){
         question.correct_units = "&#x2126;";
       }
+      if (!!jsonQuestion.multichoice) {
+      	question.multichoice = jsonQuestion.multichoice;
+      }
+            
       question.score = (jsonQuestion.score | 1);
       
       if (!!question.correct_units){
@@ -86,21 +92,28 @@
     
     serializeQuestions: function(jqForms) {
       var self = this;
-      jqForms.each(function (i) {
-        var form = $(this);
-        form.questions = [];
-        self.forms.push(form);
-        var inputs = form.find('input');
-        inputs.each(function (j) {
-          var question = [];
-          question.input = $(this).val();
-          var next = $(this).next();
-          if ($(next).is('select')){
-            question.select = next.val();
-          }
-          form.questions.push(question);
-          self.userQuestions.push(question);
-        });
+      var form = $(this);
+      form.questions = [];
+      self.forms.push(form);
+      
+      var id = 0;
+      $.each(this.questions, function(i, question) {
+     	if(!question.multichoice){
+     		question.answer = $("#"+id + "_input").val();
+     	} else if(question.multichoice) {
+     		console.log('else if multichoice');
+     		question.answer = $("#"+id + "_multichoice").val();
+     	}	
+     	if(question.correct_units){
+     		question.units = $("#"+id + "_units").val();	
+     	}
+     	id++;
+     	
+     	console.log("question.answer "+question.answer);
+     	console.log("question.units "+question.units);
+     	
+     	form.questions.push(question);
+        self.userQuestions.push(question);       
       });
     },
     
@@ -109,9 +122,11 @@
       $.each(this.questions, function(i, question) {
         if (!!self.userQuestions[i]){
           var userQuestion = self.userQuestions[i];
-          question.answer = userQuestion.input;
+          
           question.answer = parseFloat(question.answer);
           
+          console.log('question '+ i + ', question.answer, ' +question.answer +' question.correct_answer '+question.correct_answer);
+
           // first get numbers to 3 sig figs, then allow errors of 0.05 (rounding differences)
           var dif = self._sigFigs(question.answer,3) - self._sigFigs(question.correct_answer,3);
           if (dif <= 0.5 && dif >= -0.05){
@@ -119,7 +134,6 @@
           }
           
           if (!!question.correct_units){
-            question.units = userQuestion.select;
             if (question.units == question.correct_units){
               question.unitsIsCorrect = true;
             }

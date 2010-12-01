@@ -33,6 +33,7 @@
       
       var assessment = this.assessment;
       var self = this;
+      var id = 0;
       $.each(this.jsonActivity.questions, function(i, question){
         
         function addQuestion(question, preprompt){
@@ -41,7 +42,8 @@
           if (!!preprompt){
             question.prompt = preprompt + " " + question.prompt;
           }
-          assessment.addQuestion(question);
+          assessment.addQuestion(question,id);
+          id++;
           
           question.prompt = oldPrompt;
         }
@@ -72,63 +74,104 @@
         return answer;
       }
       
-      var varPattern = /\${[^}]+}/g
-      var matches = answer.match(varPattern);
+      var self = this;
+        
+      var sumPattern = /\[[^\]]+\]/g
+      var matches= answer.match(sumPattern);
+      if (!!matches){
+      	
       $.each(matches, function(i, match){
-        var variable = match.substring(2,match.length-1).split('.');
-        var component = variable[0];
-        var property = variable[1];
-        
-        var components = getBreadBoard().components; 
-        
-        if (!components[component]){
-          console.log("ERROR calculating answer: No component name '"+component+"' in circuit");
-          answer = -1;
-          return;
-        }
-        
-        if (components[component][property] === undefined || components[component][property] === null){
-          console.log("ERROR calculating answer: No property name '"+property+"' in component '"+component+"'");
-          answer = -1;
-          return;
-        }
-        
-        var value = components[component][property];
-        answer = answer.replace(match, value);
+      	var expression = match;//.substring(1,match.length-1);
+      	var result = self.calculateSum(expression);
+      	answer.replace(match,result);
       });
-      
-      var calculatedAnswer = eval(answer);
-      if (!isNaN(Number(calculatedAnswer))){
-        return calculatedAnswer;
       }
       
-      console.log("ERROR calculating answer: Cannot compute the value of "+answer);
-      return -1;
+      
+      return answer;
     },
+    
+    
+    
+   calculateSum: function(sum){
+//   	  var varPattern = /\${[^}]+}/g
+//      var matches = sum.match(varPattern);
+//      $.each(matches, function(i, match){
+//        var variable = match.substring(2,match.length-1).split('.');
+//        var component = variable[0];
+//        var property = variable[1];
+//        
+//        var components = getBreadBoard().components; 
+//        
+//        if (!components[component]){
+//          console.log("ERROR calculating sum: No component name '"+component+"' in circuit");
+//          sum = -1;
+//          return;
+//        }
+//        
+//        if (components[component][property] === undefined || components[component][property] === null){
+//          console.log("ERROR calculating sum: No property name '"+property+"' in component '"+component+"'");
+//          sum = -1;
+//          return;
+//        }
+//        
+//        var value = components[component][property];
+//        sum = sum.replace(match, value);
+//      });
+//      
+//      var calculatedSum = eval(sum);
+//      if (!isNaN(Number(calculatedSum))){
+//        return calculatedSum;
+//      }
+//      
+//      console.log("ERROR calculating Sum: Cannot compute the value of "+sum);
+      return -1;
+   },
     
     embedQuestions: function($element){
       var questions = this.jsonActivity.questions;
       
+      var self = this;
+      
+      var id = 0;
+      
       $.each(questions, function(i, question){
-        var $form = $("<form>").addClass("question_form");
+        var $form = $("<form>");
+        $form.addClass("question_form");
         
         function addInputs($html, question){
-          $html.append(
-            $("<input>"), "   "
-          );
-          
-          if (!!question.correct_units){
-            var $select = $("<select>");
-            var options = ["Units...","&#x00b5;V","mV","V","&#x2126;","k&#x2126;","M&#x2126;","&#x00b5;A","mA","A"];
-            $.each(options, function(i, val){
-              $select.append($("<option>").html(val).attr("defaultSelected", i===0));
-            });
-            $html.append($select, "   ");
+		  if (!question.multichoice){
+
+           $html.append(
+             $("<input>").attr("id",id+"_input"), "   "
+           );
+		  } else {
+		  	var $select = $("<select>").attr("id",id+"_multichoice");
+		  	
+		  	$.each(question.multichoice, function(i,answer_option){
+		  	 //if val is a calculation and not a string, calculate some_answer_option using self.calculateCorrectAnswer()
+//		  	 if(answer_option.charAt(0)=='$'){
+		  	  answer_option = self.calculateCorrectAnswer(answer_option);
+//		  	 }
+		  	 $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));	
+		  	});
+		  	$html.append($select, "   ");
+		  }
+		  
+		  if (!!question.correct_units){
+             var $select = $("<select>").attr("id",id+"_units");
+             var options = ["Units...","&#x00b5;V","mV","V","&#x2126;","k&#x2126;","M&#x2126;","&#x00b5;A","mA","A"];
+             $.each(options, function(i, val){
+               $select.append($("<option>").html(val).attr("defaultSelected", i===0));
+             });
+             $html.append($select, "   ");
           }
-          
+
+		  
           $html.append(
             $("<br>")
           );
+          id++;
         }
         
         $form.append(
