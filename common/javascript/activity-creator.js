@@ -78,53 +78,52 @@
         
       var sumPattern = /\[[^\]]+\]/g
       var matches= answer.match(sumPattern);
-      if (!!matches){
-      	
-      $.each(matches, function(i, match){
-      	var expression = match;//.substring(1,match.length-1);
-      	var result = self.calculateSum(expression);
-      	answer.replace(match,result);
-      });
-      }
-      
-      
+      if (!!matches){      	
+   	   $.each(matches, function(i, match){
+    	  	var expression = match;//.substring(1,match.length-1);
+    	  	var result = self.calculateSum(expression);
+    	  	answer = answer.replace(match,result);
+    	  });
+       }
       return answer;
     },
     
     
     
    calculateSum: function(sum){
-//   	  var varPattern = /\${[^}]+}/g
-//      var matches = sum.match(varPattern);
-//      $.each(matches, function(i, match){
-//        var variable = match.substring(2,match.length-1).split('.');
-//        var component = variable[0];
-//        var property = variable[1];
-//        
-//        var components = getBreadBoard().components; 
-//        
-//        if (!components[component]){
-//          console.log("ERROR calculating sum: No component name '"+component+"' in circuit");
-//          sum = -1;
-//          return;
-//        }
-//        
-//        if (components[component][property] === undefined || components[component][property] === null){
-//          console.log("ERROR calculating sum: No property name '"+property+"' in component '"+component+"'");
-//          sum = -1;
-//          return;
-//        }
-//        
-//        var value = components[component][property];
-//        sum = sum.replace(match, value);
-//      });
-//      
-//      var calculatedSum = eval(sum);
-//      if (!isNaN(Number(calculatedSum))){
-//        return calculatedSum;
-//      }
-//      
-//      console.log("ERROR calculating Sum: Cannot compute the value of "+sum);
+   	  var varPattern = /\${[^}]+}/g
+      var matches = sum.match(varPattern);
+      if(!!matches){
+       $.each(matches, function(i, match){
+        var variable = match.substring(2,match.length-1).split('.');
+        var component = variable[0];
+        var property = variable[1];
+        
+        var components = getBreadBoard().components; 
+        
+        if (!components[component]){
+          console.log("ERROR calculating sum: No component name '"+component+"' in circuit");
+          sum = -1;
+          return;
+        }
+        
+        if (components[component][property] === undefined || components[component][property] === null){
+          console.log("ERROR calculating sum: No property name '"+property+"' in component '"+component+"'");
+          sum = -1;
+          return;
+        }
+        
+        var value = components[component][property];
+        sum = sum.replace(match, value);
+       });
+      }
+      
+      var calculatedSum = eval(sum);
+      if (!isNaN(Number(calculatedSum))){
+        return calculatedSum;
+      }
+      
+      console.log("ERROR calculating Sum: Cannot compute the value of "+sum);
       return -1;
    },
     
@@ -153,6 +152,9 @@
 //		  	 if(answer_option.charAt(0)=='$'){
 		  	  answer_option = self.calculateCorrectAnswer(answer_option);
 //		  	 }
+			//reformat units
+		  	  answer_option = answer_option.replace("ohm","&#x2126;"); //reformat "ohm" to the letter omega
+		  	  answer_option = answer_option.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
 		  	 $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));	
 		  	});
 		  	$html.append($select, "   ");
