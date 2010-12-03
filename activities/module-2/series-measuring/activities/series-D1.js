@@ -1,6 +1,7 @@
 sparks.jsonActivity = {
   "title": "Measuring a Series Circuit",
   "show_multimeter": "true",
+  "disable_multimeter_position": "r",
   "circuit": [
       {
         "type": "resistor",
