@@ -248,69 +248,43 @@
 
 
         disable_multimeter_position : function (displayText) {
+        	// how do I pass a variable from the "series" file into here?
+        	// something like: sparks.jsonActivity.disable_multimeter_position  ??    
+        	
+        	// right now this is hard wired to disable R dial positions
+        	
         	switch (this.dialPosition)
         	{
-			case 'dcv_20':
+ 			case 'dcv_20':
 			case 'dcv_200':
 			case 'dcv_1000':
 			case 'dcv_2000m':
 			case 'dcv_200m':
-				displayText = '-------';
-				break;
-        	default:
-        	}
-        	
-        	return displayText;
-        },
-
-		checkIfPositionDisabled: function (displayText) {
-			console.log('!!!!!!!checkIfPositionDisabled!!!!!!!');
-			switch (this.dialPosition)
-			{
-			case 'dcv_20':
-			case 'dcv_200':
-			case 'dcv_1000':
-			case 'dcv_2000m':
-			case 'dcv_200m':
-				if(false){
-					//displayText = '-------';	
-				}
 				break;
 			case 'r_200':
 			case 'r_2000':
 			case 'r_20k':
 			case 'r_200k':
 			case 'r_2000k':
-				if(true){
-					//displayText = '-------';	
-				}
+				displayText = '-------';	
 				break;
 			case 'dca_200mc':
 			case 'dca_2000mc':
 			case 'dca_20m':
 			case 'dca_200m':
-				if(false){
-					//displayText = '-------';	
-				}
 				break;			
 			case 'acv_750':
 			case 'acv_200':
-				if(false){
-					//displayText = '-------';	
-				}
 				break;
 			case 'diode':
 			case 'hfe':
 			case 'c_10a':
 			case 'p_9v':
 			default:
-			}
-		},
-
-
-
-
-
+        	}
+        	
+        	return displayText;
+        },
 
         toDisplayString : function (s, dec) {
             //console.log('s1=' + s + ' dec=' + dec);

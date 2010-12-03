@@ -13,6 +13,11 @@
       for examples of json circuits
     */
     createBreadboard: function() {
+    
+      //jonah
+      console.log('!!!!!disable multimeter position!!!!!');
+      console.log(this.jsonActivity.disable_multimeter_position);	
+    
       if (!this.jsonActivity.circuit){
         console.log("ERROR: No circuit defined");
         return;
