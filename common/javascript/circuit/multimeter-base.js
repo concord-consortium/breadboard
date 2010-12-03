@@ -240,9 +240,77 @@
                 }
             }
             console.log('text=' + text);
+            text = this.disable_multimeter_position(text);
             flash.sendCommand('set_multimeter_display', text);
             this.displayText = text;
         },
+
+
+
+        disable_multimeter_position : function (displayText) {
+        	switch (this.dialPosition)
+        	{
+			case 'dcv_20':
+			case 'dcv_200':
+			case 'dcv_1000':
+			case 'dcv_2000m':
+			case 'dcv_200m':
+				displayText = '-------';
+				break;
+        	default:
+        	}
+        	
+        	return displayText;
+        },
+
+		checkIfPositionDisabled: function (displayText) {
+			console.log('!!!!!!!checkIfPositionDisabled!!!!!!!');
+			switch (this.dialPosition)
+			{
+			case 'dcv_20':
+			case 'dcv_200':
+			case 'dcv_1000':
+			case 'dcv_2000m':
+			case 'dcv_200m':
+				if(false){
+					//displayText = '-------';	
+				}
+				break;
+			case 'r_200':
+			case 'r_2000':
+			case 'r_20k':
+			case 'r_200k':
+			case 'r_2000k':
+				if(true){
+					//displayText = '-------';	
+				}
+				break;
+			case 'dca_200mc':
+			case 'dca_2000mc':
+			case 'dca_20m':
+			case 'dca_200m':
+				if(false){
+					//displayText = '-------';	
+				}
+				break;			
+			case 'acv_750':
+			case 'acv_200':
+				if(false){
+					//displayText = '-------';	
+				}
+				break;
+			case 'diode':
+			case 'hfe':
+			case 'c_10a':
+			case 'p_9v':
+			default:
+			}
+		},
+
+
+
+
+
 
         toDisplayString : function (s, dec) {
             //console.log('s1=' + s + ' dec=' + dec);
