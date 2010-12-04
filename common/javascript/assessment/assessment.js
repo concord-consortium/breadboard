@@ -29,11 +29,19 @@
   activity.Assessment.prototype = 
   {
     addQuestion: function(jsonQuestion,id) {
+    	function html_entity_decode(str) {
+        return $("<div>").html(str).text();
+      }
+      
       var question = new activity.Question();
       question.id = id;
       question.prompt = jsonQuestion.prompt;
       question.shortPrompt = (jsonQuestion.shortPrompt || jsonQuestion.prompt);
       question.correct_answer = jsonQuestion.correct_answer;
+      
+          	question.correct_answer = question.correct_answer.replace("ohm",html_entity_decode("&#x2126;")); //reformat "ohm" to the letter omega
+		  	question.correct_answer = question.correct_answer.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
+		  	
       question.correct_units = jsonQuestion.correct_units;
       if (question.correct_units === "ohms"){
         question.correct_units = "&#x2126;";
@@ -103,6 +111,7 @@
      	} else if(question.multichoice) {
      		console.log('else if multichoice');
      		question.answer = $("#"+id + "_multichoice").val();
+     		//console.log(question.answer);
      	}	
      	if(question.correct_units){
      		question.units = $("#"+id + "_units").val();	
@@ -123,16 +132,25 @@
         if (!!self.userQuestions[i]){
           var userQuestion = self.userQuestions[i];
           
-          question.answer = parseFloat(question.answer);
+          if(!question.multichoice){
+          	question.answer = parseFloat(question.answer);
           
-          console.log('question '+ i + ', question.answer, ' +question.answer +' question.correct_answer '+question.correct_answer);
+          	console.log('question '+ i + ', question.answer, ' +question.answer +' question.correct_answer '+question.correct_answer);
 
-          // first get numbers to 3 sig figs, then allow errors of 0.05 (rounding differences)
-          var dif = self._sigFigs(question.answer,3) - self._sigFigs(question.correct_answer,3);
-          if (dif <= 0.5 && dif >= -0.05){
-            question.answerIsCorrect = true;
+          	// first get numbers to 3 sig figs, then allow errors of 0.05 (rounding differences)
+          	var dif = self._sigFigs(question.answer,3) - self._sigFigs(question.correct_answer,3);
+          	if (dif <= 0.5 && dif >= -0.05){
+          	  question.answerIsCorrect = true;
+          	}
+          } else if(!!question.multichoice) {
+			console.log('question.correct_answer '+ question.correct_answer +'question.answer '+ question.answer );
+
+          	if(question.answer == question.correct_answer){
+          		question.answerIsCorrect = true;	
+          	}	
+
           }
-          
+          	
           if (!!question.correct_units){
             if (question.units == question.correct_units){
               question.unitsIsCorrect = true;
@@ -167,22 +185,29 @@
         totalScore += score;
         totalPossibleScore += question.score;
         var feedback = "";
-        if (answer === '') {
+        
+        if(!question.multichoice){
+        	if (answer === '') {
           
-        } else if (!question.answerIsCorrect){
-          feedback += "The value was wrong";
-          if (!question.unitsIsCorrect){
-            feedback += " and the units were wrong";
-          }
-        } else if (!question.unitsIsCorrect){
-          feedback += "The units were wrong";
+        	} else if (!question.answerIsCorrect){
+        	  feedback += "The value was wrong";
+        	  if (!question.unitsIsCorrect){
+        	    feedback += " and the units were wrong";
+        	  }
+        	} else if (!question.unitsIsCorrect){
+        	  feedback += "The units were wrong";
+        	}
+        } else if(!!question.multichoice){
+        	
+        	// needs to be filled in!  custom feedback from activity setup
         }
+       
         
         $tbl.append(
           $('<tr>').append(
             $('<td>').text(question.shortPrompt),
             $('<td>').text(answer),
-            $('<td>').text(correctAnswer),
+            $('<td>').html(correctAnswer),
             $('<td>').text(score +"/" + question.score),
             $('<td>').text(feedback)
           )
