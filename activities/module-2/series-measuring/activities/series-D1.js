@@ -1,7 +1,7 @@
 sparks.jsonActivity = {
   "title": "Measuring a Series Circuit",
   "show_multimeter": "true",
-  "disable_multimeter_position": "r,dcv,acv,dca,diode,hfe,c_10a,p_9v",
+  "disable_multimeter_position": "r",//r,dcv,acv,dca,diode,hfe,c_10a,p_9v",
   "circuit": [
       {
         "type": "resistor",
@@ -33,6 +33,7 @@ sparks.jsonActivity = {
         "connections": "left_negative3,a5"
       }
    ],
+
   "questions": [
     {
       "prompt": "What are the measured values of",
@@ -46,14 +47,23 @@ sparks.jsonActivity = {
         {
           "prompt": "I<sub>tot</sub>:",
           "shortPrompt": "Current through R1, R2, and R3",
-          "correct_answer": "9 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})",
+          "correct_answer": "[9 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
           "correct_units": "A"
         },
         {
           "prompt": "R<sub>tot</sub>:",
           "shortPrompt": "Total resistance of R1, R2, and R3",
-          "correct_answer": "${r1.nominalResistance}+ ${r2.nominalResistance}+ ${r3.nominalResistance}",
-          "multichoice": ["value...","[${r1.nominalResistance}]alphabet","${r1.nominalResistance}","${r1.nominalResistance}"]
+          "correct_answer": "[${r1.nominalResistance}+ ${r2.nominalResistance}+ ${r3.nominalResistance}] ohm",
+          "correct_units": "ohm",
+          "multichoice": [
+          	"value...",
+          	"[${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance}]",//correct answer w/o units
+          	//"[${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance}] ohm",//correct answser!
+          	"[9 * 9 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
+          	//"[9 * 9 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})] incorrectUnit",
+          	"[1 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
+          	//"[1 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})] incorrectUnit",
+          ]
         }
       ]
     }
