@@ -30,6 +30,7 @@
             this.blackPlugConnecton = null;
             this.dialPosition = 'acv_750';
             this.powerOn = false;
+            this.disabledPositions = [];
         },
 
         update : function () {
@@ -246,13 +247,18 @@
         },
 
 
+		set_disable_multimeter_position: function (disabled) {
+			this.disabledPositions = disabled.split(',');
+			for(i=0;i<this.disabledPositions.length;i++){
+			}
+		},
+
 
         disable_multimeter_position : function (displayText) {
         	// how do I pass a variable from the "series" file into here?
         	// something like: sparks.jsonActivity.disable_multimeter_position  ??    
         	
         	// right now this is hard wired to disable R dial positions
-        	
         	switch (this.dialPosition)
         	{
  			case 'dcv_20':
@@ -260,21 +266,44 @@
 			case 'dcv_1000':
 			case 'dcv_2000m':
 			case 'dcv_200m':
+				for(i=0;i<this.disabledPositions.length;i++){
+					if(this.disabledPositions[i] == 'dcv'){
+						displayText = '-------';
+						break;
+					}
+				}
 				break;
 			case 'r_200':
 			case 'r_2000':
 			case 'r_20k':
 			case 'r_200k':
 			case 'r_2000k':
-				displayText = '-------';	
+				for(i=0;i<this.disabledPositions.length;i++){
+					if(this.disabledPositions[i] == 'r'){
+						displayText = '-------';
+						break;
+					}
+				}
 				break;
 			case 'dca_200mc':
 			case 'dca_2000mc':
 			case 'dca_20m':
 			case 'dca_200m':
+				for(i=0;i<this.disabledPositions.length;i++){
+					if(this.disabledPositions[i] == 'dca'){
+						displayText = '-------';
+						break;
+					}
+				}
 				break;			
 			case 'acv_750':
 			case 'acv_200':
+				for(i=0;i<this.disabledPositions.length;i++){
+					if(this.disabledPositions[i] == 'acv'){
+						displayText = '-------';
+						break;
+					}
+				}
 				break;
 			case 'diode':
 			case 'hfe':
@@ -282,7 +311,6 @@
 			case 'p_9v':
 			default:
         	}
-        	
         	return displayText;
         },
 

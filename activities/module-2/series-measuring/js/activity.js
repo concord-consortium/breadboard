@@ -66,10 +66,15 @@
           var ac = new sparks.ActivityConstructor(sparks.jsonActivity, this.assessment);
           ac.createBreadboard();
           
+          this.multimeter = new sparks.circuit.Multimeter2();
+          
+          
           if (sparks.jsonActivity.show_multimeter === "true"){
             console.log("doing it anyway");
             sparks.flash.sendCommand('set_multimeter_visibility','true');
             sparks.flash.sendCommand('set_probe_visibility','true');
+ 
+ 			this.multimeter.set_disable_multimeter_position(sparks.jsonActivity.disable_multimeter_position);
           }
           
           var $qa = $('#questions_area');
@@ -103,7 +108,7 @@
 
         // Initializations that can be done only when the flash movie is loaded
         onFlashReady: function () {
-            this.multimeter = new sparks.circuit.Multimeter2();
+            //this.multimeter = new sparks.circuit.Multimeter2();
         },
         
         submitButtonClicked: function (activity, event) {
@@ -212,10 +217,10 @@
                         alert('Activity#receiveEvent: connect: unknonw probe name ' + args[1]);
                     }
                 }
-                if (args[0] === 'resistor') {
+                if (args[0] === 'component') {
                     // for now, we're just dealing with the situation of replacing one lead that had been lifted
-                    if (!!args[3]){
-                      breadModel('unmapHole', args[3]);
+                    if (!!args[2]){
+                      breadModel('unmapHole', args[2]);
                     }
                 }
                 this.multimeter.update();
@@ -230,15 +235,54 @@
                     else {
                         alert('Activity#receiveEvent: disconnect: Unknonw probe name ' + args[1]);
                     }
-                } else if (args[0] === 'resistor') {
-                  var location = args[2].split(",");
-                  var hole = args[3];
-                  var remainingHole = location[0] === hole ? location[1] : location[0];
+                } else if (args[0] === 'component') {
+                  var hole = args[2];
                   var newHole = breadModel('getGhostHole', hole+"ghost");
                   
                   breadModel('mapHole', hole, newHole.nodeName());
                 }
                 this.multimeter.update();
+            } else if (name === 'probe') {
+                $('#popup').dialog();
+                
+                v = breadModel('query', 'voltage', 'a23,a17');
+                t += v.toFixed(3);
+                v = breadModel('query', 'voltage', 'b17,b11');
+                t += ' ' + v.toFixed(3);
+                v = breadModel('query', 'voltage', 'c11,c5');
+                t += ' ' + v.toFixed(3);
+                $('#dbg_voltage').text(t);
+
+                // Disconnect wire1
+                breadModel('move', 'wire1', 'left_positive1,a22');
+                
+                v = breadModel('query', 'resistance', 'a23,a17');
+                t = v.toFixed(3);
+                v = breadModel('query', 'resistance', 'b17,b11');
+                t += ' ' + v.toFixed(3);
+                v = breadModel('query', 'resistance', 'c11,c5');
+                t += ' ' + v.toFixed(3);
+                
+                $('#dbg_resistance').text(t);
+                
+                v = breadModel('query', 'current', 'a22,a23');
+                t = v.toFixed(3);
+                
+                breadModel('move', 'wire1', 'left_positive1,a23');
+                breadModel('move', 'resistor1', 'a23,a16');
+                v = breadModel('query', 'current', 'a16,b17');
+                t += ' ' + v.toFixed(3);
+                
+                breadModel('move', 'resistor1', 'a23,a17');
+                breadModel('move', 'resistor2', 'b17,b10');
+                v = breadModel('query', 'current', 'b10,c11');
+                t += ' ' + v.toFixed(3);
+                
+                breadModel('move', 'resistor2', 'b17,b11');
+                
+                $('#dbg_current').text(t);
+
+                $('#popup').dialog('close');
             } else if (name == 'multimeter_dial') {
                 console.log('changed multimeter dial'+value);
                 this.multimeter.dialPosition = value;
@@ -247,6 +291,12 @@
             } else if (name == 'multimeter_power') {
                 this.multimeter.powerOn = value == 'true' ? true : false;
                 this.multimeter.update();
+                // activity.log.add(name, { value: this.multimeter.powerOn });
+                //                 if (value === 'true' && this.multimeter.allConnected()) {
+                //                     activity.log.add('make_circuit');
+                //                 } else if (value == 'false' && wasConnected) {
+                //                     activity.log.add('break_circuit');
+                //                 }
             }
         }
         

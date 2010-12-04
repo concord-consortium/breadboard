@@ -13,11 +13,7 @@
       for examples of json circuits
     */
     createBreadboard: function() {
-    
-      //jonah
-      console.log('!!!!!disable multimeter position!!!!!');
-      console.log(this.jsonActivity.disable_multimeter_position);	
-    
+        
       if (!this.jsonActivity.circuit){
         console.log("ERROR: No circuit defined");
         return;
@@ -158,8 +154,9 @@
 		  	  answer_option = self.calculateCorrectAnswer(answer_option);
 //		  	 }
 			//reformat units
-		  	  answer_option = answer_option.replace("ohm","&#x2126;"); //reformat "ohm" to the letter omega
+			  answer_option = answer_option.replace("ohm","&#x2126;"); //reformat "ohm" to the letter omega
 		  	  answer_option = answer_option.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
+		  	  
 		  	 $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));	
 		  	});
 		  	$html.append($select, "   ");
