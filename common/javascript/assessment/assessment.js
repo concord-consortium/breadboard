@@ -39,8 +39,8 @@
       question.shortPrompt = (jsonQuestion.shortPrompt || jsonQuestion.prompt);
       question.correct_answer = jsonQuestion.correct_answer;
       
-          	question.correct_answer = question.correct_answer.replace("ohm",html_entity_decode("&#x2126;")); //reformat "ohm" to the letter omega
-		  	question.correct_answer = question.correct_answer.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
+      question.correct_answer = question.correct_answer.replace("ohms",html_entity_decode("&#x2126;")); //reformat "ohms" to the letter omega
+	  question.correct_answer = question.correct_answer.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
 		  	
       question.correct_units = jsonQuestion.correct_units;
       if (question.correct_units === "ohms"){
@@ -185,8 +185,9 @@
         totalScore += score;
         totalPossibleScore += question.score;
         var feedback = "";
+
         
-        if(!question.multichoice){
+        //if(!question.multichoice){
         	if (answer === '') {
           
         	} else if (!question.answerIsCorrect){
@@ -197,10 +198,10 @@
         	} else if (!question.unitsIsCorrect){
         	  feedback += "The units were wrong";
         	}
-        } else if(!!question.multichoice){
+        //} else if(!!question.multichoice){
         	
         	// needs to be filled in!  custom feedback from activity setup
-        }
+        //}
        
         
         $tbl.append(
