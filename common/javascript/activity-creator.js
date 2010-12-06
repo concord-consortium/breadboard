@@ -84,6 +84,25 @@
     	  	var expression = match;//.substring(1,match.length-1);
     	  	var result = self.calculateSum(expression);
     	  	answer = answer.replace(match,result);
+    	  	
+    	  	/*
+    	  	var num1 = answer - Math.floor(answer);
+    	  	answer = answer.toPrecision(3);
+    	  	if(answer < 0){
+    	  		//answer = answer.toPrecision(3);
+    	  	} else if( answer - Math.floor(answer) != 0 ) {
+    	  		//answer = answer.toFixed(3);	
+    	  	}
+    	  	
+    	  	console.log('here too '+answer);
+    	  	
+    	  	var anumber=123.45;
+    	  	var anumber2=.0034567;
+			console.log('toFixed 123.45 '+anumber.toFixed(2)); //returns 123.450 (padding)
+			console.log('truncate 0.0034567 '+anumber2.toPrecision(2)); //returns 123.450 (padding)
+    	  	*/
+    	  	
+    	  	//truncate long answers
     	  });
        }
       return answer;
@@ -154,7 +173,7 @@
 		  	  answer_option = self.calculateCorrectAnswer(answer_option);
 //		  	 }
 			//reformat units
-			  answer_option = answer_option.replace("ohm","&#x2126;"); //reformat "ohm" to the letter omega
+			  answer_option = answer_option.replace("ohms","&#x2126;"); //reformat "ohm" to the letter omega
 		  	  answer_option = answer_option.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
 		  	  
 		  	 $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));	
