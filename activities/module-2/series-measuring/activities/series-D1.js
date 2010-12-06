@@ -8,21 +8,21 @@ sparks.jsonActivity = {
         "UID": "r1",
         "connections": "b23,b17",
         "label": "R1",
-        "resistance": "100"
+        //"resistance": "100"
       },
       {
         "type": "resistor",
         "UID": "r2",
         "connections": "c17,c11",
         "label": "R2",
-        "resistance": "100"
+        //"resistance": "100"
       },
       {
         "type": "resistor",
         "UID": "r3",
         "connections": "d11,d5",
         "label": "R3",
-        "resistance": "100"
+        //"resistance": "100"
       },
       {
         "type": "wire",
@@ -53,17 +53,8 @@ sparks.jsonActivity = {
         {
           "prompt": "R<sub>tot</sub>:",
           "shortPrompt": "Total resistance of R1, R2, and R3",
-          "correct_answer": "[${r1.nominalResistance}+ ${r2.nominalResistance}+ ${r3.nominalResistance}] ohm",
-          "correct_units": "ohm",
-          "multichoice": [
-          	"value...",
-          	"[${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance}]",//correct answer w/o units
-          	//"[${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance}] ohm",//correct answser!
-          	"[9 * 9 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
-          	//"[9 * 9 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})] incorrectUnit",
-          	"[1 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
-          	//"[1 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})] incorrectUnit",
-          ]
+          "correct_answer": "[${r1.nominalResistance}+ ${r2.nominalResistance}+ ${r3.nominalResistance}]",
+          "correct_units": "ohms"
         }
       ]
     }
