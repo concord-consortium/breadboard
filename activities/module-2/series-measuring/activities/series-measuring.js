@@ -1,6 +1,7 @@
 sparks.jsonActivity = {
-  "title": "Interpreting a Series Circuit",
-  "show_multimeter": "false",
+  "title": "Measuring a Series Circuit",
+  "show_multimeter": "true",
+  //"disable_multimeter_position": "",//"r,dcv,acv,dca,diode,hfe,c_10a,p_9v",
   "circuit": [
       {
         "type": "resistor",
@@ -34,7 +35,7 @@ sparks.jsonActivity = {
    ],
   "questions": [
     {
-      "prompt": "What is the rated resistance of",
+      "prompt": "What is the measured resistance of",
       "subquestions": [
         {
           "prompt": "R<sub>1</sub>:",
@@ -57,7 +58,7 @@ sparks.jsonActivity = {
       ]
     },
     {
-      "prompt": "What is the total rated resistance across all the resistors? ",
+      "prompt": "What is the total measured resistance across all the resistors? ",
       "shortPrompt": "Total resistance",
       "correct_answer": "[${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance}]",
       "correct_units": "ohms"

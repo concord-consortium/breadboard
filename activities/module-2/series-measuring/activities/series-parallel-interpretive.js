@@ -1,17 +1,17 @@
 sparks.jsonActivity = {
-  "title": "Interpreting a Parallel Circuit",
+  "title": "Interpreting a Series-Parallel Circuit",
   "show_multimeter": "false",
   "circuit": [
       {
         "type": "resistor",
         "UID": "r1",
-        "connections": "a15,a9",
+        "connections": "c21,c15",
         "label": "R1"
       },
       {
         "type": "resistor",
         "UID": "r2",
-        "connections": "c15,c9",
+        "connections": "a15,a9",
         "label": "R2"
       },
       {
@@ -22,11 +22,11 @@ sparks.jsonActivity = {
       },
       {
         "type": "wire",
-        "connections": "left_positive16,b15"
+        "connections": "left_positive20,a21"
       },
       {
         "type": "wire",
-        "connections": "left_negative5,b9"
+        "connections": "left_negative5,c9"
       }
    ],
   "questions": [
@@ -56,7 +56,7 @@ sparks.jsonActivity = {
     {
       "prompt": "What is the total rated resistance across all the resistors? ",
       "shortPrompt": "Total resistance",
-      "correct_answer": "[1 / ((1 / ${r1.nominalResistance}) + (1 / ${r2.nominalResistance}) + (1 / ${r3.nominalResistance}))]",
+      "correct_answer": "[${r1.nominalResistance} + ( 1 / ( (1 / ${r2.nominalResistance}) + (1 / ${r3.nominalResistance})))]",
       "correct_units": "ohms"
     },
     {
@@ -65,19 +65,19 @@ sparks.jsonActivity = {
         {
           "prompt": "R<sub>1</sub>:",
           "shortPrompt": "Voltage across R1",
-          "correct_answer": "[ 9 ]",
+          "correct_answer": "[ 9 * ${r1.nominalResistance} / (${r1.nominalResistance} + ( 1 / ( (1 / ${r2.nominalResistance}) + (1 / ${r3.nominalResistance}))) ) ]",
           "correct_units": "V"
         },
         {
           "prompt": "R<sub>2</sub>:",
           "shortPrompt": "Voltage across R2",
-          "correct_answer": "[ 9 ]",
+          "correct_answer": "[ 9 * ( 1 -   ${r1.nominalResistance} / (${r1.nominalResistance} + ( 1 / ( (1 / ${r2.nominalResistance}) + (1 / ${r3.nominalResistance}))) )    )]",
           "correct_units": "V"
         },
         {
           "prompt": "R<sub>3</sub>:",
           "shortPrompt": "Voltage across R3",
-          "correct_answer": "[ 9 ]",
+          "correct_answer": "[ 9 * ( 1 -   ${r1.nominalResistance} / (${r1.nominalResistance} + ( 1 / ( (1 / ${r2.nominalResistance}) + (1 / ${r3.nominalResistance}))) )    )]",
           "correct_units": "V"
         }
        ]
@@ -88,28 +88,39 @@ sparks.jsonActivity = {
         {
           "prompt": "R<sub>1</sub>:",
           "shortPrompt": "Current through R1",
-          "correct_answer": "[ 9 / ${r1.nominalResistance}]",
+          "correct_answer": "[ 9 * ${r1.nominalResistance} / (${r1.nominalResistance} + ( 1 / ( (1 / ${r2.nominalResistance}) + (1 / ${r3.nominalResistance}))) ) / ${r1.nominalResistance} ]",
           "correct_units": "A"
         },
         {
           "prompt": "R<sub>2</sub>:",
           "shortPrompt": "Current through R2",
-          "correct_answer": "[ 9 / ${r2.nominalResistance}]",
+          "correct_answer": "[ 9 * ( 1 -   ${r1.nominalResistance} / (${r1.nominalResistance} + ( 1 / ( (1 / ${r2.nominalResistance}) + (1 / ${r3.nominalResistance}))) )  / ${r2.nominalResistance}   )]",
           "correct_units": "A"
         },
         {
           "prompt": "R<sub>3</sub>:",
           "shortPrompt": "Current through R3",
-          "correct_answer": "[ 9 / ${r3.nominalResistance}]",
+          "correct_answer": "[ 9 * ( 1 -   ${r1.nominalResistance} / (${r1.nominalResistance} + ( 1 / ( (1 / ${r2.nominalResistance}) + (1 / ${r3.nominalResistance}))) )  / ${r3.nominalResistance}   )]",
           "correct_units": "A"
         }
       ]
     },
     {
-      "prompt": "What is the total current through all the resistors?",
-      "shortPrompt": "Total current",
-       "correct_answer": "[ ( 9 / ${r1.nominalResistance}) + ( 9 / ${r2.nominalResistance}) + ( 9 / ${r3.nominalResistance})]",
-       "correct_units": "A"
-     }
+      "prompt": "What is the voltage across",
+      "subquestions": [
+        {
+          "prompt": "R<sub>1</sub> and R<sub>2</sub>:",
+          "shortPrompt": "Voltage across R1 and R2",
+          "correct_answer": "[ 9 ]",
+          "correct_units": "V"
+        },
+        {
+          "prompt": "R<sub>2</sub> and R<sub>3</sub>:",
+          "shortPrompt": "Voltage across R1 and R3",
+          "correct_answer": "[ 9 ]",
+          "correct_units": "V"
+        }
+      ]
+    }
   ]
 };

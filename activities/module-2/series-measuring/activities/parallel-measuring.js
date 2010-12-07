@@ -1,6 +1,6 @@
 sparks.jsonActivity = {
-  "title": "Interpreting a Parallel Circuit",
-  "show_multimeter": "false",
+  "title": "Measuring a Parallel Circuit",
+  "show_multimeter": "true",
   "circuit": [
       {
         "type": "resistor",
@@ -31,7 +31,7 @@ sparks.jsonActivity = {
    ],
   "questions": [
     {
-      "prompt": "What is the rated resistance of",
+      "prompt": "What is the measured resistance of",
       "subquestions": [
         {
           "prompt": "R<sub>1</sub>:",
@@ -54,7 +54,7 @@ sparks.jsonActivity = {
       ]
     },
     {
-      "prompt": "What is the total rated resistance across all the resistors? ",
+      "prompt": "What is the total measured resistance across all the resistors? ",
       "shortPrompt": "Total resistance",
       "correct_answer": "[1 / ((1 / ${r1.nominalResistance}) + (1 / ${r2.nominalResistance}) + (1 / ${r3.nominalResistance}))]",
       "correct_units": "ohms"
