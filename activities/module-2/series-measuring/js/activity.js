@@ -73,8 +73,9 @@
             console.log("doing it anyway");
             sparks.flash.sendCommand('set_multimeter_visibility','true');
             sparks.flash.sendCommand('set_probe_visibility','true');
- 
- 			this.multimeter.set_disable_multimeter_position(sparks.jsonActivity.disable_multimeter_position);
+ 			if(sparks.jsonActivity.disable_multimeter_position){
+ 				this.multimeter.set_disable_multimeter_position(sparks.jsonActivity.disable_multimeter_position);
+ 			}
           }
           
           var $qa = $('#questions_area');
