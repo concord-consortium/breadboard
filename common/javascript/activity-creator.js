@@ -77,7 +77,7 @@
       
       var self = this;
         
-      var sumPattern = /\[[^\]]+\]/g
+      var sumPattern = /\[[^\]]+\]/g  //between [ ]
       var matches= answer.match(sumPattern);
       if (!!matches){      	
    	   $.each(matches, function(i, match){
@@ -111,7 +111,7 @@
     
     
    calculateSum: function(sum){
-   	  var varPattern = /\${[^}]+}/g
+   	  var varPattern = /\${[^}]+}/g  //  ${ X } --> value of X
       var matches = sum.match(varPattern);
       if(!!matches){
        $.each(matches, function(i, match){
