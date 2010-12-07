@@ -35,29 +35,16 @@
             else {
                 values = this.r_values10pct;
             }
-            
-            
-            //make nominalValue within 2 order of magnitude of first chosen resistor - jonah
-            //console.log('nominal value!!!!!!!!'+circuit.Resistor.prototype.nominalValueMagnitude);  //-1
-			var firstNominal = circuit.Resistor.prototype.nominalValueMagnitude;
-			//console.log('firstNominal '+circuit.Resistor.prototype.nominalValueMagnitude);
-            if(circuit.Resistor.prototype.nominalValueMagnitude == -1){
-	            //this.nominalValue = values[this.randInt(0, values.length-1)];
-	            this.nominalValue = Math.random()*2000;
-	           	circuit.Resistor.prototype.nominalValueMagnitude = this.nominalValue;
-            }
-            
-            this.nominalValue = (Math.floor((500-1)*Math.random()) ) * circuit.Resistor.prototype.nominalValueMagnitude;
-            
-                       
-            console.log('!!!!!! resistor value '+this.nominalValue);
-            
+
+            this.nominalValue = values[this.randInt(0, values.length-1)];
             if (options && options.realEqualsNominal) {
                 this.realValue = this.nominalValue;
             }
             else {
                 this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
             }
+            //console.log('r=' + this.nominalValue + ' t=' + this.tolerance);
+            
             this.colors = this.getColors(this.nominalValue, this.tolerance);
         },
         
