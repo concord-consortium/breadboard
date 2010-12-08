@@ -115,7 +115,7 @@ sparks.jsonActivity = {
           "correct_units": "V"
         },
         {
-          "prompt": "R<sub>2</sub> and R<sub>3</sub>:",
+          "prompt": "R<sub>1</sub> and R<sub>3</sub>:",
           "shortPrompt": "Voltage across R1 and R3",
           "correct_answer": "[ 9 ]",
           "correct_units": "V"

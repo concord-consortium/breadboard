@@ -94,16 +94,15 @@ sparks.jsonActivity = {
         {
           "prompt": "R<sub>2</sub>:",
           "shortPrompt": "Current through R2",
-          "correct_answer": "[ 9 * ( 1 -   ${r1.nominalResistance} / (${r1.nominalResistance} + ( 1 / ( (1 / ${r2.nominalResistance}) + (1 / ${r3.nominalResistance}))) )  / ${r2.nominalResistance}   )]",
+          "correct_answer": "[ ( 9 / ${r2.nominalResistance} ) * ((( 1 / ( (1/${r2.nominalResistance})+(1/${r2.nominalResistance}) ) )))  / (  ((( 1 / ( (1/${r2.nominalResistance})+(1/${r2.nominalResistance}) ) ))) + ${r1.nominalResistance} ) ]",
           "correct_units": "A"
         },
         {
           "prompt": "R<sub>3</sub>:",
           "shortPrompt": "Current through R3",
-          "correct_answer": "[ 9 * ( 1 -   ${r1.nominalResistance} / (${r1.nominalResistance} + ( 1 / ( (1 / ${r2.nominalResistance}) + (1 / ${r3.nominalResistance}))) )  / ${r3.nominalResistance}   )]",
+          "correct_answer": "[ ( 9 / ${r3.nominalResistance} ) * ((( 1 / ( (1/${r2.nominalResistance})+(1/${r2.nominalResistance}) ) )))  / (  ((( 1 / ( (1/${r2.nominalResistance})+(1/${r2.nominalResistance}) ) ))) + ${r1.nominalResistance} ) ]",
           "correct_units": "A"
-        }
-      ]
+        }      ]
     },
     {
       "prompt": "What is the voltage across",
@@ -115,7 +114,7 @@ sparks.jsonActivity = {
           "correct_units": "V"
         },
         {
-          "prompt": "R<sub>2</sub> and R<sub>3</sub>:",
+          "prompt": "R<sub>1</sub> and R<sub>3</sub>:",
           "shortPrompt": "Voltage across R1 and R3",
           "correct_answer": "[ 9 ]",
           "correct_units": "V"
