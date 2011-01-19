@@ -14,25 +14,23 @@ To build the combined JS files:
  
 "rake" will need to be called each time a Javascript file is changed.
 
-h2. Setting up QUCS proxy
+h2. Setting up the server
 
-SPARKS will try to access the QUCS application (used for circuit solving)  at the url 
- 
- /sparks/qucsator/solve
- 
-You can proxy this URL to the QUCS application running on otto, by setting up Apache to proxy
+SPARKS needs to be running from a server even when running locally, so it can access scripts correctly and so it can proxy other services such as the QUCS application (used for circuit solving).
 
- /sparks/
- 
-to
- 
- http://sparks.portal.concord.org/sparks/
- 
-The simplest way to do this is to modify the file proxy/apache.conf.sample with your information, and run it with
+The simplest way to do this is to modify the file proxy/apache.conf.sample with your information (modify the paths at the bottom of the file to point to the location of your local sparks directory), and then save the file as apache.conf (i.e. remove the .sample from the file name). You can then start a local Apache server by running
 
  apachectl -f "`pwd`/proxy/apache.conf" -k start
- 
-Alternatively, you can install QUCS from http://qucs.sourceforge.net/, update the PHP file lib/qucsator/solve/index.php to point to your local install of QUCS if it is not in /usr/local/bin/, place the file somewhere where it can be served by PHP, such as ~/Sites/qucsator/solve, and modify the proxy file accordingly
+
+from your Sparks directory. Now you will be able to navigate to the html files in the project by pointing your browser to 
+
+ http://localhost:1234
+ http://localhost:1234/activities/module-2/series-measuring/index.html
+ etc
+
+h3. Using a local version of QUCS
+
+If you don't want to use the remote version of QUCS referenced in the Apache config file, you can install QUCS from http://qucs.sourceforge.net/, update the PHP file lib/qucsator/solve/index.php to point to your local install of QUCS if it is not in /usr/local/bin/, place the file somewhere where it can be served by PHP, such as ~/Sites/qucsator/solve, and modify the proxy file accordingly
 
 h2. Launch the application
 
