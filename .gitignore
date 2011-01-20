@@ -1,6 +1,5 @@
 .DS_Store
 *~
-client-*
 proxy/accept*
 proxy/apache.pid
 proxy/apache-error.log
