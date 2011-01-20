@@ -6,6 +6,8 @@
     <script type="text/javascript" src="../../../lib/jquery/plugins/jquery.url.packed.js"></script>
     <script type="text/javascript" src="../../../lib/json2.js"></script>
     <script type="text/javascript" src="../../../client-mr-activity.js"></script>
+    <script type="text/javascript" src="../../../client-mr-report.js"></script>
+    <script type="text/javascript" src="../../../client-breadboard-activity.js"></script>
     <script src="lib/jspec.js"></script>
     <script src="lib/jspec.timers.js"></script>
     <script src="lib/jspec.jquery.js"></script>
@@ -22,6 +24,15 @@
         .exec('spec.common/spec.circuit.js')
         .exec('spec.common/spec.string.js')
         .exec('spec.activities/spec.resistor_colors.js')
+        .exec('spec.activities/spec.breadboard.js')
+        .exec('spec.activities/spec.breadboard_measuring.js')
+        .exec('spec.activities/spec.breadboard.js')
+        .exec('spec.activities/spec.breadboard_measuring.js')
+        .exec('spec.activities/spec.flash_multimeter.js')
+        .exec('spec.activities/spec.flash_breadboard.js')
+        // .exec('spec.common/spec.logging_and_reporting.js')
+        // .exec('spec.common/spec.circuit_constructor.js')
+        // .exec('spec.common/spec.activity_creator.js')
         .run({ fixturePath: 'fixtures' })
         .report()
       }

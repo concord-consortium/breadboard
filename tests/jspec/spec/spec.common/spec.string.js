@@ -1,4 +1,4 @@
-describe 'sparks.string'
+describe 'String'
   before
     str = sparks.string
   end
