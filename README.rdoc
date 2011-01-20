@@ -1,6 +1,11 @@
-h1. Building SPARKS and setting up local environment
+= SPARKS
+=== Copyright: ©2010 Concord Consortium
 
-h2. Building Javascript code
+==
+
+== Building SPARKS and setting up local environment
+
+=== Building Javascript code
 
 Sparks uses Sprockets (http://getsprockets.org) to manage the javascript code.  Sprockets combines the individual JS files into a single file per activity. To avoid duplication, these files aren't managed by git.
 
@@ -14,7 +19,7 @@ To build the combined JS files:
  
 "rake" will need to be called each time a Javascript file is changed.
 
-h2. Setting up the server
+=== Setting up the server
 
 SPARKS needs to be running from a server even when running locally, so it can access scripts correctly and so it can proxy other services such as the QUCS application (used for circuit solving).
 
@@ -28,16 +33,16 @@ from your Sparks directory. Now you will be able to navigate to the html files i
  http://localhost:1234/activities/module-2/series-measuring/index.html
  etc
 
-h3. Using a local version of QUCS
+==== Using a local version of QUCS
 
 If you don't want to use the remote version of QUCS referenced in the Apache config file, you can install QUCS from http://qucs.sourceforge.net/, update the PHP file lib/qucsator/solve/index.php to point to your local install of QUCS if it is not in /usr/local/bin/, place the file somewhere where it can be served by PHP, such as ~/Sites/qucsator/solve, and modify the proxy file accordingly
 
-h2. Launch the application
+=== Launch the application
 
 Go to http://localhost:1234/ (or whatever port you set in the step above) in your browser to get open the main index file, or directly open any html file to go directly to an activity.
 
 
-h1. Running the tests
+== Running the tests
 
 This application is mostly tested using JSPEC. You can install JSPEC with
 
@@ -47,10 +52,14 @@ To run the tests on the command line with Rhino:
 
  cd tests/jspec
  java -jar spec/support/js.jar -opt -1 spec/rhino-terminal.js
+ 
+To run the tests in the browser, visit
+
+ http://localhost:1234/tests/jspec/spec/dom.html
 
 Note that some of the tests, 'Measuring breadboard components with QUCS' and 'Using multimeter with mock Flash connection' require a response from the QUCS applications. The rest should run fine as long as the code has been built (section 1 above).
 
-h1. Deployment
+== Deployment
 
 This whole sparks folder should be embedded into the sparks branch of the
 rigse portal.
@@ -66,22 +75,22 @@ from rigse/
   
 This will put the content in seyomour:/web/production/sparks/current/public/sparks-content
 
-h1. Activities
+== Activities
 
-h3. Measuring Resistance
+==== Measuring Resistance
 
 Main: activities/measuring-resistance/index.html
 
-h3. Module 2 - Measuring Series
+==== Module 2 - Measuring Series
 
 
 <hr/>
 <hr/>
 <hr/>
 
-h1. Notes from SPARKS initial meeting with Seong, Sam and Jonah
+== Notes from SPARKS initial meeting with Seong, Sam and Jonah
 
-h1. Qucs Server
+== Qucs Server
 
 The PHP server is at otto:/web/otto.concord.org/qucs/index.php, which invokes
 the qucs command line at ~skim/local/app/qucs-0.0.15/bin.
@@ -90,46 +99,46 @@ To download qucs: http://qucs.sourceforge.net/
 
 <hr />
 
-h1. JSpec Testing
+== JSpec Testing
 
 
-h3. Running the specs
+==== Running the specs
 
 You should run spec from the "top" directory. For example,
 
-bc. cd sparks-content/tests/jspec
+ cd sparks-content/tests/jspec
 jspec run --browsers firefox
 
 h5. Running it with rhino in terminal
 
 Because of the jspec bug in optimization you can't do "jspec run --rhino ...".
 
-bc. java -jar spec/support/js.jar -opt -1 spec/rhino-terminal.js
+ java -jar spec/support/js.jar -opt -1 spec/rhino-terminal.js
 
 h5. Running it in browsers
 
-bc. jspec run --browsers ff
+ jspec run --browsers ff
 
 @spec/spec.dom.html@ is the default html that is opened by the browsers.
 
 h5. Running with a server
 
-bc. jspec run --browsers ff --server
+ jspec run --browsers ff --server
 
 @spec/server.rb@ defines the routes.
 @spec/spec.server.html@ is the default html processed by the server.
 
-h3. Links
+==== Links
 
 JSpec home: "http://visionmedia.github.com/jspec/":http://visionmedia.github.com/jspec/
 
 <hr/>
 
-h1. Notes
+== Notes
 
-h2. Check list for importing Kathy's work on Flash
+=== Check list for importing Kathy's work on Flash
 
-h3. Flash Publish Settings for the main FLA file
+==== Flash Publish Settings for the main FLA file
 
 # Go to File -> Publish Settings -> Flash
 # Set Script to ActionScript 3.0 and click Settings.
@@ -137,7 +146,7 @@ h3. Flash Publish Settings for the main FLA file
 ** ./actionscript
 ** ../../common/actionscript
  
-h3. Actions for the main FLA
+==== Actions for the main FLA
 
 Open Actions of the frame #1 of the "actions" laye and make sure the script instantiates the activity. 
 e.g. 
@@ -145,14 +154,14 @@ e.g.
  import org.concord.sparks.Activity;
  import org.concord.sparks.activities.ResistorColors;
  
- var topDir = '/sparks-content'; //for rails
- //var topDir = '../..'; //for standalone testing
+ var topDir == '/sparks-content'; //for rails
+ //var topDir == '../..'; //for standalone testing
  
- var activity:Activity = new ResistorColors('Resistor Colors', root, topDir);
+ var activity:Activity == new ResistorColors('Resistor Colors', root, topDir);
  </code>
 
 
-h1. SPARKS Info
+== SPARKS Info
 ===============
 
 Copied from Google Doc 9/21/10:
@@ -161,57 +170,57 @@ Copied from Google Doc 9/21/10:
 sparks.portal.concord.org
 Teacher: edison3/password
 
-h3. git repos
+==== git repos
 
 
 Main SPARKS content: http://github.com/concord-consortium/sparks
 
 To deploy new Flash/SPARKS code:
-bc. cap sparks-production import:create_or_update_sparks_content
+ cap sparks-production import:create_or_update_sparks_content
 
 Portal code is in: sparks branch of http://github.com/stepheneb/rigse
 
 to deploy Rails server:
-bc. cap spark-production deploy
+ cap spark-production deploy
 
 
 SPARKS checkout from git should go in rigse/public/sparks-content (if using rails)
 
 Folder structure:
-** sparks-content/common: 	common javascript/actionscript code
-** sparks-content/activities: 	activity-specific code (Note that first activity is better organized/refactored)
-** sparks-content/lib: 		third-party code,such as jQuery
+sparks-content/common::      common javascript/actionscript code
+sparks-content/activities::  activity-specific code (Note that first activity is better organized/refactored)
+sparks-content/lib::         third-party code,such as jQuery
 
-h3. Flash:
+==== Flash:
 
 
 Note to set classpath information in activity 
 Publish Settings -> Flash -> ActionScript
 Classpath should be
-** .
-** ./as
-** ../../../common/actionscript
+ .
+ ./as
+ ../../../common/actionscript
 
-h3. Javascript
+==== Javascript
 
 If you make changes to javascript, you have to run
-bc. rake
+ rake
 in the top-level directory, which will generate the all the client-[...].js files in the top-level directory
 This uses sprocket
 
-h4. Flash/Javascript connection
+===== Flash/Javascript connection
 
 
 javascript/flash_comm.js
-bc. sparks.flash.sendCommand
+ sparks.flash.sendCommand
 common/actionscript/org/concord/sparks/JavaScript.as
-bc. call
-bc. sendEvent
+ call
+ sendEvent
 
 e.g. call JavaScript.instance().sendEvent(....)
 
 
-h3. Tests
+==== Tests
 
 To run tests: look in main readme file. Only jSpec tests exist (only for JavaScript)
 
@@ -221,7 +230,7 @@ r: resistance
 m: actual resistance
 t: tolerance)
 
-h3. QUCS server
+==== QUCS server
 
 @otto: /web/otto.concord.org/qucs
 
@@ -229,7 +238,7 @@ To run locally, use proxy: [...]
 
 or, if you build qucs locally, modify file  /javascript/circuit/qucsator.js (ajax call, line 26) to point to your own server
 
-h3. Reports
+==== Reports
 
 When updating rubrics, just update locally, then go to /rubrics in Rails portal and edit/replace by hand
  
