@@ -1,8 +1,6 @@
 = SPARKS
 === Copyright: ©2010 Concord Consortium
 
-==
-
 == Building SPARKS and setting up local environment
 
 === Building Javascript code
