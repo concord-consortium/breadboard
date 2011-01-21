@@ -40,7 +40,7 @@
       question.correct_answer = jsonQuestion.correct_answer;
       
       question.correct_answer = question.correct_answer.replace("ohms",html_entity_decode("&#x2126;")); //reformat "ohms" to the letter omega
-	  question.correct_answer = question.correct_answer.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
+      question.correct_answer = question.correct_answer.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
 		  	
       question.correct_units = jsonQuestion.correct_units;
       if (question.correct_units === "ohms"){

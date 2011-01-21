@@ -100,7 +100,7 @@ describe 'Activity Creator'
             "questions": [
               {
                 "prompt": "What is the resistance of R1?",
-                "correct_answer": "${r1.nominalResistance}",
+                "correct_answer": "[${r1.nominalResistance}]",
                 "correct_units": "ohms"
               }
             ]
@@ -125,7 +125,7 @@ describe 'Activity Creator'
             "questions": [
               {
                 "prompt": "What is the nominal resistance of R1 + R2 in parallel?",
-                "correct_answer": "1 / ((1 / ${r1.nominalResistance}) + (1 / ${r2.nominalResistance}))",
+                "correct_answer": "[1 / ((1 / ${r1.nominalResistance}) + (1 / ${r2.nominalResistance}))]",
                 "correct_units": "ohms"
               }
             ]
@@ -165,7 +165,7 @@ describe 'Activity Creator'
           "questions": [
             {
               "prompt": "What is the total resistance across R1 and R2?",
-              "correct_answer": "${r3.resistance} + ${r4.resistance}",
+              "correct_answer": "[${r3.resistance} + ${r4.resistance}]",
               "correct_units": "ohms"
             }
           ]
