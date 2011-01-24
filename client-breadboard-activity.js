@@ -2052,8 +2052,6 @@ sparks.util.getRubric = function (id, callback, local) {
   };
 
   q.qucsate = function (netlist, callback, type) {
-    console.log('netlist=' + q.ppNetlist(netlist));
-    console.log('url=' + sparks.config.qucsate_server_url);
     type = type || 'qucs';
     var data = {};
     data[type || 'qucs'] = netlist;
@@ -2084,7 +2082,6 @@ sparks.util.getRubric = function (id, callback, local) {
           results[key] = parseFloat(chunks[i][1]);
         }
       }
-      console.log('qucsate.parser results=' + JSON.stringify(results));
       callback(results);
     });
   };
@@ -2571,8 +2568,6 @@ sparks.util.getRubric = function (id, callback, local) {
         query: function(type, connections){
 
 
-          console.log("at time of measuring, netlist = ");
-          console.log(q.makeNetlist(breadBoard));
 
           var tempComponents = [];
 
@@ -4297,11 +4292,11 @@ sparks.util.getRubric = function (id, callback, local) {
               jsonActivityName = "series-interpretive";
             }
 
-            console.log("getting script for "+jsonActivityName);
+            console.log("loading script for "+jsonActivityName);
             var self = this;
 
             $.getScript("activities/"+jsonActivityName + '.js', function() {
-              console.log("got it");
+              console.log("loaded "+jsonActivityName);
               self.onActivityReady();
               self.startTry();
             });

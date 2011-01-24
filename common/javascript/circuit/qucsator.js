@@ -16,8 +16,8 @@
   };
 
   q.qucsate = function (netlist, callback, type) {
-    console.log('netlist=' + q.ppNetlist(netlist));
-    console.log('url=' + sparks.config.qucsate_server_url);
+    // console.log('netlist=' + q.ppNetlist(netlist));
+    // console.log('url=' + sparks.config.qucsate_server_url);
     type = type || 'qucs';
     var data = {};
     data[type || 'qucs'] = netlist;
@@ -53,7 +53,7 @@
           results[key] = parseFloat(chunks[i][1]);
         }
       }
-      console.log('qucsate.parser results=' + JSON.stringify(results));
+      // console.log('qucsate.parser results=' + JSON.stringify(results));
       callback(results);
     });
   };

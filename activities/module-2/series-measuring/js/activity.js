@@ -49,11 +49,11 @@
               jsonActivityName = "series-interpretive";
             }
             
-            console.log("getting script for "+jsonActivityName);
+            console.log("loading script for "+jsonActivityName);
             var self = this;
             
             $.getScript("activities/"+jsonActivityName + '.js', function() {
-              console.log("got it");
+              console.log("loaded "+jsonActivityName);
               self.onActivityReady();
               self.startTry();
             });

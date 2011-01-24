@@ -468,8 +468,8 @@
 
           //debug( breadBoard.query( arguments[1].split(',') ) );
           
-          console.log("at time of measuring, netlist = ");
-          console.log(q.makeNetlist(breadBoard));
+          // console.log("at time of measuring, netlist = ");
+          // console.log(q.makeNetlist(breadBoard));
           
           var tempComponents = [];
           
