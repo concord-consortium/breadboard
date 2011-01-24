@@ -90,7 +90,7 @@
               window.location.reload();
           });
 
-          this.root_dir = sparks.config.root_dir + '/activities/module-2/series-measuring';
+          this.root_dir = sparks.config.root_dir + '/activities/module-2';
           $('body').scrollTop(0); //scroll to top
           
           this.forms = $('form');

@@ -3631,7 +3631,7 @@ sparks.util.getRubric = function (id, callback, local) {
     this.sparks.activities.sm.config = {};
 
     sparks.config.root_dir = '../../..';
-    sparks.activities.sm.config.root_dir = sparks.config.root_dir + '/activities/module-2/series-measuring';
+    sparks.activities.sm.config.root_dir = sparks.config.root_dir + '/activities/module-2';
 
 })();
 
@@ -4333,7 +4333,7 @@ sparks.util.getRubric = function (id, callback, local) {
               window.location.reload();
           });
 
-          this.root_dir = sparks.config.root_dir + '/activities/module-2/series-measuring';
+          this.root_dir = sparks.config.root_dir + '/activities/module-2';
           $('body').scrollTop(0); //scroll to top
 
           this.forms = $('form');
