@@ -1,6 +1,7 @@
 describe 'Using breadboard with mock Flash connection'
     before
       stub(sparks.util, 'readCookie').and_return(null);
+      mock_request().and_return(sparks.jsonActivity, 'application/javascript', 200)
       initActivity();
       sparks.config.qucsate_server_url = "http://localhost:1234/sparks/qucsator/solve";
     end
