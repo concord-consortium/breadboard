@@ -12,9 +12,8 @@ namespace :combine do
   task :all => [
     :'client:measuring_resistance_activity',
     :'client:measuring_resistance_report',
-    :'client:series_measuring_activity',
-    :'client:breadboard_activity',
-    :'server:measuring_resistance_report'
+    :'server:measuring_resistance_report',
+    :'client:breadboard_activity'
   ]
 
   namespace :client do
@@ -41,54 +40,6 @@ namespace :combine do
           'activities/module-2/series-measuring/js/activity.js'
         ],
         'client-breadboard-activity.js')
-    end
-    
-    desc "Concatenate all JavaScript for Series - Interpretive activity (client)"
-    task :series_measuring_activity do
-      sprocket([
-          'activities/module-2/series-measuring/js/series-interpretive.js'
-        ],
-        'client-series-interpretive-activity.js')
-    end
-
-    desc "Concatenate all JavaScript for Series - Measuring activity (client)"
-    task :series_measuring_activity do
-      sprocket([
-          'activities/module-2/series-measuring/js/series-measuring.js'
-        ],
-        'client-series-measuring-activity.js')
-    end
-    
-    desc "Concatenate all JavaScript for Parallel - Interpretive activity (client)"
-    task :series_measuring_activity do
-      sprocket([
-          'activities/module-2/series-measuring/js/parallel-interpretive.js'
-        ],
-        'client-parallel-interpretive-activity.js')
-    end
-    
-    desc "Concatenate all JavaScript for Parallel - Measuring activity (client)"
-    task :series_measuring_activity do
-      sprocket([
-          'activities/module-2/series-measuring/js/parallel-measuring.js'
-        ],
-        'client-parallel-measuring-activity.js')
-    end
-    
-    desc "Concatenate all JavaScript for Series-Parallel - Interpretive activity (client)"
-    task :series_measuring_activity do
-      sprocket([
-          'activities/module-2/series-measuring/js/series-parallel-interpretive.js'
-        ],
-        'client-series-parallel-interpretive-activity.js')
-    end
-    
-    desc "Concatenate all JavaScript for Series-Parallel - Measuring activity (client)"
-    task :series_measuring_activity do
-      sprocket([
-          'activities/module-2/series-measuring/js/series-parallel-measuring.js'
-        ],
-        'client-series-parallel-measuring-activity.js')
     end
 
   end
