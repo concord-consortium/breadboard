@@ -29,20 +29,6 @@
       
       var HTMLLog = undefined, HTMLbody = undefined;
       this.debug = function(){
-        if(defs.debug){
-          if(typeof console!=='undefined'){
-            console.log(arguments[0]);
-          }else{
-            if(!HTMLLog){
-              HTMLLog = document.createElement('div');
-              HTMLLog.setAttribute("id", "HTMLLog");
-              HTMLBody = document.getElementsByTagName('body')[0];
-              HTMLBody.appendChild(HTMLLog);
-              HTMLLog.innerHTML += '<b>HTML-DEBUG-LOG:</b></b><br />';
-            }
-            HTMLLog.innerHTML += arguments[0] + '<br />';
-          }
-        }
       };
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -475,7 +461,6 @@
           return resistor;
         },
         query: function(type, connections){
-          console.log("query! type = "+type);
           // Current dummy function will pass query to model
           // Model will then compile SPICE net list and send to server
           // Server will respond with voltage at queried points
@@ -615,14 +600,5 @@
       this.getBreadBoard = function() {
         return breadBoard;
       };
-
-      // The outward interface between JS & Flash
-      /*
-      this.toFlash = function toFlash(){
-        console.log(arguments[0]);
-        document.getElementById('swf').fromBreadModel(arguments[0]);
-      };
-      document.addEventListener('click', function(){ flash("testing!","test2") }, false);
-      */
 
 })();

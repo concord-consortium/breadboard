@@ -118,9 +118,6 @@
      	}
      	id++;
      	
-     	console.log("question.answer "+question.answer);
-     	console.log("question.units "+question.units);
-     	
      	form.questions.push(question);
         self.userQuestions.push(question);       
       });

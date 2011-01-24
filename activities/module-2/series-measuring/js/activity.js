@@ -50,7 +50,6 @@
             }
             
             console.log("getting script for "+jsonActivityName);
-            
             var self = this;
             
             $.getScript("activities/"+jsonActivityName + '.js', function() {
@@ -70,7 +69,6 @@
           
           
           if (sparks.jsonActivity.show_multimeter === "true"){
-            console.log("doing it anyway");
             sparks.flash.sendCommand('set_multimeter_visibility','true');
             sparks.flash.sendCommand('set_probe_visibility','true');
  			if(sparks.jsonActivity.disable_multimeter_position){
@@ -101,7 +99,6 @@
           
           var self = this;
           $('button.submit').click(function (event) {
-            console.log("click! "+self);
               self.submitButtonClicked(self, event);
               event.preventDefault();
           });
