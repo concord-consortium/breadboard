@@ -287,6 +287,85 @@ describe 'Activity Creator'
         
         $($forms[0]).find('button').length.should.be 1
     end
+    
+    it 'should be able to embed multichoice questions into an activity'
+    
+      var jsonActivity =
+        {
+          "questions": [
+            {
+              "prompt": "What is the resistance of R1?",
+              "correct_answer": "100",
+              "correct_units": "ohms",
+              "multichoice": ["100", "200"]
+            }
+          ]
+      };
+      
+      var $questionsDiv = $("<div>");
+        
+      var assessment = new sparks.Activity.Assessment();
+      var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+      ac.createQuestions($questionsDiv);
+      
+      var $forms = $questionsDiv.find('form');
+      var $question = $($forms[0]);
+      
+      
+      $question.find('select').length.should.be 2
+      var $select = $($question.find('select')[0])
+      $select.find('option').length.should.be 2
+      $select.find('option')[0].innerHTML.should.be "100"
+      $select.find('option')[1].innerHTML.should.be "200"
+      
+    end
+    
+    it 'should be able to embed multichoice questions into an activity with calculated distrators'
+    
+      var jsonActivity =
+        {
+          "circuit": [
+            {
+              "type": "resistor",
+              "UID": "r5",
+              "connections": "b2,b3",
+              "resistance": "100"
+            },
+            {
+              "type": "resistor",
+              "UID": "r6",
+              "connections": "b2,b3",
+              "resistance": "200" 
+            }
+          ],
+          "questions": [
+            {
+              "prompt": "What is the resistance of R1?",
+              "correct_answer": "100",
+              "correct_units": "ohms",
+              "multichoice": ["[${r5.resistance}]", "[${r5.resistance}/2]"]
+            }
+          ]
+      };
+      
+      var $questionsDiv = $("<div>");
+        
+      var assessment = new sparks.Activity.Assessment();
+      var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+      ac.createBreadboard();
+      ac.createQuestions($questionsDiv);
+      
+      var $forms = $questionsDiv.find('form');
+      var $question = $($forms[0]);
+      
+      
+      $question.find('select').length.should.be 2
+      var $select = $($question.find('select')[0])
+      $select.find('option').length.should.be 2
+      $select.find('option')[0].innerHTML.should.be "100"
+      $select.find('option')[1].innerHTML.should.be "50"
+      
+    end
       
   end
 
