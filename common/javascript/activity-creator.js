@@ -43,6 +43,11 @@
           if (!!preprompt){
             question.prompt = preprompt + " " + question.prompt;
           }
+          if (!!question.multichoice){
+            $.each(question.multichoice, function(i, choice){
+              question.multichoice[i] = self.calculateCorrectAnswer(choice);
+            });
+          }
           assessment.addQuestion(question,id);
           id++;
           
@@ -65,10 +70,8 @@
     },
     
     /*
-      When passed a string such as "100 + ${r1.resistance} / ${r2.nominalResistance}"
-      This will first substitute the actual values of the variables in ${...}, assuming
-      the components and their properties exist in the circuit, and then perform the
-      calculation.
+      When passed a string such as "[100 + ${r1.resistance} / ${r2.nominalResistance}] ohms"
+      This will first take everything found in [...] and substitute in the calculated sum
     */
     calculateCorrectAnswer: function(answer){
       if (!isNaN(Number(answer))){
@@ -77,11 +80,11 @@
       
       var self = this;
         
-      var sumPattern = /\[[^\]]+\]/g  //between [ ]
+      var sumPattern = /\[[^\]]+\]/g  // find anything between [ ]
       var matches= answer.match(sumPattern);
       if (!!matches){      	
    	   $.each(matches, function(i, match){
-    	  	var expression = match;//.substring(1,match.length-1);
+    	  	var expression = match;
     	  	var result = self.calculateSum(expression);
     	  	answer = answer.replace(match,result);
     	  });
@@ -90,7 +93,12 @@
     },
     
     
-    
+    /*
+      When passed a string such as "100 + ${r1.resistance} / ${r2.nominalResistance}"
+      this will first substitute the actual values of the variables in ${...}, assuming
+      the components and their properties exist in the circuit, and then perform the
+      calculation.
+    */
    calculateSum: function(sum){
    	  var varPattern = /\${[^}]+}/g  //  ${ X } --> value of X
       var matches = sum.match(varPattern);
