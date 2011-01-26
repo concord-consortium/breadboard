@@ -148,29 +148,25 @@
         $form.addClass("question_form");
         
         function addInputs($html, question){
-		  if (!question.multichoice){
+          if (!question.multichoice){
+            $html.append(
+              $("<input>").attr("id",id+"_input"), "   "
+            );
+          } else {
+            var $select = $("<select>").attr("id",id+"_multichoice");
+            
+            $.each(question.multichoice, function(i,answer_option){
+              answer_option = self.calculateCorrectAnswer(answer_option);
+              //reformat units
+              answer_option = answer_option.replace("ohms","&#x2126;"); //reformat "ohm" to the letter omega
+              answer_option = answer_option.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
 
-           $html.append(
-             $("<input>").attr("id",id+"_input"), "   "
-           );
-		  } else {
-		  	var $select = $("<select>").attr("id",id+"_multichoice");
-		  	
-		  	$.each(question.multichoice, function(i,answer_option){
-		  	 //if val is a calculation and not a string, calculate some_answer_option using self.calculateCorrectAnswer()
-//		  	 if(answer_option.charAt(0)=='$'){
-		  	  answer_option = self.calculateCorrectAnswer(answer_option);
-//		  	 }
-			//reformat units
-			  answer_option = answer_option.replace("ohms","&#x2126;"); //reformat "ohm" to the letter omega
-		  	  answer_option = answer_option.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
-		  	  
-		  	 $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));	
-		  	});
-		  	$html.append($select, "   ");
-		  }
-		  
-		  if (!!question.correct_units){
+              $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));	
+            });
+            $html.append($select, "   ");
+          }
+
+          if (!!question.correct_units){
              var $select = $("<select>").attr("id",id+"_units");
              var options = ["Units...","&#x00b5;V","mV","V","&#x2126;","k&#x2126;","M&#x2126;","&#x00b5;A","mA","A"];
              $.each(options, function(i, val){
@@ -179,7 +175,7 @@
              $html.append($select, "   ");
           }
 
-		  
+
           $html.append(
             $("<br>")
           );
