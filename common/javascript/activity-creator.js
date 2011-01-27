@@ -147,6 +147,18 @@
         var $form = $("<form>");
         $form.addClass("question_form");
         
+        if (!!question.image){
+          $div = $("<div>").addClass("question-image");
+          $div.append(
+            $("<img>").attr('src', self.getImgSrc(question.image))
+          );
+          $form.append($div);
+        }
+        
+        $form.append(
+          $("<span>").addClass("prompt").html((i+1) + ".  " + question.prompt), "   "
+        );
+        
         function addInputs($html, question){
           if (!question.multichoice){
             $html.append(
@@ -182,10 +194,6 @@
           id++;
         }
         
-        $form.append(
-          $("<span>").addClass("prompt").html((i+1) + ".  " + question.prompt), "   "
-        );
-        
         if (!question.subquestions){
           addInputs($form, question);
         } else {
@@ -212,6 +220,13 @@
         
         $element.append($form);
       });
+    },
+    
+    getImgSrc: function(url) {
+      if (url.indexOf("http") > -1){
+        return url;
+      }
+      return "woo";
     }
   };
 })();

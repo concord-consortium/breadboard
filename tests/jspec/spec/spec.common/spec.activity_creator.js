@@ -281,6 +281,33 @@ describe 'Activity Creator'
       $select.find('option')[1].innerHTML.should.be "50"
       
     end
+    
+    it 'should be able to embed questions with images'
+    
+      var jsonActivity =
+        {
+          "questions": [
+            {
+              "image": "http://test.com/test.jpg",
+              "prompt": "What is this image?",
+              "correct_answer": "A test"
+            }
+          ]
+      };
+      
+      var $questionsDiv = $("<div>");
+        
+      var assessment = new sparks.Activity.Assessment();
+      var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+      ac.createQuestions($questionsDiv);
+      
+      var $forms = $questionsDiv.find('form');
+      var $question = $($forms[0]);
+      
+      $question.find('img').length.should.be 1
+      $($question.find('img')[0]).attr('src').should.be "http://test.com/test.jpg"
+    end
+    
       
   end
 
