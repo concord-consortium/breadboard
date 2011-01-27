@@ -38,9 +38,10 @@
     sparks.config.Activity = sparks.activities.sm.Activity;
     
     sparks.extend(sm.Activity, sparks.Activity, {
-
+      
         // Initial operation on document when it is loaded
         onDocumentReady: function () {
+          console.log("document ready")
             var self = this;
             
             var jsonActivityName = window.location.hash;
@@ -50,35 +51,59 @@
             }
             
             if (sparks.debug && !!sparks.jsonActivity){
-              self.onActivityReady();
-              self.startTry();
+              self.activityLoaded();
             } else {
               console.log("loading script for "+jsonActivityName);
               var self = this;
               $.getScript("http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/"+jsonActivityName, function() {
-                self.onActivityReady();
-                self.startTry();
+                self.activityLoaded();
               });
             }
-            
-            
+        },
+        
+        activityLoaded: function() {
+          console.log("ENTER: activityLoaded")
+          if (!!sparks.jsonActivity.circuit){
+            this.loadFlash();
+            // this will then call the other activity.js's initActivity (to be changed)
+            // which will call onActivityReady
+          } else {
+            this.onActivityReady();
+          }
+        },
+        
+        loadFlash: function () {
+          $('#breadboard').flash({
+              src: 'breadboardActivity1.swf',
+              id: 'breadboardActivity1',
+              name: 'breadboardActivity1',
+              width: 900,
+              height: 600,
+              quality: 'high',
+              allowFullScreen: false,
+              allowScriptAccess: 'sameDomain'
+          });
         },
         
         onActivityReady: function () {
+          console.log("activity ready")
           $('#title').text(sparks.jsonActivity.title);
           
           var ac = new sparks.ActivityConstructor(sparks.jsonActivity, this.assessment);
-          ac.createBreadboard();
+          
           
           this.multimeter = new sparks.circuit.Multimeter2();
-          
-          
-          if (sparks.jsonActivity.show_multimeter === "true"){
-            sparks.flash.sendCommand('set_multimeter_visibility','true');
-            sparks.flash.sendCommand('set_probe_visibility','true');
- 			if(sparks.jsonActivity.disable_multimeter_position){
- 				this.multimeter.set_disable_multimeter_position(sparks.jsonActivity.disable_multimeter_position);
- 			}
+          if (!!sparks.jsonActivity.circuit){
+            ac.createBreadboard();
+            
+            if (sparks.jsonActivity.show_multimeter === "true"){
+              sparks.flash.sendCommand('set_multimeter_visibility','true');
+              sparks.flash.sendCommand('set_probe_visibility','true');
+            
+              if(sparks.jsonActivity.disable_multimeter_position){
+                this.multimeter.set_disable_multimeter_position(sparks.jsonActivity.disable_multimeter_position);
+              }
+            }
           }
           
           var $qa = $('#questions_area');
@@ -107,6 +132,9 @@
               self.submitButtonClicked(self, event);
               event.preventDefault();
           });
+          
+          
+          this.startTry();
         },
 
         // Initializations that can be done only when the flash movie is loaded

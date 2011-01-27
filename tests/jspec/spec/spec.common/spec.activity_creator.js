@@ -2,6 +2,8 @@ describe 'Activity Creator'
 
   before_each
     breadModel('clear');
+    $('#questions_area').remove();
+    $('#breadboard').remove();
   end
   
   describe 'Circuit creation'
@@ -308,6 +310,66 @@ describe 'Activity Creator'
       $($question.find('img')[0]).attr('src').should.be "http://test.com/test.jpg"
     end
     
+    it 'should be able to have questions and no breadboard'
+    
+    sparks.debug = true;
+    sparks.jsonActivity = {
+        "title": "woo",
+        "questions": [
+          {
+            "prompt": "Any circuit here?",
+            "correct_answer": "No!"
+          }
+        ]
+      };
+      
+      var $breadboardDiv = $("<div>").attr('id','breadboard');
+      var $questionsDiv = $("<div>").attr('id','questions_area');
+      $(document.body).append($breadboardDiv);
+      $(document.body).append($questionsDiv);
+      
+      stub(sparks.util, 'readCookie').and_return(null);
+      
+      init();
+      
+      $questionsDiv.find('form').length.should.be 1
+      $("#breadboard").html().length.should.be 0
+    end
+    
+    it 'should be able to include a flash breadboard'
+    
+    sparks.debug = true;
+    sparks.jsonActivity = {
+        "title": "woo",
+        "circuit": [
+          {
+            "type": "resistor",
+            "UID": "r5",
+            "connections": "b2,b3",
+            "resistance": "100"
+          }
+        ],
+        "questions": [
+          {
+            "prompt": "Any circuit here?",
+            "correct_answer": "Yes!"
+          }
+        ]
+      };
+      
+      var $breadboardDiv = $("<div>").attr('id','breadboard');
+      var $questionsDiv = $("<div>").attr('id','questions_area');
+      $(document.body).append($breadboardDiv);
+      $(document.body).append($questionsDiv);
+      
+      stub(sparks.util, 'readCookie').and_return(null);
+      
+      init();
+      sparks.activity.onActivityReady();
+      
+      $questionsDiv.find('form').length.should.be 1
+      $("#breadboard").html().length.should.be_greater_than 0
+    end
       
   end
 

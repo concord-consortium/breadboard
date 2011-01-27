@@ -1092,6 +1092,144 @@ jQuery.cookie = function(name, value, options) {
  * Version 2.1.1
  */
 (function($){$.fn.bgIframe=$.fn.bgiframe=function(s){if($.browser.msie&&/6.0/.test(navigator.userAgent)){s=$.extend({top:'auto',left:'auto',width:'auto',height:'auto',opacity:true,src:'javascript:false;'},s||{});var prop=function(n){return n&&n.constructor==Number?n+'px':n;},html='<iframe class="bgiframe"frameborder="0"tabindex="-1"src="'+s.src+'"'+'style="display:block;position:absolute;z-index:-1;'+(s.opacity!==false?'filter:Alpha(Opacity=\'0\');':'')+'top:'+(s.top=='auto'?'expression(((parseInt(this.parentNode.currentStyle.borderTopWidth)||0)*-1)+\'px\')':prop(s.top))+';'+'left:'+(s.left=='auto'?'expression(((parseInt(this.parentNode.currentStyle.borderLeftWidth)||0)*-1)+\'px\')':prop(s.left))+';'+'width:'+(s.width=='auto'?'expression(this.parentNode.offsetWidth+\'px\')':prop(s.width))+';'+'height:'+(s.height=='auto'?'expression(this.parentNode.offsetHeight+\'px\')':prop(s.height))+';'+'"/>';return this.each(function(){if($('> iframe.bgiframe',this).length==0)this.insertBefore(document.createElement(html),this.firstChild);});}return this;};})(jQuery);
+;(function(){
+
+var $$;
+
+$$ = jQuery.fn.flash = function(htmlOptions, pluginOptions, replace, update) {
+
+	var block = replace || $$.replace;
+
+	pluginOptions = $$.copy($$.pluginOptions, pluginOptions);
+
+	if(!$$.hasFlash(pluginOptions.version)) {
+		if(pluginOptions.expressInstall && $$.hasFlash(6,0,65)) {
+			var expressInstallOptions = {
+				flashvars: {
+					MMredirectURL: location,
+					MMplayerType: 'PlugIn',
+					MMdoctitle: jQuery('title').text()
+				}
+			};
+		} else if (pluginOptions.update) {
+			block = update || $$.update;
+		} else {
+			return this;
+		}
+	}
+
+	htmlOptions = $$.copy($$.htmlOptions, expressInstallOptions, htmlOptions);
+
+	return this.each(function(){
+		block.call(this, $$.copy(htmlOptions));
+	});
+
+};
+$$.copy = function() {
+	var options = {}, flashvars = {};
+	for(var i = 0; i < arguments.length; i++) {
+		var arg = arguments[i];
+		if(arg == undefined) continue;
+		jQuery.extend(options, arg);
+		if(arg.flashvars == undefined) continue;
+		jQuery.extend(flashvars, arg.flashvars);
+	}
+	options.flashvars = flashvars;
+	return options;
+};
+/*
+ * @name flash.hasFlash
+ * @desc Check if a specific version of the Flash plugin is installed
+ * @type Boolean
+ *
+**/
+$$.hasFlash = function() {
+	if(/hasFlash\=true/.test(location)) return true;
+	if(/hasFlash\=false/.test(location)) return false;
+	var pv = $$.hasFlash.playerVersion().match(/\d+/g);
+	var rv = String([arguments[0], arguments[1], arguments[2]]).match(/\d+/g) || String($$.pluginOptions.version).match(/\d+/g);
+	for(var i = 0; i < 3; i++) {
+		pv[i] = parseInt(pv[i] || 0);
+		rv[i] = parseInt(rv[i] || 0);
+		if(pv[i] < rv[i]) return false;
+		if(pv[i] > rv[i]) return true;
+	}
+	return true;
+};
+$$.hasFlash.playerVersion = function() {
+	try {
+		try {
+			var axo = new ActiveXObject('ShockwaveFlash.ShockwaveFlash.6');
+			try { axo.AllowScriptAccess = 'always';	}
+			catch(e) { return '6,0,0'; }
+		} catch(e) {}
+		return new ActiveXObject('ShockwaveFlash.ShockwaveFlash').GetVariable('$version').replace(/\D+/g, ',').match(/^,?(.+),?$/)[1];
+	} catch(e) {
+		try {
+			if(navigator.mimeTypes["application/x-shockwave-flash"].enabledPlugin){
+				return (navigator.plugins["Shockwave Flash 2.0"] || navigator.plugins["Shockwave Flash"]).description.replace(/\D+/g, ",").match(/^,?(.+),?$/)[1];
+			}
+		} catch(e) {}
+	}
+	return '0,0,0';
+};
+$$.htmlOptions = {
+	height: 240,
+	flashvars: {},
+	pluginspage: 'http://www.adobe.com/go/getflashplayer',
+	src: '#',
+	type: 'application/x-shockwave-flash',
+	width: 320
+};
+$$.pluginOptions = {
+	expressInstall: false,
+	update: true,
+	version: '6.0.65'
+};
+$$.replace = function(htmlOptions) {
+	this.innerHTML = '<div class="alt">'+this.innerHTML+'</div>';
+	jQuery(this)
+		.addClass('flash-replaced')
+		.prepend($$.transform(htmlOptions));
+};
+$$.update = function(htmlOptions) {
+	var url = String(location).split('?');
+	url.splice(1,0,'?hasFlash=true&');
+	url = url.join('');
+	var msg = '<p>This content requires the Flash Player. <a href="http://www.adobe.com/go/getflashplayer">Download Flash Player</a>. Already have Flash Player? <a href="'+url+'">Click here.</a></p>';
+	this.innerHTML = '<span class="alt">'+this.innerHTML+'</span>';
+	jQuery(this)
+		.addClass('flash-update')
+		.prepend(msg);
+};
+function toAttributeString() {
+	var s = '';
+	for(var key in this)
+		if(typeof this[key] != 'function')
+			s += key+'="'+this[key]+'" ';
+	return s;
+};
+function toFlashvarsString() {
+	var s = '';
+	for(var key in this)
+		if(typeof this[key] != 'function')
+			s += key+'='+encodeURIComponent(this[key])+'&';
+	return s.replace(/&$/, '');
+};
+$$.transform = function(htmlOptions) {
+	htmlOptions.toString = toAttributeString;
+	if(htmlOptions.flashvars) htmlOptions.flashvars.toString = toFlashvarsString;
+	return '<embed ' + String(htmlOptions) + '/>';
+};
+
+if (window.attachEvent) {
+	window.attachEvent("onbeforeunload", function(){
+		__flash_unloadHandler = function() {};
+		__flash_savedUnloadHandler = function() {};
+	});
+}
+
+})();
 (function (){
     RestDS = function (readKey,writeKey,_post_path){
         this.data = "";
@@ -1732,10 +1870,27 @@ sparks.util.getRubric = function (id, callback, local) {
     sparks.config.root_dir = '../..';
 
     $(document).ready(function () {
-
-
+        init();
     });
 
+    this.init = function () {
+      console.log('ENTER init');
+      try {
+          var activity = new sparks.config.Activity();
+          activity.learner_id = sparks.util.readCookie('learner_id');
+          if (activity.learner_id) {
+              var put_path = unescape(sparks.util.readCookie('save_path')) || 'undefined_path';
+              console.log('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
+              activity.setDataService(new RestDS(null, null, put_path));
+          }
+          activity.onDocumentReady();
+          activity.onFlashReady();
+          sparks.activity = activity;
+      }
+      catch (e) {
+          console.log('ERROR: init: ' + e);
+      }
+    };
 
     /*
      * This function gets called from Flash after Flash has set up the external
@@ -1743,22 +1898,8 @@ sparks.util.getRubric = function (id, callback, local) {
      * initiated from this function.
      */
     this.initActivity = function () {
-        console.log('ENTER initActivity');
-        try {
-            var activity = new sparks.config.Activity();
-            activity.learner_id = sparks.util.readCookie('learner_id');
-            if (activity.learner_id) {
-                var put_path = unescape(sparks.util.readCookie('save_path')) || 'undefined_path';
-                console.log('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
-                activity.setDataService(new RestDS(null, null, put_path));
-            }
-            activity.onDocumentReady();
-            activity.onFlashReady();
-            sparks.activity = activity;
-        }
-        catch (e) {
-            console.log('ERROR: initActivity: ' + e);
-        }
+        console.log("flash loaded");
+        sparks.activity.onActivityReady();
     };
 
     sparks.Activity = function () {
@@ -1928,26 +2069,37 @@ sparks.util.getRubric = function (id, callback, local) {
         var $form = $("<form>");
         $form.addClass("question_form");
 
+        if (!!question.image){
+          $div = $("<div>").addClass("question-image");
+          $div.append(
+            $("<img>").attr('src', self.getImgSrc(question.image))
+          );
+          $form.append($div);
+        }
+
+        $form.append(
+          $("<span>").addClass("prompt").html((i+1) + ".  " + question.prompt), "   "
+        );
+
         function addInputs($html, question){
-		  if (!question.multichoice){
+          if (!question.multichoice){
+            $html.append(
+              $("<input>").attr("id",id+"_input"), "   "
+            );
+          } else {
+            var $select = $("<select>").attr("id",id+"_multichoice");
 
-           $html.append(
-             $("<input>").attr("id",id+"_input"), "   "
-           );
-		  } else {
-		  	var $select = $("<select>").attr("id",id+"_multichoice");
+            $.each(question.multichoice, function(i,answer_option){
+              answer_option = self.calculateCorrectAnswer(answer_option);
+              answer_option = answer_option.replace("ohms","&#x2126;"); //reformat "ohm" to the letter omega
+              answer_option = answer_option.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
 
-		  	$.each(question.multichoice, function(i,answer_option){
-		  	  answer_option = self.calculateCorrectAnswer(answer_option);
-			  answer_option = answer_option.replace("ohms","&#x2126;"); //reformat "ohm" to the letter omega
-		  	  answer_option = answer_option.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
+              $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));
+            });
+            $html.append($select, "   ");
+          }
 
-		  	 $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));
-		  	});
-		  	$html.append($select, "   ");
-		  }
-
-		  if (!!question.correct_units){
+          if (!!question.correct_units){
              var $select = $("<select>").attr("id",id+"_units");
              var options = ["Units...","&#x00b5;V","mV","V","&#x2126;","k&#x2126;","M&#x2126;","&#x00b5;A","mA","A"];
              $.each(options, function(i, val){
@@ -1962,10 +2114,6 @@ sparks.util.getRubric = function (id, callback, local) {
           );
           id++;
         }
-
-        $form.append(
-          $("<span>").addClass("prompt").html((i+1) + ".  " + question.prompt), "   "
-        );
 
         if (!question.subquestions){
           addInputs($form, question);
@@ -1993,6 +2141,13 @@ sparks.util.getRubric = function (id, callback, local) {
 
         $element.append($form);
       });
+    },
+
+    getImgSrc: function(url) {
+      if (url.indexOf("http") > -1){
+        return url;
+      }
+      return "woo";
     }
   };
 })();
@@ -4280,6 +4435,11 @@ sparks.util.getRubric = function (id, callback, local) {
 
     sparks.config.debug = jQuery.url.param("debug") !== undefined;
 
+    $(document).ready(function () {
+
+
+    });
+
     sm.Activity = function () {
         sm.Activity.uber.init.apply(this);
         this.log = new sm.ActivityLog();
@@ -4292,6 +4452,7 @@ sparks.util.getRubric = function (id, callback, local) {
     sparks.extend(sm.Activity, sparks.Activity, {
 
         onDocumentReady: function () {
+          console.log("document ready")
             var self = this;
 
             var jsonActivityName = window.location.hash;
@@ -4300,31 +4461,58 @@ sparks.util.getRubric = function (id, callback, local) {
               jsonActivityName = "series-interpretive";
             }
 
-            console.log("loading script for "+jsonActivityName);
-            var self = this;
+            if (sparks.debug && !!sparks.jsonActivity){
+              self.activityLoaded();
+            } else {
+              console.log("loading script for "+jsonActivityName);
+              var self = this;
+              $.getScript("http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/"+jsonActivityName, function() {
+                self.activityLoaded();
+              });
+            }
+        },
 
-            $.getScript("activities/"+jsonActivityName + '.js', function() {
-              console.log("loaded "+jsonActivityName);
-              self.onActivityReady();
-              self.startTry();
-            });
+        activityLoaded: function() {
+          console.log("ENTER: activityLoaded")
+          if (!!sparks.jsonActivity.circuit){
+            this.loadFlash();
+          } else {
+            this.onActivityReady();
+          }
+        },
+
+        loadFlash: function () {
+          $('#breadboard').flash({
+              src: 'breadboardActivity1.swf',
+              id: 'breadboardActivity1',
+              name: 'breadboardActivity1',
+              width: 900,
+              height: 600,
+              quality: 'high',
+              allowFullScreen: false,
+              allowScriptAccess: 'sameDomain'
+          });
         },
 
         onActivityReady: function () {
+          console.log("activity ready")
           $('#title').text(sparks.jsonActivity.title);
 
           var ac = new sparks.ActivityConstructor(sparks.jsonActivity, this.assessment);
-          ac.createBreadboard();
+
 
           this.multimeter = new sparks.circuit.Multimeter2();
+          if (!!sparks.jsonActivity.circuit){
+            ac.createBreadboard();
 
+            if (sparks.jsonActivity.show_multimeter === "true"){
+              sparks.flash.sendCommand('set_multimeter_visibility','true');
+              sparks.flash.sendCommand('set_probe_visibility','true');
 
-          if (sparks.jsonActivity.show_multimeter === "true"){
-            sparks.flash.sendCommand('set_multimeter_visibility','true');
-            sparks.flash.sendCommand('set_probe_visibility','true');
- 			if(sparks.jsonActivity.disable_multimeter_position){
- 				this.multimeter.set_disable_multimeter_position(sparks.jsonActivity.disable_multimeter_position);
- 			}
+              if(sparks.jsonActivity.disable_multimeter_position){
+                this.multimeter.set_disable_multimeter_position(sparks.jsonActivity.disable_multimeter_position);
+              }
+            }
           }
 
           var $qa = $('#questions_area');
@@ -4353,6 +4541,9 @@ sparks.util.getRubric = function (id, callback, local) {
               self.submitButtonClicked(self, event);
               event.preventDefault();
           });
+
+
+          this.startTry();
         },
 
         onFlashReady: function () {
@@ -4387,7 +4578,6 @@ sparks.util.getRubric = function (id, callback, local) {
             for (var i = 1; i < this.forms.length; ++i) {
                 this.disableForm(i);
             }
-
         },
 
         completedTry: function () {
