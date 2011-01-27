@@ -49,12 +49,17 @@
               jsonActivityName = "series-interpretive";
             }
             
-            console.log("loading script for "+jsonActivityName);
-            var self = this;
-            $.getScript("http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/"+jsonActivityName, function() {
+            if (sparks.debug && !!sparks.jsonActivity){
               self.onActivityReady();
               self.startTry();
-            });
+            } else {
+              console.log("loading script for "+jsonActivityName);
+              var self = this;
+              $.getScript("http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/"+jsonActivityName, function() {
+                self.onActivityReady();
+                self.startTry();
+              });
+            }
             
             
         },
