@@ -51,12 +51,12 @@
             
             console.log("loading script for "+jsonActivityName);
             var self = this;
-            
-            $.getScript("activities/"+jsonActivityName + '.js', function() {
-              console.log("loaded "+jsonActivityName);
+            $.getScript("http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/"+jsonActivityName, function() {
               self.onActivityReady();
               self.startTry();
             });
+            
+            
         },
         
         onActivityReady: function () {
@@ -128,10 +128,6 @@
             $('.next_button').hide();
             
             var options = null;
-            // this.resistor1 = new sparks.circuit.Resistor4band('resistor1');
-            //             this.resistor1.randomize(options);
-            //             breadModel('insert', 'resistor', 'b23,b17', this.resistor1.getRealValue(), 'resistor1');
-            //             flash.sendCommand('insert_component', 'resistor', 'b23,b17','4band',this.resistor1.colors);
             
             
             breadModel('updateFlash');
@@ -142,24 +138,6 @@
             for (var i = 1; i < this.forms.length; ++i) {
                 this.disableForm(i);
             }
-            
-            // components = getBreadBoard().components;
-            // var r1 = components['r1'].nominalResistance;
-            // var r2 = components['r2'].nominalResistance;
-            // var r3 = components['r3'].nominalResistance;
-            // var rTot = r1+r2+r3;
-            // 
-            // this.assessment.addMeasurmentQuestion("Resistance of R1", r1, "&#x2126;", 1);
-            // this.assessment.addMeasurmentQuestion("Resistance of R2", r2, "&#x2126;", 1);
-            // this.assessment.addMeasurmentQuestion("Resistance of R3", r3, "&#x2126;", 1);
-            // 
-            // this.assessment.addMeasurmentQuestion("Total Resistance", rTot, "&#x2126;", 2);
-            // 
-            // this.assessment.addMeasurmentQuestion("Voltage across R1", 9 * (r1/rTot), "V", 1);
-            // this.assessment.addMeasurmentQuestion("Voltage across R2", 9 * (r2/rTot), "V", 1);
-            // 
-            // this.assessment.addMeasurmentQuestion("Current through R1", 9 / rTot, "A", 1);
-            // this.assessment.addMeasurmentQuestion("Current through R2", 9 / rTot, "A", 1);
         },
         
         completedTry: function () {
