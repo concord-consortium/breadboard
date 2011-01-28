@@ -2,6 +2,9 @@ describe 'Activity Creator'
 
   before_each
     breadModel('clear');
+  end
+  
+  after_each
     $('#questions_area').remove();
     $('#breadboard').remove();
   end
@@ -308,6 +311,33 @@ describe 'Activity Creator'
       
       $question.find('img').length.should.be 1
       $($question.find('img')[0]).attr('src').should.be "http://test.com/test.jpg"
+    end
+    
+    it 'should be able to embed questions with relative images'
+    
+      var jsonActivity =
+        {
+          "activity_url": "http://test.com/myActivity",
+          "images_url": "http://test.com/images/myActivity",
+          "questions": [
+            {
+              "image": "test.jpg",
+              "prompt": "What is this image?",
+              "correct_answer": "A test"
+            }
+          ]
+      };
+      
+      var $questionsDiv = $("<div>");
+        
+      var assessment = new sparks.Activity.Assessment();
+      var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+      ac.createQuestions($questionsDiv);
+      
+      var $forms = $questionsDiv.find('form');
+      var $question = $($forms[0]);
+      
+      $($question.find('img')[0]).attr('src').should.be "http://test.com/images/myActivity/test.jpg"
     end
     
     it 'should be able to have questions and no breadboard'

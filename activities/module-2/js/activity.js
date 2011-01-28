@@ -23,6 +23,9 @@
     var str = sparks.string;
     var util = sparks.util;
     
+    sparks.activity_base_url = "http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/";
+    sparks.activity_images_base_url = "http://couchdb.cosmos.concord.org/sparks/";
+    
     sparks.config.flash_id = 'breadboardActivity1';
     
     sparks.config.debug = jQuery.url.param("debug") !== undefined;
@@ -55,7 +58,13 @@
             } else {
               console.log("loading script for "+jsonActivityName);
               var self = this;
-              $.getScript("http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/"+jsonActivityName, function() {
+              $.getScript(sparks.activity_base_url+jsonActivityName, function() {
+                if (!sparks.jsonActivity){
+                  console.log("Activity failed to load from "+sparks.activity_base_url+jsonActivityName);
+                  return;
+                }
+                sparks.jsonActivity.activity_url = sparks.activity_base_url+jsonActivityName
+                sparks.jsonActivity.images_url = sparks.activity_images_base_url+jsonActivityName
                 self.activityLoaded();
               });
             }
