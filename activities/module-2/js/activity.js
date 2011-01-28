@@ -100,10 +100,10 @@
           
           var ac = new sparks.ActivityConstructor(sparks.jsonActivity, this.assessment);
           
+          ac.createAndLayoutActivity();
           
-          this.multimeter = new sparks.circuit.Multimeter2();
           if (!!sparks.jsonActivity.circuit){
-            ac.createBreadboard();
+            this.multimeter = new sparks.circuit.Multimeter2();
             
             if (sparks.jsonActivity.show_multimeter === "true"){
               sparks.flash.sendCommand('set_multimeter_visibility','true');
@@ -115,8 +115,6 @@
             }
           }
           
-          var $qa = $('#questions_area');
-          ac.createQuestions($qa);
           
           if (sparks.config.debug) {
               $('.debug_area').show();

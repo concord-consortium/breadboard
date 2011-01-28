@@ -4,9 +4,37 @@
   sparks.ActivityConstructor = function(jsonActivity, assessment){
     this.jsonActivity = jsonActivity;
     this.assessment = assessment;
+    this.embeddingTargets = {
+      $breadboardDiv: null,
+      $imageDiv: null,
+      $questionsDiv: null
+    }
   };
   
   sparks.ActivityConstructor.prototype = {
+    
+    createAndLayoutActivity: function() {
+      if (!!sparks.jsonActivity.circuit){
+        this.createBreadboard();
+      }
+      this.createQuestions();
+      this.layoutActivity();
+    },
+    
+    // not usually necessary. Justs for tests?
+    setEmbeddingTargets: function(targets) {
+      if (!!targets.$breadboardDiv){
+        this.embeddingTargets.$breadboardDiv = targets.$breadboardDiv;
+      }
+      if (!!targets.$imageDiv){
+        this.embeddingTargets.$imageDiv = targets.$imageDiv;
+      }
+      if (!!targets.$questionsDiv){
+        this.embeddingTargets.$questionsDiv = targets.$questionsDiv;
+      }
+    },
+    
+    
     /*
       Creates the breadboard from the JSON representation of the
       circuit. See tests/jspc/spec/spec.common/spec.circuit_constructor
@@ -15,7 +43,6 @@
     createBreadboard: function() {
         
       if (!this.jsonActivity.circuit){
-        console.log("ERROR: No circuit defined");
         return;
       }
       
@@ -26,9 +53,8 @@
       Creates questions from the JSON represenation of the questions,
       and optionally embeds them in the jquery element provided
     */
-    createQuestions: function($element){
+    createQuestions: function(){
       if (!this.jsonActivity.questions){
-        console.log("ERROR: No questions defined");
         return;
       }
       
@@ -63,10 +89,6 @@
         }
         
       });
-      
-      if (!!$element) {
-        this.embedQuestions($element);
-      }
     },
     
     /*
@@ -135,8 +157,29 @@
       console.log("ERROR calculating Sum: Cannot compute the value of "+sum);
       return -1;
    },
+
+   layoutActivity: function() {
+     if (!this.embeddingTargets.$imageDiv){
+         this.embeddingTargets.$imageDiv = $('#image');
+      }
+     if (!this.embeddingTargets.$questionsDiv){
+        this.embeddingTargets.$questionsDiv = $('#questions_area');
+     }
+     
+     if (!!this.jsonActivity.image){
+        $imagediv = $("<div>").addClass("question-image");
+        $imagediv.append(
+          $("<img>").attr('src', this.getImgSrc(this.jsonActivity.image))
+        );
+        this.embeddingTargets.$imageDiv.append($imagediv);
+      }
+      
+     if (!!this.jsonActivity.questions){
+       this.embedQuestions(this.embeddingTargets.$questionsDiv);
+     }
+   },
     
-    embedQuestions: function($element){
+   embedQuestions: function($element){
       var questions = this.jsonActivity.questions;
       
       var self = this;

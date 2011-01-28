@@ -1926,9 +1926,36 @@ sparks.util.getRubric = function (id, callback, local) {
   sparks.ActivityConstructor = function(jsonActivity, assessment){
     this.jsonActivity = jsonActivity;
     this.assessment = assessment;
+    this.embeddingTargets = {
+      $breadboardDiv: null,
+      $imageDiv: null,
+      $questionsDiv: null
+    }
   };
 
   sparks.ActivityConstructor.prototype = {
+
+    createAndLayoutActivity: function() {
+      if (!!sparks.jsonActivity.circuit){
+        this.createBreadboard();
+      }
+      this.createQuestions();
+      this.layoutActivity();
+    },
+
+    setEmbeddingTargets: function(targets) {
+      if (!!targets.$breadboardDiv){
+        this.embeddingTargets.$breadboardDiv = targets.$breadboardDiv;
+      }
+      if (!!targets.$imageDiv){
+        this.embeddingTargets.$imageDiv = targets.$imageDiv;
+      }
+      if (!!targets.$questionsDiv){
+        this.embeddingTargets.$questionsDiv = targets.$questionsDiv;
+      }
+    },
+
+
     /*
       Creates the breadboard from the JSON representation of the
       circuit. See tests/jspc/spec/spec.common/spec.circuit_constructor
@@ -1937,7 +1964,6 @@ sparks.util.getRubric = function (id, callback, local) {
     createBreadboard: function() {
 
       if (!this.jsonActivity.circuit){
-        console.log("ERROR: No circuit defined");
         return;
       }
 
@@ -1948,9 +1974,8 @@ sparks.util.getRubric = function (id, callback, local) {
       Creates questions from the JSON represenation of the questions,
       and optionally embeds them in the jquery element provided
     */
-    createQuestions: function($element){
+    createQuestions: function(){
       if (!this.jsonActivity.questions){
-        console.log("ERROR: No questions defined");
         return;
       }
 
@@ -1985,10 +2010,6 @@ sparks.util.getRubric = function (id, callback, local) {
         }
 
       });
-
-      if (!!$element) {
-        this.embedQuestions($element);
-      }
     },
 
     /*
@@ -2058,7 +2079,28 @@ sparks.util.getRubric = function (id, callback, local) {
       return -1;
    },
 
-    embedQuestions: function($element){
+   layoutActivity: function() {
+     if (!this.embeddingTargets.$imageDiv){
+         this.embeddingTargets.$imageDiv = $('#image');
+      }
+     if (!this.embeddingTargets.$questionsDiv){
+        this.embeddingTargets.$questionsDiv = $('#questions_area');
+     }
+
+     if (!!this.jsonActivity.image){
+        $imagediv = $("<div>").addClass("question-image");
+        $imagediv.append(
+          $("<img>").attr('src', this.getImgSrc(this.jsonActivity.image))
+        );
+        this.embeddingTargets.$imageDiv.append($imagediv);
+      }
+
+     if (!!this.jsonActivity.questions){
+       this.embedQuestions(this.embeddingTargets.$questionsDiv);
+     }
+   },
+
+   embedQuestions: function($element){
       var questions = this.jsonActivity.questions;
 
       var self = this;
@@ -4507,10 +4549,10 @@ sparks.util.getRubric = function (id, callback, local) {
 
           var ac = new sparks.ActivityConstructor(sparks.jsonActivity, this.assessment);
 
+          ac.createAndLayoutActivity();
 
-          this.multimeter = new sparks.circuit.Multimeter2();
           if (!!sparks.jsonActivity.circuit){
-            ac.createBreadboard();
+            this.multimeter = new sparks.circuit.Multimeter2();
 
             if (sparks.jsonActivity.show_multimeter === "true"){
               sparks.flash.sendCommand('set_multimeter_visibility','true');
@@ -4522,8 +4564,6 @@ sparks.util.getRubric = function (id, callback, local) {
             }
           }
 
-          var $qa = $('#questions_area');
-          ac.createQuestions($qa);
 
           if (sparks.config.debug) {
               $('.debug_area').show();

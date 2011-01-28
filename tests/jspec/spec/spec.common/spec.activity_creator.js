@@ -52,7 +52,7 @@ describe 'Activity Creator'
           assessment.questions.length.should.be 0
       
           var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
-          ac.createQuestions();
+          ac.createAndLayoutActivity();
       
           assessment.questions.length.should.be 1
           assessment.questions[0].prompt.should.be "What is the resistance of R1?"
@@ -94,8 +94,7 @@ describe 'Activity Creator'
         var assessment = new sparks.Activity.Assessment();
     
         var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
-        ac.createBreadboard();
-        ac.createQuestions();
+        ac.createAndLayoutActivity();
     
         assessment.questions.length.should.be 1
         assessment.questions[0].correct_answer.should.be 300
@@ -122,8 +121,11 @@ describe 'Activity Creator'
       var $questionsDiv = $("<div>");
         
       var assessment = new sparks.Activity.Assessment();
+      
       var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
-      ac.createQuestions($questionsDiv);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      
+      ac.createAndLayoutActivity($questionsDiv);
       
       var $forms = $questionsDiv.find('form');
       
@@ -185,7 +187,8 @@ describe 'Activity Creator'
     
         var assessment = new sparks.Activity.Assessment();
         var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
-        ac.createQuestions($questionsDiv);
+        ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+        ac.createAndLayoutActivity();
         
         var $forms = $questionsDiv.find('form');
 
@@ -226,7 +229,8 @@ describe 'Activity Creator'
         
       var assessment = new sparks.Activity.Assessment();
       var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
-      ac.createQuestions($questionsDiv);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.createAndLayoutActivity();
       
       var $forms = $questionsDiv.find('form');
       var $question = $($forms[0]);
@@ -272,8 +276,8 @@ describe 'Activity Creator'
         
       var assessment = new sparks.Activity.Assessment();
       var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
-      ac.createBreadboard();
-      ac.createQuestions($questionsDiv);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.createAndLayoutActivity();
       
       var $forms = $questionsDiv.find('form');
       var $question = $($forms[0]);
@@ -304,7 +308,8 @@ describe 'Activity Creator'
         
       var assessment = new sparks.Activity.Assessment();
       var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
-      ac.createQuestions($questionsDiv);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.createAndLayoutActivity();
       
       var $forms = $questionsDiv.find('form');
       var $question = $($forms[0]);
@@ -332,7 +337,8 @@ describe 'Activity Creator'
         
       var assessment = new sparks.Activity.Assessment();
       var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
-      ac.createQuestions($questionsDiv);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.createAndLayoutActivity();
       
       var $forms = $questionsDiv.find('form');
       var $question = $($forms[0]);
@@ -340,10 +346,31 @@ describe 'Activity Creator'
       $($question.find('img')[0]).attr('src').should.be "http://test.com/images/myActivity/test.jpg"
     end
     
+    it 'should be able to embed images in main body of page'
+    
+      var jsonActivity =
+        {
+          "activity_url": "http://test.com/myActivity",
+          "images_url": "http://test.com/images/myActivity",
+          "image": "test.jpg"
+      };
+      
+      var $imageDiv = $("<div>");
+        
+      var assessment = new sparks.Activity.Assessment();
+      var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+      ac.setEmbeddingTargets({$imageDiv: $imageDiv});
+      ac.createAndLayoutActivity();
+      
+      var $img = $imageDiv.find('img');
+      $img.length.should.be 1
+      $($imageDiv.find('img')[0]).attr('src').should.be "http://test.com/images/myActivity/test.jpg"
+    end
+    
     it 'should be able to have questions and no breadboard'
     
-    sparks.debug = true;
-    sparks.jsonActivity = {
+      sparks.debug = true;
+      sparks.jsonActivity = {
         "title": "woo",
         "questions": [
           {
