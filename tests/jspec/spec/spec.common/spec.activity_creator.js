@@ -244,6 +244,81 @@ describe 'Activity Creator'
       
     end
     
+    it 'should be able to embed checkbox and radio multichoice questions into an activity'
+    
+      var jsonActivity =
+        {
+          "questions": [
+            {
+              "prompt": "What is the resistance of R1?",
+              "correct_answer": "1",
+              "correct_units": "ohms",
+              "multichoice": ["0", "1", "2"],
+              "checkbox": "true"
+            },
+            {
+              "prompt": "What is the resistance of R1?",
+              "correct_answer": "100",
+              "correct_units": "ohms",
+              "multichoice": ["0", "100", "200", "300"],
+              "radio": "true"
+            },
+            {
+              "prompt": "What is the resistance of R1?",
+              "correct_answer": "100",
+              "correct_units": "ohms",
+              "multichoice": ["0", "100", "200", "300"],
+              "radio": "true"
+            }
+          ]
+      };
+      
+      var $questionsDiv = $("<div>");
+        
+      var assessment = new sparks.Activity.Assessment();
+      var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.createAndLayoutActivity();
+      
+      var $forms = $questionsDiv.find('form');
+      var $question = $($forms[0]);
+      
+      
+      $question.find('input').length.should.be 3
+      
+      var checkGroupName = $($question.find('input')[0]).attr('name');
+      checkGroupName.length.should.be_greater_than 0
+      
+      $question.find('input').each(function(i, val){
+        $val = $(val);
+        $val.attr("type").should.be "checkbox"
+        $val.attr("name").should.be checkGroupName
+        $val.attr("value").should.be ""+i
+        $val.next().html().should.be " "+i
+      });
+      
+      $question = $($forms[1]);
+      
+      var radioGroupName = $($question.find('input')[0]).attr('name');
+      radioGroupName.should.not.be checkGroupName
+      
+      $question.find('input').length.should.be 4
+      $question.find('input').each(function(i, val){
+        $val = $(val);
+        $val.attr("type").should.be "radio"
+        $val.attr("name").should.be radioGroupName
+        $val.attr("value").should.be ""+(i*100)
+        $val.next().html().should.be " "+(i*100)
+      });
+      
+      $question = $($forms[2]);
+      
+      var radioGroupName2 = $($question.find('input')[0]).attr('name');
+      radioGroupName2.should.not.be checkGroupName
+      radioGroupName2.should.not.be radioGroupName
+      
+    end
+    
     it 'should be able to embed multichoice questions into an activity with calculated distrators'
     
       var jsonActivity =

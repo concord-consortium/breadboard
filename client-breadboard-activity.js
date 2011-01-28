@@ -2129,16 +2129,31 @@ sparks.util.getRubric = function (id, callback, local) {
               $("<input>").attr("id",id+"_input"), "   "
             );
           } else {
-            var $select = $("<select>").attr("id",id+"_multichoice");
+            if (!!question.checkbox || !!question.radio){
+              $.each(question.multichoice, function(i,answer_option){
+                answer_option = self.calculateCorrectAnswer(answer_option);
+                answer_option = answer_option.replace("ohms","&#x2126;"); //reformat "ohm" to the letter omega
+                answer_option = answer_option.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
 
-            $.each(question.multichoice, function(i,answer_option){
-              answer_option = self.calculateCorrectAnswer(answer_option);
-              answer_option = answer_option.replace("ohms","&#x2126;"); //reformat "ohm" to the letter omega
-              answer_option = answer_option.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
+                var type = question.checkbox ? "checkbox" : "radio"
+                var groupName = type + "Group" + id;
+                $html.append($("<br>"));
+                $html.append($("<input>").attr("type", type).attr("name", groupName).attr("value", answer_option));
+                $html.append("<span> " + answer_option + "</span>");
+              });
+              $html.append('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+            } else {
+              var $select = $("<select>").attr("id",id+"_multichoice");
 
-              $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));
-            });
-            $html.append($select, "   ");
+              $.each(question.multichoice, function(i,answer_option){
+                answer_option = self.calculateCorrectAnswer(answer_option);
+                answer_option = answer_option.replace("ohms","&#x2126;"); //reformat "ohm" to the letter omega
+                answer_option = answer_option.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
+
+                $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));
+              });
+              $html.append($select, "   ");
+            }
           }
 
           if (!!question.correct_units){
