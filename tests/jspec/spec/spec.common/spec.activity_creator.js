@@ -504,5 +504,72 @@ describe 'Activity Creator'
     end
       
   end
+  
+  describe 'Pagination'
+  
+    it 'should be able to display multiple pages of questions'
+    
+      var jsonActivity =
+        {
+          "activity_url": "http://test.com/myActivity",
+          "images_url": "http://test.com/images/myActivity",
+          "questions": [
+            [
+              {
+                "prompt": "Set 1 Question 1",
+                "correct_answer": ""
+              },
+              {
+                "prompt": "Set 1 Question 2",
+                "correct_answer": ""
+              }
+            ],
+            [
+              {
+                "prompt": "Set 2 Question 1",
+                "correct_answer": ""
+              },
+              {
+                "prompt": "Set 2 Question 2",
+                "correct_answer": ""
+              }
+            ]
+          ]
+      };
+    
+      var $questionsDiv = $("<div>");
+      
+      var assessment = new sparks.Activity.Assessment();
+      var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.createAndLayoutActivity();
+    
+      var $forms = $questionsDiv.find('form');
+      $forms.length.should.be 4
+      
+      // sanity check
+      $($forms[0]).find('.prompt')[0].innerHTML.should.be "1.  Set 1 Question 1"
+      $($forms[3]).find('.prompt')[0].innerHTML.should.be "4.  Set 2 Question 2"
+      
+      $($($forms[0]).parent()[0]).should.be_visible();
+      $($($forms[1]).parent()[0]).should.be_visible();
+      $($($forms[2]).parent()[0]).should.be_hidden();
+      $($($forms[3]).parent()[0]).should.be_hidden();
+      
+      
+      var $next = $questionsDiv.find('.next-questions');
+      $next.length.should.be 1
+      
+      $next.click();
+      
+      $($($forms[0]).parent()[0]).should.be_hidden();
+      $($($forms[1]).parent()[0]).should.be_hidden();
+      $($($forms[2]).parent()[0]).should.be_visible();
+      $($($forms[3]).parent()[0]).should.be_visible();
+      
+      
+    end
+    
+  end
 
 end

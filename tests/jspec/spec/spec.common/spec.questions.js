@@ -102,6 +102,46 @@ describe 'Questions'
           assessment.questions[1].multichoice[0].should.be "100"
           assessment.questions[1].multichoice[1].should.be "200"
       end
+      
+      it 'should be able to create a multiple groups of question'
+        var jsonActivity =
+          {
+            "questions": [
+              [
+                {
+                  "prompt": "Set 1 Question 1",
+                  "correct_answer": ""
+                },
+                {
+                  "prompt": "Set 1 Question 2",
+                  "correct_answer": ""
+                }
+              ],
+              [
+                {
+                  "prompt": "Set 2 Question 1",
+                  "correct_answer": ""
+                },
+                {
+                  "prompt": "Set 2 Question 2",
+                  "correct_answer": ""
+                }
+              ]
+            ]
+          };
+      
+          var assessment = new sparks.Activity.Assessment();
+      
+          assessment.questions.length.should.be 0
+      
+          var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+          ac.createQuestions();
+      
+          assessment.questions.length.should.be 4
+          assessment.questions[0].prompt.should.be "Set 1 Question 1"
+          assessment.questions[3].prompt.should.be "Set 2 Question 2"
+      end
+      
   end
   
   describe 'Circuit Variables'
