@@ -154,13 +154,17 @@
             var form = jQuery(event.target).parents('.question_form');
             activity.disableForm(this.currentQuestion);
             var nextForm = form.nextAll("form:first");
+            var $buttons = form.nextAll('.next-questions');
             
-            if (nextForm.size() === 0) { //all questions answered for current session
-                this.completedTry();
-            }
-            else {
+            if (nextForm.size() > 0) {
               this.currentQuestion++;
               this.enableForm(this.currentQuestion);
+            } else if ($buttons.length > 0){
+              $($buttons[0]).removeAttr('disabled');
+              this.currentQuestion++;
+              this.enableForm(this.currentQuestion);
+            } else {
+              this.completedTry();
             }
         },
         
@@ -178,6 +182,7 @@
             for (var i = 1; i < this.forms.length; ++i) {
                 this.disableForm(i);
             }
+            $('.next-questions').attr('disabled', 'disabled');
         },
         
         completedTry: function () {

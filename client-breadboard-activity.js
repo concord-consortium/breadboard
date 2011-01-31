@@ -1930,7 +1930,7 @@ sparks.util.getRubric = function (id, callback, local) {
       $breadboardDiv: null,
       $imageDiv: null,
       $questionsDiv: null
-    }
+    };
   };
 
   sparks.ActivityConstructor.prototype = {
@@ -1982,9 +1982,24 @@ sparks.util.getRubric = function (id, callback, local) {
       var assessment = this.assessment;
       var self = this;
       var id = 0;
-      $.each(this.jsonActivity.questions, function(i, question){
 
-        function addQuestion(question, preprompt){
+      /**
+        This can be a little confusing.
+        Each item in the array "questions" in an activity can be one of three things:
+
+          1. A plain question, with one prompt
+          2. A question with a prompt and multiple subquestions
+          3. An array of questions, designed to be shown in a set.
+
+        So we loop through the questions. If it's a plain question or a question with subquestions
+        we call addQuestions on it. If it's an array (if it has length) we call addQuestions on
+        each element in the array.
+        Then in addQuestions, if it's a plain question we call addSingleQuestion, and if it has
+        subquestions we call addSingleQuestion on each subquestion
+      */
+
+      function addQuestions(question){
+        function addSingleQuestion(question, preprompt){
           question.correct_answer = self.calculateCorrectAnswer(question.correct_answer);
           var oldPrompt = question.prompt;
           if (!!preprompt){
@@ -2002,13 +2017,22 @@ sparks.util.getRubric = function (id, callback, local) {
         }
 
         if (!question.subquestions){
-          addQuestion(question);
+          addSingleQuestion(question);
         } else {
           $.each(question.subquestions, function(i, subquestion){
-            addQuestion(subquestion, question.prompt);
+            addSingleQuestion(subquestion, question.prompt);
           });
         }
+      }
 
+      $.each(this.jsonActivity.questions, function(i, question){
+        if (!question.length){
+          addQuestions(question);
+        } else {
+          $.each(question, function(i, innerQuestion){
+            addQuestions(innerQuestion);
+          });
+        }
       });
     },
 
@@ -2100,14 +2124,49 @@ sparks.util.getRubric = function (id, callback, local) {
      }
    },
 
-   embedQuestions: function($element){
+   embedQuestions: function ($questionsDiv){
       var questions = this.jsonActivity.questions;
 
       var self = this;
 
-      var id = 0;
+      if (!questions[0].length){  // nealing with a single group of questions
+        this._embedGroupOfQuestions(questions, $questionsDiv);
+      } else {                    // dealing with multiple pages of questions
+        var questionPages = [];
+        var nextButtons = [];
+        $.each(questions, function(i, questionGroup){
 
-      $.each(questions, function(i, question){
+          var $questionGroupDiv = $("<div>");
+          self._embedGroupOfQuestions(questionGroup, $questionGroupDiv);
+
+          $nextButton = $('<button>Next questions</button>').addClass("next-questions");
+          $questionGroupDiv.append($nextButton);
+          nextButtons.push($nextButton);
+
+          $questionGroupDiv.hide();
+          questionPages.push($questionGroupDiv);
+
+          $questionsDiv.append($questionGroupDiv);
+        });
+
+        nextButtons[nextButtons.length-1].remove();
+        questionPages[0].show();
+        $.each(nextButtons, function(i, button){
+          button.click(function(){
+            questionPages[i].hide();
+            questionPages[i+1].show();
+          });
+        });
+      }
+
+    },
+
+    question_id: 0,
+
+    _embedGroupOfQuestions: function (questionGroup, $question_div) {
+      var self = this;
+
+      $.each(questionGroup, function(i, question){
         var $form = $("<form>");
         $form.addClass("question_form");
 
@@ -2120,13 +2179,13 @@ sparks.util.getRubric = function (id, callback, local) {
         }
 
         $form.append(
-          $("<span>").addClass("prompt").html((i+1) + ".  " + question.prompt), "   "
+          $("<span>").addClass("prompt").html((self.question_id+1) + ".  " + question.prompt), "   "
         );
 
         function addInputs($html, question){
           if (!question.multichoice){
             $html.append(
-              $("<input>").attr("id",id+"_input"), "   "
+              $("<input>").attr("id",self.question_id+"_input"), "   "
             );
           } else {
             if (!!question.checkbox || !!question.radio){
@@ -2135,15 +2194,15 @@ sparks.util.getRubric = function (id, callback, local) {
                 answer_option = answer_option.replace("ohms","&#x2126;"); //reformat "ohm" to the letter omega
                 answer_option = answer_option.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
 
-                var type = question.checkbox ? "checkbox" : "radio"
-                var groupName = type + "Group" + id;
+                var type = question.checkbox ? "checkbox" : "radio";
+                var groupName = type + "Group" + self.question_id;
                 $html.append($("<br>"));
                 $html.append($("<input>").attr("type", type).attr("name", groupName).attr("value", answer_option));
                 $html.append("<span> " + answer_option + "</span>");
               });
               $html.append('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
             } else {
-              var $select = $("<select>").attr("id",id+"_multichoice");
+              var $select = $("<select>").attr("id",self.question_id+"_multichoice");
 
               $.each(question.multichoice, function(i,answer_option){
                 answer_option = self.calculateCorrectAnswer(answer_option);
@@ -2157,19 +2216,19 @@ sparks.util.getRubric = function (id, callback, local) {
           }
 
           if (!!question.correct_units){
-             var $select = $("<select>").attr("id",id+"_units");
+             var $unitsSelect = $("<select>").attr("id", self.question_id+"_units");
              var options = ["Units...","&#x00b5;V","mV","V","&#x2126;","k&#x2126;","M&#x2126;","&#x00b5;A","mA","A"];
              $.each(options, function(i, val){
-               $select.append($("<option>").html(val).attr("defaultSelected", i===0));
+               $unitsSelect.append($("<option>").html(val).attr("defaultSelected", i===0));
              });
-             $html.append($select, "   ");
+             $html.append($unitsSelect, "   ");
           }
 
 
           $html.append(
             $("<br>")
           );
-          id++;
+          self.question_id++;
         }
 
         if (!question.subquestions){
@@ -2194,9 +2253,9 @@ sparks.util.getRubric = function (id, callback, local) {
 
         $form.find('br:last').replaceWith(
           $("<button>").addClass("submit").text("Submit")
-        )
+        );
 
-        $element.append($form);
+        $question_div.append($form);
       });
     },
 
@@ -2204,7 +2263,7 @@ sparks.util.getRubric = function (id, callback, local) {
       if (fileName.indexOf("http") > -1){
         return fileName;
       } else if (!!this.jsonActivity.images_url) {
-        return this.jsonActivity.images_url + "/" + fileName
+        return this.jsonActivity.images_url + "/" + fileName;
       }
       console.log(fileName + " appears to be a relative filename, but there is no base activity url.");
       return "";
@@ -4616,13 +4675,17 @@ sparks.util.getRubric = function (id, callback, local) {
             var form = jQuery(event.target).parents('.question_form');
             activity.disableForm(this.currentQuestion);
             var nextForm = form.nextAll("form:first");
+            var $buttons = form.nextAll('.next-questions');
 
-            if (nextForm.size() === 0) { //all questions answered for current session
-                this.completedTry();
-            }
-            else {
+            if (nextForm.size() > 0) {
               this.currentQuestion++;
               this.enableForm(this.currentQuestion);
+            } else if ($buttons.length > 0){
+              $($buttons[0]).removeAttr('disabled');
+              this.currentQuestion++;
+              this.enableForm(this.currentQuestion);
+            } else {
+              this.completedTry();
             }
         },
 
@@ -4640,6 +4703,7 @@ sparks.util.getRubric = function (id, callback, local) {
             for (var i = 1; i < this.forms.length; ++i) {
                 this.disableForm(i);
             }
+            $('.next-questions').attr('disabled', 'disabled');
         },
 
         completedTry: function () {
