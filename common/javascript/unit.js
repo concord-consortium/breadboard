@@ -9,6 +9,84 @@
     var u = sparks.unit;
 
     u.labels = { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' };
+    
+    u.toEngineering = function (value, units){
+      // function html_entity_decode(str) {
+      //   return $("<div>").html(str).text();
+      // }
+      value = Number(value);
+      
+      if (value >= 1000000){
+        var MUnits = "mega"+units;
+        units = MUnits;
+        value = u.round(value/1000000,2);
+      } else if (value >= 1000){
+        var kUnits = "kilo"+units;
+        units = kUnits;
+        value = u.round(value/1000,2);
+      } else if (value === 0 ) {
+        units = units;
+        value = 0;
+      } else if (value < 0.000001){
+        var nUnits = "nano"+units;
+        units = nUnits;
+        value = u.round(value * 1000000000,2);
+      } else if (value < 0.001){
+        var uUnits = "micro"+units;
+        units = uUnits;
+        value = u.round(value * 1000000,2);
+      } else if (value < 1) {
+        var mUnits = "milli"+units;
+        units = mUnits;
+        value = u.round(value * 1000,2);
+      } else {
+        units = units;
+        value = u.round(value,2);
+      }
+      
+      return {"value": value, "units": units};
+    };
+    
+    u.round = function(num, dec) {
+    	var result = Math.round( Math.round( num * Math.pow( 10, dec + 2 ) ) / Math.pow( 10, 2 ) ) / Math.pow(10,dec);
+    	return result;
+    };
+    
+    u.sigFigs = function(n, sig) {
+        var mult = Math.pow(10,
+            sig - Math.floor(Math.log(n) / Math.LN10) - 1);
+        return Math.round(n * mult) / mult;
+    };
+    
+    /**
+    * assumes this will be in the form ddd uu
+    * i.e. a pure number and a unit, separated by an optional space
+    * '50 ohms' and '50V' are both valid
+    */
+    u.convertMeasurement = function(measurement) {
+      var isMeasurementPattern = /^\s?\d+.?\d*\s?\D+\s?$/
+      var matched = measurement.match(isMeasurementPattern);
+      if (!matched){
+        return measurement
+      }
+      
+      var numPattern = /\d+\.?\d*/g
+      var nmatched = measurement.match(numPattern);
+      if (!nmatched){
+        return measurement;
+      }
+      var value = nmatched[0];
+      
+      var unitPattern =  /(?=\d*.?\d*)[^\d\.\s]+/g
+      var umatched = measurement.match(unitPattern);
+      if (!umatched){
+        return measurement;
+      }
+      var unit = umatched[0];
+      
+      var eng = u.toEngineering(value, unit)
+      return eng.value + " " + eng.units;
+    };
 
     u.normalizeToOhms = function (value, unit) {
         switch (unit) {
