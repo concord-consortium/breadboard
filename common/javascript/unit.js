@@ -58,15 +58,20 @@
         return Math.round(n * mult) / mult;
     };
     
+    // returns true if string is of form "50 ohms" or "0.1V"
+    u.isMeasurement = function(string) {
+      var isMeasurementPattern = /^\s?\d+.?\d*\s?\D+\s?$/
+      var matched = string.match(isMeasurementPattern);
+      return !!matched;
+    };
+    
     /**
     * assumes this will be in the form ddd uu
     * i.e. a pure number and a unit, separated by an optional space
     * '50 ohms' and '50V' are both valid
     */
     u.convertMeasurement = function(measurement) {
-      var isMeasurementPattern = /^\s?\d+.?\d*\s?\D+\s?$/
-      var matched = measurement.match(isMeasurementPattern);
-      if (!matched){
+      if (!this.isMeasurement(measurement)){
         return measurement
       }
       

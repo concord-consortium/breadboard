@@ -2000,7 +2000,19 @@ sparks.util.getRubric = function (id, callback, local) {
 
       function addQuestions(question){
         function addSingleQuestion(question, preprompt){
-          question.correct_answer = self.calculateMeasurement(question.correct_answer);
+
+          if (!!question.correct_units){
+            question.correct_answer = self.calculateMeasurement(question.correct_answer);
+            if (!isNaN(Number(question.correct_answer))){
+              var converted = sparks.unit.toEngineering(question.correct_answer, question.correct_units);
+              question.correct_answer = converted.value;
+              question.correct_units = self.standardizeUnits(converted.units);
+            }
+          } else {
+            question.correct_answer = self.calculateMeasurement(question.correct_answer);
+          }
+
+
           var oldPrompt = question.prompt;
           if (!!preprompt){
             question.prompt = preprompt + " " + question.prompt;
@@ -2042,13 +2054,15 @@ sparks.util.getRubric = function (id, callback, local) {
     */
     calculateMeasurement: function(answer){
       if (answer === undefined || answer === null || answer === ""){
-        return ""
+        return "";
       }
       if (!isNaN(Number(answer))){
         return answer;
       }
 
       var self = this;
+
+      answer = ""+answer;
 
       var sumPattern = /\[[^\]]+\]/g  // find anything between [ ]
       var matches= answer.match(sumPattern);
@@ -2060,15 +2074,21 @@ sparks.util.getRubric = function (id, callback, local) {
         });
       }
 
+
       answer = sparks.unit.convertMeasurement(answer);   // convert 1000 V to 1 kiloV, for instance
 
-      answer = answer.replace("ohms","&#x2126;");
-      answer = answer.replace("micro","&#x00b5;");
-      answer = answer.replace("milli","m");
-      answer = answer.replace("kilo","k");
-      answer = answer.replace("mega","M");
+      answer = this.standardizeUnits(answer);
 
       return answer;
+    },
+
+    standardizeUnits: function(string) {
+      string = string.replace("ohms","&#x2126;");
+      string = string.replace("micro","&#x00b5;");
+      string = string.replace("milli","m");
+      string = string.replace("kilo","k");
+      string = string.replace("mega","M");
+      return string
     },
 
 
@@ -4054,15 +4074,19 @@ sparks.util.getRubric = function (id, callback, local) {
         return Math.round(n * mult) / mult;
     };
 
+    u.isMeasurement = function(string) {
+      var isMeasurementPattern = /^\s?\d+.?\d*\s?\D+\s?$/
+      var matched = string.match(isMeasurementPattern);
+      return !!matched;
+    };
+
     /**
     * assumes this will be in the form ddd uu
     * i.e. a pure number and a unit, separated by an optional space
     * '50 ohms' and '50V' are both valid
     */
     u.convertMeasurement = function(measurement) {
-      var isMeasurementPattern = /^\s?\d+.?\d*\s?\D+\s?$/
-      var matched = measurement.match(isMeasurementPattern);
-      if (!matched){
+      if (!this.isMeasurement(measurement)){
         return measurement
       }
 
@@ -4426,56 +4450,19 @@ sparks.util.getRubric = function (id, callback, local) {
       question.id = id;
       question.prompt = jsonQuestion.prompt;
       question.shortPrompt = (jsonQuestion.shortPrompt || jsonQuestion.prompt);
-      question.correct_answer = jsonQuestion.correct_answer;
-
-      question.correct_answer = question.correct_answer.replace("ohms",html_entity_decode("&#x2126;")); //reformat "ohms" to the letter omega
-      question.correct_answer = question.correct_answer.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
+      question.correct_answer = html_entity_decode(jsonQuestion.correct_answer);
 
       question.correct_units = jsonQuestion.correct_units;
-      if (question.correct_units === "ohms"){
-        question.correct_units = "&#x2126;";
+      if (!!question.correct_units){
+        question.correct_units = question.correct_units.replace("ohms",html_entity_decode("&#x2126;"))
       }
       if (!!jsonQuestion.options) {
       	question.options = jsonQuestion.options;
       }
 
-      question.score = (jsonQuestion.score | 1);
-
-      if (!!question.correct_units){
-        this.makeMeasurmentQuestion(question);
-      }
+      question.score = (jsonQuestion.score | 0);
 
       this.questions.push(question);
-    },
-
-    makeMeasurmentQuestion: function(question){
-      function html_entity_decode(str) {
-        return $("<div>").html(str).text();
-      }
-
-      var value = question.correct_answer;
-      var units = question.correct_units;
-
-      if (value >= 1000000){
-        var MUnits = html_entity_decode('M'+units);
-        question.correct_units = MUnits;
-        question.correct_answer = this._round(value/1000000,2);
-      } else if (value >= 1000){
-        var kUnits = html_entity_decode('k'+units);
-        question.correct_units = kUnits;
-        question.correct_answer = this._round(value/1000,2);
-      } else if (value < 0.001){
-        var uUnits = html_entity_decode('&#x00b5;'+units);
-        question.correct_units = uUnits;
-        question.correct_answer = this._round(value * 1000000,2);
-      } else if (value < 1) {
-        var mUnits = html_entity_decode('m'+units);
-        question.correct_units = mUnits;
-        question.correct_answer = this._round(value * 1000,2);
-      } else {
-        question.correct_units = html_entity_decode(units);
-        question.correct_answer = this._round(value,2);
-      }
     },
 
     serializeQuestions: function(jqForms) {

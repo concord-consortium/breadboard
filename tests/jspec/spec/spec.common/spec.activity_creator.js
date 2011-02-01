@@ -56,7 +56,7 @@ describe 'Activity Creator'
       
           assessment.questions.length.should.be 1
           assessment.questions[0].prompt.should.be "What is the resistance of R1?"
-          assessment.questions[0].correct_answer.should.be 100
+          assessment.questions[0].correct_answer.should.be "100"
           assessment.questions[0].correct_units.should.be "V"
       end
       
@@ -97,7 +97,7 @@ describe 'Activity Creator'
         ac.createAndLayoutActivity();
     
         assessment.questions.length.should.be 1
-        assessment.questions[0].correct_answer.should.be 300
+        assessment.questions[0].correct_answer.should.be "300"
         
     end
     
@@ -402,13 +402,13 @@ describe 'Activity Creator'
       var $select = $($question.find('select')[0])
       $select.find('option').length.should.be 3
     
-      function getHTML(string) {
+      function htmlToText(string) {
         return $('<div>'+string+"</div>").html();
       }
     
-      $select.find('option')[0].innerHTML.should.be getHTML("1 k&#x2126;")
-      $select.find('option')[1].innerHTML.should.be getHTML("100 &#x2126;")
-      $select.find('option')[2].innerHTML.should.be getHTML("100 mV")
+      $select.find('option')[0].innerHTML.should.be htmlToText("1 k&#x2126;")
+      $select.find('option')[1].innerHTML.should.be htmlToText("100 &#x2126;")
+      $select.find('option')[2].innerHTML.should.be htmlToText("100 mV")
       
     end
     

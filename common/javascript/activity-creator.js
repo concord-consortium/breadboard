@@ -79,7 +79,21 @@
       
       function addQuestions(question){
         function addSingleQuestion(question, preprompt){
-          question.correct_answer = self.calculateMeasurement(question.correct_answer);
+          
+          // convert correct_answer (and units, if approp) to engineering format
+          if (!!question.correct_units){
+            // if auth specified units separately, we have to do it in two steps
+            question.correct_answer = self.calculateMeasurement(question.correct_answer);
+            if (!isNaN(Number(question.correct_answer))){
+              var converted = sparks.unit.toEngineering(question.correct_answer, question.correct_units);
+              question.correct_answer = converted.value;
+              question.correct_units = self.standardizeUnits(converted.units);
+            }
+          } else {
+            question.correct_answer = self.calculateMeasurement(question.correct_answer);
+          }
+          
+          
           var oldPrompt = question.prompt;
           if (!!preprompt){
             question.prompt = preprompt + " " + question.prompt;
@@ -121,13 +135,15 @@
     */
     calculateMeasurement: function(answer){
       if (answer === undefined || answer === null || answer === ""){
-        return ""
+        return "";
       }
       if (!isNaN(Number(answer))){
         return answer;
       }
       
       var self = this;
+      
+      answer = ""+answer;
         
       var sumPattern = /\[[^\]]+\]/g  // find anything between [ ]
       var matches= answer.match(sumPattern);
@@ -138,16 +154,23 @@
           answer = answer.replace(match,result);
         });
       }
-       
+      
+      // now we have e.g. "1000 V"
+      
       answer = sparks.unit.convertMeasurement(answer);   // convert 1000 V to 1 kiloV, for instance
        
-      answer = answer.replace("ohms","&#x2126;");
-      answer = answer.replace("micro","&#x00b5;");
-      answer = answer.replace("milli","m");
-      answer = answer.replace("kilo","k");
-      answer = answer.replace("mega","M");
+      answer = this.standardizeUnits(answer);
        
       return answer;
+    },
+    
+    standardizeUnits: function(string) {
+      string = string.replace("ohms","&#x2126;");
+      string = string.replace("micro","&#x00b5;");
+      string = string.replace("milli","m");
+      string = string.replace("kilo","k");
+      string = string.replace("mega","M");
+      return string
     },
     
     

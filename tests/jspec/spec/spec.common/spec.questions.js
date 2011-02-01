@@ -30,7 +30,7 @@ describe 'Questions'
       
           assessment.questions.length.should.be 2
           assessment.questions[0].prompt.should.be "What is the resistance of R1?"
-          assessment.questions[0].correct_answer.should.be 100
+          assessment.questions[0].correct_answer.should.be "100"
           assessment.questions[0].correct_units.should.be "V"
           
           assessment.questions[1].prompt.should.be "What is your name?"
@@ -110,33 +110,33 @@ describe 'Questions'
       end
       
       // it 'should be able to create a multichoice question with points and feedback'
-      //   var jsonActivity =
-      //     {
-      //       "questions": [
-      //         {
-      //           "prompt": "What is the resistance of R1?",
-      //           "options": [
-      //             {"choice": "100", "points": "5"},
-      //             {"choice": "200", "feedback": "You're so wrong"}
-      //           ]
-      //         }
-      //       ]
-      //     };
-      // 
-      //     var assessment = new sparks.Activity.Assessment();
-      // 
-      //     assessment.questions.length.should.be 0
-      // 
-      //     var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
-      //     ac.createQuestions();
-      // 
-      //     assessment.questions.length.should.be 2
-      //     
-      //     assessment.questions[0].options.should.not.be undefined
-      //     assessment.questions[0].options.length.should.be 2
-      //     assessment.questions[0].options[0].should.be "100"
-      //     assessment.questions[0].options[1].should.be "200"
-      // end
+      //         var jsonActivity =
+      //           {
+      //             "questions": [
+      //               {
+      //                 "prompt": "What is the resistance of R1?",
+      //                 "options": [
+      //                   {"option": "100", "points": "5"},
+      //                   {"option": "200", "feedback": "You're so wrong"}
+      //                 ]
+      //               }
+      //             ]
+      //           };
+      //       
+      //           var assessment = new sparks.Activity.Assessment();
+      //       
+      //           assessment.questions.length.should.be 0
+      //       
+      //           var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+      //           ac.createQuestions();
+      //       
+      //           assessment.questions.length.should.be 2
+      //           
+      //           assessment.questions[0].options.should.not.be undefined
+      //           assessment.questions[0].options.length.should.be 2
+      //           assessment.questions[0].options[0].should.be "100"
+      //           assessment.questions[0].options[1].should.be "200"
+      //       end
       
       it 'should be able to create a multiple groups of question'
         var jsonActivity =
@@ -202,7 +202,7 @@ describe 'Questions'
         ac.createQuestions();
     
         assessment.questions.length.should.be 1
-        assessment.questions[0].correct_answer.should.be 300
+        assessment.questions[0].correct_answer.should.be "300"
     end
     
     it 'should be able to calculate an answer from circuit variables'
@@ -227,7 +227,7 @@ describe 'Questions'
         ac.createQuestions();
     
         assessment.questions.length.should.be 1
-        assessment.questions[0].correct_answer.should.be 150
+        assessment.questions[0].correct_answer.should.be "150"
     end
     
     it 'should be able to handle calculated parts and non-calculated parts of an answer'
@@ -251,6 +251,41 @@ describe 'Questions'
     
         assessment.questions.length.should.be 1
         assessment.questions[0].correct_answer.should.be "300 and 150"
+    end
+    
+    it 'should be able to format answer to engineering'
+      
+      breadModel('insertComponent', 'resistor', {"UID": "r1", "connections": "a1,a2", "resistance": "3000"});
+      
+      var jsonActivity =
+        {
+          "questions": [
+            {
+              "prompt": "What is the resistance of R1?",
+              "correct_answer": "[${r1.nominalResistance}]",
+              "correct_units": "ohms"
+            },
+            {
+              "prompt": "What is the resistance of R1?",
+              "correct_answer": "[${r1.nominalResistance}] ohms",
+            },
+          ]
+        };
+    
+        var assessment = new sparks.Activity.Assessment();
+    
+        var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+        ac.createQuestions();
+        
+        function htmlToText(string) {
+          return $('<div>'+string+"</div>").html();
+        }
+        
+        assessment.questions.length.should.be 2
+        assessment.questions[0].correct_answer.should.be "3"
+        assessment.questions[0].correct_units.should.be "k&#x2126;"
+        
+        assessment.questions[1].correct_answer.should.be htmlToText("3 k&#x2126;")
     end
     
     it 'should be able to create multichoice distractors from circuit variables'
