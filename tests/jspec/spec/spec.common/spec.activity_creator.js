@@ -366,6 +366,52 @@ describe 'Activity Creator'
       
     end
     
+    it 'should be able to embed calculated multichoice questions correctly conveted to engineering'
+    
+      var jsonActivity =
+        {
+          "circuit": [
+            {
+              "type": "resistor",
+              "UID": "r7",
+              "connections": "b2,b3",
+              "resistance": "1000"
+            }
+          ],
+          "questions": [
+            {
+              "prompt": "What is the resistance of R1?",
+              "correct_answer": "[${r7.resistance}] ohms",
+              "multichoice": ["[${r7.resistance}] ohms", "[${r7.resistance}/10] ohms", "0.1 V"]
+            }
+          ]
+      };
+    
+      var $questionsDiv = $("<div>");
+      
+      var assessment = new sparks.Activity.Assessment();
+      var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.createAndLayoutActivity();
+    
+      var $forms = $questionsDiv.find('form');
+      var $question = $($forms[0]);
+    
+    
+      $question.find('select').length.should.be 1
+      var $select = $($question.find('select')[0])
+      $select.find('option').length.should.be 3
+    
+      function getHTML(string) {
+        return $('<div>'+string+"</div>").html();
+      }
+    
+      $select.find('option')[0].innerHTML.should.be getHTML("1 k&#x2126;")
+      $select.find('option')[1].innerHTML.should.be getHTML("100 &#x2126;")
+      $select.find('option')[2].innerHTML.should.be getHTML("100 mV")
+      
+    end
+    
     it 'should be able to embed questions with images'
     
       var jsonActivity =

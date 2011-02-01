@@ -2000,14 +2000,14 @@ sparks.util.getRubric = function (id, callback, local) {
 
       function addQuestions(question){
         function addSingleQuestion(question, preprompt){
-          question.correct_answer = self.calculateCorrectAnswer(question.correct_answer);
+          question.correct_answer = self.calculateMeasurement(question.correct_answer);
           var oldPrompt = question.prompt;
           if (!!preprompt){
             question.prompt = preprompt + " " + question.prompt;
           }
           if (!!question.multichoice){
             $.each(question.multichoice, function(i, choice){
-              question.multichoice[i] = self.calculateCorrectAnswer(choice);
+              question.multichoice[i] = self.calculateMeasurement(choice);
             });
           }
           assessment.addQuestion(question,id);
@@ -2040,7 +2040,10 @@ sparks.util.getRubric = function (id, callback, local) {
       When passed a string such as "[100 + ${r1.resistance} / ${r2.nominalResistance}] ohms"
       This will first take everything found in [...] and substitute in the calculated sum
     */
-    calculateCorrectAnswer: function(answer){
+    calculateMeasurement: function(answer){
+      if (answer === undefined || answer === null || answer === ""){
+        return ""
+      }
       if (!isNaN(Number(answer))){
         return answer;
       }
@@ -2050,12 +2053,21 @@ sparks.util.getRubric = function (id, callback, local) {
       var sumPattern = /\[[^\]]+\]/g  // find anything between [ ]
       var matches= answer.match(sumPattern);
       if (!!matches){
-   	   $.each(matches, function(i, match){
-    	  	var expression = match;
-    	  	var result = self.calculateSum(expression);
-    	  	answer = answer.replace(match,result);
-    	  });
-       }
+        $.each(matches, function(i, match){
+          var expression = match;
+          var result = self.calculateSum(expression);
+          answer = answer.replace(match,result);
+        });
+      }
+
+      answer = sparks.unit.convertMeasurement(answer);   // convert 1000 V to 1 kiloV, for instance
+
+      answer = answer.replace("ohms","&#x2126;");
+      answer = answer.replace("micro","&#x00b5;");
+      answer = answer.replace("milli","m");
+      answer = answer.replace("kilo","k");
+      answer = answer.replace("mega","M");
+
       return answer;
     },
 
@@ -2139,9 +2151,11 @@ sparks.util.getRubric = function (id, callback, local) {
           var $questionGroupDiv = $("<div>");
           self._embedGroupOfQuestions(questionGroup, $questionGroupDiv);
 
-          $nextButton = $('<button>Next questions</button>').addClass("next-questions");
-          $questionGroupDiv.append($nextButton);
+          $nextButton = $('<button>Next questions &nbsp;&#187;</button>').addClass("next-questions");
+
           nextButtons.push($nextButton);
+          $questionGroupDiv.append($nextButton);
+          $questionGroupDiv.append($('<br>').attr("clear", "both"));
 
           $questionGroupDiv.hide();
           questionPages.push($questionGroupDiv);
@@ -2190,9 +2204,7 @@ sparks.util.getRubric = function (id, callback, local) {
           } else {
             if (!!question.checkbox || !!question.radio){
               $.each(question.multichoice, function(i,answer_option){
-                answer_option = self.calculateCorrectAnswer(answer_option);
-                answer_option = answer_option.replace("ohms","&#x2126;"); //reformat "ohm" to the letter omega
-                answer_option = answer_option.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
+                answer_option = self.calculateMeasurement(answer_option);
 
                 var type = question.checkbox ? "checkbox" : "radio";
                 var groupName = type + "Group" + self.question_id;
@@ -2205,10 +2217,7 @@ sparks.util.getRubric = function (id, callback, local) {
               var $select = $("<select>").attr("id",self.question_id+"_multichoice");
 
               $.each(question.multichoice, function(i,answer_option){
-                answer_option = self.calculateCorrectAnswer(answer_option);
-                answer_option = answer_option.replace("ohms","&#x2126;"); //reformat "ohm" to the letter omega
-                answer_option = answer_option.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
-
+                answer_option = self.calculateMeasurement(answer_option);
                 $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));
               });
               $html.append($select, "   ");
@@ -4000,6 +4009,83 @@ sparks.util.getRubric = function (id, callback, local) {
 
     u.labels = { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' };
 
+    u.toEngineering = function (value, units){
+      value = Number(value);
+
+      if (value >= 1000000){
+        var MUnits = "mega"+units;
+        units = MUnits;
+        value = u.round(value/1000000,2);
+      } else if (value >= 1000){
+        var kUnits = "kilo"+units;
+        units = kUnits;
+        value = u.round(value/1000,2);
+      } else if (value === 0 ) {
+        units = units;
+        value = 0;
+      } else if (value < 0.000001){
+        var nUnits = "nano"+units;
+        units = nUnits;
+        value = u.round(value * 1000000000,2);
+      } else if (value < 0.001){
+        var uUnits = "micro"+units;
+        units = uUnits;
+        value = u.round(value * 1000000,2);
+      } else if (value < 1) {
+        var mUnits = "milli"+units;
+        units = mUnits;
+        value = u.round(value * 1000,2);
+      } else {
+        units = units;
+        value = u.round(value,2);
+      }
+
+      return {"value": value, "units": units};
+    };
+
+    u.round = function(num, dec) {
+    	var result = Math.round( Math.round( num * Math.pow( 10, dec + 2 ) ) / Math.pow( 10, 2 ) ) / Math.pow(10,dec);
+    	return result;
+    };
+
+    u.sigFigs = function(n, sig) {
+        var mult = Math.pow(10,
+            sig - Math.floor(Math.log(n) / Math.LN10) - 1);
+        return Math.round(n * mult) / mult;
+    };
+
+    /**
+    * assumes this will be in the form ddd uu
+    * i.e. a pure number and a unit, separated by an optional space
+    * '50 ohms' and '50V' are both valid
+    */
+    u.convertMeasurement = function(measurement) {
+      var isMeasurementPattern = /^\s?\d+.?\d*\s?\D+\s?$/
+      var matched = measurement.match(isMeasurementPattern);
+      if (!matched){
+        return measurement
+      }
+
+      var numPattern = /\d+\.?\d*/g
+      var nmatched = measurement.match(numPattern);
+      if (!nmatched){
+        return measurement;
+      }
+      var value = nmatched[0];
+      console.log("value = "+value);
+
+      var unitPattern =  /(?=\d*.?\d*)[^\d\.\s]+/g
+      var umatched = measurement.match(unitPattern);
+      if (!umatched){
+        return measurement;
+      }
+      var unit = umatched[0];
+      console.log("unit = >"+unit+"<");
+
+      var eng = u.toEngineering(value, unit)
+      return eng.value + " " + eng.units;
+    };
+
     u.normalizeToOhms = function (value, unit) {
         switch (unit) {
         case u.labels.ohms:
@@ -4391,15 +4477,6 @@ sparks.util.getRubric = function (id, callback, local) {
       } else {
         question.correct_units = html_entity_decode(units);
         question.correct_answer = this._round(value,2);
-      }
-    },
-
-    addMeasurmentQuestion: function (prompt, value, units, score){
-
-      function html_entity_decode(str) {
-        var ta=document.createElement("textarea");
-        ta.innerHTML=str.replace(/</g,"&lt;").replace(/>/g,"&gt;");
-        return ta.value;
       }
     },
 

@@ -79,14 +79,14 @@
       
       function addQuestions(question){
         function addSingleQuestion(question, preprompt){
-          question.correct_answer = self.calculateCorrectAnswer(question.correct_answer);
+          question.correct_answer = self.calculateMeasurement(question.correct_answer);
           var oldPrompt = question.prompt;
           if (!!preprompt){
             question.prompt = preprompt + " " + question.prompt;
           }
           if (!!question.multichoice){
             $.each(question.multichoice, function(i, choice){
-              question.multichoice[i] = self.calculateCorrectAnswer(choice);
+              question.multichoice[i] = self.calculateMeasurement(choice);
             });
           }
           assessment.addQuestion(question,id);
@@ -119,7 +119,10 @@
       When passed a string such as "[100 + ${r1.resistance} / ${r2.nominalResistance}] ohms"
       This will first take everything found in [...] and substitute in the calculated sum
     */
-    calculateCorrectAnswer: function(answer){
+    calculateMeasurement: function(answer){
+      if (answer === undefined || answer === null || answer === ""){
+        return ""
+      }
       if (!isNaN(Number(answer))){
         return answer;
       }
@@ -129,12 +132,21 @@
       var sumPattern = /\[[^\]]+\]/g  // find anything between [ ]
       var matches= answer.match(sumPattern);
       if (!!matches){      	
-   	   $.each(matches, function(i, match){
-    	  	var expression = match;
-    	  	var result = self.calculateSum(expression);
-    	  	answer = answer.replace(match,result);
-    	  });
-       }
+        $.each(matches, function(i, match){
+          var expression = match;
+          var result = self.calculateSum(expression);
+          answer = answer.replace(match,result);
+        });
+      }
+       
+      answer = sparks.unit.convertMeasurement(answer);   // convert 1000 V to 1 kiloV, for instance
+       
+      answer = answer.replace("ohms","&#x2126;");
+      answer = answer.replace("micro","&#x00b5;");
+      answer = answer.replace("milli","m");
+      answer = answer.replace("kilo","k");
+      answer = answer.replace("mega","M");
+       
       return answer;
     },
     
@@ -218,9 +230,11 @@
           var $questionGroupDiv = $("<div>");
           self._embedGroupOfQuestions(questionGroup, $questionGroupDiv);
           
-          $nextButton = $('<button>Next questions</button>').addClass("next-questions");
-          $questionGroupDiv.append($nextButton);
+          $nextButton = $('<button>Next questions &nbsp;&#187;</button>').addClass("next-questions");
+          
           nextButtons.push($nextButton);
+          $questionGroupDiv.append($nextButton);
+          $questionGroupDiv.append($('<br>').attr("clear", "both"));
           
           $questionGroupDiv.hide();
           questionPages.push($questionGroupDiv);
@@ -270,10 +284,7 @@
           } else {
             if (!!question.checkbox || !!question.radio){
               $.each(question.multichoice, function(i,answer_option){
-                answer_option = self.calculateCorrectAnswer(answer_option);
-                //reformat units
-                answer_option = answer_option.replace("ohms","&#x2126;"); //reformat "ohm" to the letter omega
-                answer_option = answer_option.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
+                answer_option = self.calculateMeasurement(answer_option);
 
                 var type = question.checkbox ? "checkbox" : "radio";
                 var groupName = type + "Group" + self.question_id;
@@ -286,11 +297,7 @@
               var $select = $("<select>").attr("id",self.question_id+"_multichoice");
 
               $.each(question.multichoice, function(i,answer_option){
-                answer_option = self.calculateCorrectAnswer(answer_option);
-                //reformat units
-                answer_option = answer_option.replace("ohms","&#x2126;"); //reformat "ohm" to the letter omega
-                answer_option = answer_option.replace("micro","&#x00b5;"); //reformat "micro" to greek letter mu
-
+                answer_option = self.calculateMeasurement(answer_option);
                 $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));	
               });
               $html.append($select, "   ");

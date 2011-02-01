@@ -135,7 +135,7 @@ describe 'Activity Interactions'
      $($buttons[0]).html().should.be 'Submit'
      $($buttons[0]).attr('disabled').should.be false
      
-     $($buttons[2]).html().should.be 'Next questions'
+     $($buttons[2]).html().indexOf('Next questions').should.be 0
      $($buttons[2]).attr('disabled').should.be true
      
      $($buttons[0]).click();

@@ -14,6 +14,9 @@ describe 'Questions'
                 "prompt": "What is the resistance of R1?",
                 "correct_answer": "100",
                 "correct_units": "V"
+              },
+              {
+                "prompt": "What is your name?"
               }
             ]
           };
@@ -25,10 +28,13 @@ describe 'Questions'
           var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
           ac.createQuestions();
       
-          assessment.questions.length.should.be 1
+          assessment.questions.length.should.be 2
           assessment.questions[0].prompt.should.be "What is the resistance of R1?"
           assessment.questions[0].correct_answer.should.be 100
           assessment.questions[0].correct_units.should.be "V"
+          
+          assessment.questions[1].prompt.should.be "What is your name?"
+          assessment.questions[1].correct_answer.should.be ""
       end
       
       it 'should be able to create nested questions'
