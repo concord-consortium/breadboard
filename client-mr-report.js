@@ -1512,7 +1512,6 @@ sparks.util.getRubric = function (id, callback, local) {
         return measurement;
       }
       var value = nmatched[0];
-      console.log("value = "+value);
 
       var unitPattern =  /(?=\d*.?\d*)[^\d\.\s]+/g
       var umatched = measurement.match(unitPattern);
@@ -1520,7 +1519,6 @@ sparks.util.getRubric = function (id, callback, local) {
         return measurement;
       }
       var unit = umatched[0];
-      console.log("unit = >"+unit+"<");
 
       var eng = u.toEngineering(value, unit)
       return eng.value + " " + eng.units;

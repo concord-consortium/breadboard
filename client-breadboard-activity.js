@@ -2005,9 +2005,9 @@ sparks.util.getRubric = function (id, callback, local) {
           if (!!preprompt){
             question.prompt = preprompt + " " + question.prompt;
           }
-          if (!!question.multichoice){
-            $.each(question.multichoice, function(i, choice){
-              question.multichoice[i] = self.calculateMeasurement(choice);
+          if (!!question.options){
+            $.each(question.options, function(i, choice){
+              question.options[i] = self.calculateMeasurement(choice);
             });
           }
           assessment.addQuestion(question,id);
@@ -2197,13 +2197,13 @@ sparks.util.getRubric = function (id, callback, local) {
         );
 
         function addInputs($html, question){
-          if (!question.multichoice){
+          if (!question.options){
             $html.append(
               $("<input>").attr("id",self.question_id+"_input"), "   "
             );
           } else {
             if (!!question.checkbox || !!question.radio){
-              $.each(question.multichoice, function(i,answer_option){
+              $.each(question.options, function(i,answer_option){
                 answer_option = self.calculateMeasurement(answer_option);
 
                 var type = question.checkbox ? "checkbox" : "radio";
@@ -2214,9 +2214,9 @@ sparks.util.getRubric = function (id, callback, local) {
               });
               $html.append('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
             } else {
-              var $select = $("<select>").attr("id",self.question_id+"_multichoice");
+              var $select = $("<select>").attr("id",self.question_id+"_options");
 
-              $.each(question.multichoice, function(i,answer_option){
+              $.each(question.options, function(i,answer_option){
                 answer_option = self.calculateMeasurement(answer_option);
                 $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));
               });
@@ -4072,7 +4072,6 @@ sparks.util.getRubric = function (id, callback, local) {
         return measurement;
       }
       var value = nmatched[0];
-      console.log("value = "+value);
 
       var unitPattern =  /(?=\d*.?\d*)[^\d\.\s]+/g
       var umatched = measurement.match(unitPattern);
@@ -4080,7 +4079,6 @@ sparks.util.getRubric = function (id, callback, local) {
         return measurement;
       }
       var unit = umatched[0];
-      console.log("unit = >"+unit+"<");
 
       var eng = u.toEngineering(value, unit)
       return eng.value + " " + eng.units;
@@ -4437,8 +4435,8 @@ sparks.util.getRubric = function (id, callback, local) {
       if (question.correct_units === "ohms"){
         question.correct_units = "&#x2126;";
       }
-      if (!!jsonQuestion.multichoice) {
-      	question.multichoice = jsonQuestion.multichoice;
+      if (!!jsonQuestion.options) {
+      	question.options = jsonQuestion.options;
       }
 
       question.score = (jsonQuestion.score | 1);
@@ -4488,11 +4486,11 @@ sparks.util.getRubric = function (id, callback, local) {
 
       var id = 0;
       $.each(this.questions, function(i, question) {
-     	if(!question.multichoice){
+     	if(!question.options){
      		question.answer = $("#"+id + "_input").val();
-     	} else if(question.multichoice) {
-     		console.log('else if multichoice');
-     		question.answer = $("#"+id + "_multichoice").val();
+     	} else if(question.options) {
+     		console.log('else if options');
+     		question.answer = $("#"+id + "_options").val();
      	}
      	if(question.correct_units){
      		question.units = $("#"+id + "_units").val();
@@ -4510,7 +4508,7 @@ sparks.util.getRubric = function (id, callback, local) {
         if (!!self.userQuestions[i]){
           var userQuestion = self.userQuestions[i];
 
-          if(!question.multichoice){
+          if(!question.options){
           	question.answer = parseFloat(question.answer);
 
           	console.log('question '+ i + ', question.answer, ' +question.answer +' question.correct_answer '+question.correct_answer);
@@ -4519,7 +4517,7 @@ sparks.util.getRubric = function (id, callback, local) {
             if(dif <= 15 && dif >= -15){
           	  question.answerIsCorrect = true;
           	}
-          } else if(!!question.multichoice) {
+          } else if(!!question.options) {
 			console.log('question.correct_answer '+ question.correct_answer +'question.answer '+ question.answer );
 
           	if(question.answer == question.correct_answer){

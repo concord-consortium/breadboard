@@ -211,7 +211,7 @@ describe 'Activity Creator'
         $($forms[0]).find('button').length.should.be 1
     end
     
-    it 'should be able to embed multichoice questions into an activity'
+    it 'should be able to embed options questions into an activity'
     
       var jsonActivity =
         {
@@ -220,7 +220,7 @@ describe 'Activity Creator'
               "prompt": "What is the resistance of R1?",
               "correct_answer": "100",
               "correct_units": "ohms",
-              "multichoice": ["100", "200"]
+              "options": ["100", "200"]
             }
           ]
       };
@@ -244,7 +244,7 @@ describe 'Activity Creator'
       
     end
     
-    it 'should be able to embed checkbox and radio multichoice questions into an activity'
+    it 'should be able to embed checkbox and radio options questions into an activity'
     
       var jsonActivity =
         {
@@ -253,21 +253,21 @@ describe 'Activity Creator'
               "prompt": "What is the resistance of R1?",
               "correct_answer": "1",
               "correct_units": "ohms",
-              "multichoice": ["0", "1", "2"],
+              "options": ["0", "1", "2"],
               "checkbox": "true"
             },
             {
               "prompt": "What is the resistance of R1?",
               "correct_answer": "100",
               "correct_units": "ohms",
-              "multichoice": ["0", "100", "200", "300"],
+              "options": ["0", "100", "200", "300"],
               "radio": "true"
             },
             {
               "prompt": "What is the resistance of R1?",
               "correct_answer": "100",
               "correct_units": "ohms",
-              "multichoice": ["0", "100", "200", "300"],
+              "options": ["0", "100", "200", "300"],
               "radio": "true"
             }
           ]
@@ -319,7 +319,7 @@ describe 'Activity Creator'
       
     end
     
-    it 'should be able to embed multichoice questions into an activity with calculated distrators'
+    it 'should be able to embed options questions into an activity with calculated distrators'
     
       var jsonActivity =
         {
@@ -342,7 +342,7 @@ describe 'Activity Creator'
               "prompt": "What is the resistance of R1?",
               "correct_answer": "100",
               "correct_units": "ohms",
-              "multichoice": ["[${r5.resistance}]", "[${r5.resistance}/2]"]
+              "options": ["[${r5.resistance}]", "[${r5.resistance}/2]"]
             }
           ]
       };
@@ -366,7 +366,7 @@ describe 'Activity Creator'
       
     end
     
-    it 'should be able to embed calculated multichoice questions correctly conveted to engineering'
+    it 'should be able to embed calculated options questions correctly conveted to engineering'
     
       var jsonActivity =
         {
@@ -382,7 +382,7 @@ describe 'Activity Creator'
             {
               "prompt": "What is the resistance of R1?",
               "correct_answer": "[${r7.resistance}] ohms",
-              "multichoice": ["[${r7.resistance}] ohms", "[${r7.resistance}/10] ohms", "0.1 V"]
+              "options": ["[${r7.resistance}] ohms", "[${r7.resistance}/10] ohms", "0.1 V"]
             }
           ]
       };

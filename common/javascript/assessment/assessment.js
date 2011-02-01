@@ -46,8 +46,8 @@
       if (question.correct_units === "ohms"){
         question.correct_units = "&#x2126;";
       }
-      if (!!jsonQuestion.multichoice) {
-      	question.multichoice = jsonQuestion.multichoice;
+      if (!!jsonQuestion.options) {
+      	question.options = jsonQuestion.options;
       }
             
       question.score = (jsonQuestion.score | 1);
@@ -97,11 +97,11 @@
       
       var id = 0;
       $.each(this.questions, function(i, question) {
-     	if(!question.multichoice){
+     	if(!question.options){
      		question.answer = $("#"+id + "_input").val();
-     	} else if(question.multichoice) {
-     		console.log('else if multichoice');
-     		question.answer = $("#"+id + "_multichoice").val();
+     	} else if(question.options) {
+     		console.log('else if options');
+     		question.answer = $("#"+id + "_options").val();
      		//console.log(question.answer);
      	}	
      	if(question.correct_units){
@@ -120,7 +120,7 @@
         if (!!self.userQuestions[i]){
           var userQuestion = self.userQuestions[i];
           
-          if(!question.multichoice){
+          if(!question.options){
           	question.answer = parseFloat(question.answer);
           
           	console.log('question '+ i + ', question.answer, ' +question.answer +' question.correct_answer '+question.correct_answer);
@@ -131,7 +131,7 @@
             if(dif <= 15 && dif >= -15){
           	  question.answerIsCorrect = true;
           	}
-          } else if(!!question.multichoice) {
+          } else if(!!question.options) {
 			console.log('question.correct_answer '+ question.correct_answer +'question.answer '+ question.answer );
 
           	if(question.answer == question.correct_answer){
@@ -176,7 +176,7 @@
         var feedback = "";
 
         
-        //if(!question.multichoice){
+        //if(!question.options){
         	if (answer === '') {
           
         	} else if (!question.answerIsCorrect){
@@ -187,7 +187,7 @@
         	} else if (!question.unitsIsCorrect){
         	  feedback += "The units were wrong";
         	}
-        //} else if(!!question.multichoice){
+        //} else if(!!question.options){
         	
         	// needs to be filled in!  custom feedback from activity setup
         //}

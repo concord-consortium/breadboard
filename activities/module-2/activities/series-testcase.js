@@ -60,7 +60,7 @@ sparks.jsonActivity = {
           "shortPrompt": "Total resistance of R1, R2, and R3",
           "correct_answer": "[${r1.nominalResistance}+ ${r2.nominalResistance}+ ${r3.nominalResistance}] ohm",
           //"correct_units": "ohm",
-          "multichoice": [
+          "options": [
           	"value...",
           	"[${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance}] incorrectUnit",
           	"[${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance}] ohm",//correct answser!

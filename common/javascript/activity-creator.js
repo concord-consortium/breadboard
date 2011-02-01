@@ -84,9 +84,9 @@
           if (!!preprompt){
             question.prompt = preprompt + " " + question.prompt;
           }
-          if (!!question.multichoice){
-            $.each(question.multichoice, function(i, choice){
-              question.multichoice[i] = self.calculateMeasurement(choice);
+          if (!!question.options){
+            $.each(question.options, function(i, choice){
+              question.options[i] = self.calculateMeasurement(choice);
             });
           }
           assessment.addQuestion(question,id);
@@ -277,13 +277,13 @@
         );
 
         function addInputs($html, question){
-          if (!question.multichoice){
+          if (!question.options){
             $html.append(
               $("<input>").attr("id",self.question_id+"_input"), "   "
             );
           } else {
             if (!!question.checkbox || !!question.radio){
-              $.each(question.multichoice, function(i,answer_option){
+              $.each(question.options, function(i,answer_option){
                 answer_option = self.calculateMeasurement(answer_option);
 
                 var type = question.checkbox ? "checkbox" : "radio";
@@ -294,9 +294,9 @@
               });
               $html.append('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
             } else {
-              var $select = $("<select>").attr("id",self.question_id+"_multichoice");
+              var $select = $("<select>").attr("id",self.question_id+"_options");
 
-              $.each(question.multichoice, function(i,answer_option){
+              $.each(question.options, function(i,answer_option){
                 answer_option = self.calculateMeasurement(answer_option);
                 $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));	
               });

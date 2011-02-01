@@ -87,7 +87,7 @@ describe 'Questions'
                 "prompt": "What is the resistance of R1?",
                 "correct_answer": "100",
                 "correct_units": "V",
-                "multichoice": ["100", "200"]
+                "options": ["100", "200"]
               }
             ]
           };
@@ -101,13 +101,42 @@ describe 'Questions'
       
           assessment.questions.length.should.be 2
           
-          assessment.questions[0].multichoice.should.be undefined
+          assessment.questions[0].options.should.be undefined
           
-          assessment.questions[1].multichoice.should.not.be undefined
-          assessment.questions[1].multichoice.length.should.be 2
-          assessment.questions[1].multichoice[0].should.be "100"
-          assessment.questions[1].multichoice[1].should.be "200"
+          assessment.questions[1].options.should.not.be undefined
+          assessment.questions[1].options.length.should.be 2
+          assessment.questions[1].options[0].should.be "100"
+          assessment.questions[1].options[1].should.be "200"
       end
+      
+      // it 'should be able to create a multichoice question with points and feedback'
+      //   var jsonActivity =
+      //     {
+      //       "questions": [
+      //         {
+      //           "prompt": "What is the resistance of R1?",
+      //           "options": [
+      //             {"choice": "100", "points": "5"},
+      //             {"choice": "200", "feedback": "You're so wrong"}
+      //           ]
+      //         }
+      //       ]
+      //     };
+      // 
+      //     var assessment = new sparks.Activity.Assessment();
+      // 
+      //     assessment.questions.length.should.be 0
+      // 
+      //     var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+      //     ac.createQuestions();
+      // 
+      //     assessment.questions.length.should.be 2
+      //     
+      //     assessment.questions[0].options.should.not.be undefined
+      //     assessment.questions[0].options.length.should.be 2
+      //     assessment.questions[0].options[0].should.be "100"
+      //     assessment.questions[0].options[1].should.be "200"
+      // end
       
       it 'should be able to create a multiple groups of question'
         var jsonActivity =
@@ -236,7 +265,7 @@ describe 'Questions'
               "prompt": "What is the resistance of R1?",
               "correct_answer": "[${r1.resistance}]",
               "correct_units": "ohms",
-              "multichoice": ["[${r1.resistance}]", "[${r1.resistance}/2]"]
+              "options": ["[${r1.resistance}]", "[${r1.resistance}/2]"]
             }
           ]
         };
@@ -247,9 +276,9 @@ describe 'Questions'
         ac.createQuestions();
     
         assessment.questions.length.should.be 1
-        assessment.questions[0].multichoice.length.should.be 2
-        assessment.questions[0].multichoice[0].should.be "100"
-        assessment.questions[0].multichoice[1].should.be "50"
+        assessment.questions[0].options.length.should.be 2
+        assessment.questions[0].options[0].should.be "100"
+        assessment.questions[0].options[1].should.be "50"
     end
     
   end
