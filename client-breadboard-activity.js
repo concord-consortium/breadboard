@@ -2000,7 +2000,6 @@ sparks.util.getRubric = function (id, callback, local) {
 
       function addQuestions(question){
         function addSingleQuestion(question, preprompt){
-
           if (!!question.correct_units){
             question.correct_answer = self.calculateMeasurement(question.correct_answer);
             if (!isNaN(Number(question.correct_answer))){
@@ -2008,10 +2007,9 @@ sparks.util.getRubric = function (id, callback, local) {
               question.correct_answer = converted.value;
               question.correct_units = self.standardizeUnits(converted.units);
             }
-          } else {
+          } else if (!!question.correct_answer){
             question.correct_answer = self.calculateMeasurement(question.correct_answer);
           }
-
 
           var oldPrompt = question.prompt;
           if (!!preprompt){
@@ -2019,7 +2017,11 @@ sparks.util.getRubric = function (id, callback, local) {
           }
           if (!!question.options){
             $.each(question.options, function(i, choice){
-              question.options[i] = self.calculateMeasurement(choice);
+              if (!!question.options[i].option){
+                question.options[i].option = self.calculateMeasurement(question.options[i].option);
+              } else {
+                question.options[i] = self.calculateMeasurement(choice);
+              }
             });
           }
           assessment.addQuestion(question,id);
@@ -2088,7 +2090,7 @@ sparks.util.getRubric = function (id, callback, local) {
       string = string.replace("milli","m");
       string = string.replace("kilo","k");
       string = string.replace("mega","M");
-      return string
+      return string;
     },
 
 
@@ -2224,7 +2226,11 @@ sparks.util.getRubric = function (id, callback, local) {
           } else {
             if (!!question.checkbox || !!question.radio){
               $.each(question.options, function(i,answer_option){
-                answer_option = self.calculateMeasurement(answer_option);
+                if (!answer_option.option){
+                  answer_option = self.calculateMeasurement(answer_option);
+                } else {
+                  answer_option = self.calculateMeasurement(answer_option.option);
+                }
 
                 var type = question.checkbox ? "checkbox" : "radio";
                 var groupName = type + "Group" + self.question_id;
@@ -2237,8 +2243,12 @@ sparks.util.getRubric = function (id, callback, local) {
               var $select = $("<select>").attr("id",self.question_id+"_options");
 
               $.each(question.options, function(i,answer_option){
-                answer_option = self.calculateMeasurement(answer_option);
-                $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));
+                if (!answer_option.option){
+                  answer_option = self.calculateMeasurement(answer_option);
+                } else {
+                  answer_option = self.calculateMeasurement(answer_option.option);
+                }
+                $select.append($("<option>").attr("value", answer_option).html(answer_option).attr("defaultSelected",i===0));
               });
               $html.append($select, "   ");
             }
@@ -4421,15 +4431,18 @@ sparks.util.getRubric = function (id, callback, local) {
   	  this.id = 0;
       this.prompt = '';
       this.shortPrompt = '';
-      this.correct_answer = '';
+      this.correct_answer = null;
       this.answer = '';
-      this.correct_units = '';
+      this.correct_units = null;
       this.units = '';
       this.answerIsCorrect = false;
       this.unitsIsCorrect = false;
       this.start_time = null;
       this.end_time = null;
-      this.score = 1;
+      this.score = 0;
+      this.options = null;
+      this.points_earned = -1;
+      this.feedback = null;
   };
 
   activity.Assessment = function (activityLog) {
@@ -4450,11 +4463,13 @@ sparks.util.getRubric = function (id, callback, local) {
       question.id = id;
       question.prompt = jsonQuestion.prompt;
       question.shortPrompt = (jsonQuestion.shortPrompt || jsonQuestion.prompt);
-      question.correct_answer = html_entity_decode(jsonQuestion.correct_answer);
+      if (jsonQuestion.correct_answer != null) {
+        question.correct_answer = "" + jsonQuestion.correct_answer;
+      }
 
       question.correct_units = jsonQuestion.correct_units;
       if (!!question.correct_units){
-        question.correct_units = question.correct_units.replace("ohms",html_entity_decode("&#x2126;"))
+        question.correct_units = question.correct_units.replace("ohms",html_entity_decode("&#x2126;"));
       }
       if (!!jsonQuestion.options) {
       	question.options = jsonQuestion.options;
@@ -4505,8 +4520,24 @@ sparks.util.getRubric = function (id, callback, local) {
           	  question.answerIsCorrect = true;
           	}
           } else if(!!question.options) {
-			console.log('question.correct_answer '+ question.correct_answer +'question.answer '+ question.answer );
-
+            if (!!question.options[0].option){
+              var optionChosen;
+              var maxPoints = 0;
+              question.feedback = "";
+              $.each(question.options, function(i, option){
+                if (option.option == question.answer){
+                  optionChosen = option
+                }
+                var points = option.points;
+                if (points > maxPoints){
+                  maxPoints = points;
+                  question.score = points;
+                  question.correct_answer = option.option;
+                }
+              });
+              question.points_earned = optionChosen.points;
+              question.feedback = optionChosen.feedback;
+            }
           	if(question.answer == question.correct_answer){
           		question.answerIsCorrect = true;
           	}
@@ -4543,12 +4574,18 @@ sparks.util.getRubric = function (id, callback, local) {
       $.each(this.questions, function(i, question){
         var answer = !!question.answer ? question.answer + (!!question.units ? " "+question.units : '') : '';
         var correctAnswer = question.correct_answer + (!!question.correct_units ? " "+question.correct_units : '');
-        var score = question.answerIsCorrect && question.unitsIsCorrect ? question.score : 0;
+        var score;
+        if (question.points_earned > -1){
+          score = question.points_earned;
+        } else {
+          score = question.answerIsCorrect && question.unitsIsCorrect ? question.score : 0;
+        }
         totalScore += score;
         totalPossibleScore += question.score;
         var feedback = "";
 
 
+        if(!question.feedback){
         	if (answer === '') {
 
         	} else if (!question.answerIsCorrect){
@@ -4559,13 +4596,15 @@ sparks.util.getRubric = function (id, callback, local) {
         	} else if (!question.unitsIsCorrect){
         	  feedback += "The units were wrong";
         	}
-
+        } else {
+          feedback = question.feedback;
+        }
 
 
         $tbl.append(
           $('<tr>').append(
             $('<td>').text(question.shortPrompt),
-            $('<td>').text(answer),
+            $('<td>').html(answer),
             $('<td>').html(correctAnswer),
             $('<td>').text(score +"/" + question.score),
             $('<td>').text(feedback)
