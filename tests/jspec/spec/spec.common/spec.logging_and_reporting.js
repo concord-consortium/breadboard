@@ -76,17 +76,37 @@ describe 'Logging and Reporting'
     end
     
     it "should be able to convert units on measurment questions"
-    
-      var assessment = new sparks.Activity.Assessment();
-      assessment.addQuestion({"prompt": "prompt", "correct_answer": "1", "correct_units": "V"});
-      assessment.addQuestion({"prompt": "prompt", "correct_answer": "0.1", "correct_units": "V"});
-      assessment.addQuestion({"prompt": "prompt", "correct_answer": "1000", "correct_units": "&#x2126;"});
       
-      assessment.questions[0].correct_answer.should.be 1
+       var jsonActivity =
+          {
+              "questions": [
+                  {
+                      "prompt": "prompt",
+                      "correct_answer": "1",
+                      "correct_units": "V"
+                  },
+                  {
+                      "prompt": "prompt",
+                      "correct_answer": "0.1",
+                      "correct_units": "V"
+                  },
+                  {
+                      "prompt": "prompt",
+                      "correct_answer": "1000",
+                      "correct_units": "ohms"
+                  }
+              ] 
+          };
+          
+          var assessment = new sparks.Activity.Assessment();
+          var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+          ac.createQuestions();
+      
+      assessment.questions[0].correct_answer.should.be "1"
       assessment.questions[0].correct_units.should.be "V"
-      assessment.questions[1].correct_answer.should.be 100
+      assessment.questions[1].correct_answer.should.be "100"
       assessment.questions[1].correct_units.should.be "mV"
-      assessment.questions[2].correct_answer.should.be 1
+      assessment.questions[2].correct_answer.should.be "1"
       assessment.questions[2].correct_units.search(/k./).should.be 0
       
     end
