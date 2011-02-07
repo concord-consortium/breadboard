@@ -136,4 +136,45 @@ describe 'Logging and Reporting'
       
     end
     
+    it 'should be able to score multichoice questions with points'
+      var jsonActivity =
+        {
+            "questions": [
+                {
+                    "prompt": "What is the resistance of R1?",
+                    "options": [
+                        {
+                            "option": "1000 V",
+                            "points": "5"
+                        },
+                        {
+                            "option": "200",
+                            "feedback": "That's so wrong"
+                        }
+                    ] 
+                }
+            ] 
+        };
+      
+      var $questionsDiv = $("<div>");
+
+      var assessment = new sparks.Activity.Assessment();
+      var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.createAndLayoutActivity();
+
+      var $forms = $questionsDiv.find('form');
+      var $question = $($forms[0]);
+      var $select = $($question.find('select')[0])
+      
+      $select.val("1000 V");
+      
+      assessment.serializeQuestions($forms);
+      assessment.scoreAnswers();
+      
+      assessment.questions[0].points_earned.should.be 5
+      
+      
+    end
+    
 end

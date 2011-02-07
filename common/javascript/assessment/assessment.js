@@ -8,15 +8,18 @@
   	  this.id = 0;
       this.prompt = '';
       this.shortPrompt = '';
-      this.correct_answer = '';
+      this.correct_answer = null;
       this.answer = '';
-      this.correct_units = '';
+      this.correct_units = null;
       this.units = '';
       this.answerIsCorrect = false;
       this.unitsIsCorrect = false;
       this.start_time = null;
       this.end_time = null;
-      this.score = 1;
+      this.score = 0;
+      this.options = null;
+      this.points_earned = -1;
+      this.feedback = null;
   };
   
   activity.Assessment = function (activityLog) {
@@ -37,11 +40,13 @@
       question.id = id;
       question.prompt = jsonQuestion.prompt;
       question.shortPrompt = (jsonQuestion.shortPrompt || jsonQuestion.prompt);
-      question.correct_answer = "" + jsonQuestion.correct_answer;
+      if (jsonQuestion.correct_answer != null) {
+        question.correct_answer = "" + jsonQuestion.correct_answer;
+      }
 		  	
       question.correct_units = jsonQuestion.correct_units;
       if (!!question.correct_units){
-        question.correct_units = question.correct_units.replace("ohms",html_entity_decode("&#x2126;"))
+        question.correct_units = question.correct_units.replace("ohms",html_entity_decode("&#x2126;"));
       }
       if (!!jsonQuestion.options) {
       	question.options = jsonQuestion.options;
@@ -95,8 +100,24 @@
           	  question.answerIsCorrect = true;
           	}
           } else if(!!question.options) {
-			console.log('question.correct_answer '+ question.correct_answer +'question.answer '+ question.answer );
-
+            if (!!question.options[0].option){
+              var optionChosen;
+              var maxPoints = 0;
+              question.feedback = "";
+              $.each(question.options, function(i, option){
+                if (option.option == question.answer){
+                  optionChosen = option
+                }
+                var points = option.points;
+                if (points > maxPoints){
+                  maxPoints = points;
+                  question.score = points;
+                  question.correct_answer = option.option;
+                }
+              });
+              question.points_earned = optionChosen.points;
+              question.feedback = optionChosen.feedback;
+            }
           	if(question.answer == question.correct_answer){
           		question.answerIsCorrect = true;	
           	}	
@@ -133,13 +154,18 @@
       $.each(this.questions, function(i, question){
         var answer = !!question.answer ? question.answer + (!!question.units ? " "+question.units : '') : '';
         var correctAnswer = question.correct_answer + (!!question.correct_units ? " "+question.correct_units : '');
-        var score = question.answerIsCorrect && question.unitsIsCorrect ? question.score : 0;
+        var score;
+        if (question.points_earned > -1){
+          score = question.points_earned;
+        } else {
+          score = question.answerIsCorrect && question.unitsIsCorrect ? question.score : 0;
+        }
         totalScore += score;
         totalPossibleScore += question.score;
         var feedback = "";
 
         
-        //if(!question.options){
+        if(!question.feedback){
         	if (answer === '') {
           
         	} else if (!question.answerIsCorrect){
@@ -150,16 +176,15 @@
         	} else if (!question.unitsIsCorrect){
         	  feedback += "The units were wrong";
         	}
-        //} else if(!!question.options){
-        	
-        	// needs to be filled in!  custom feedback from activity setup
-        //}
+        } else {
+          feedback = question.feedback;
+        }
        
         
         $tbl.append(
           $('<tr>').append(
             $('<td>').text(question.shortPrompt),
-            $('<td>').text(answer),
+            $('<td>').html(answer),
             $('<td>').html(correctAnswer),
             $('<td>').text(score +"/" + question.score),
             $('<td>').text(feedback)

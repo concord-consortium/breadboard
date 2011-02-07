@@ -79,7 +79,6 @@
       
       function addQuestions(question){
         function addSingleQuestion(question, preprompt){
-          
           // convert correct_answer (and units, if approp) to engineering format
           if (!!question.correct_units){
             // if auth specified units separately, we have to do it in two steps
@@ -89,10 +88,9 @@
               question.correct_answer = converted.value;
               question.correct_units = self.standardizeUnits(converted.units);
             }
-          } else {
+          } else if (!!question.correct_answer){
             question.correct_answer = self.calculateMeasurement(question.correct_answer);
           }
-          
           
           var oldPrompt = question.prompt;
           if (!!preprompt){
@@ -100,7 +98,11 @@
           }
           if (!!question.options){
             $.each(question.options, function(i, choice){
-              question.options[i] = self.calculateMeasurement(choice);
+              if (!!question.options[i].option){
+                question.options[i].option = self.calculateMeasurement(question.options[i].option);
+              } else {
+                question.options[i] = self.calculateMeasurement(choice);
+              }
             });
           }
           assessment.addQuestion(question,id);
@@ -170,7 +172,7 @@
       string = string.replace("milli","m");
       string = string.replace("kilo","k");
       string = string.replace("mega","M");
-      return string
+      return string;
     },
     
     
@@ -307,7 +309,11 @@
           } else {
             if (!!question.checkbox || !!question.radio){
               $.each(question.options, function(i,answer_option){
-                answer_option = self.calculateMeasurement(answer_option);
+                if (!answer_option.option){
+                  answer_option = self.calculateMeasurement(answer_option);
+                } else {
+                  answer_option = self.calculateMeasurement(answer_option.option);
+                }
 
                 var type = question.checkbox ? "checkbox" : "radio";
                 var groupName = type + "Group" + self.question_id;
@@ -320,8 +326,12 @@
               var $select = $("<select>").attr("id",self.question_id+"_options");
 
               $.each(question.options, function(i,answer_option){
-                answer_option = self.calculateMeasurement(answer_option);
-                $select.append($("<option>").html(answer_option).attr("defaultSelected",i===0));	
+                if (!answer_option.option){
+                  answer_option = self.calculateMeasurement(answer_option);
+                } else {
+                  answer_option = self.calculateMeasurement(answer_option.option);
+                }
+                $select.append($("<option>").attr("value", answer_option).html(answer_option).attr("defaultSelected",i===0));	
               });
               $html.append($select, "   ");
             }

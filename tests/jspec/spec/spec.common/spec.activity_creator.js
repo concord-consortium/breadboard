@@ -412,6 +412,64 @@ describe 'Activity Creator'
       
     end
     
+    it 'should be able to embed a multichoice question with points and feedback'
+      var jsonActivity =
+        {
+            "questions": [
+                {
+                    "prompt": "What is the resistance of R1?",
+                    "options": [
+                        {
+                            "option": "1000 V",
+                            "points": "5"
+                        },
+                        {
+                            "option": "200",
+                            "feedback": "That's so wrong"
+                        }
+                    ] 
+                },
+                {
+                    "prompt": "What is the resistance of R1?",
+                    "radio": "true",
+                    "options": [
+                        {
+                            "option": "2000 V",
+                            "points": "5"
+                        },
+                        {
+                            "option": "100",
+                            "feedback": "That's so wrong"
+                        }
+                    ] 
+                }
+            ] 
+        };
+        
+        var $questionsDiv = $("<div>");
+
+        var assessment = new sparks.Activity.Assessment();
+        var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+        ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+        ac.createAndLayoutActivity();
+
+        var $forms = $questionsDiv.find('form');
+        var $question = $($forms[0]);
+
+
+        $question.find('select').length.should.be 1
+        var $select = $($question.find('select')[0])
+        $select.find('option').length.should.be 2
+        $select.find('option')[0].innerHTML.should.be "1 kV"
+        $select.find('option')[1].innerHTML.should.be "200"
+        
+        $question = $($forms[1]);
+
+        $question.find('input').length.should.be 2
+        $($question.find('input')[0]).attr("value").should.be "2 kV"
+        $($question.find('input')[1]).attr("value").should.be "100"
+    end
+    
     it 'should be able to embed questions with images'
     
       var jsonActivity =
