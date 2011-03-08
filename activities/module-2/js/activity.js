@@ -1,5 +1,15 @@
 //= require <activity>
-//= require <activity-creator>
+//= require <models/sparks-activity>
+//= require <models/sparks-page>
+//= require <models/sparks-question>
+//= require <views/sparks-activity-view>
+//= require <views/sparks-page-view>
+//= require <views/sparks-question-view>
+//= require <controllers/sparks-activity-controller>
+//= require <controllers/sparks-page-controller>
+//= require <controllers/sparks-question-controller>
+//= require <activity-constructor>
+//= require <math-parser>
 //= require <string>
 //= require <ui>
 //= require <flash_comm>
@@ -32,8 +42,7 @@
     
     sm.Activity = function () {
         sm.Activity.uber.init.apply(this);
-        this.log = new sm.ActivityLog();
-        this.assessment = new sparks.Activity.Assessment();
+        
         // this.reporter = new sm.Reporter($('#report_area'));
         sparks.flash.activity = this;
     };
@@ -98,9 +107,9 @@
           console.log("activity ready")
           $('#title').text(sparks.jsonActivity.title);
           
-          var ac = new sparks.ActivityConstructor(sparks.jsonActivity, this.assessment);
+          var ac = new sparks.ActivityConstructor(sparks.jsonActivity);
           
-          ac.createAndLayoutActivity();
+          ac.layoutActivity();
           
           if (!!sparks.jsonActivity.circuit){
             this.multimeter = new sparks.circuit.Multimeter2();
@@ -135,10 +144,10 @@
           this.reportArea = $('#report_area').hide();
           
           var self = this;
-          $('button.submit').click(function (event) {
-              self.submitButtonClicked(self, event);
-              event.preventDefault();
-          });
+          // $('button.submit').click(function (event) {
+          //     self.submitButtonClicked(self, event);
+          //     event.preventDefault();
+          // });
           
           
           this.startTry();
@@ -149,24 +158,24 @@
             //this.multimeter = new sparks.circuit.Multimeter2();
         },
         
-        submitButtonClicked: function (activity, event) {
-            
-            var form = jQuery(event.target).parents('.question_form');
-            activity.disableForm(this.currentQuestion);
-            var nextForm = form.nextAll("form:first");
-            var $buttons = form.nextAll('.next-questions');
-            
-            if (nextForm.size() > 0) {
-              this.currentQuestion++;
-              this.enableForm(this.currentQuestion);
-            } else if ($buttons.length > 0){
-              $($buttons[0]).removeAttr('disabled');
-              this.currentQuestion++;
-              this.enableForm(this.currentQuestion);
-            } else {
-              this.completedTry();
-            }
-        },
+        // submitButtonClicked: function (activity, event) {
+        //     
+        //     var form = jQuery(event.target).parents('.question_form');
+        //     activity.disableForm(this.currentQuestion);
+        //     var nextForm = form.nextAll("form:first");
+        //     var $buttons = form.nextAll('.next-questions');
+        //     
+        //     if (nextForm.size() > 0) {
+        //       this.currentQuestion++;
+        //       this.enableForm(this.currentQuestion);
+        //     } else if ($buttons.length > 0){
+        //       $($buttons[0]).removeAttr('disabled');
+        //       this.currentQuestion++;
+        //       this.enableForm(this.currentQuestion);
+        //     } else {
+        //       this.completedTry();
+        //     }
+        // },
         
         startTry: function () {
             $('.next_button').hide();
@@ -212,10 +221,12 @@
         
         logResults: function () {
           console.log("generatingReport");
-          this.assessment.serializeQuestions($("form"));
-          this.assessment.scoreAnswers();
-          var table = this.assessment.generateReport();
-          this.reportArea.append(table);
+          // sparks.assessment.serializeQuestions($("form"));
+          // sparks.assessment.scoreAnswers();
+          // var table = sparks.assessment.generateReport();
+          var pc = new sparks.SparksPageController();
+          var $report = pc.createReportForPage(sparks.sparksActivity.pages[0]);
+          this.reportArea.append($report);
         },
         
         receiveEvent: function (name, value, time) {

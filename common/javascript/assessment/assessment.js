@@ -20,6 +20,8 @@
       this.options = null;
       this.points_earned = -1;
       this.feedback = null;
+      this.isSubQuestion = false;
+      this.commonPrompt = '';
   };
   
   activity.Assessment = function (activityLog) {
@@ -31,8 +33,8 @@
   
   activity.Assessment.prototype = 
   {
-    addQuestion: function(jsonQuestion,id) {
-    	function html_entity_decode(str) {
+    createQuestion: function(jsonQuestion, id){
+      function html_entity_decode(str) {
         return $("<div>").html(str).text();
       }
       
@@ -40,6 +42,8 @@
       question.id = id;
       question.prompt = jsonQuestion.prompt;
       question.shortPrompt = (jsonQuestion.shortPrompt || jsonQuestion.prompt);
+      question.commonPrompt = jsonQuestion.commonPrompt;
+      question.isSubQuestion= jsonQuestion.isSubQuestion;
       if (jsonQuestion.correct_answer != null) {
         question.correct_answer = "" + jsonQuestion.correct_answer;
       }
@@ -54,6 +58,11 @@
             
       question.score = (jsonQuestion.score | 0);
       
+      return question;
+    },
+    
+    addQuestion: function(jsonQuestion,id) {
+    	var question = this.createQuestion(jsonQuestion,id);
       this.questions.push(question);
     },
     
@@ -106,7 +115,7 @@
               question.feedback = "";
               $.each(question.options, function(i, option){
                 if (option.option == question.answer){
-                  optionChosen = option
+                  optionChosen = option;
                 }
                 var points = option.points;
                 if (points > maxPoints){

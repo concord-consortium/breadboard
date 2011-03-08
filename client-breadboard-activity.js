@@ -1923,24 +1923,625 @@ sparks.util.getRubric = function (id, callback, local) {
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
-  sparks.ActivityConstructor = function(jsonActivity, assessment){
+  sparks.SparksActivity = function(){
+    sparks.sparksActivity = this;
+
+    sparks.activityLog = new sparks.Activity.ActivityLog();
+    sparks.assessment = new sparks.Activity.Assessment();
+
+    this.image = null;
+    this.circuit = null;
+    this.pages = [];
+    this.variables = {};
+
+    this.activity_url = "";
+    this.images_url = "";
+
+    this.view = null;
+  };
+
+  sparks.SparksActivity.prototype = {
+  };
+
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+
+  sparks.SparksPage = function(){
+    this.questions = [];
+    this.notes = null;
+    this.view = null;
+    this.currentQuestion = null;
+  };
+
+  sparks.SparksPage.prototype = {
+  };
+
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+  sparks.SparksQuestion = function(){
+    this.id = 0;
+    this.shownId = 0;
+
+    this.prompt = '';
+    this.shortPrompt = '';
+    this.correct_answer = null;
+    this.answer = '';
+    this.correct_units = null;
+    this.units = '';
+    this.answerIsCorrect = false;
+    this.unitsIsCorrect = false;
+    this.start_time = null;
+    this.end_time = null;
+
+    this.options = null;
+    this.radio = false;
+    this.checkbox = false;
+
+    this.points = 0;
+    this.points_earned = -1;
+    this.feedback = null;
+
+    this.isSubQuestion = false;
+    this.subquestionId = -1;
+    this.commonPrompt = '';
+
+    this.view = null;
+  };
+
+  sparks.SparksActivity.prototype = {
+  };
+
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+
+  sparks.SparksActivityView = function(activity){
+    this.activity = activity;
+  };
+
+  sparks.SparksActivityView.prototype = {
+
+    getImageView: function() {
+      var $imagediv = $("<div>").addClass("question-image");
+      $imagediv.append(
+        $("<img>").attr('src', this.getImgSrc(this.activity.image))
+      );
+      return $imagediv;
+    },
+
+    getImgSrc: function(fileName) {
+      if (fileName.indexOf("http") > -1){
+        return fileName;
+      } else if (!!this.activity.images_url) {
+        return this.activity.images_url + "/" + fileName;
+      }
+      console.log(fileName + " appears to be a relative filename, but there is no base activity url.");
+      return "";
+    }
+
+  };
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+
+  sparks.SparksPageView = function(page){
+    this.page = page;
+    this.$view = null;
+  };
+
+  sparks.SparksPageView.prototype = {
+
+    getView: function() {
+      var page = this.page;
+
+      var self = this;
+
+      var $pageDiv = $('<div>').addClass('page');
+
+      var $questionDiv = $('<div>').addClass('inner-questions').css('float', 'left').css('padding', '10px');
+      $pageDiv.append($questionDiv);
+
+      $.each(page.questions, function(i, question){
+
+        var $question = question.view.getView();
+
+        if (!question.isSubQuestion){
+          var $form = $("<form>");
+          $form.addClass("question_form");
+
+          $form.append($question);
+
+          $question.append($("<button>").addClass("submit").text("Submit").css('margin-left', '30px'));
+
+          $questionDiv.append($form);
+        } else {
+          var $subForms = $questionDiv.find('.sub'+question.subquestionId);
+          var $subForm;
+          if ($subForms.length > 0){
+            $subForm = $($subForms[0]);
+          } else {
+            $subForm = $("<form>");
+            $subForm.addClass("question_form");
+            $subForm.addClass("sub"+question.subquestionId);
+
+            $subForm.append($("<span>").addClass("prompt").html((question.shownId+1) + ".  " + question.commonPrompt));
+
+            $subForm.append($("<div>").addClass("subquestions"));
+
+            $subForm.append($("<button>").addClass("submit").text("Submit").css('align', 'right'));
+
+            $questionDiv.append($subForm);
+          }
+
+          $subForm.find('.subquestions').append($question);
+
+          $subForm.find('.submit').click(function (event) {
+            self.submitButtonClicked(event);
+            event.preventDefault();
+          });
+        }
+      });
+
+      if (!!page.notes){
+        var $notesDiv = $('<div>').addClass('notes').css('float','right');
+        $notesDiv.html(page.notes);
+        $pageDiv.append($notesDiv);
+      }
+
+
+      return $pageDiv;
+    },
+
+    submitButtonClicked: function (event) {
+      console.log("Submit!");
+    }
+
+  };
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+
+  sparks.SparksQuestionView = function(question){
+    this.question = question;
+    this.$view = null;
+  };
+
+  sparks.SparksQuestionView.prototype = {
+
+    getView: function() {
+      var question = this.question;
+
+      var $question = $("<div>").addClass("question");
+
+      if (!!question.image){
+        var $div = $("<div>").addClass("question-image");
+        $div.append(
+          $("<img>").attr('src', this._getImgSrc(question.image))
+        );
+        $question.append($div);
+      }
+
+      var prompt = question.isSubQuestion ? question.prompt : (question.shownId+1) + ".  " + question.prompt;
+
+      $question.append(
+        $("<span>").addClass("prompt").html(prompt), "   "
+      );
+
+      var self = this;
+
+      if (!question.options){
+        var $input = $("<input>").attr("id",question.id+"_input");
+        $question.append($input);
+        $input.change(function(args){
+          self.valueChanged(args);
+        });
+      } else {
+        if (!!question.checkbox || !!question.radio){
+          $.each(question.options, function(i,answer_option){
+            if (!answer_option.option){
+            } else {
+              answer_option = answer_option.option;
+            }
+
+            var type = question.checkbox ? "checkbox" : "radio";
+
+            var groupName = type + "Group" + question.id;
+
+            $question.append($("<br>"));
+            var $input = $("<input>").attr("type", type).attr("name", groupName).attr("value", answer_option);
+            $question.append($input);
+            $question.append("<span> " + answer_option + "</span>");
+
+            $input.change(function(args){
+              self.valueChanged(args);
+            });
+          });
+          $question.append('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+        } else {
+          var $select = $("<select>").attr("id",question.id+"_options");
+
+           $select.append($("<option>").attr("value", "").html("").attr("defaultSelected",true));
+
+          $.each(question.options, function(i,answer_option){
+            if (!answer_option.option){
+              answer_option = sparks.mathParser.calculateMeasurement(answer_option);
+            } else {
+              answer_option = sparks.mathParser.calculateMeasurement(answer_option.option);
+            }
+            $select.append($("<option>").attr("value", answer_option).html(answer_option).attr("defaultSelected",false));
+          });
+          $question.append($select, "   ");
+          $select.change(function(args){
+            self.valueChanged(args);
+          });
+        }
+      }
+
+      if (!!question.correct_units){
+         var $unitsSelect = $("<select>").attr("id", question.id+"_units");
+         var options = ["Units...","&#x00b5;V","mV","V","&#x2126;","k&#x2126;","M&#x2126;","&#x00b5;A","mA","A"];
+         $.each(options, function(i, val){
+           $unitsSelect.append($("<option>").html(val).attr("defaultSelected", i===0));
+         });
+         $question.append($unitsSelect, "   ");
+      }
+
+      return $question;
+    },
+
+    _getImgSrc: function(fileName) {
+      if (fileName.indexOf("http") > -1){
+        return fileName;
+      } else if (!!this.jsonActivity.images_url) {
+        return this.jsonActivity.images_url + "/" + fileName;
+      }
+      console.log(fileName + " appears to be a relative filename, but there is no base activity url.");
+      return "";
+    },
+
+    valueChanged: function(args) {
+      var value = $(args.target).val();
+      this.question.answer = value;
+    }
+
+  };
+
+})();
+
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+  sparks.SparksActivityController = function(){
+    this.currentPage = null;
+  };
+
+  sparks.SparksActivityController.prototype = {
+
+    createActivity: function(jsonActivity) {
+      var activity = new sparks.SparksActivity();
+
+      if (!!jsonActivity.activity_url){
+        activity.activity_url = jsonActivity.activity_url;
+      } else {
+        activity.activity_url = sparks.jsonActivity.activity_url;
+      }
+
+      if (!!jsonActivity.images_url){
+        activity.images_url = jsonActivity.images_url;
+      } else {
+        activity.images_url = sparks.jsonActivity.images_url;
+      }
+
+      activity.image = jsonActivity.image;
+
+      if (!!jsonActivity.circuit){
+        activity.circuit = jsonActivity.circuit;
+        breadModel("createCircuit", activity.circuit);
+      }
+
+
+      if (!!jsonActivity.pages){
+        var pc = new sparks.SparksPageController();
+
+        $.each(jsonActivity.pages, function(i, jsonPage){
+          var page = pc.createPage(jsonPage);
+          activity.pages.push(page);
+        });
+
+        this.currentPage = activity.pages[0];
+      }
+
+      if (!!jsonActivity.formulas){
+        $.each(this.jsonActivity.formulas, function(i, formula){
+          var variables = {};
+          var variable = formula.match(/.* =/)[0];
+          variable = variable.substring(0,variable.length-2);
+          formula = "variables."+formula;
+          eval(formula);
+          var value = variables[0];
+          this.sparksActivity.variables[variable] = value;
+        });
+      }
+
+      activity.view = new sparks.SparksActivityView(activity);
+
+      return activity;
+    }
+
+  };
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+  sparks.SparksPageController = function(){
+    this.qc = new sparks.SparksQuestionController();
+  };
+
+  sparks.SparksPageController.prototype = {
+
+    createPage: function(jsonPage) {
+      var page = new sparks.SparksPage();
+
+      page.questions = this.qc.createQuestionsArray(jsonPage.questions);
+      page.currentQuestion = page.questions[0];
+
+      if (!!jsonPage.notes){
+        var notes = sparks.mathParser.calculateMeasurement(jsonPage.notes);
+        page.notes = notes;
+      }
+
+      page.view = new sparks.SparksPageView(page);
+
+      return page;
+    },
+
+    nextQuestion: function(page) {
+      for (var i = 0; i < page.questions.length; i++){
+        if (page.questions[i] === page.currentQuestion){
+          if (i < page.questions.length){
+            page.currentQuestion = page.questions[i+1];
+            return true;
+          } else {
+            return false;
+          }
+        }
+      }
+      return false;
+    },
+
+    createReportForPage: function(page) {
+      var self = this;
+      $.each(page.questions, function(i, question){
+        self.qc.gradeQuestion(question);
+      });
+
+      var $report = $('<table>').addClass('reportTable');
+
+      $report.append(
+        $('<tr>').append(
+          $('<th>').text("Question"),
+          $('<th>').text("Your answer"),
+          $('<th>').text("Correct answer"),
+          $('<th>').text("Score"),
+          $('<th>').text("Notes")
+        )
+      );
+
+      var totalScore = 0;
+      var totalPossibleScore = 0;
+
+      $.each(page.questions, function(i, question){
+        var answer = !!question.answer ? question.answer + (!!question.units ? " "+question.units : '') : '';
+        var correctAnswer = question.correct_answer + (!!question.correct_units ? " "+question.correct_units : '');
+        var score = question.points_earned;
+        totalScore += score;
+        totalPossibleScore += question.points;
+        var feedback = "";
+
+
+        if(!question.feedback){
+        	if (answer === '') {
+
+        	} else if (!question.answerIsCorrect){
+        	  feedback += "The value was wrong";
+        	}
+        } else {
+          feedback = question.feedback;
+        }
+
+        $report.append(
+          $('<tr>').append(
+            $('<td>').html(question.shortPrompt),
+            $('<td>').html(answer),
+            $('<td>').html(correctAnswer),
+            $('<td>').html(score +"/" + question.points),
+            $('<td>').html(feedback)
+          ).addClass(question.answerIsCorrect ? "correct" : "incorrect")
+        );
+      });
+
+      $report.append(
+        $('<tr>').append(
+          $('<th>').text("Total Score:"),
+          $('<th>').text(""),
+          $('<th>').text(""),
+          $('<th>').text(totalScore + "/" + totalPossibleScore),
+          $('<th>').text("")
+        )
+      );
+
+      return $report;
+    }
+
+  };
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+
+  sparks.SparksQuestionController = function(){
+  };
+
+  sparks.SparksQuestionController.prototype = {
+
+    createQuestionsArray: function(jsonQuestions) {
+      var questionsArray = [];
+      var self = this;
+      $.each(jsonQuestions, function(i, jsonQuestion){
+        self.createQuestion(jsonQuestion, questionsArray);
+      });
+
+      return questionsArray;
+    },
+
+    _id: 0,
+
+    _subquestionId: 0,
+
+    _shownId: 0,
+
+    createQuestion: function(jsonQuestion, questionsArray) {
+      var self = this;
+
+
+      function addSingleQuestion(jsonQuestion, preprompt){
+        var question = new sparks.SparksQuestion();
+
+        question.id = self._id;
+        question.shownId = self._shownId;
+        self._id++;
+
+        var oldPrompt = jsonQuestion.prompt;
+        if (!!preprompt){
+          question.prompt = preprompt + " " + jsonQuestion.prompt;
+          question.commonPrompt = preprompt;
+          question.isSubQuestion = true;
+          question.subquestionId = self._subquestionId;
+        } else {
+          question.prompt = jsonQuestion.prompt;
+        }
+
+        question.shortPrompt = !!jsonQuestion.shortPrompt ? jsonQuestion.shortPrompt : question.prompt;
+
+        function html_entity_decode(str) {
+          return $("<div>").html(str).text();
+        }
+
+        if (!!jsonQuestion.correct_units){
+          question.correct_answer = sparks.mathParser.calculateMeasurement(jsonQuestion.correct_answer);
+          if (!isNaN(Number(question.correct_answer))){
+            var converted = sparks.unit.toEngineering(question.correct_answer, jsonQuestion.correct_units);
+            question.correct_answer = converted.value;
+            question.correct_units = sparks.mathParser.standardizeUnits(converted.units);
+          }
+        } else if (!!jsonQuestion.correct_answer){
+          question.correct_answer = sparks.mathParser.calculateMeasurement(jsonQuestion.correct_answer);
+        }
+
+        if (!!question.correct_units){
+          question.correct_units = question.correct_units.replace("ohms",html_entity_decode("&#x2126;"));
+        }
+
+        if (!!jsonQuestion.options){
+          question.options = [];
+          $.each(jsonQuestion.options, function(i, choice){
+            question.options[i] = jsonQuestion.options[i];
+            if (!!jsonQuestion.options[i].option){
+              question.options[i].option = sparks.mathParser.calculateMeasurement(jsonQuestion.options[i].option);
+              question.options[i].points = jsonQuestion.options[i].points | 0;
+            } else {
+              question.options[i] = sparks.mathParser.calculateMeasurement(choice);
+            }
+          });
+          if (jsonQuestion.radio){
+            question.radio = true;
+          } else if (jsonQuestion.checkbox){
+            question.checkbox = true;
+          }
+        }
+
+        question.points = (jsonQuestion.points | 0);
+        question.image = jsonQuestion.image;
+
+        questionsArray.push(question);
+        sparks.assessment.questions.push(question);
+
+        question.prompt = oldPrompt;
+
+        question.view = new sparks.SparksQuestionView(question);
+      }
+
+      if (!jsonQuestion.subquestions){
+        addSingleQuestion(jsonQuestion);
+      } else {
+        $.each(jsonQuestion.subquestions, function(i, subquestion){
+          addSingleQuestion(subquestion, jsonQuestion.prompt);
+        });
+        this._subquestionId++;
+      }
+      this._shownId++;
+    },
+
+    gradeQuestion: function(question) {
+      if (!question.options || !question.options[0].option) {
+        if (question.answer === question.correct_answer){
+          question.answerIsCorrect = true;
+          question.points_earned = question.points;
+        } else {
+          question.answerIsCorrect = false;
+          question.points_earned = 0;
+        }
+      } else {
+        var maxPoints = 0;
+        $.each(question.options, function(i, option){
+          if (option.option === question.answer){
+            question.points_earned = option.points;
+            question.feedback = option.feedback;
+          }
+          var points = option.points;
+          if (points > maxPoints){
+            maxPoints = points;
+            question.points = points;
+            question.correct_answer = option.option;
+          }
+        });
+        if (question.points_earned == maxPoints){
+          question.answerIsCorrect = true;
+        }
+      }
+
+    }
+
+  };
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+  sparks.ActivityConstructor = function(jsonActivity){
+    this.sparksActivityController = new sparks.SparksActivityController();
+    this.activity = this.sparksActivityController.createActivity(jsonActivity);
+
     this.jsonActivity = jsonActivity;
-    this.assessment = assessment;
+
     this.embeddingTargets = {
       $breadboardDiv: null,
       $imageDiv: null,
       $questionsDiv: null
     };
+
   };
 
   sparks.ActivityConstructor.prototype = {
 
-    createAndLayoutActivity: function() {
-      if (!!sparks.jsonActivity.circuit){
-        this.createBreadboard();
-      }
-      this.createQuestions();
-      this.layoutActivity();
+    layoutActivity: function() {
+      console.log("THIS IS OBSOLETE. USE layoutActivity");
     },
 
     setEmbeddingTargets: function(targets) {
@@ -1955,114 +2556,39 @@ sparks.util.getRubric = function (id, callback, local) {
       }
     },
 
-
-    /*
-      Creates the breadboard from the JSON representation of the
-      circuit. See tests/jspc/spec/spec.common/spec.circuit_constructor
-      for examples of json circuits
-    */
-    createBreadboard: function() {
-
-      if (!this.jsonActivity.circuit){
-        return;
+   layoutActivity: function() {
+     if (!this.embeddingTargets.$imageDiv){
+         this.embeddingTargets.$imageDiv = $('#image');
       }
+     if (!this.embeddingTargets.$questionsDiv){
+        this.embeddingTargets.$questionsDiv = $('#questions_area');
+     }
 
-      breadModel("createCircuit", this.jsonActivity.circuit);
-    },
+     if (!!this.activity.image){
+       var $imagediv = this.activity.view.getImageView();
+       this.embeddingTargets.$imageDiv.append($imagediv);
+     }
 
-    /*
-      Creates questions from the JSON represenation of the questions,
-      and optionally embeds them in the jquery element provided
-    */
-    createQuestions: function(){
-      if (!this.jsonActivity.questions){
-        return;
-      }
+     if (!!this.sparksActivityController.currentPage){
+       var $page = this.sparksActivityController.currentPage.view.getView();
+       this.embeddingTargets.$questionsDiv.append($page);
+     }
+   }
+  };
+})();
+(function () {
 
-      var assessment = this.assessment;
-      var self = this;
-      var id = 0;
+    this.sparks.mathParser = {};
 
-      /**
-        This can be a little confusing.
-        Each item in the array "questions" in an activity can be one of three things:
+    var p = sparks.mathParser;
 
-          1. A plain question, with one prompt
-          2. A question with a prompt and multiple subquestions
-          3. An array of questions, designed to be shown in a set.
-
-        So we loop through the questions. If it's a plain question or a question with subquestions
-        we call addQuestions on it. If it's an array (if it has length) we call addQuestions on
-        each element in the array.
-        Then in addQuestions, if it's a plain question we call addSingleQuestion, and if it has
-        subquestions we call addSingleQuestion on each subquestion
-      */
-
-      function addQuestions(question){
-        function addSingleQuestion(question, preprompt){
-          if (!!question.correct_units){
-            question.correct_answer = self.calculateMeasurement(question.correct_answer);
-            if (!isNaN(Number(question.correct_answer))){
-              var converted = sparks.unit.toEngineering(question.correct_answer, question.correct_units);
-              question.correct_answer = converted.value;
-              question.correct_units = self.standardizeUnits(converted.units);
-            }
-          } else if (!!question.correct_answer){
-            question.correct_answer = self.calculateMeasurement(question.correct_answer);
-          }
-
-          var oldPrompt = question.prompt;
-          if (!!preprompt){
-            question.prompt = preprompt + " " + question.prompt;
-          }
-          if (!!question.options){
-            $.each(question.options, function(i, choice){
-              if (!!question.options[i].option){
-                question.options[i].option = self.calculateMeasurement(question.options[i].option);
-              } else {
-                question.options[i] = self.calculateMeasurement(choice);
-              }
-            });
-          }
-          assessment.addQuestion(question,id);
-          id++;
-
-          question.prompt = oldPrompt;
-        }
-
-        if (!question.subquestions){
-          addSingleQuestion(question);
-        } else {
-          $.each(question.subquestions, function(i, subquestion){
-            addSingleQuestion(subquestion, question.prompt);
-          });
-        }
-      }
-
-      $.each(this.jsonActivity.questions, function(i, question){
-        if (!question.length){
-          addQuestions(question);
-        } else {
-          $.each(question, function(i, innerQuestion){
-            addQuestions(innerQuestion);
-          });
-        }
-      });
-    },
-
-    /*
-      When passed a string such as "[100 + ${r1.resistance} / ${r2.nominalResistance}] ohms"
-      This will first take everything found in [...] and substitute in the calculated sum
-    */
-    calculateMeasurement: function(answer){
+    p.calculateMeasurement = function(answer){
       if (answer === undefined || answer === null || answer === ""){
         return "";
       }
       if (!isNaN(Number(answer))){
         return answer;
       }
-
-      var self = this;
 
       answer = ""+answer;
 
@@ -2071,7 +2597,7 @@ sparks.util.getRubric = function (id, callback, local) {
       if (!!matches){
         $.each(matches, function(i, match){
           var expression = match;
-          var result = self.calculateSum(expression);
+          var result = p.calculateSum(expression);
           answer = answer.replace(match,result);
         });
       }
@@ -2079,19 +2605,19 @@ sparks.util.getRubric = function (id, callback, local) {
 
       answer = sparks.unit.convertMeasurement(answer);   // convert 1000 V to 1 kiloV, for instance
 
-      answer = this.standardizeUnits(answer);
+      answer = p.standardizeUnits(answer);
 
       return answer;
-    },
+    };
 
-    standardizeUnits: function(string) {
-      string = string.replace("ohms","&#x2126;");
+    p.standardizeUnits = function(string) {
+      string = string.replace(/ohms/gi,"&#x2126;");
       string = string.replace("micro","&#x00b5;");
       string = string.replace("milli","m");
       string = string.replace("kilo","k");
       string = string.replace("mega","M");
       return string;
-    },
+    };
 
 
     /*
@@ -2100,7 +2626,7 @@ sparks.util.getRubric = function (id, callback, local) {
       the components and their properties exist in the circuit, and then perform the
       calculation.
     */
-   calculateSum: function(sum){
+   p.calculateSum = function(sum){
    	  var varPattern = /\${[^}]+}/g  //  ${ X } --> value of X
       var matches = sum.match(varPattern);
       if(!!matches){
@@ -2135,179 +2661,9 @@ sparks.util.getRubric = function (id, callback, local) {
 
       console.log("ERROR calculating Sum: Cannot compute the value of "+sum);
       return -1;
-   },
-
-   layoutActivity: function() {
-     if (!this.embeddingTargets.$imageDiv){
-         this.embeddingTargets.$imageDiv = $('#image');
-      }
-     if (!this.embeddingTargets.$questionsDiv){
-        this.embeddingTargets.$questionsDiv = $('#questions_area');
-     }
-
-     if (!!this.jsonActivity.image){
-        $imagediv = $("<div>").addClass("question-image");
-        $imagediv.append(
-          $("<img>").attr('src', this.getImgSrc(this.jsonActivity.image))
-        );
-        this.embeddingTargets.$imageDiv.append($imagediv);
-      }
-
-     if (!!this.jsonActivity.questions){
-       this.embedQuestions(this.embeddingTargets.$questionsDiv);
-     }
-   },
-
-   embedQuestions: function ($questionsDiv){
-      var questions = this.jsonActivity.questions;
-
-      var self = this;
-
-      if (!questions[0].length){  // nealing with a single group of questions
-        this._embedGroupOfQuestions(questions, $questionsDiv);
-      } else {                    // dealing with multiple pages of questions
-        var questionPages = [];
-        var nextButtons = [];
-        $.each(questions, function(i, questionGroup){
-
-          var $questionGroupDiv = $("<div>");
-          self._embedGroupOfQuestions(questionGroup, $questionGroupDiv);
-
-          $nextButton = $('<button>Next questions &nbsp;&#187;</button>').addClass("next-questions");
-
-          nextButtons.push($nextButton);
-          $questionGroupDiv.append($nextButton);
-          $questionGroupDiv.append($('<br>').attr("clear", "both"));
-
-          $questionGroupDiv.hide();
-          questionPages.push($questionGroupDiv);
-
-          $questionsDiv.append($questionGroupDiv);
-        });
-
-        nextButtons[nextButtons.length-1].remove();
-        questionPages[0].show();
-        $.each(nextButtons, function(i, button){
-          button.click(function(){
-            questionPages[i].hide();
-            questionPages[i+1].show();
-          });
-        });
-      }
-
-    },
-
-    question_id: 0,
-
-    _embedGroupOfQuestions: function (questionGroup, $question_div) {
-      var self = this;
-
-      $.each(questionGroup, function(i, question){
-        var $form = $("<form>");
-        $form.addClass("question_form");
-
-        if (!!question.image){
-          $div = $("<div>").addClass("question-image");
-          $div.append(
-            $("<img>").attr('src', self.getImgSrc(question.image))
-          );
-          $form.append($div);
-        }
-
-        $form.append(
-          $("<span>").addClass("prompt").html((self.question_id+1) + ".  " + question.prompt), "   "
-        );
-
-        function addInputs($html, question){
-          if (!question.options){
-            $html.append(
-              $("<input>").attr("id",self.question_id+"_input"), "   "
-            );
-          } else {
-            if (!!question.checkbox || !!question.radio){
-              $.each(question.options, function(i,answer_option){
-                if (!answer_option.option){
-                  answer_option = self.calculateMeasurement(answer_option);
-                } else {
-                  answer_option = self.calculateMeasurement(answer_option.option);
-                }
-
-                var type = question.checkbox ? "checkbox" : "radio";
-                var groupName = type + "Group" + self.question_id;
-                $html.append($("<br>"));
-                $html.append($("<input>").attr("type", type).attr("name", groupName).attr("value", answer_option));
-                $html.append("<span> " + answer_option + "</span>");
-              });
-              $html.append('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
-            } else {
-              var $select = $("<select>").attr("id",self.question_id+"_options");
-
-              $.each(question.options, function(i,answer_option){
-                if (!answer_option.option){
-                  answer_option = self.calculateMeasurement(answer_option);
-                } else {
-                  answer_option = self.calculateMeasurement(answer_option.option);
-                }
-                $select.append($("<option>").attr("value", answer_option).html(answer_option).attr("defaultSelected",i===0));
-              });
-              $html.append($select, "   ");
-            }
-          }
-
-          if (!!question.correct_units){
-             var $unitsSelect = $("<select>").attr("id", self.question_id+"_units");
-             var options = ["Units...","&#x00b5;V","mV","V","&#x2126;","k&#x2126;","M&#x2126;","&#x00b5;A","mA","A"];
-             $.each(options, function(i, val){
-               $unitsSelect.append($("<option>").html(val).attr("defaultSelected", i===0));
-             });
-             $html.append($unitsSelect, "   ");
-          }
+   };
 
 
-          $html.append(
-            $("<br>")
-          );
-          self.question_id++;
-        }
-
-        if (!question.subquestions){
-          addInputs($form, question);
-        } else {
-
-          $form.append(
-            $('<br>')
-          );
-
-          var $subquestionDiv = $('<div>').attr('style', 'margin-left: 20px; margin-top: 10px');
-
-          $.each(question.subquestions, function(i, question){
-            $subquestionDiv.append(
-              $("<span>").addClass("prompt").html(question.prompt), "   "
-            );
-            addInputs($subquestionDiv, question);
-          });
-
-          $form.append($subquestionDiv);
-        }
-
-        $form.find('br:last').replaceWith(
-          $("<button>").addClass("submit").text("Submit")
-        );
-
-        $question_div.append($form);
-      });
-    },
-
-    getImgSrc: function(fileName) {
-      if (fileName.indexOf("http") > -1){
-        return fileName;
-      } else if (!!this.jsonActivity.images_url) {
-        return this.jsonActivity.images_url + "/" + fileName;
-      }
-      console.log(fileName + " appears to be a relative filename, but there is no base activity url.");
-      return "";
-    }
-  };
 })();
 
 /* FILE string.js */
@@ -4443,6 +4799,8 @@ sparks.util.getRubric = function (id, callback, local) {
       this.options = null;
       this.points_earned = -1;
       this.feedback = null;
+      this.isSubQuestion = false;
+      this.commonPrompt = '';
   };
 
   activity.Assessment = function (activityLog) {
@@ -4454,8 +4812,8 @@ sparks.util.getRubric = function (id, callback, local) {
 
   activity.Assessment.prototype =
   {
-    addQuestion: function(jsonQuestion,id) {
-    	function html_entity_decode(str) {
+    createQuestion: function(jsonQuestion, id){
+      function html_entity_decode(str) {
         return $("<div>").html(str).text();
       }
 
@@ -4463,6 +4821,8 @@ sparks.util.getRubric = function (id, callback, local) {
       question.id = id;
       question.prompt = jsonQuestion.prompt;
       question.shortPrompt = (jsonQuestion.shortPrompt || jsonQuestion.prompt);
+      question.commonPrompt = jsonQuestion.commonPrompt;
+      question.isSubQuestion= jsonQuestion.isSubQuestion;
       if (jsonQuestion.correct_answer != null) {
         question.correct_answer = "" + jsonQuestion.correct_answer;
       }
@@ -4477,6 +4837,11 @@ sparks.util.getRubric = function (id, callback, local) {
 
       question.score = (jsonQuestion.score | 0);
 
+      return question;
+    },
+
+    addQuestion: function(jsonQuestion,id) {
+    	var question = this.createQuestion(jsonQuestion,id);
       this.questions.push(question);
     },
 
@@ -4526,7 +4891,7 @@ sparks.util.getRubric = function (id, callback, local) {
               question.feedback = "";
               $.each(question.options, function(i, option){
                 if (option.option == question.answer){
-                  optionChosen = option
+                  optionChosen = option;
                 }
                 var points = option.points;
                 if (points > maxPoints){
@@ -4660,8 +5025,7 @@ sparks.util.getRubric = function (id, callback, local) {
 
     sm.Activity = function () {
         sm.Activity.uber.init.apply(this);
-        this.log = new sm.ActivityLog();
-        this.assessment = new sparks.Activity.Assessment();
+
         sparks.flash.activity = this;
     };
 
@@ -4722,9 +5086,9 @@ sparks.util.getRubric = function (id, callback, local) {
           console.log("activity ready")
           $('#title').text(sparks.jsonActivity.title);
 
-          var ac = new sparks.ActivityConstructor(sparks.jsonActivity, this.assessment);
+          var ac = new sparks.ActivityConstructor(sparks.jsonActivity);
 
-          ac.createAndLayoutActivity();
+          ac.layoutActivity();
 
           if (!!sparks.jsonActivity.circuit){
             this.multimeter = new sparks.circuit.Multimeter2();
@@ -4759,10 +5123,6 @@ sparks.util.getRubric = function (id, callback, local) {
           this.reportArea = $('#report_area').hide();
 
           var self = this;
-          $('button.submit').click(function (event) {
-              self.submitButtonClicked(self, event);
-              event.preventDefault();
-          });
 
 
           this.startTry();
@@ -4771,24 +5131,6 @@ sparks.util.getRubric = function (id, callback, local) {
         onFlashReady: function () {
         },
 
-        submitButtonClicked: function (activity, event) {
-
-            var form = jQuery(event.target).parents('.question_form');
-            activity.disableForm(this.currentQuestion);
-            var nextForm = form.nextAll("form:first");
-            var $buttons = form.nextAll('.next-questions');
-
-            if (nextForm.size() > 0) {
-              this.currentQuestion++;
-              this.enableForm(this.currentQuestion);
-            } else if ($buttons.length > 0){
-              $($buttons[0]).removeAttr('disabled');
-              this.currentQuestion++;
-              this.enableForm(this.currentQuestion);
-            } else {
-              this.completedTry();
-            }
-        },
 
         startTry: function () {
             $('.next_button').hide();
@@ -4831,10 +5173,9 @@ sparks.util.getRubric = function (id, callback, local) {
 
         logResults: function () {
           console.log("generatingReport");
-          this.assessment.serializeQuestions($("form"));
-          this.assessment.scoreAnswers();
-          var table = this.assessment.generateReport();
-          this.reportArea.append(table);
+          var pc = new sparks.SparksPageController();
+          var $report = pc.createReportForPage(sparks.sparksActivity.pages[0]);
+          this.reportArea.append($report);
         },
 
         receiveEvent: function (name, value, time) {
