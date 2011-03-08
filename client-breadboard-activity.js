@@ -2033,6 +2033,8 @@ sparks.util.getRubric = function (id, callback, local) {
   sparks.SparksPageView = function(page){
     this.page = page;
     this.$view = null;
+    this.questionViews = {};
+    this.controller = new sparks.SparksPageController();
   };
 
   sparks.SparksPageView.prototype = {
@@ -2050,9 +2052,10 @@ sparks.util.getRubric = function (id, callback, local) {
       $.each(page.questions, function(i, question){
 
         var $question = question.view.getView();
+        var $form;
 
         if (!question.isSubQuestion){
-          var $form = $("<form>");
+          $form = $("<form>");
           $form.addClass("question_form");
 
           $form.append($question);
@@ -2062,30 +2065,33 @@ sparks.util.getRubric = function (id, callback, local) {
           $questionDiv.append($form);
         } else {
           var $subForms = $questionDiv.find('.sub'+question.subquestionId);
-          var $subForm;
           if ($subForms.length > 0){
-            $subForm = $($subForms[0]);
+            $form = $($subForms[0]);
           } else {
-            $subForm = $("<form>");
-            $subForm.addClass("question_form");
-            $subForm.addClass("sub"+question.subquestionId);
+            $form = $("<form>");
+            $form.addClass("question_form");
+            $form.addClass("sub"+question.subquestionId);
 
-            $subForm.append($("<span>").addClass("prompt").html((question.shownId+1) + ".  " + question.commonPrompt));
+            $form.append($("<span>").addClass("prompt").html((question.shownId+1) + ".  " + question.commonPrompt));
 
-            $subForm.append($("<div>").addClass("subquestions"));
+            $form.append($("<div>").addClass("subquestions"));
 
-            $subForm.append($("<button>").addClass("submit").text("Submit").css('align', 'right'));
+            $form.append($("<button>").addClass("submit").text("Submit").css('align', 'right'));
 
-            $questionDiv.append($subForm);
+            $questionDiv.append($form);
           }
 
-          $subForm.find('.subquestions').append($question);
-
-          $subForm.find('.submit').click(function (event) {
-            self.submitButtonClicked(event);
-            event.preventDefault();
-          });
+          $form.find('.subquestions').append($question);
         }
+
+        $form.find('.submit').unbind('click');          // remove any previously-added listeners
+        $form.find('.submit').click(function (event) {
+          event.preventDefault();
+          self.submitButtonClicked(event);
+        });
+
+        console.log("adding view to map for "+question.prompt+", "+question.id)
+        self.questionViews[question.id] = $form;
       });
 
       if (!!page.notes){
@@ -2094,12 +2100,27 @@ sparks.util.getRubric = function (id, callback, local) {
         $pageDiv.append($notesDiv);
       }
 
+      this.enableQuestion(page.currentQuestion);
 
       return $pageDiv;
     },
 
+    enableQuestion: function (question) {
+      var self = this;
+      $.each(self.questionViews, function(questionKey, view){
+        self.enableView(view, false);
+      });
+      self.enableView(self.questionViews[question.id], true);
+    },
+
+    enableView: function($view, enable) {
+      $view.find('input, select, button').attr('disabled', !enable);
+      $view.css("background-color", enable ? "rgb(253,255,184)" : "");
+    },
+
     submitButtonClicked: function (event) {
-      console.log("Submit!");
+      console.log("click!!!!")
+      this.controller.nextQuestion(this.page);
     }
 
   };
@@ -2280,6 +2301,7 @@ sparks.util.getRubric = function (id, callback, local) {
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
+
   sparks.SparksPageController = function(){
     this.qc = new sparks.SparksQuestionController();
   };
@@ -2302,11 +2324,28 @@ sparks.util.getRubric = function (id, callback, local) {
       return page;
     },
 
+    enableQuestion: function(page, question) {
+      page.view.enableQuestion(question);
+    },
+
     nextQuestion: function(page) {
+      console.log(" === enable next question ===")
       for (var i = 0; i < page.questions.length; i++){
         if (page.questions[i] === page.currentQuestion){
-          if (i < page.questions.length){
+          if (i < page.questions.length - 1){
             page.currentQuestion = page.questions[i+1];
+            if (page.currentQuestion.isSubQuestion){
+              var subquestionId = page.currentQuestion.subquestionId;
+              i++;
+              while (i < page.questions.length && page.questions[i].isSubQuestion &&
+                  page.questions[i].subquestionId == subquestionId){
+                page.currentQuestion = page.questions[i];
+                console.log(page.currentQuestion.prompt + " has id" + page.currentQuestion.subquestionId);
+                i++;
+              }
+            }
+            console.log("enabling "+page.currentQuestion.prompt);
+            this.enableQuestion(page, page.currentQuestion);
             return true;
           } else {
             return false;
@@ -5142,10 +5181,6 @@ sparks.util.getRubric = function (id, callback, local) {
 
             this.currentQuestion = 0;
 
-            this.enableForm(0);
-            for (var i = 1; i < this.forms.length; ++i) {
-                this.disableForm(i);
-            }
             $('.next-questions').attr('disabled', 'disabled');
         },
 
@@ -5159,17 +5194,7 @@ sparks.util.getRubric = function (id, callback, local) {
         resetCircuit: function () {
         },
 
-        enableForm: function (k) {
-            $(this.forms[k]).find('input, select, button').attr('disabled', false);
 
-            $(this.forms[k]).css("background-color", "rgb(253,255,184)");
-        },
-
-        disableForm: function (k) {
-            $(this.forms[k]).find('input, select, button').attr('disabled', true);
-
-            $(this.forms[k]).css("background-color", "");
-        },
 
         logResults: function () {
           console.log("generatingReport");

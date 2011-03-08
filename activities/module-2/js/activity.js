@@ -187,10 +187,10 @@
             
             this.currentQuestion = 0;
         
-            this.enableForm(0);
-            for (var i = 1; i < this.forms.length; ++i) {
-                this.disableForm(i);
-            }
+            // this.enableForm(0);
+            // for (var i = 1; i < this.forms.length; ++i) {
+            //     this.disableForm(i);
+            // }
             $('.next-questions').attr('disabled', 'disabled');
         },
         
@@ -207,17 +207,17 @@
         resetCircuit: function () {
         },
         
-        enableForm: function (k) {
-            $(this.forms[k]).find('input, select, button').attr('disabled', false);
-            
-            $(this.forms[k]).css("background-color", "rgb(253,255,184)");
-        },
+        // enableForm: function (k) {
+        //     $(this.forms[k]).find('input, select, button').attr('disabled', false);
+        //     
+        //     $(this.forms[k]).css("background-color", "rgb(253,255,184)");
+        // },
         
-        disableForm: function (k) {
-            $(this.forms[k]).find('input, select, button').attr('disabled', true);
-            
-            $(this.forms[k]).css("background-color", "");
-        },
+        // disableForm: function (k) {
+        //     $(this.forms[k]).find('input, select, button').attr('disabled', true);
+        //     
+        //     $(this.forms[k]).css("background-color", "");
+        // },
         
         logResults: function () {
           console.log("generatingReport");

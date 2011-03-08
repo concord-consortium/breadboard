@@ -1,6 +1,7 @@
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
+  
   sparks.SparksPageController = function(){
     this.qc = new sparks.SparksQuestionController();
   };
@@ -23,11 +24,26 @@
       return page;
     },
     
+    enableQuestion: function(page, question) {
+      page.view.enableQuestion(question);
+    },
+    
     nextQuestion: function(page) {
       for (var i = 0; i < page.questions.length; i++){
         if (page.questions[i] === page.currentQuestion){
-          if (i < page.questions.length){
+          if (i < page.questions.length - 1){
             page.currentQuestion = page.questions[i+1];
+            if (page.currentQuestion.isSubQuestion){
+              // skip ahead to last subquestion in the set
+              var subquestionId = page.currentQuestion.subquestionId;
+              i++;
+              while (i < page.questions.length && page.questions[i].isSubQuestion &&
+                  page.questions[i].subquestionId == subquestionId){
+                page.currentQuestion = page.questions[i];
+                i++;
+              }
+            }
+            this.enableQuestion(page, page.currentQuestion);
             return true;
           } else {
             return false;

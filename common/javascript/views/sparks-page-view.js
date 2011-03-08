@@ -5,6 +5,8 @@
   sparks.SparksPageView = function(page){
     this.page = page;
     this.$view = null;
+    this.questionViews = {};
+    this.controller = new sparks.SparksPageController();
   };
   
   sparks.SparksPageView.prototype = {
@@ -22,9 +24,10 @@
       $.each(page.questions, function(i, question){
         
         var $question = question.view.getView();
+        var $form;
         
         if (!question.isSubQuestion){
-          var $form = $("<form>");
+          $form = $("<form>");
           $form.addClass("question_form");
           
           $form.append($question);
@@ -35,30 +38,32 @@
         } else {
           // find existing subquestion div if it exists, if not, create it
           var $subForms = $questionDiv.find('.sub'+question.subquestionId);
-          var $subForm;
           if ($subForms.length > 0){
-            $subForm = $($subForms[0]);
+            $form = $($subForms[0]);
           } else {
-            $subForm = $("<form>");
-            $subForm.addClass("question_form");
-            $subForm.addClass("sub"+question.subquestionId);
+            $form = $("<form>");
+            $form.addClass("question_form");
+            $form.addClass("sub"+question.subquestionId);
 
-            $subForm.append($("<span>").addClass("prompt").html((question.shownId+1) + ".  " + question.commonPrompt));
+            $form.append($("<span>").addClass("prompt").html((question.shownId+1) + ".  " + question.commonPrompt));
             
-            $subForm.append($("<div>").addClass("subquestions"));
+            $form.append($("<div>").addClass("subquestions"));
             
-            $subForm.append($("<button>").addClass("submit").text("Submit").css('align', 'right'));
+            $form.append($("<button>").addClass("submit").text("Submit").css('align', 'right'));
             
-            $questionDiv.append($subForm);
+            $questionDiv.append($form);
           }
           
-          $subForm.find('.subquestions').append($question);
-          
-          $subForm.find('.submit').click(function (event) {
-            self.submitButtonClicked(event);
-            event.preventDefault();
-          });
+          $form.find('.subquestions').append($question);
         }
+        
+        $form.find('.submit').unbind('click');          // remove any previously-added listeners
+        $form.find('.submit').click(function (event) {
+          event.preventDefault();
+          self.submitButtonClicked(event);
+        });
+        
+        self.questionViews[question.id] = $form;
       });
 
       if (!!page.notes){
@@ -66,13 +71,27 @@
         $notesDiv.html(page.notes);
         $pageDiv.append($notesDiv);
       }
-
+      
+      this.enableQuestion(page.currentQuestion);
 
       return $pageDiv;
     },
     
+    enableQuestion: function (question) {
+      var self = this;
+      $.each(self.questionViews, function(questionKey, view){
+        self.enableView(view, false);
+      });
+      self.enableView(self.questionViews[question.id], true);
+    },
+    
+    enableView: function($view, enable) {
+      $view.find('input, select, button').attr('disabled', !enable);
+      $view.css("background-color", enable ? "rgb(253,255,184)" : "");
+    },
+    
     submitButtonClicked: function (event) {
-      console.log("Submit!");
+      this.controller.nextQuestion(this.page);
     }
     
   };
