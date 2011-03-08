@@ -181,7 +181,7 @@ describe 'Logging and Reporting'
       var assessment = new sparks.Activity.Assessment();
       var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.createAndLayoutActivity();
+      ac.createActivity();
 
       var $forms = $questionsDiv.find('form');
       var $question = $($forms[0]);
