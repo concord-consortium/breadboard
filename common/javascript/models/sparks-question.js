@@ -11,8 +11,6 @@
     this.answer = '';
     this.correct_units = null;
     this.units = '';
-    this.answerIsCorrect = false;
-    this.unitsIsCorrect = false;
     this.start_time = null;
     this.end_time = null;
     
@@ -20,6 +18,8 @@
     this.radio = false;
     this.checkbox = false;
     
+    this.answerIsCorrect = false;
+    this.unitsIsCorrect = false;
     this.points = 0;
     this.points_earned = -1;
     this.feedback = null;
@@ -27,6 +27,8 @@
     this.isSubQuestion = false;
     this.subquestionId = -1;
     this.commonPrompt = '';
+    
+    this.keepOrder = false;
     
     this.view = null;
   };

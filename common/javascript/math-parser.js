@@ -4,15 +4,15 @@
     
     var p = sparks.mathParser;
     
-    p.calculateMeasurement = function(answer){
-      if (answer === undefined || answer === null || answer === ""){
+    p.calculateMeasurement = function(sum){
+      if (sum === undefined || sum === null || sum === ""){
         return "";
       }
-      if (!isNaN(Number(answer))){
-        return answer;
+      if (!isNaN(Number(sum))){
+        return sum;
       }
       
-      answer = ""+answer;
+      answer = ""+sum;
         
       var sumPattern = /\[[^\]]+\]/g  // find anything between [ ]
       var matches= answer.match(sumPattern);
@@ -73,6 +73,7 @@
         }
         
         var value = components[component][property];
+        console.log("Got a new value: "+value)
         sum = sum.replace(match, value);
        });
       }

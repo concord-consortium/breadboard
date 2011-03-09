@@ -63,8 +63,13 @@
         } else {
           var $select = $("<select>").attr("id",question.id+"_options");
           
-           $select.append($("<option>").attr("value", "").html("").attr("defaultSelected",true));	
-
+          $select.append($("<option>").attr("value", "").html("").attr("defaultSelected",true));	
+          
+          console.log("question.keepOrder = "+question.keepOrder);
+          if (!question.keepOrder){
+            question.options = sparks.util.shuffle(question.options);
+          }
+           
           $.each(question.options, function(i,answer_option){
             if (!answer_option.option){
               answer_option = sparks.mathParser.calculateMeasurement(answer_option);

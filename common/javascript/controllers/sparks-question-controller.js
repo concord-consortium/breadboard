@@ -70,9 +70,10 @@
         if (!!jsonQuestion.options){
           question.options = [];
           $.each(jsonQuestion.options, function(i, choice){
-            question.options[i] = jsonQuestion.options[i];
+            question.options[i] = {};
             if (!!jsonQuestion.options[i].option){
-              question.options[i].option = sparks.mathParser.calculateMeasurement(jsonQuestion.options[i].option);
+              question.options[i].option = ""+jsonQuestion.options[i].option;
+              question.options[i].option = sparks.mathParser.calculateMeasurement(question.options[i].option);
               question.options[i].points = jsonQuestion.options[i].points | 0;
             } else {
               question.options[i] = sparks.mathParser.calculateMeasurement(choice);
@@ -82,6 +83,9 @@
             question.radio = true;
           } else if (jsonQuestion.checkbox){
             question.checkbox = true;
+          }
+          if (jsonQuestion.keepOrder){
+            question.keepOrder = true;
           }
         }
         
@@ -135,6 +139,7 @@
           question.answerIsCorrect = true;
         }
       }
+      if (question.points_earned < 0) question.points_earned = 0;
 
     }
     
