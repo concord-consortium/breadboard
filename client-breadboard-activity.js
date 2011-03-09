@@ -1863,6 +1863,11 @@ sparks.util.getRubric = function (id, callback, local) {
     });
 };
 
+sparks.util.shuffle = function (o) {
+  for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+  return o;
+};
+
 /* FILE activity.js */
 
 (function () {
@@ -1990,6 +1995,8 @@ sparks.util.getRubric = function (id, callback, local) {
     this.isSubQuestion = false;
     this.subquestionId = -1;
     this.commonPrompt = '';
+
+    this.keepOrder = false;
 
     this.view = null;
   };
@@ -2151,7 +2158,7 @@ sparks.util.getRubric = function (id, callback, local) {
       var areMorePage = !!ac.areMorePage();
 
       var comment = allCorrect ? "You got all the questions correct!"+(areMorePage ? " Move on to the next page." : "") :
-                              "You can get a higher score these questions.You can repeat the page by clicking the " +
+                              "You can get a higher score these questions. You can repeat the page by clicking the " +
                               "<b>Repeat</b> button" + (areMorePage ? ", or move on to the next page." : ".");
       this.$reportDiv.append($("<div>").html(comment).css('width', 700).css('padding-top', "20px"));
 
@@ -2249,7 +2256,12 @@ sparks.util.getRubric = function (id, callback, local) {
         } else {
           var $select = $("<select>").attr("id",question.id+"_options");
 
-           $select.append($("<option>").attr("value", "").html("").attr("defaultSelected",true));
+          $select.append($("<option>").attr("value", "").html("").attr("defaultSelected",true));
+
+          console.log("question.keepOrder = "+question.keepOrder);
+          if (!question.keepOrder){
+            question.options = sparks.util.shuffle(question.options);
+          }
 
           $.each(question.options, function(i,answer_option){
             if (!answer_option.option){
@@ -2614,6 +2626,9 @@ sparks.util.getRubric = function (id, callback, local) {
             question.radio = true;
           } else if (jsonQuestion.checkbox){
             question.checkbox = true;
+          }
+          if (jsonQuestion.keepOrder){
+            question.keepOrder = true;
           }
         }
 
