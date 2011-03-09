@@ -1,6 +1,10 @@
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
+  
+  sparks.SparksActivityControllerCurrentPage = null;
+  sparks.SparksActivityControllerCurrentPageIndex = -1;
+  
   sparks.SparksActivityController = function(){
     this.currentPage = null;
   };
@@ -40,7 +44,10 @@
           activity.pages.push(page);
         });
         
-        this.currentPage = activity.pages[0];
+        if (sparks.SparksActivityControllerCurrentPageIndex == -1){
+          sparks.SparksActivityControllerCurrentPageIndex = 0;
+        }
+        sparks.SparksActivityControllerCurrentPage = activity.pages[sparks.SparksActivityControllerCurrentPageIndex];
       }
       
       if (!!jsonActivity.formulas){
@@ -58,6 +65,46 @@
       activity.view = new sparks.SparksActivityView(activity);
       
       return activity;
+    },
+    
+    areMorePage: function() {
+      var nextPage;
+      for (var i = 0; i < sparks.sparksActivity.pages.length-1; i++){
+        if (sparks.sparksActivity.pages[i] == sparks.SparksActivityControllerCurrentPage){
+          nextPage = sparks.sparksActivity.pages[i+1];
+        }
+      }
+      if (!nextPage){
+        return false;
+      }
+      return nextPage;
+    },
+    
+    nextPage: function() {
+      var nextPage = this.areMorePage();
+      if (!nextPage){
+        console.log("No more pages");
+      }
+      sparks.SparksActivityControllerCurrentPageIndex = sparks.SparksActivityControllerCurrentPageIndex+1;
+      sparks.SparksActivityControllerCurrentPage = nextPage;
+      sparks.activityContstructor.layoutPage();
+    },
+    
+    repeatPage: function() {
+      console.log("repeating page");
+      console.log("this.currentPage = "+this.currentPage);
+      $('#breadboard').html('');
+      sparks.SparksActivityControllerCurrentPage.view.clear();
+      
+      if (!sparks.jsonActivity.hide_circuit){
+        breadModel('clear');
+        sparks.flash.activity.loadFlash();
+      } else {
+        sparks.flash.activity.onActivityReady();
+      }
+      // breadModel("createCircuit", sparks.sparksActivity.circuit);
+      // breadModel("createCircuit", sparks.sparksActivity.circuit);
+      // breadModel('updateFlash');
     }
     
   };

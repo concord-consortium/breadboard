@@ -4,7 +4,12 @@
   
   sparks.SparksPageView = function(page){
     this.page = page;
+    
     this.$view = null;
+    this.$questionDiv = null;
+    this.$notesDiv = null;
+    this.$reportsDiv = null;
+    
     this.questionViews = {};
     this.controller = new sparks.SparksPageController();
   };
@@ -16,10 +21,10 @@
       
       var self = this;
       
-      var $pageDiv = $('<div>').addClass('page');
+      this.$view = $('<div>').addClass('page');
 
-      var $questionDiv = $('<div>').addClass('inner-questions').css('float', 'left').css('padding', '10px');
-      $pageDiv.append($questionDiv);
+      this.$questionDiv = $('<div>').addClass('inner-questions').css('float', 'left').css('padding', '10px');
+      this.$view.append(this.$questionDiv);
 
       $.each(page.questions, function(i, question){
         
@@ -34,10 +39,10 @@
           
           $question.append($("<button>").addClass("submit").text("Submit").css('margin-left', '30px'));
           
-          $questionDiv.append($form);
+          self.$questionDiv.append($form);
         } else {
           // find existing subquestion div if it exists, if not, create it
-          var $subForms = $questionDiv.find('.sub'+question.subquestionId);
+          var $subForms = self.$questionDiv.find('.sub'+question.subquestionId);
           if ($subForms.length > 0){
             $form = $($subForms[0]);
           } else {
@@ -51,7 +56,7 @@
             
             $form.append($("<button>").addClass("submit").text("Submit").css('align', 'right'));
             
-            $questionDiv.append($form);
+            self.$questionDiv.append($form);
           }
           
           $form.find('.subquestions').append($question);
@@ -67,14 +72,21 @@
       });
 
       if (!!page.notes){
-        var $notesDiv = $('<div>').addClass('notes').css('float','right');
-        $notesDiv.html(page.notes);
-        $pageDiv.append($notesDiv);
+        this.$notesDiv = $('<div>').addClass('notes').css('float','right');
+        this.$notesDiv.html(page.notes);
+        this.$view.append(this.$notesDiv);
       }
       
       this.enableQuestion(page.currentQuestion);
 
-      return $pageDiv;
+      return this.$view;
+    },
+    
+    clear: function() {
+      if (!!this.$questionDiv) {this.$questionDiv.html('');}
+      if (!!this.$notesDiv) {this.$notesDiv.html('');}
+      if (!!this.$reportsDiv) {this.$reportsDiv.html('');}
+      if (!!this.$view) {this.$view.html('');}
     },
     
     enableQuestion: function (question) {
@@ -90,8 +102,58 @@
       $view.css("background-color", enable ? "rgb(253,255,184)" : "");
     },
     
+    showReport: function($table){
+      
+      var ac = new sparks.SparksActivityController();
+      
+      this.$questionDiv.hide();
+      if (!!this.$notesDiv) {this.$notesDiv.hide();}
+      
+      this.$reportDiv = $('<div>').addClass('report').css('float', 'left').css('padding-top', '15px').css('padding-left', '40px');
+      this.$reportDiv.append($table);
+      
+      // this should be handled by reports classes...
+      var allCorrect = true;
+      $.each(this.page.questions, function(i, question){
+        if (!question.answerIsCorrect){
+          allCorrect = false;
+        }
+      });
+      
+      var areMorePage = !!ac.areMorePage();
+      
+      var comment = allCorrect ? "You got all the questions correct!"+(areMorePage ? " Move on to the next page." : "") :
+                              "You can get a higher score these questions. You can repeat the page by clicking the " +
+                              "<b>Repeat</b> button" + (areMorePage ? ", or move on to the next page." : ".");
+      this.$reportDiv.append($("<div>").html(comment).css('width', 700).css('padding-top', "20px"));
+      
+      var $buttonDiv = $("<div>").css("padding", "20px").css("text-align", "center");
+      
+      var $repeatButton = $("<button>").text("Repeat").css('padding-left', "10px")
+                          .css('padding-right', "10px").css('margin-right', "10px");
+      var $nextPageButton = $("<button>").text("Next Page »").css('padding-left', "10px")
+                          .css('padding-right', "10px").css('margin-left', "10px");
+         
+      $repeatButton.click(function(evt){
+        ac.repeatPage();
+      });
+
+      $nextPageButton.click(function(evt){
+        ac.nextPage();
+      });
+      
+      if (!!ac.areMorePage()){
+        $buttonDiv.append($repeatButton, $nextPageButton);
+      } else {
+        $buttonDiv.append($repeatButton);
+      }
+      this.$reportDiv.append($buttonDiv);
+      
+      this.$view.append(this.$reportDiv);            
+    },
+    
     submitButtonClicked: function (event) {
-      this.controller.nextQuestion(this.page);
+      this.controller.completedQuestion(this.page);
     }
     
   };

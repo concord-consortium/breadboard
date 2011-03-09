@@ -1863,6 +1863,11 @@ sparks.util.getRubric = function (id, callback, local) {
     });
 };
 
+sparks.util.shuffle = function (o) {
+  for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+  return o;
+};
+
 /* FILE activity.js */
 
 (function () {

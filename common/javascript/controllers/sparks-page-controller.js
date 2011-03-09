@@ -28,7 +28,8 @@
       page.view.enableQuestion(question);
     },
     
-    nextQuestion: function(page) {
+    // enables next question if available, or shows report otherwise
+    completedQuestion: function(page) {
       for (var i = 0; i < page.questions.length; i++){
         if (page.questions[i] === page.currentQuestion){
           if (i < page.questions.length - 1){
@@ -44,13 +45,19 @@
               }
             }
             this.enableQuestion(page, page.currentQuestion);
-            return true;
+            return;
           } else {
-            return false;
+            this.showReport(page);
+            return;
           }
         }
       }
-      return false;
+    },
+    
+    showReport: function(page){
+      console.log("showing report")
+      var $report = this.createReportForPage(page);
+      page.view.showReport($report);
     },
     
     createReportForPage: function(page) {

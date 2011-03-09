@@ -12,6 +12,7 @@
       $imageDiv: null,
       $questionsDiv: null
     };
+    sparks.activityContstructor = this;
     
   };
   
@@ -47,10 +48,15 @@
        this.embeddingTargets.$imageDiv.append($imagediv);
      }
      
-     if (!!this.sparksActivityController.currentPage){
-       var $page = this.sparksActivityController.currentPage.view.getView();
-       this.embeddingTargets.$questionsDiv.append($page);
-     }
+     this.layoutPage();
+   },
+   
+   layoutPage: function() {
+     if (!!sparks.SparksActivityControllerCurrentPage){
+        this.embeddingTargets.$questionsDiv.html('');
+        var $page = sparks.SparksActivityControllerCurrentPage.view.getView();
+        this.embeddingTargets.$questionsDiv.append($page);
+      }
    }
   };
 })();
