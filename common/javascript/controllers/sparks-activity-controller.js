@@ -29,6 +29,8 @@
         breadModel("createCircuit", activity.circuit);
       }
       
+      activity.hide_circuit = !!jsonActivity.hide_circuit;
+      
       
       if (!!jsonActivity.pages){
         var pc = new sparks.SparksPageController();

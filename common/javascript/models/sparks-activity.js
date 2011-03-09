@@ -13,6 +13,8 @@
     this.pages = [];
     this.variables = {};
     
+    this.hide_circuit = false;
+    
     this.activity_url = "";
     this.images_url = "";
     

@@ -81,7 +81,7 @@
         
         activityLoaded: function() {
           console.log("ENTER: activityLoaded")
-          if (!!sparks.jsonActivity.circuit){
+          if (!!sparks.jsonActivity.circuit && !sparks.jsonActivity.hide_circuit){
             this.loadFlash();
             // this will then call the other activity.js's initActivity (to be changed)
             // which will call onActivityReady
@@ -111,7 +111,7 @@
           
           ac.layoutActivity();
           
-          if (!!sparks.jsonActivity.circuit){
+          if (!!sparks.jsonActivity.circuit && !sparks.jsonActivity.hide_circuit){
             this.multimeter = new sparks.circuit.Multimeter2();
             
             if (sparks.jsonActivity.show_multimeter === "true"){
@@ -182,8 +182,9 @@
             
             var options = null;
             
-            
-            breadModel('updateFlash');
+            if (!sparks.jsonActivity.hide_circuit){
+              breadModel('updateFlash');
+            }
             
             this.currentQuestion = 0;
         
