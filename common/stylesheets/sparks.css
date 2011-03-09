@@ -32,10 +32,10 @@ table {
   border-collapse: collapse;
 }
 tr.correct {
-  background: #ccffcc;
+  background: #ddffdd;
 }
 tr.incorrect {
-  background: #ffcccc;
+  background: #ffdddd;
 }
 th {
   border: 1px solid #f0a000;

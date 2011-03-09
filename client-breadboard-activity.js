@@ -1972,8 +1972,6 @@ sparks.util.getRubric = function (id, callback, local) {
     this.answer = '';
     this.correct_units = null;
     this.units = '';
-    this.answerIsCorrect = false;
-    this.unitsIsCorrect = false;
     this.start_time = null;
     this.end_time = null;
 
@@ -1981,6 +1979,8 @@ sparks.util.getRubric = function (id, callback, local) {
     this.radio = false;
     this.checkbox = false;
 
+    this.answerIsCorrect = false;
+    this.unitsIsCorrect = false;
     this.points = 0;
     this.points_earned = -1;
     this.feedback = null;
@@ -2032,7 +2032,12 @@ sparks.util.getRubric = function (id, callback, local) {
 
   sparks.SparksPageView = function(page){
     this.page = page;
+
     this.$view = null;
+    this.$questionDiv = null;
+    this.$notesDiv = null;
+    this.$reportsDiv = null;
+
     this.questionViews = {};
     this.controller = new sparks.SparksPageController();
   };
@@ -2044,10 +2049,10 @@ sparks.util.getRubric = function (id, callback, local) {
 
       var self = this;
 
-      var $pageDiv = $('<div>').addClass('page');
+      this.$view = $('<div>').addClass('page');
 
-      var $questionDiv = $('<div>').addClass('inner-questions').css('float', 'left').css('padding', '10px');
-      $pageDiv.append($questionDiv);
+      this.$questionDiv = $('<div>').addClass('inner-questions').css('float', 'left').css('padding', '10px');
+      this.$view.append(this.$questionDiv);
 
       $.each(page.questions, function(i, question){
 
@@ -2062,9 +2067,9 @@ sparks.util.getRubric = function (id, callback, local) {
 
           $question.append($("<button>").addClass("submit").text("Submit").css('margin-left', '30px'));
 
-          $questionDiv.append($form);
+          self.$questionDiv.append($form);
         } else {
-          var $subForms = $questionDiv.find('.sub'+question.subquestionId);
+          var $subForms = self.$questionDiv.find('.sub'+question.subquestionId);
           if ($subForms.length > 0){
             $form = $($subForms[0]);
           } else {
@@ -2078,7 +2083,7 @@ sparks.util.getRubric = function (id, callback, local) {
 
             $form.append($("<button>").addClass("submit").text("Submit").css('align', 'right'));
 
-            $questionDiv.append($form);
+            self.$questionDiv.append($form);
           }
 
           $form.find('.subquestions').append($question);
@@ -2090,19 +2095,25 @@ sparks.util.getRubric = function (id, callback, local) {
           self.submitButtonClicked(event);
         });
 
-        console.log("adding view to map for "+question.prompt+", "+question.id)
         self.questionViews[question.id] = $form;
       });
 
       if (!!page.notes){
-        var $notesDiv = $('<div>').addClass('notes').css('float','right');
-        $notesDiv.html(page.notes);
-        $pageDiv.append($notesDiv);
+        this.$notesDiv = $('<div>').addClass('notes').css('float','right');
+        this.$notesDiv.html(page.notes);
+        this.$view.append(this.$notesDiv);
       }
 
       this.enableQuestion(page.currentQuestion);
 
-      return $pageDiv;
+      return this.$view;
+    },
+
+    clear: function() {
+      if (!!this.$questionDiv) this.$questionDiv.html('');
+      if (!!this.$notesDiv) this.$notesDiv.html('');
+      if (!!this.$reportsDiv) this.$reportsDiv.html('');
+      if (!!this.$view) this.$view.html('');
     },
 
     enableQuestion: function (question) {
@@ -2118,9 +2129,48 @@ sparks.util.getRubric = function (id, callback, local) {
       $view.css("background-color", enable ? "rgb(253,255,184)" : "");
     },
 
+    showReport: function($table){
+      this.$questionDiv.hide();
+      if (!!this.$notesDiv) this.$notesDiv.hide();
+
+      this.$reportDiv = $('<div>').addClass('report').css('float', 'left').css('padding-top', '15px').css('padding-left', '40px');
+      this.$reportDiv.append($table);
+
+      var allCorrect = true;
+      $.each(this.page.questions, function(i, question){
+        if (!question.answerIsCorrect){
+          allCorrect = false;
+        }
+      });
+      var comment = allCorrect ? "You got all the questions correct! Move on to the next page." :
+                              "You can get a higher score these questions.You can repeat the page by clicking the " +
+                              "<b>Repeat</b> button, or move on to the next page.";
+      this.$reportDiv.append($("<div>").html(comment).css('width', 700).css('padding-top', "20px"));
+
+      var $buttonDiv = $("<div>").css("padding", "20px").css("text-align", "center");
+
+      var $repeatButton = $("<button>").text("Repeat").css('padding-left', "10px")
+                          .css('padding-right', "10px").css('margin-right', "10px");
+      var $nextPageButton = $("<button>").text("Next Page »").css('padding-left', "10px")
+                          .css('padding-right', "10px").css('margin-left', "10px");
+
+      $buttonDiv.append($repeatButton, $nextPageButton);
+      this.$reportDiv.append($buttonDiv);
+
+      var ac = new sparks.SparksActivityController();
+      $repeatButton.click(function(evt){
+        ac.repeatPage();
+      });
+
+      $nextPageButton.click(function(evt){
+        ac.nextPage();
+      });
+
+      this.$view.append(this.$reportDiv);
+    },
+
     submitButtonClicked: function (event) {
-      console.log("click!!!!")
-      this.controller.nextQuestion(this.page);
+      this.controller.completedQuestion(this.page);
     }
 
   };
@@ -2239,6 +2289,10 @@ sparks.util.getRubric = function (id, callback, local) {
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
+
+  sparks.SparksActivityControllerCurrentPage = null;
+  sparks.SparksActivityControllerCurrentPageIndex = -1;
+
   sparks.SparksActivityController = function(){
     this.currentPage = null;
   };
@@ -2276,7 +2330,10 @@ sparks.util.getRubric = function (id, callback, local) {
           activity.pages.push(page);
         });
 
-        this.currentPage = activity.pages[0];
+        if (sparks.SparksActivityControllerCurrentPageIndex == -1){
+          sparks.SparksActivityControllerCurrentPageIndex = 0;
+        }
+        sparks.SparksActivityControllerCurrentPage = activity.pages[sparks.SparksActivityControllerCurrentPageIndex];
       }
 
       if (!!jsonActivity.formulas){
@@ -2294,6 +2351,30 @@ sparks.util.getRubric = function (id, callback, local) {
       activity.view = new sparks.SparksActivityView(activity);
 
       return activity;
+    },
+
+    nextPage: function() {
+      var nextPage;
+      for (var i = 0; i < sparks.sparksActivity.pages.length-1; i++){
+        if (sparks.sparksActivity.pages[i] == sparks.SparksActivityControllerCurrentPage){
+          nextPage = sparks.sparksActivity.pages[i+1];
+          sparks.SparksActivityControllerCurrentPageIndex = i+1;
+        }
+      }
+      if (!nextPage){
+        console.log("No more pages");
+      }
+      sparks.SparksActivityControllerCurrentPage = nextPage;
+      sparks.activityContstructor.layoutPage();
+    },
+
+    repeatPage: function() {
+      console.log("repeating page");
+      console.log("this.currentPage = "+this.currentPage);
+      $('#breadboard').html('');
+      sparks.SparksActivityControllerCurrentPage.view.clear();
+      breadModel('clear');
+      sparks.flash.activity.loadFlash();
     }
 
   };
@@ -2328,8 +2409,7 @@ sparks.util.getRubric = function (id, callback, local) {
       page.view.enableQuestion(question);
     },
 
-    nextQuestion: function(page) {
-      console.log(" === enable next question ===")
+    completedQuestion: function(page) {
       for (var i = 0; i < page.questions.length; i++){
         if (page.questions[i] === page.currentQuestion){
           if (i < page.questions.length - 1){
@@ -2340,19 +2420,23 @@ sparks.util.getRubric = function (id, callback, local) {
               while (i < page.questions.length && page.questions[i].isSubQuestion &&
                   page.questions[i].subquestionId == subquestionId){
                 page.currentQuestion = page.questions[i];
-                console.log(page.currentQuestion.prompt + " has id" + page.currentQuestion.subquestionId);
                 i++;
               }
             }
-            console.log("enabling "+page.currentQuestion.prompt);
             this.enableQuestion(page, page.currentQuestion);
-            return true;
+            return;
           } else {
-            return false;
+            this.showReport(page);
+            return;
           }
         }
       }
-      return false;
+    },
+
+    showReport: function(page){
+      console.log("showing report")
+      var $report = this.createReportForPage(page);
+      page.view.showReport($report);
     },
 
     createReportForPage: function(page) {
@@ -2491,9 +2575,10 @@ sparks.util.getRubric = function (id, callback, local) {
         if (!!jsonQuestion.options){
           question.options = [];
           $.each(jsonQuestion.options, function(i, choice){
-            question.options[i] = jsonQuestion.options[i];
+            question.options[i] = {};
             if (!!jsonQuestion.options[i].option){
-              question.options[i].option = sparks.mathParser.calculateMeasurement(jsonQuestion.options[i].option);
+              question.options[i].option = ""+jsonQuestion.options[i].option;
+              question.options[i].option = sparks.mathParser.calculateMeasurement(question.options[i].option);
               question.options[i].points = jsonQuestion.options[i].points | 0;
             } else {
               question.options[i] = sparks.mathParser.calculateMeasurement(choice);
@@ -2555,6 +2640,7 @@ sparks.util.getRubric = function (id, callback, local) {
           question.answerIsCorrect = true;
         }
       }
+      if (question.points_earned < 0) question.points_earned = 0;
 
     }
 
@@ -2574,6 +2660,7 @@ sparks.util.getRubric = function (id, callback, local) {
       $imageDiv: null,
       $questionsDiv: null
     };
+    sparks.activityContstructor = this;
 
   };
 
@@ -2608,10 +2695,15 @@ sparks.util.getRubric = function (id, callback, local) {
        this.embeddingTargets.$imageDiv.append($imagediv);
      }
 
-     if (!!this.sparksActivityController.currentPage){
-       var $page = this.sparksActivityController.currentPage.view.getView();
-       this.embeddingTargets.$questionsDiv.append($page);
-     }
+     this.layoutPage();
+   },
+
+   layoutPage: function() {
+     if (!!sparks.SparksActivityControllerCurrentPage){
+        this.embeddingTargets.$questionsDiv.html('');
+        var $page = sparks.SparksActivityControllerCurrentPage.view.getView();
+        this.embeddingTargets.$questionsDiv.append($page);
+      }
    }
   };
 })();
@@ -2621,15 +2713,15 @@ sparks.util.getRubric = function (id, callback, local) {
 
     var p = sparks.mathParser;
 
-    p.calculateMeasurement = function(answer){
-      if (answer === undefined || answer === null || answer === ""){
+    p.calculateMeasurement = function(answer2){
+      if (answer2 === undefined || answer2 === null || answer2 === ""){
         return "";
       }
-      if (!isNaN(Number(answer))){
-        return answer;
+      if (!isNaN(Number(answer2))){
+        return answer2;
       }
 
-      answer = ""+answer;
+      answer = ""+answer2;
 
       var sumPattern = /\[[^\]]+\]/g  // find anything between [ ]
       var matches= answer.match(sumPattern);
@@ -2689,6 +2781,7 @@ sparks.util.getRubric = function (id, callback, local) {
         }
 
         var value = components[component][property];
+        console.log("Got a new value: "+value)
         sum = sum.replace(match, value);
        });
       }
@@ -3133,7 +3226,12 @@ sparks.util.getRubric = function (id, callback, local) {
       var breadBoard = new Breadboard();
 
       var interfaces = {
-        insertComponent: function(kind, props){
+        insertComponent: function(kind, properties){
+          var props = {};
+          $.each(properties, function(key, property){
+            props[key] = property;
+          });
+
           props.kind = kind;
 
           props.UID = interfaces.getUID(!!props.UID ? props.UID : props.kind);
@@ -3156,6 +3254,7 @@ sparks.util.getRubric = function (id, callback, local) {
 
           switch(kind) {
             case "resistor":
+              console.log(" creating new resistor, "+props.nominalResistance+", "+props.resistance)
               if ((props.resistance === undefined) && props.colors){
                 props.resistance = Resistor.getResistance( props.colors );
               }
@@ -3172,6 +3271,7 @@ sparks.util.getRubric = function (id, callback, local) {
               }
 
               props.nominalResistance =  Resistor.getResistance( props.colors );
+              console.log("    created new resistor, "+props.nominalResistance)
           }
 
           var newComponent;
