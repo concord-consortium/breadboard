@@ -303,7 +303,13 @@
       var breadBoard = new Breadboard();
 
       var interfaces = {
-        insertComponent: function(kind, props){
+        insertComponent: function(kind, properties){
+          // copy props into a new obj, so we don't modify original
+          var props = {};
+          $.each(properties, function(key, property){
+            props[key] = property;
+          });
+          
           props.kind = kind;
           
           // ensure no dupes, using either passed UID or type
