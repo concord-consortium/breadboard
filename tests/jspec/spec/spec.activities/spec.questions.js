@@ -360,6 +360,7 @@ describe 'Questions'
               "questions": [
                   {
                       "prompt": "What is the resistance of R1?",
+                      "keepOrder": true,
                       "options": [
                           {
                               "option": "100 ohms"
@@ -403,6 +404,7 @@ describe 'Questions'
               "questions": [
                   {
                       "prompt": "What is the resistance of R1?",
+                      "keepOrder": true,
                       "options": [
                           {
                               "option": "0"
@@ -415,6 +417,7 @@ describe 'Questions'
                   },
                   {
                       "prompt": "What is the resistance of R2?",
+                      "keepOrder": true,
                       "options": [
                           {
                               "option": "0"
@@ -427,6 +430,7 @@ describe 'Questions'
                   },
                   {
                       "prompt": "What is the resistance of R3?",
+                      "keepOrder": true,
                       "options": [
                           {
                               "option": "0"
@@ -484,6 +488,101 @@ describe 'Questions'
       var radioGroupName2 = $($question.find('input')[0]).attr('name');
       radioGroupName2.should.not.be checkGroupName
       radioGroupName2.should.not.be radioGroupName
+    end
+    
+    /*
+     * Note: This test has a 1 in 720 chance in failing due to random ordering
+     */
+    it "should be able to display multiplechoice questions in random order"
+      var jsonActivity =
+        {
+          "pages":[
+            {
+              "questions": [
+                  {
+                      "prompt": "What is the resistance of R1?",
+                      "keepOrder": true,
+                      "options": [  
+                          {
+                              "option": "1"
+                          },
+                          {
+                              "option": "2"
+                          },
+                          {
+                              "option": "3"
+                          },
+                          {
+                              "option": "4"
+                          },
+                          {
+                              "option": "5"
+                          },
+                          {
+                              "option": "6"
+                          }
+                      ] 
+                  },
+                  {
+                      "prompt": "What is the resistance of R1?",  // keepOrder should be false by default
+                      "options": [  
+                          {
+                              "option": "1"
+                          },
+                          {
+                              "option": "2"
+                          },
+                          {
+                              "option": "3"
+                          },
+                          {
+                              "option": "4"
+                          },
+                          {
+                              "option": "5"
+                          },
+                          {
+                              "option": "6"
+                          }
+                      ] 
+                  }
+              ]
+            }
+          ]
+      };
+      
+      var $questionsDiv = $("<div>");
+        
+      var ac = new sparks.ActivityConstructor(jsonActivity);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.layoutActivity();
+      
+      var $forms = $questionsDiv.find('form');
+      var $question1 = $($forms[0]);
+      
+      var $select = $($question1.find('select')[0])
+      
+      var allInOrder = true;
+      $.each($select.find('option'), function(i, option){
+        if (!option.innerHTML == ""+i){
+          allInOrder = false;
+        }
+      })
+      
+      allInOrder.should.be true
+      
+      var $question2 = $($forms[1]);
+      
+      var $select = $($question2.find('select')[0])
+      
+      var allInOrder = true;
+      $.each($select.find('option'), function(i, option){
+        if (!option.innerHTML == ""+i){
+          allInOrder = false;
+        }
+      })
+      
+      allInOrder.should.be true
     end
     
     it "should be able to display nested questions"
