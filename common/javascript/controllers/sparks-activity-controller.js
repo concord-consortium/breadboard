@@ -14,8 +14,8 @@
   sparks.SparksActivityController.prototype = {
     
     reset: function(){
-      this.currentPage = null;
-      this.currentPageIndex = -1;
+      // this.currentPage = null;
+      // this.currentPageIndex = -1;
       sparks.sparksPageController.reset();
       sparks.sparksQuestionController.reset();
     },
