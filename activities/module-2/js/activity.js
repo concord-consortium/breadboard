@@ -51,6 +51,10 @@
     
     sparks.extend(sm.Activity, sparks.Activity, {
       
+      setDataService: function (ds) {
+          this.dataService = ds;
+      },
+      
         // Initial operation on document when it is loaded
         onDocumentReady: function () {
           console.log("document ready")

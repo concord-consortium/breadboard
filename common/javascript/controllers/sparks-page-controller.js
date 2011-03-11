@@ -55,7 +55,6 @@
     },
     
     showReport: function(page){
-      console.log("showing report")
       var $report = this.createReportForPage(page);
       page.view.showReport($report);
     },

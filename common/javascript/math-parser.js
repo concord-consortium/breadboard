@@ -73,7 +73,6 @@
         }
         
         var value = components[component][property];
-        console.log("Got a new value: "+value)
         sum = sum.replace(match, value);
        });
       }

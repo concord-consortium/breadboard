@@ -5,7 +5,9 @@
 //= require <jquery/plugins/jquery.cookie>
 //= require <jquery/plugins/jquery.bgiframe.min>
 //= require <jquery/plugins/jquery.flash>
+//= require <jquery/plugins/jquery.couch>
 //= require <data-service/RestDS-jQuery>
+//= require <data-service/couchDS>
 //= require <flash_version_detection>
 //= require <flash_version_detection>
 //= require <flash_comm>
@@ -29,7 +31,12 @@
           if (activity.learner_id) {
               var put_path = unescape(sparks.util.readCookie('save_path')) || 'undefined_path';
               console.log('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
-              activity.setDataService(new RestDS(null, null, put_path));
+              
+              if (put_path.indexOf("couchdb") > -1){
+                activity.setDataServive(new sparks.CouchDS(null, null, put_path));
+              } else {
+                activity.setDataService(new RestDS(null, null, put_path));
+              }
           }
           activity.onDocumentReady();
           activity.onFlashReady();
