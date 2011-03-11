@@ -2635,7 +2635,7 @@ sparks.util.shuffle = function (o) {
               console.log('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
 
               if (put_path.indexOf("couchdb") > -1){
-                activity.setDataServive(new sparks.CouchDS(null, null, put_path));
+                activity.setDataService(new sparks.CouchDS(null, null, put_path));
               } else {
                 activity.setDataService(new RestDS(null, null, put_path));
               }

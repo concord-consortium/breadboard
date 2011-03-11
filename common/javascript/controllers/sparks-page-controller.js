@@ -57,6 +57,15 @@
     showReport: function(page){
       var $report = this.createReportForPage(page);
       page.view.showReport($report);
+      
+      this.saveData();
+    },
+    
+    saveData: function() {
+      if (!!sparks.activity.dataService){
+        var data = sparks.sparksActivity.toJSON();
+        sparks.activity.dataService.save(data);
+      }
     },
     
     createReportForPage: function(page) {

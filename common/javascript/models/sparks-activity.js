@@ -22,6 +22,16 @@
   };
   
   sparks.SparksActivity.prototype = {
+    
+    toJSON: function () {
+      var json = {};
+      json.pages = [];
+      $.each(this.pages, function(i, page){
+        json.pages.push(page.toJSON());
+      });
+      return json;
+    }
+    
   };
   
 })();

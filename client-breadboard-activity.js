@@ -2700,6 +2700,16 @@ sparks.util.shuffle = function (o) {
   };
 
   sparks.SparksActivity.prototype = {
+
+    toJSON: function () {
+      var json = {};
+      json.pages = [];
+      $.each(this.pages, function(i, page){
+        json.pages.push(page.toJSON());
+      });
+      return json;
+    }
+
   };
 
 })();
@@ -3248,6 +3258,15 @@ sparks.util.shuffle = function (o) {
     showReport: function(page){
       var $report = this.createReportForPage(page);
       page.view.showReport($report);
+
+      this.saveData();
+    },
+
+    saveData: function() {
+      if (!!sparks.activity.dataService){
+        var data = sparks.sparksActivity.toJSON();
+        sparks.activity.dataService.save(data);
+      }
     },
 
     createReportForPage: function(page) {
