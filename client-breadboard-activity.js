@@ -3232,7 +3232,6 @@ sparks.util.shuffle = function (o) {
         totalPossibleScore += question.points;
         var feedback = "";
 
-
         if(!question.feedback){
         	if (answer === '') {
 
@@ -3343,7 +3342,8 @@ sparks.util.shuffle = function (o) {
             if (!!jsonQuestion.options[i].option){
               question.options[i].option = ""+jsonQuestion.options[i].option;
               question.options[i].option = sparks.mathParser.calculateMeasurement(question.options[i].option);
-              question.options[i].points = jsonQuestion.options[i].points | 0;
+              question.options[i].points = jsonQuestion.options[i].points > 0 ? jsonQuestion.options[i].points : 0;
+              question.options[i].feedback = jsonQuestion.options[i].feedback || "";
             } else {
               question.options[i] = sparks.mathParser.calculateMeasurement(choice);
             }
@@ -3408,7 +3408,6 @@ sparks.util.shuffle = function (o) {
         }
       }
       if (question.points_earned < 0) question.points_earned = 0;
-
     }
 
   };
