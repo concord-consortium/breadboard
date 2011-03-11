@@ -13,6 +13,13 @@
   
   sparks.SparksActivityController.prototype = {
     
+    reset: function(){
+      this.currentPage = null;
+      this.currentPageIndex = -1;
+      sparks.sparksPageController.reset();
+      sparks.sparksQuestionController.reset();
+    },
+    
     createActivity: function(jsonActivity) {
       var activity = new sparks.SparksActivity();
       

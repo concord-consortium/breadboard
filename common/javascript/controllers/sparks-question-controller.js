@@ -11,6 +11,12 @@
   
   sparks.SparksQuestionController.prototype = {
     
+    reset: function() {
+      this._id = 0;
+      this._subquestionId = 0;
+      this._shownId = 0;
+    },
+    
     createQuestionsArray: function(jsonQuestions) {
       var questionsArray = [];
       var self = this;

@@ -11,6 +11,9 @@
   
   sparks.SparksPageController.prototype = {
     
+    reset: function(){
+    },
+    
     createPage: function(jsonPage) {
       var page = new sparks.SparksPage();
       

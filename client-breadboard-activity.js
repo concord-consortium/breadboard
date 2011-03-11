@@ -2762,7 +2762,6 @@ sparks.util.shuffle = function (o) {
     this.$reportsDiv = null;
 
     this.questionViews = {};
-    this.controller = new sparks.SparksPageController();
   };
 
   sparks.SparksPageView.prototype = {
@@ -2900,7 +2899,7 @@ sparks.util.shuffle = function (o) {
     },
 
     submitButtonClicked: function (event) {
-      this.controller.completedQuestion(this.page);
+      sparks.sparksPageController.completedQuestion(this.page);
     }
 
   };
@@ -3025,256 +3024,20 @@ sparks.util.shuffle = function (o) {
 
 (function() {
 
-  sparks.SparksActivityController = function(){
-    this.currentPage = null;
-    this.currentPageIndex = -1;
-  };
-
-  sparks.SparksActivityController.prototype = {
-
-    createActivity: function(jsonActivity) {
-      var activity = new sparks.SparksActivity();
-
-      if (!!jsonActivity.activity_url){
-        activity.activity_url = jsonActivity.activity_url;
-      } else {
-        activity.activity_url = sparks.jsonActivity.activity_url;
-      }
-
-      if (!!jsonActivity.images_url){
-        activity.images_url = jsonActivity.images_url;
-      } else {
-        activity.images_url = sparks.jsonActivity.images_url;
-      }
-
-      activity.image = jsonActivity.image;
-
-      if (!!jsonActivity.circuit){
-        activity.circuit = jsonActivity.circuit;
-        breadModel("createCircuit", activity.circuit);
-      }
-
-      activity.hide_circuit = !!jsonActivity.hide_circuit;
-
-
-      if (!!jsonActivity.pages){
-        var pc = new sparks.SparksPageController();
-
-        $.each(jsonActivity.pages, function(i, jsonPage){
-          var page = pc.createPage(jsonPage);
-          activity.pages.push(page);
-        });
-
-        if (this.currentPageIndex == -1){
-          this.currentPageIndex = 0;
-        }
-        this.currentPage = activity.pages[this.currentPageIndex];
-      }
-
-      if (!!jsonActivity.formulas){
-        $.each(this.jsonActivity.formulas, function(i, formula){
-          var variables = {};
-          var variable = formula.match(/.* =/)[0];
-          variable = variable.substring(0,variable.length-2);
-          formula = "variables."+formula;
-          eval(formula);
-          var value = variables[0];
-          this.sparksActivity.variables[variable] = value;
-        });
-      }
-
-      activity.view = new sparks.SparksActivityView(activity);
-
-      return activity;
-    },
-
-    areMorePage: function() {
-      var nextPage;
-      for (var i = 0; i < sparks.sparksActivity.pages.length-1; i++){
-        if (sparks.sparksActivity.pages[i] == this.currentPage){
-          nextPage = sparks.sparksActivity.pages[i+1];
-        }
-      }
-      if (!nextPage){
-        return false;
-      }
-      return nextPage;
-    },
-
-    nextPage: function() {
-      var nextPage = this.areMorePage();
-      if (!nextPage){
-        console.log("No more pages");
-      }
-      this.currentPageIndex = this.currentPageIndex+1;
-      this.currentPage = nextPage;
-      sparks.activityContstructor.layoutPage();
-    },
-
-    repeatPage: function() {
-      console.log("repeating page");
-      console.log("this.currentPage = "+this.currentPage);
-      $('#breadboard').html('');
-      $('#image').html('');
-      this.currentPage.view.clear();
-
-      if (!sparks.jsonActivity.hide_circuit){
-        breadModel('clear');
-        sparks.flash.activity.loadFlash();
-      } else {
-        sparks.flash.activity.onActivityReady();
-      }
-    }
-
-  };
-
-  sparks.sparksActivityController = new sparks.SparksActivityController();
-})();
-/*globals console sparks $ breadModel getBreadBoard */
-
-(function() {
-
-  sparks.SparksPageController = function(){
-    this.qc = new sparks.SparksQuestionController();
-  };
-
-  sparks.SparksPageController.prototype = {
-
-    createPage: function(jsonPage) {
-      var page = new sparks.SparksPage();
-
-      page.questions = this.qc.createQuestionsArray(jsonPage.questions);
-      page.currentQuestion = page.questions[0];
-
-      if (!!jsonPage.notes){
-        var notes = sparks.mathParser.calculateMeasurement(jsonPage.notes);
-        page.notes = notes;
-      }
-
-      page.view = new sparks.SparksPageView(page);
-
-      return page;
-    },
-
-    enableQuestion: function(page, question) {
-      page.view.enableQuestion(question);
-    },
-
-    completedQuestion: function(page) {
-      var nextQuestion;
-      for (var i = 0; i < page.questions.length-1; i++){
-        if (page.questions[i] === page.currentQuestion){
-          if (page.currentQuestion.isSubQuestion){
-            do {
-              i++;
-              if (i == page.questions.length){
-                this.showReport(page);
-                return;
-              }
-            } while (i < page.questions.length && page.questions[i].subquestionId == page.currentQuestion.subquestionId);
-            nextQuestion = page.questions[i];
-          } else {
-            nextQuestion = page.questions[i+1];
-          }
-        }
-      }
-
-      if (!!nextQuestion){
-        page.currentQuestion = nextQuestion;
-        this.enableQuestion(page, page.currentQuestion);
-      } else {
-        this.showReport(page);
-      }
-    },
-
-    showReport: function(page){
-      var $report = this.createReportForPage(page);
-      page.view.showReport($report);
-
-      this.saveData();
-    },
-
-    saveData: function() {
-      if (!!sparks.activity.dataService){
-        var data = sparks.sparksActivity.toJSON();
-        sparks.activity.dataService.save(data);
-      }
-    },
-
-    createReportForPage: function(page) {
-      var self = this;
-      $.each(page.questions, function(i, question){
-        self.qc.gradeQuestion(question);
-      });
-
-      var $report = $('<table>').addClass('reportTable');
-
-      $report.append(
-        $('<tr>').append(
-          $('<th>').text("Question"),
-          $('<th>').text("Your answer"),
-          $('<th>').text("Correct answer"),
-          $('<th>').text("Score"),
-          $('<th>').text("Notes")
-        )
-      );
-
-      var totalScore = 0;
-      var totalPossibleScore = 0;
-
-      $.each(page.questions, function(i, question){
-        var answer = !!question.answer ? question.answer + (!!question.units ? " "+question.units : '') : '';
-        var correctAnswer = question.correct_answer + (!!question.correct_units ? " "+question.correct_units : '');
-        var score = question.points_earned;
-        totalScore += score;
-        totalPossibleScore += question.points;
-        var feedback = "";
-
-
-        if(!question.feedback){
-        	if (answer === '') {
-
-        	} else if (!question.answerIsCorrect){
-        	  feedback += "The value was wrong";
-        	}
-        } else {
-          feedback = question.feedback;
-        }
-
-        $report.append(
-          $('<tr>').append(
-            $('<td>').html(question.shortPrompt),
-            $('<td>').html(answer),
-            $('<td>').html(correctAnswer),
-            $('<td>').html(score +"/" + question.points),
-            $('<td>').html(feedback)
-          ).addClass(question.answerIsCorrect ? "correct" : "incorrect")
-        );
-      });
-
-      $report.append(
-        $('<tr>').append(
-          $('<th>').text("Total Score:"),
-          $('<th>').text(""),
-          $('<th>').text(""),
-          $('<th>').text(totalScore + "/" + totalPossibleScore),
-          $('<th>').text("")
-        )
-      );
-
-      return $report;
-    }
-
-  };
-})();
-/*globals console sparks $ breadModel getBreadBoard */
-
-(function() {
-
+  /*
+   * Sparks Page Controller can be accessed by the
+   * singleton variable sparks.sparksQuestionController
+   */
   sparks.SparksQuestionController = function(){
   };
 
   sparks.SparksQuestionController.prototype = {
+
+    reset: function() {
+      this._id = 0;
+      this._subquestionId = 0;
+      this._shownId = 0;
+    },
 
     createQuestionsArray: function(jsonQuestions) {
       var questionsArray = [];
@@ -3410,11 +3173,277 @@ sparks.util.shuffle = function (o) {
     }
 
   };
+
+  sparks.sparksQuestionController = new sparks.SparksQuestionController();
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+
+  /*
+   * Sparks Page Controller can be accessed by the
+   * singleton variable sparks.sparksPageController
+   */
+  sparks.SparksPageController = function(){
+  };
+
+  sparks.SparksPageController.prototype = {
+
+    reset: function(){
+    },
+
+    createPage: function(jsonPage) {
+      var page = new sparks.SparksPage();
+
+      page.questions = sparks.sparksQuestionController.createQuestionsArray(jsonPage.questions);
+      page.currentQuestion = page.questions[0];
+
+      if (!!jsonPage.notes){
+        var notes = sparks.mathParser.calculateMeasurement(jsonPage.notes);
+        page.notes = notes;
+      }
+
+      page.view = new sparks.SparksPageView(page);
+
+      return page;
+    },
+
+    enableQuestion: function(page, question) {
+      page.view.enableQuestion(question);
+    },
+
+    completedQuestion: function(page) {
+      var nextQuestion;
+      for (var i = 0; i < page.questions.length-1; i++){
+        if (page.questions[i] === page.currentQuestion){
+          if (page.currentQuestion.isSubQuestion){
+            do {
+              i++;
+              if (i == page.questions.length){
+                this.showReport(page);
+                return;
+              }
+            } while (i < page.questions.length && page.questions[i].subquestionId == page.currentQuestion.subquestionId);
+            nextQuestion = page.questions[i];
+          } else {
+            nextQuestion = page.questions[i+1];
+          }
+        }
+      }
+
+      if (!!nextQuestion){
+        page.currentQuestion = nextQuestion;
+        this.enableQuestion(page, page.currentQuestion);
+      } else {
+        this.showReport(page);
+      }
+    },
+
+    showReport: function(page){
+      var $report = this.createReportForPage(page);
+      page.view.showReport($report);
+
+      this.saveData();
+    },
+
+    saveData: function() {
+      if (!!sparks.activity.dataService){
+        var data = sparks.sparksActivity.toJSON();
+        sparks.activity.dataService.save(data);
+      }
+    },
+
+    createReportForPage: function(page) {
+      var self = this;
+      $.each(page.questions, function(i, question){
+        sparks.sparksQuestionController.gradeQuestion(question);
+      });
+
+      var $report = $('<table>').addClass('reportTable');
+
+      $report.append(
+        $('<tr>').append(
+          $('<th>').text("Question"),
+          $('<th>').text("Your answer"),
+          $('<th>').text("Correct answer"),
+          $('<th>').text("Score"),
+          $('<th>').text("Notes")
+        )
+      );
+
+      var totalScore = 0;
+      var totalPossibleScore = 0;
+
+      $.each(page.questions, function(i, question){
+        var answer = !!question.answer ? question.answer + (!!question.units ? " "+question.units : '') : '';
+        var correctAnswer = question.correct_answer + (!!question.correct_units ? " "+question.correct_units : '');
+        var score = question.points_earned;
+        totalScore += score;
+        totalPossibleScore += question.points;
+        var feedback = "";
+
+
+        if(!question.feedback){
+        	if (answer === '') {
+
+        	} else if (!question.answerIsCorrect){
+        	  feedback += "The value was wrong";
+        	}
+        } else {
+          feedback = question.feedback;
+        }
+
+        $report.append(
+          $('<tr>').append(
+            $('<td>').html(question.shortPrompt),
+            $('<td>').html(answer),
+            $('<td>').html(correctAnswer),
+            $('<td>').html(score +"/" + question.points),
+            $('<td>').html(feedback)
+          ).addClass(question.answerIsCorrect ? "correct" : "incorrect")
+        );
+      });
+
+      $report.append(
+        $('<tr>').append(
+          $('<th>').text("Total Score:"),
+          $('<th>').text(""),
+          $('<th>').text(""),
+          $('<th>').text(totalScore + "/" + totalPossibleScore),
+          $('<th>').text("")
+        )
+      );
+
+      return $report;
+    }
+
+  };
+
+  sparks.sparksPageController = new sparks.SparksPageController();
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+
+  /*
+   * Sparks Activity Controller can be accessed by the
+   * singleton variable sparks.sparksActivityController
+   */
+  sparks.SparksActivityController = function(){
+    this.currentPage = null;
+    this.currentPageIndex = -1;
+  };
+
+  sparks.SparksActivityController.prototype = {
+
+    reset: function(){
+      this.currentPage = null;
+      this.currentPageIndex = -1;
+      sparks.sparksPageController.reset();
+      sparks.sparksQuestionController.reset();
+    },
+
+    createActivity: function(jsonActivity) {
+      var activity = new sparks.SparksActivity();
+
+      if (!!jsonActivity.activity_url){
+        activity.activity_url = jsonActivity.activity_url;
+      } else {
+        activity.activity_url = sparks.jsonActivity.activity_url;
+      }
+
+      if (!!jsonActivity.images_url){
+        activity.images_url = jsonActivity.images_url;
+      } else {
+        activity.images_url = sparks.jsonActivity.images_url;
+      }
+
+      activity.image = jsonActivity.image;
+
+      if (!!jsonActivity.circuit){
+        activity.circuit = jsonActivity.circuit;
+        breadModel("createCircuit", activity.circuit);
+      }
+
+      activity.hide_circuit = !!jsonActivity.hide_circuit;
+
+
+      if (!!jsonActivity.pages){
+        $.each(jsonActivity.pages, function(i, jsonPage){
+          var page = sparks.sparksPageController.createPage(jsonPage);
+          activity.pages.push(page);
+        });
+
+        if (this.currentPageIndex == -1){
+          this.currentPageIndex = 0;
+        }
+        this.currentPage = activity.pages[this.currentPageIndex];
+      }
+
+      if (!!jsonActivity.formulas){
+        $.each(this.jsonActivity.formulas, function(i, formula){
+          var variables = {};
+          var variable = formula.match(/.* =/)[0];
+          variable = variable.substring(0,variable.length-2);
+          formula = "variables."+formula;
+          eval(formula);
+          var value = variables[0];
+          this.sparksActivity.variables[variable] = value;
+        });
+      }
+
+      activity.view = new sparks.SparksActivityView(activity);
+
+      return activity;
+    },
+
+    areMorePage: function() {
+      var nextPage;
+      for (var i = 0; i < sparks.sparksActivity.pages.length-1; i++){
+        if (sparks.sparksActivity.pages[i] == this.currentPage){
+          nextPage = sparks.sparksActivity.pages[i+1];
+        }
+      }
+      if (!nextPage){
+        return false;
+      }
+      return nextPage;
+    },
+
+    nextPage: function() {
+      var nextPage = this.areMorePage();
+      if (!nextPage){
+        console.log("No more pages");
+      }
+      this.currentPageIndex = this.currentPageIndex+1;
+      this.currentPage = nextPage;
+      sparks.activityContstructor.layoutPage();
+    },
+
+    repeatPage: function() {
+      console.log("repeating page");
+      console.log("this.currentPage = "+this.currentPage);
+      $('#breadboard').html('');
+      $('#image').html('');
+      this.currentPage.view.clear();
+
+      if (!sparks.jsonActivity.hide_circuit){
+        breadModel('clear');
+        sparks.flash.activity.loadFlash();
+      } else {
+        sparks.flash.activity.onActivityReady();
+      }
+    }
+
+  };
+
+  sparks.sparksActivityController = new sparks.SparksActivityController();
 })();
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
   sparks.ActivityConstructor = function(jsonActivity){
+    sparks.sparksActivityController.reset();
     this.activity = sparks.sparksActivityController.createActivity(jsonActivity);
 
     this.jsonActivity = jsonActivity;
@@ -6068,8 +6097,7 @@ sparks.util.shuffle = function (o) {
 
         logResults: function () {
           console.log("generatingReport");
-          var pc = new sparks.SparksPageController();
-          var $report = pc.createReportForPage(sparks.sparksActivity.pages[0]);
+          var $report = sparks.sparksPageController.createReportForPage(sparks.sparksActivity.pages[0]);
           this.reportArea.append($report);
         },
 

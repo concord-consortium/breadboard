@@ -2,6 +2,7 @@
 
 (function() {
   sparks.ActivityConstructor = function(jsonActivity){
+    sparks.sparksActivityController.reset();
     this.activity = sparks.sparksActivityController.createActivity(jsonActivity);
     
     this.jsonActivity = jsonActivity;
