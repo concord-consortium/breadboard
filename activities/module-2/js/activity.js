@@ -65,6 +65,10 @@
             if (!jsonActivityName){
               jsonActivityName = "series-interpretive";
             }
+            if (jsonActivityName.indexOf("local") == 0){
+              sparks.activity_base_url = "/activities/module-2/activities/";
+              jsonActivityName = jsonActivityName.split("/")[1] + ".js";
+            }
             
             if (sparks.debug && !!sparks.jsonActivity){
               self.activityLoaded();

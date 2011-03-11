@@ -32,59 +32,65 @@ sparks.jsonActivity = {
         "connections": "left_negative3,a5"
       }
    ],
-  "questions": [
-    {
-      "prompt": "What is the rated resistance of",
-      "subquestions": [
-        {
-          "prompt": "R<sub>1</sub>:",
-          "shortPrompt": "Resistance of R1",
-          "correct_answer": "[${r1.nominalResistance}]",
-          "correct_units": "ohms"
-        },
-        {
-          "prompt": "R<sub>2</sub>:",
-          "shortPrompt": "Resistance of R2",
-          "correct_answer": "[${r2.nominalResistance}]",
-          "correct_units": "ohms"
-        },
-        {
-          "prompt": "R<sub>3</sub>:",
-          "shortPrompt": "Resistance of R3",
-          "correct_answer": "[${r3.nominalResistance}]",
-          "correct_units": "ohms"
-        }
-      ]
-    },
-    {
-      "prompt": "What is the total rated resistance across all the resistors? ",
-      "shortPrompt": "Total resistance",
-      "correct_answer": "[${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance}]",
-      "correct_units": "ohms"
-    },
-    {
-      "prompt": "Given that the battery is producing 9 Volts, what is the voltage drop across",
-      "subquestions": [
-        {
-          "prompt": "R<sub>1</sub>:",
-          "shortPrompt": "Voltage across R1",
-          "correct_answer": "[ 9 * ${r1.nominalResistance} / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
-          "correct_units": "V"
-        },
-        {
-          "prompt": "R<sub>2</sub>:",
-          "shortPrompt": "Voltage across R2",
-          "correct_answer": "[ 9 * ${r2.nominalResistance} / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
-          "correct_units": "V"
-        },
-        {
-          "prompt": "R<sub>3</sub>:",
-          "shortPrompt": "Voltage across R3",
-          "correct_answer": "[ 9 * ${r3.nominalResistance} / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
-          "correct_units": "V"
-        }
-       ]
-    },
+  "pages": [
+   {
+     "questions": [
+       {
+         "prompt": "What is the rated resistance of",
+         "subquestions": [
+           {
+             "prompt": "R<sub>1</sub>:",
+             "shortPrompt": "Resistance of R1",
+             "correct_answer": "[${r1.nominalResistance}]",
+             "correct_units": "ohms"
+           },
+           {
+             "prompt": "R<sub>2</sub>:",
+             "shortPrompt": "Resistance of R2",
+             "correct_answer": "[${r2.nominalResistance}]",
+             "correct_units": "ohms"
+           },
+           {
+             "prompt": "R<sub>3</sub>:",
+             "shortPrompt": "Resistance of R3",
+             "correct_answer": "[${r3.nominalResistance}]",
+             "correct_units": "ohms"
+           }
+         ]
+       },
+       {
+         "prompt": "What is the total rated resistance across all the resistors? ",
+         "shortPrompt": "Total resistance",
+         "correct_answer": "[${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance}]",
+         "correct_units": "ohms"
+       },
+       {
+         "prompt": "Given that the battery is producing 9 Volts, what is the voltage drop across",
+         "subquestions": [
+           {
+             "prompt": "R<sub>1</sub>:",
+             "shortPrompt": "Voltage across R1",
+             "correct_answer": "[ 9 * ${r1.nominalResistance} / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
+             "correct_units": "V"
+           },
+           {
+             "prompt": "R<sub>2</sub>:",
+             "shortPrompt": "Voltage across R2",
+             "correct_answer": "[ 9 * ${r2.nominalResistance} / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
+             "correct_units": "V"
+           },
+           {
+             "prompt": "R<sub>3</sub>:",
+             "shortPrompt": "Voltage across R3",
+             "correct_answer": "[ 9 * ${r3.nominalResistance} / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
+             "correct_units": "V"
+           }
+          ]
+       }
+     ]
+   },
+   {
+     "questions": [
     {
       "prompt": "What is the current through",
       "subquestions": [
@@ -125,5 +131,7 @@ sparks.jsonActivity = {
         }
       ]
     }
+    ]
+  }
   ]
 };
