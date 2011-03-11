@@ -5,6 +5,7 @@
 //= require <views/sparks-activity-view>
 //= require <views/sparks-page-view>
 //= require <views/sparks-question-view>
+//= require <views/sparks-report-view>
 //= require <controllers/sparks-question-controller>
 //= require <controllers/sparks-page-controller>
 //= require <controllers/sparks-activity-controller>
@@ -233,8 +234,8 @@
           // sparks.assessment.serializeQuestions($("form"));
           // sparks.assessment.scoreAnswers();
           // var table = sparks.assessment.generateReport();
-          var $report = sparks.sparksPageController.createReportForPage(sparks.sparksActivity.pages[0]);
-          this.reportArea.append($report);
+          // var $report = sparks.sparksPageController.createReportForPage(sparks.sparksActivity.pages[0]);
+          // this.reportArea.append($report);
         },
         
         receiveEvent: function (name, value, time) {

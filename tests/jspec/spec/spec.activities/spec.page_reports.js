@@ -345,7 +345,8 @@ describe 'Page Reports'
       $select.val("200");                         // sets val of both selects
       $select.change();
       
-      sparks.sparksPageController.createReportForPage(sparks.sparksActivity.pages[0]);
+      var reportView = new sparks.SparksReportView();
+      reportView.getPageReportView(sparks.sparksActivity.pages[0]);
       
       sparks.sparksActivity.pages[0].questions[0].answerIsCorrect.should.be true
       sparks.sparksActivity.pages[0].questions[0].points_earned.should.be 1
@@ -423,7 +424,8 @@ describe 'Page Reports'
       $select.val("200");                         // sets val of both selects
       $select.change();
       
-      var $report = sparks.sparksPageController.createReportForPage(sparks.sparksActivity.pages[0]);
+      var reportView = new sparks.SparksReportView();
+      var $report = reportView.getPageReportView(sparks.sparksActivity.pages[0]);
       
       var $headers = $report.find('th');
       $headers[0].innerHTML.should.be("Question");
