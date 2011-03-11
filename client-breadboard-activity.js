@@ -3232,26 +3232,29 @@ sparks.util.shuffle = function (o) {
     },
 
     completedQuestion: function(page) {
-      for (var i = 0; i < page.questions.length; i++){
+      var nextQuestion;
+      for (var i = 0; i < page.questions.length-1; i++){
         if (page.questions[i] === page.currentQuestion){
-          if (i < page.questions.length - 1){
-            page.currentQuestion = page.questions[i+1];
-            if (page.currentQuestion.isSubQuestion){
-              var subquestionId = page.currentQuestion.subquestionId;
+          if (page.currentQuestion.isSubQuestion){
+            do {
               i++;
-              while (i < page.questions.length && page.questions[i].isSubQuestion &&
-                  page.questions[i].subquestionId == subquestionId){
-                page.currentQuestion = page.questions[i];
-                i++;
+              if (i == page.questions.length){
+                this.showReport(page);
+                return;
               }
-            }
-            this.enableQuestion(page, page.currentQuestion);
-            return;
+            } while (i < page.questions.length && page.questions[i].subquestionId == page.currentQuestion.subquestionId);
+            nextQuestion = page.questions[i];
           } else {
-            this.showReport(page);
-            return;
+            nextQuestion = page.questions[i+1];
           }
         }
+      }
+
+      if (!!nextQuestion){
+        page.currentQuestion = nextQuestion;
+        this.enableQuestion(page, page.currentQuestion);
+      } else {
+        this.showReport(page);
       }
     },
 
