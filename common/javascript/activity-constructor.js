@@ -2,8 +2,7 @@
 
 (function() {
   sparks.ActivityConstructor = function(jsonActivity){
-    this.sparksActivityController = new sparks.SparksActivityController();
-    this.activity = this.sparksActivityController.createActivity(jsonActivity);
+    this.activity = sparks.sparksActivityController.createActivity(jsonActivity);
     
     this.jsonActivity = jsonActivity;
     
@@ -52,9 +51,9 @@
    },
    
    layoutPage: function() {
-     if (!!sparks.SparksActivityControllerCurrentPage){
+     if (!!sparks.sparksActivityController.currentPage){
         this.embeddingTargets.$questionsDiv.html('');
-        var $page = sparks.SparksActivityControllerCurrentPage.view.getView();
+        var $page = sparks.sparksActivityController.currentPage.view.getView();
         this.embeddingTargets.$questionsDiv.append($page);
       }
    }

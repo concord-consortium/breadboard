@@ -104,8 +104,6 @@
     
     showReport: function($table){
       
-      var ac = new sparks.SparksActivityController();
-      
       this.$questionDiv.hide();
       if (!!this.$notesDiv) {this.$notesDiv.hide();}
       
@@ -120,7 +118,7 @@
         }
       });
       
-      var areMorePage = !!ac.areMorePage();
+      var areMorePage = !!sparks.sparksActivityController.areMorePage();
       
       var comment = allCorrect ? "You got all the questions correct!"+(areMorePage ? " Move on to the next page." : "") :
                               "You can get a higher score these questions. You can repeat the page by clicking the " +
@@ -135,14 +133,14 @@
                           .css('padding-right', "10px").css('margin-left', "10px");
          
       $repeatButton.click(function(evt){
-        ac.repeatPage();
+        sparks.sparksActivityController.repeatPage();
       });
 
       $nextPageButton.click(function(evt){
-        ac.nextPage();
+        sparks.sparksActivityController.nextPage();
       });
       
-      if (!!ac.areMorePage()){
+      if (!!sparks.sparksActivityController.areMorePage()){
         $buttonDiv.append($repeatButton, $nextPageButton);
       } else {
         $buttonDiv.append($repeatButton);

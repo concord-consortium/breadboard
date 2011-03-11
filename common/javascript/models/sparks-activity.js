@@ -3,7 +3,6 @@
 (function() {
   sparks.SparksActivity = function(){
     sparks.sparksActivity = this;
-    // sparks.sparksActivityController = new sparks.SparksActivityController(this);
     
     sparks.activityLog = new sparks.Activity.ActivityLog();
     sparks.assessment = new sparks.Activity.Assessment();

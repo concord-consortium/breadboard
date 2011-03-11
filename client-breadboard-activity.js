@@ -2854,8 +2854,6 @@ sparks.util.shuffle = function (o) {
 
     showReport: function($table){
 
-      var ac = new sparks.SparksActivityController();
-
       this.$questionDiv.hide();
       if (!!this.$notesDiv) {this.$notesDiv.hide();}
 
@@ -2869,7 +2867,7 @@ sparks.util.shuffle = function (o) {
         }
       });
 
-      var areMorePage = !!ac.areMorePage();
+      var areMorePage = !!sparks.sparksActivityController.areMorePage();
 
       var comment = allCorrect ? "You got all the questions correct!"+(areMorePage ? " Move on to the next page." : "") :
                               "You can get a higher score these questions. You can repeat the page by clicking the " +
@@ -2884,14 +2882,14 @@ sparks.util.shuffle = function (o) {
                           .css('padding-right', "10px").css('margin-left', "10px");
 
       $repeatButton.click(function(evt){
-        ac.repeatPage();
+        sparks.sparksActivityController.repeatPage();
       });
 
       $nextPageButton.click(function(evt){
-        ac.nextPage();
+        sparks.sparksActivityController.nextPage();
       });
 
-      if (!!ac.areMorePage()){
+      if (!!sparks.sparksActivityController.areMorePage()){
         $buttonDiv.append($repeatButton, $nextPageButton);
       } else {
         $buttonDiv.append($repeatButton);
@@ -3027,11 +3025,9 @@ sparks.util.shuffle = function (o) {
 
 (function() {
 
-  sparks.SparksActivityControllerCurrentPage = null;
-  sparks.SparksActivityControllerCurrentPageIndex = -1;
-
   sparks.SparksActivityController = function(){
     this.currentPage = null;
+    this.currentPageIndex = -1;
   };
 
   sparks.SparksActivityController.prototype = {
@@ -3069,10 +3065,10 @@ sparks.util.shuffle = function (o) {
           activity.pages.push(page);
         });
 
-        if (sparks.SparksActivityControllerCurrentPageIndex == -1){
-          sparks.SparksActivityControllerCurrentPageIndex = 0;
+        if (this.currentPageIndex == -1){
+          this.currentPageIndex = 0;
         }
-        sparks.SparksActivityControllerCurrentPage = activity.pages[sparks.SparksActivityControllerCurrentPageIndex];
+        this.currentPage = activity.pages[this.currentPageIndex];
       }
 
       if (!!jsonActivity.formulas){
@@ -3095,7 +3091,7 @@ sparks.util.shuffle = function (o) {
     areMorePage: function() {
       var nextPage;
       for (var i = 0; i < sparks.sparksActivity.pages.length-1; i++){
-        if (sparks.sparksActivity.pages[i] == sparks.SparksActivityControllerCurrentPage){
+        if (sparks.sparksActivity.pages[i] == this.currentPage){
           nextPage = sparks.sparksActivity.pages[i+1];
         }
       }
@@ -3110,8 +3106,8 @@ sparks.util.shuffle = function (o) {
       if (!nextPage){
         console.log("No more pages");
       }
-      sparks.SparksActivityControllerCurrentPageIndex = sparks.SparksActivityControllerCurrentPageIndex+1;
-      sparks.SparksActivityControllerCurrentPage = nextPage;
+      this.currentPageIndex = this.currentPageIndex+1;
+      this.currentPage = nextPage;
       sparks.activityContstructor.layoutPage();
     },
 
@@ -3120,7 +3116,7 @@ sparks.util.shuffle = function (o) {
       console.log("this.currentPage = "+this.currentPage);
       $('#breadboard').html('');
       $('#image').html('');
-      sparks.SparksActivityControllerCurrentPage.view.clear();
+      this.currentPage.view.clear();
 
       if (!sparks.jsonActivity.hide_circuit){
         breadModel('clear');
@@ -3131,6 +3127,8 @@ sparks.util.shuffle = function (o) {
     }
 
   };
+
+  sparks.sparksActivityController = new sparks.SparksActivityController();
 })();
 /*globals console sparks $ breadModel getBreadBoard */
 
@@ -3231,6 +3229,7 @@ sparks.util.shuffle = function (o) {
         totalScore += score;
         totalPossibleScore += question.points;
         var feedback = "";
+
 
         if(!question.feedback){
         	if (answer === '') {
@@ -3416,8 +3415,7 @@ sparks.util.shuffle = function (o) {
 
 (function() {
   sparks.ActivityConstructor = function(jsonActivity){
-    this.sparksActivityController = new sparks.SparksActivityController();
-    this.activity = this.sparksActivityController.createActivity(jsonActivity);
+    this.activity = sparks.sparksActivityController.createActivity(jsonActivity);
 
     this.jsonActivity = jsonActivity;
 
@@ -3465,9 +3463,9 @@ sparks.util.shuffle = function (o) {
    },
 
    layoutPage: function() {
-     if (!!sparks.SparksActivityControllerCurrentPage){
+     if (!!sparks.sparksActivityController.currentPage){
         this.embeddingTargets.$questionsDiv.html('');
-        var $page = sparks.SparksActivityControllerCurrentPage.view.getView();
+        var $page = sparks.sparksActivityController.currentPage.view.getView();
         this.embeddingTargets.$questionsDiv.append($page);
       }
    }
@@ -5947,6 +5945,10 @@ sparks.util.shuffle = function (o) {
             jsonActivityName = jsonActivityName.substring(1,jsonActivityName.length);
             if (!jsonActivityName){
               jsonActivityName = "series-interpretive";
+            }
+            if (jsonActivityName.indexOf("local") == 0){
+              sparks.activity_base_url = "/activities/module-2/activities/";
+              jsonActivityName = jsonActivityName.split("/")[1] + ".js";
             }
 
             if (sparks.debug && !!sparks.jsonActivity){

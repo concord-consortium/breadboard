@@ -2,11 +2,9 @@
 
 (function() {
   
-  sparks.SparksActivityControllerCurrentPage = null;
-  sparks.SparksActivityControllerCurrentPageIndex = -1;
-  
   sparks.SparksActivityController = function(){
     this.currentPage = null;
+    this.currentPageIndex = -1;
   };
   
   sparks.SparksActivityController.prototype = {
@@ -44,10 +42,10 @@
           activity.pages.push(page);
         });
         
-        if (sparks.SparksActivityControllerCurrentPageIndex == -1){
-          sparks.SparksActivityControllerCurrentPageIndex = 0;
+        if (this.currentPageIndex == -1){
+          this.currentPageIndex = 0;
         }
-        sparks.SparksActivityControllerCurrentPage = activity.pages[sparks.SparksActivityControllerCurrentPageIndex];
+        this.currentPage = activity.pages[this.currentPageIndex];
       }
       
       if (!!jsonActivity.formulas){
@@ -70,7 +68,7 @@
     areMorePage: function() {
       var nextPage;
       for (var i = 0; i < sparks.sparksActivity.pages.length-1; i++){
-        if (sparks.sparksActivity.pages[i] == sparks.SparksActivityControllerCurrentPage){
+        if (sparks.sparksActivity.pages[i] == this.currentPage){
           nextPage = sparks.sparksActivity.pages[i+1];
         }
       }
@@ -85,8 +83,8 @@
       if (!nextPage){
         console.log("No more pages");
       }
-      sparks.SparksActivityControllerCurrentPageIndex = sparks.SparksActivityControllerCurrentPageIndex+1;
-      sparks.SparksActivityControllerCurrentPage = nextPage;
+      this.currentPageIndex = this.currentPageIndex+1;
+      this.currentPage = nextPage;
       sparks.activityContstructor.layoutPage();
     },
     
@@ -95,7 +93,7 @@
       console.log("this.currentPage = "+this.currentPage);
       $('#breadboard').html('');
       $('#image').html('');
-      sparks.SparksActivityControllerCurrentPage.view.clear();
+      this.currentPage.view.clear();
       
       if (!sparks.jsonActivity.hide_circuit){
         breadModel('clear');
@@ -109,4 +107,6 @@
     }
     
   };
+
+  sparks.sparksActivityController = new sparks.SparksActivityController();
 })();
