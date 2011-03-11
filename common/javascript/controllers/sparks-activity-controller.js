@@ -94,6 +94,7 @@
       console.log("repeating page");
       console.log("this.currentPage = "+this.currentPage);
       $('#breadboard').html('');
+      $('#image').html('');
       sparks.SparksActivityControllerCurrentPage.view.clear();
       
       if (!sparks.jsonActivity.hide_circuit){
