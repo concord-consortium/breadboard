@@ -1980,103 +1980,32 @@ if (window.attachEvent) {
         }
     };
 })();
+/*globals console sparks $ jQuery debug */
+
 (function (){
-    sparks.CouchDS = function (readKey,writeKey,_post_path){
+    sparks.CouchDS = function (_post_path, _user){
         this.data = "";
+        this.user = _user;
         this.enableLoadAndSave = true;
 
         this.postPath = _post_path.split(":")[0];
         this.db = _post_path.split(":")[1].split("/")[0];
 
         $.couch.urlPrefix = this.postPath;
-
-        this.getPath = this.postPath;
-        this.setKeys(readKey,writeKey);
     };
 
     sparks.CouchDS.prototype =
     {
-        setKeys: function (read,write) {
-            if (read) {
-                this.load(this,function (){});// just load data
-                this.readKey = read;
-            }
-            if (write) {
-                this.writeKey = write;
-            }
-            else {
-                this.writeKey= this.randomString();
-            }
-        },
-
-        randomString: function () {
-            var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
-            var string_length = 8;
-            var randomstring = '';
-            for (var i=0; i<string_length; i++) {
-                var rnum = Math.floor(Math.random() * chars.length);
-                randomstring += chars.substring(rnum,rnum+1);
-            }
-            return randomstring;
-        },
-
         save: function (_data) {
+          _data.user = this.user;
           $.couch.db(this.db).saveDoc(
             _data,
-            {success: function() { console.log("Saved ok") }}
+            {success: function() { console.log("Saved ok"); }}
           );
         },
 
         load: function (context,callback) {
-            if (this.readKey) {
-            	var key = this.readKey;
-                this.writeKey = key;
-                this.readKey = key;
-            }
-            else {
-                if (this.writeKey) {
-                    this.readKey = this.writeKey;
-                }
-                else {
-                    this.readKey = this.writeKey = this.randomString();
-                }
-            }
-            var get_from = this.getPath;
-            var self = this;
-            debug("just about to load with " + this.readKey);
-            if (this.readKey) {
-                self = this;
-                /*
-                new Ajax.Request(get_from, {
-                    asynchronous: true,
-                    method: 'GET',
-                    onSuccess: function (rsp) {
-                        var text = rsp.responseText;
-                        var _data = eval(text);
-                        self.data = _data;
-                        callback(_data,context,callback);
-                        debug("returned from load");
-                    },
-                    onFailure: function (req,err) {
-                        debug("failed!");
-                    }
-                });
-                */
-                jQuery.get(get_from, function (rsp, textStatus) {
-                    console.log('rsp=' + rsp);
-                    var _data = eval(rsp);
-                    self.data = _data;
-                    callback(_data,context,callback);
-                    debug("returned from load");
-                });
-            }
-            else {
-                debug("load caleld, but no read key specified...");
-            }
-        },
 
-        toString: function () {
-            return "Data Service (" + this.postPath + "" + this.writeKey + ")";
         }
     };
 })();
@@ -2635,7 +2564,8 @@ sparks.util.shuffle = function (o) {
               console.log('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
 
               if (put_path.indexOf("couchdb") > -1){
-                activity.setDataService(new sparks.CouchDS(null, null, put_path));
+                var user = {"id": activity.learner_id, "name": sparks.util.readCookie('student_name')};
+                activity.setDataService(new sparks.CouchDS(put_path, user));
               } else {
                 activity.setDataService(new RestDS(null, null, put_path));
               }
