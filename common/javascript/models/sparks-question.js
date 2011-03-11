@@ -33,7 +33,20 @@
     this.view = null;
   };
   
-  sparks.SparksActivity.prototype = {
+  sparks.SparksQuestion.prototype = {
+    toJSON: function() {
+      var json = {};
+      json.id = this.id;
+      json.shortPrompt = this.prompt;
+      json.correct_answer = this.correct_answer;
+      json.answer = this.answer;
+      json.options = this.options;
+      json.answerIsCorrect = this.answerIsCorrect;
+      json.points = this.points;
+      json.points_earned = this.points_earned;
+      json.feedback = this.feedback;
+      return json;
+    }
   };
   
 })();
