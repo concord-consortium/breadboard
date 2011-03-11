@@ -2,6 +2,10 @@
 
 (function() {
   
+  /*
+   * Sparks Page Controller can be accessed by the
+   * singleton variable sparks.sparksQuestionController
+   */
   sparks.SparksQuestionController = function(){
   };
   
@@ -144,4 +148,6 @@
     }
     
   };
+  
+  sparks.sparksQuestionController = new sparks.SparksQuestionController();
 })();

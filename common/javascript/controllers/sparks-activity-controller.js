@@ -2,6 +2,10 @@
 
 (function() {
   
+  /*
+   * Sparks Activity Controller can be accessed by the
+   * singleton variable sparks.sparksActivityController
+   */
   sparks.SparksActivityController = function(){
     this.currentPage = null;
     this.currentPageIndex = -1;
@@ -35,10 +39,8 @@
       
       
       if (!!jsonActivity.pages){
-        var pc = new sparks.SparksPageController();
-        
         $.each(jsonActivity.pages, function(i, jsonPage){
-          var page = pc.createPage(jsonPage);
+          var page = sparks.sparksPageController.createPage(jsonPage);
           activity.pages.push(page);
         });
         

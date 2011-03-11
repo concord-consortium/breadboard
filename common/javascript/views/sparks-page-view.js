@@ -11,7 +11,6 @@
     this.$reportsDiv = null;
     
     this.questionViews = {};
-    this.controller = new sparks.SparksPageController();
   };
   
   sparks.SparksPageView.prototype = {
@@ -151,7 +150,7 @@
     },
     
     submitButtonClicked: function (event) {
-      this.controller.completedQuestion(this.page);
+      sparks.sparksPageController.completedQuestion(this.page);
     }
     
   };

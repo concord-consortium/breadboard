@@ -2,8 +2,11 @@
 
 (function() {
   
+  /*
+   * Sparks Page Controller can be accessed by the
+   * singleton variable sparks.sparksPageController
+   */
   sparks.SparksPageController = function(){
-    this.qc = new sparks.SparksQuestionController();
   };
   
   sparks.SparksPageController.prototype = {
@@ -11,7 +14,7 @@
     createPage: function(jsonPage) {
       var page = new sparks.SparksPage();
       
-      page.questions = this.qc.createQuestionsArray(jsonPage.questions);
+      page.questions = sparks.sparksQuestionController.createQuestionsArray(jsonPage.questions);
       page.currentQuestion = page.questions[0];
       
       if (!!jsonPage.notes){
@@ -73,7 +76,7 @@
     createReportForPage: function(page) {
       var self = this;
       $.each(page.questions, function(i, question){
-        self.qc.gradeQuestion(question);
+        sparks.sparksQuestionController.gradeQuestion(question);
       });
       
       var $report = $('<table>').addClass('reportTable');
@@ -135,4 +138,6 @@
     }
     
   };
+  
+  sparks.sparksPageController = new sparks.SparksPageController();
 })();

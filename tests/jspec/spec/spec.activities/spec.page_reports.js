@@ -118,7 +118,7 @@ describe 'Page Reports'
         $select.val("200");                         // sets val of both selects
         $select.change();
         
-        var qc = new sparks.SparksQuestionController();
+        var qc = sparks.sparksQuestionController;
         qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[0]);
         qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[1]);
         qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[2]);
@@ -187,7 +187,7 @@ describe 'Page Reports'
           }
         });
         
-        var qc = new sparks.SparksQuestionController();
+        var qc = sparks.sparksQuestionController;
         qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[0]);
         qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[1]);
         
@@ -261,7 +261,7 @@ describe 'Page Reports'
         $select.val("100");                         // sets val of both selects
         $select.change();
         
-        var qc = new sparks.SparksQuestionController();
+        var qc = sparks.sparksQuestionController;
         qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[0]);
         qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[1]);
         qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[2]);
@@ -345,8 +345,7 @@ describe 'Page Reports'
       $select.val("200");                         // sets val of both selects
       $select.change();
       
-      var pc = new sparks.SparksPageController();
-      pc.createReportForPage(sparks.sparksActivity.pages[0]);
+      sparks.sparksPageController.createReportForPage(sparks.sparksActivity.pages[0]);
       
       sparks.sparksActivity.pages[0].questions[0].answerIsCorrect.should.be true
       sparks.sparksActivity.pages[0].questions[0].points_earned.should.be 1
@@ -424,8 +423,7 @@ describe 'Page Reports'
       $select.val("200");                         // sets val of both selects
       $select.change();
       
-      var pc = new sparks.SparksPageController();
-      var $report = pc.createReportForPage(sparks.sparksActivity.pages[0]);
+      var $report = sparks.sparksPageController.createReportForPage(sparks.sparksActivity.pages[0]);
       
       var $headers = $report.find('th');
       $headers[0].innerHTML.should.be("Question");

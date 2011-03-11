@@ -5,9 +5,9 @@
 //= require <views/sparks-activity-view>
 //= require <views/sparks-page-view>
 //= require <views/sparks-question-view>
-//= require <controllers/sparks-activity-controller>
-//= require <controllers/sparks-page-controller>
 //= require <controllers/sparks-question-controller>
+//= require <controllers/sparks-page-controller>
+//= require <controllers/sparks-activity-controller>
 //= require <activity-constructor>
 //= require <math-parser>
 //= require <string>
@@ -233,8 +233,7 @@
           // sparks.assessment.serializeQuestions($("form"));
           // sparks.assessment.scoreAnswers();
           // var table = sparks.assessment.generateReport();
-          var pc = new sparks.SparksPageController();
-          var $report = pc.createReportForPage(sparks.sparksActivity.pages[0]);
+          var $report = sparks.sparksPageController.createReportForPage(sparks.sparksActivity.pages[0]);
           this.reportArea.append($report);
         },
         
