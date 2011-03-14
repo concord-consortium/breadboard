@@ -199,34 +199,81 @@ describe 'Circuit Constructor'
       return false;
     }
     function getTen(num){
-      while (num < 1 && num >= 100){
+      while (num < 1 || num >= 100){
         num = (num < 1) ? num*10 : num/10;
-      }
-      return num;
-    }
-    function getHundred(num){
-      while (num < 100 && num >= 1000){
-        num = (num < 100) ? num*10 : num/10;
       }
       return num;
     }
     
     var validResistance5perc = [10, 11, 12, 13, 15, 16, 18, 20, 22, 24, 27, 
                                 30, 33, 36, 39, 43, 47, 51, 56, 62, 68, 75, 82, 91]
-    var validResistance2perc = [100, 105, 110, 115, 121, 127, 133, 140, 147, 154, 162, 
-                                169, 178, 187, 196, 205, 215, 226, 237, 249, 261, 274, 
-                                287, 301, 316, 332, 348, 365, 383, 402, 422, 442, 464, 
-                                487, 511, 536, 562, 590, 619, 649, 681, 715, 750, 787, 
-                                825, 866, 909, 953]
+    var validResistance10perc = [10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82]
                                 
     var resistors = ['r1','r2','r3','r4'];
     for (i in resistors){
       var resistor = components[resistors[i]];
+      console.log(resistor.tolerance + " : " + resistor.nominalResistance)
+      console.log(resistor.tolerance + " : " + getTen(resistor.nominalResistance))
       if (resistor.tolerance == 0.05){
         contains(validResistance5perc, getTen(resistor.nominalResistance)).should.be true
       } else {
-        contains(validResistance2perc, getHundred(resistor.nominalResistance)).should.be true
+        contains(validResistance10perc, getTen(resistor.nominalResistance)).should.be true
       }
+    }
+    
+  end
+  
+  it 'random nominal resistances should always be within one order of magnitude'
+    var jsonCircuit = [
+      {
+        "type": "resistor",
+        "UID": "r1",
+        "connections": "c3,b4"
+      },
+      {
+        "type": "resistor",
+        "UID": "r2",
+        "connections": "c4,b5"
+      },
+      {
+        "type": "resistor",
+        "UID": "r3",
+        "connections": "c5,b6"
+      },
+      {
+        "type": "resistor",
+        "UID": "r4",
+        "connections": "c6,b7"
+      },
+    ];
+    breadModel("createCircuit", jsonCircuit);
+
+    var components = getBreadBoard().components;
+    
+    function orderOfMagnitude(num){
+      var om = 0;
+      while (num >= 100){
+        num = num / 10;
+        om++;
+      }
+      return om;
+    }
+                                
+    var resistors = ['r1','r2','r3','r4'];
+    var lowestOM = 10;
+    for (i in resistors){
+      var resistor = components[resistors[i]];
+      var om = orderOfMagnitude(resistor.nominalResistance);
+      if (om < lowestOM){
+        lowestOM = om;
+      }
+    }
+    
+    for (i in resistors){
+      var resistor = components[resistors[i]];
+      var om = orderOfMagnitude(resistor.nominalResistance);
+      om.should.be_greater_than lowestOM - 1
+      om.should.be_less_than lowestOM + 2
     }
     
   end

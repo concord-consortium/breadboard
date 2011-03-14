@@ -446,6 +446,8 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 
     sparks.config.root_dir = '/sparks-content';
 
+
+
     sparks.extend = function(Child, Parent, properties) {
       var F = function() {};
       F.prototype = Parent.prototype;
@@ -456,9 +458,9 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
           }
       }
       Child.prototype.constructor = Child;
+      Child.parentConstructor = Parent;
       Child.uber = Parent.prototype;
     };
-
 
 })();
 /*!
@@ -3754,6 +3756,7 @@ sparks.util.shuffle = function (o) {
 
 })();
 /* FILE resistor.js */
+/* FILE resistor.js */
 /*globals console sparks */
 
 (function () {
@@ -3826,17 +3829,35 @@ sparks.util.shuffle = function (o) {
     };
 
 })();
-/* FILE resistor.js */
+/*globals console sparks */
 
 (function () {
 
-    var circuit = sparks.circuit;
     var flash = sparks.flash;
 
-    circuit.Resistor = function () {
+    sparks.circuit.Resistor = function (props, breadBoard) {
+      sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);
+
+      if ((this.resistance === undefined) && this.colors){
+        this.resistance = this.getResistance( this.colors );
+      }
+
+      if ((this.resistance === undefined) && !this.colors) {
+        var resistor = new sparks.circuit.Resistor4band(name);
+        resistor.randomize(null);
+        this.resistance = resistor.getRealValue();
+        this.tolerance = resistor.tolerance;
+        this.colors = resistor.colors;
+      }
+
+      if (!this.colors){
+        this.colors = this.getColors4Band( this.resistance, (!!this.tolerance ? this.tolerance : 0.05));
+      }
+
+      this.nominalResistance =  this.getResistance( this.colors );
     };
 
-    circuit.Resistor.prototype =
+    sparks.extend(sparks.circuit.Resistor, sparks.circuit.Component,
     {
     	nominalValueMagnitude: -1,
 
@@ -3934,8 +3955,60 @@ sparks.util.shuffle = function (o) {
                 }
             }
             return values;
+        },
+
+        getColors4Band: function (ohms, tolerance) {
+            var s = ohms.toString();
+            var decIx = s.indexOf('.');
+            var decLoc = decIx > -1 ? decIx : s.length;
+            s = s.replace('.', '');
+            var len = s.length;
+            for (var i = 0; i < 2 - len; ++i){ s += '0'; }
+            var mult = decLoc > 1 ? decLoc - 2 : 10;
+            return [ this.colorMap[s.charAt(0)],
+                     this.colorMap[s.charAt(1)],
+                     this.colorMap[decLoc - 2],
+                     this.toleranceColorMap[tolerance]
+                   ];
+        },
+
+        getColors5Band: function (ohms, tolerance) {
+            var s = ohms.toString();
+            var decIx = s.indexOf('.');
+            var decLoc = decIx > -1 ? decIx : s.length;
+            s = s.replace('.', '');
+            var len = s.length;
+            for (var i = 0; i < 3 - len; ++i) { s += '0'; }
+            return [ this.colorMap[s.charAt(0)],
+                     this.colorMap[s.charAt(1)],
+                     this.colorMap[s.charAt(2)],
+                     this.colorMap[decLoc - 3],
+                     this.toleranceColorMap[tolerance]
+                   ];
+        },
+
+        colorToNumber: function (color) {
+          for (var n in this.colorMap) {
+            if (this.colorMap[n] == color) { return parseInt(n,10); }
+          }
+          if (color == "gray") {
+            return 8;
+          }
+          return null;
+        },
+
+        getResistance: function(colors){
+          if (typeof(colors)==="string"){
+            colors = colors.split(",");
+          }
+          var resistance = this.colorToNumber(colors[0]);
+          for (var i = 1; i < colors.length - 2; i++) {
+            resistance = resistance * 10;
+            resistance += this.colorToNumber(colors[i]);
+          }
+          return resistance * Math.pow(10, this.colorToNumber(colors[i]));
         }
-    };
+    });
 
 })();
 
@@ -3961,63 +4034,6 @@ sparks.util.shuffle = function (o) {
 
       var HTMLLog = undefined, HTMLbody = undefined;
       this.debug = function(){
-      };
-
-
-      this.Resistor = {
-        colorMap : { '-1': 'gold', '-2': 'silver',
-            0 : 'black', 1 : 'brown', 2 : 'red', 3 : 'orange',
-            4 : 'yellow', 5 : 'green', 6 : 'blue', 7 : 'violet', 8 : 'grey',
-            9 : 'white' },
-        toleranceColorMap : { 0.01 : 'brown', 0.02 : 'red', 5e-3 : 'green',
-            2.5e-3 : 'blue', 1e-3 : 'violet', 5e-4 : 'gray', 5e-2 : 'gold',
-            0.1 : 'silver', 0.2 : 'none' },
-        getColors4Band: function (ohms, tolerance) {
-            var s = ohms.toString();
-            var decIx = s.indexOf('.');
-            var decLoc = decIx > -1 ? decIx : s.length;
-            s = s.replace('.', '');
-            var len = s.length;
-            for (var i = 0; i < 2 - len; ++i){ s += '0'; }
-            var mult = decLoc > 1 ? decLoc - 2 : 10;
-            return [ this.colorMap[s.charAt(0)],
-                     this.colorMap[s.charAt(1)],
-                     this.colorMap[decLoc - 2],
-                     this.toleranceColorMap[tolerance]
-                   ];
-        },
-        getColors5Band: function (ohms, tolerance) {
-            var s = ohms.toString();
-            var decIx = s.indexOf('.');
-            var decLoc = decIx > -1 ? decIx : s.length;
-            s = s.replace('.', '');
-            var len = s.length;
-            for (var i = 0; i < 3 - len; ++i) { s += '0'; }
-            return [ this.colorMap[s.charAt(0)],
-                     this.colorMap[s.charAt(1)],
-                     this.colorMap[s.charAt(2)],
-                     this.colorMap[decLoc - 3],
-                     this.toleranceColorMap[tolerance]
-                   ];
-        },
-        colorToNumber: function (color) {
-          for (n in Resistor.colorMap) {
-            if (Resistor.colorMap[n] == color) { return parseInt(n); }
-          }
-          if (color == "gray") return 8;
-          return null;
-        },
-        getResistance: function(colors){
-          if (typeof(colors)==="string"){
-            colors = colors.split(",");
-          }
-          var resistance = Resistor.colorToNumber(colors[0]);
-          for (var i = 1; i < colors.length - 2; i++) {
-            resistance = resistance * 10;
-            resistance += Resistor.colorToNumber(colors[i]);
-          }
-          return resistance * Math.pow(10, Resistor.colorToNumber(colors[i]));
-        }
       };
 
 
@@ -4117,11 +4133,15 @@ sparks.util.shuffle = function (o) {
         if(typeof props=='string'){
           return this.components[props];
         }else {
+          if (props.kind === "resistor"){
+            return new sparks.circuit.Resistor(props, breadBoard);
+          }
           return new sparks.circuit.Component(props, breadBoard);
         }
       };
 
       Breadboard.prototype.clear = function () {
+        this.resOrderOfMagnitude = -1;
         var destroyed = 0;
         for( k in this.components ){
           destroyed += !!this.component(k).destroy();
@@ -4162,6 +4182,8 @@ sparks.util.shuffle = function (o) {
         }
       };
 
+      Breadboard.prototype.resOrderOfMagnitude = -1;
+
       var breadBoard = new Breadboard();
 
       var interfaces = {
@@ -4175,26 +4197,6 @@ sparks.util.shuffle = function (o) {
 
           props.UID = interfaces.getUID(!!props.UID ? props.UID : props.kind);
 
-          switch(kind) {
-            case "resistor":
-              if ((props.resistance === undefined) && props.colors){
-                props.resistance = Resistor.getResistance( props.colors );
-              }
-
-              if ((props.resistance === undefined) && !props.colors) {
-                var resistor = new sparks.circuit.Resistor4band(name);
-                resistor.randomize(null);
-                props.resistance = resistor.getRealValue()
-                props.colors = resistor.colors;
-              }
-
-              if (!props.colors){
-                props.colors = Resistor.getColors4Band( props.resistance, (!!props.tolerance ? props.tolerance : 0.05));
-              }
-
-              props.nominalResistance =  Resistor.getResistance( props.colors );
-          }
-
           var newComponent;
           newComponent = breadBoard.component(props);
           return newComponent.UID;
@@ -4203,6 +4205,12 @@ sparks.util.shuffle = function (o) {
           $.each(jsonCircuit, function(i, spec){
             interfaces.insertComponent(spec.type, spec);
           });
+        },
+        getResOrderOfMagnitude: function(){
+          return breadBoard.resOrderOfMagnitude;
+        },
+        setResOrderOfMagnitude: function(om){
+          breadBoard.resOrderOfMagnitude = om;
         },
         insert: function(type, connections){
           console.log("ERROR: 'insert' is deprecated. Use 'insertComponent'");
@@ -5039,39 +5047,12 @@ sparks.util.shuffle = function (o) {
     ];
 
     rv.r_values4band5pct = [
-        1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7,
-        3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1,
         10, 11, 12, 13, 15, 16, 18, 20, 22, 24, 27, 30, 33, 36, 39,
-        43, 47, 51, 56, 62, 68, 75, 82, 91,
-        100, 110, 120, 130, 150, 160, 180, 200, 220, 240, 270,
-        300, 330, 360, 390, 430, 470, 510, 560, 620, 680, 750, 820, 910,
-        1.0e3, 1.1e3, 1.2e3, 1.3e3, 1.5e3, 1.6e3, 1.8e3,
-        2.0e3, 2.2e3, 2.4e3, 2.7e3, 3.0e3, 3.3e3, 3.6e3, 3.9e3,
-        4.3e3, 4.7e3, 5.1e3, 5.6e3, 6.2e3, 6.8e3, 7.5e3, 8.2e3, 9.1e3,
-        10e3, 11e3, 12e3, 13e3, 15e3, 16e3, 18e3, 20e3, 22e3, 24e3, 27e3, 30e3,
-        33e3, 36e3, 39e3, 43e3, 47e3, 51e3, 56e3, 62e3, 68e3, 75e3, 82e3, 91e3,
-        100e3, 110e3, 120e3, 130e3, 150e3, 160e3, 180e3, 200e3, 220e3, 240e3,
-        270e3, 300e3, 330e3, 360e3, 390e3, 430e3, 470e3, 510e3, 560e3,
-        620e3, 680e3, 750e3, 820e3, 910e3,
-        1.0e6, 1.1e6, 1.2e6, 1.3e6, 1.5e6, 1.6e6, 1.8e6, 2.0e6, 2.2e6, 2.4e6,
-        2.7e6, 3.0e6, 3.3e6, 3.6e6, 3.9e6, 4.3e6, 4.7e6, 5.1e6, 5.6e6,
-        6.2e6, 6.8e6, 7.5e6, 8.2e6, 9.1e6, 10e6, 11e6, 12e6, 13e6, 15e6, 16e6,
-        18e6, 20e6, 22e6, 24e6, 27e6, 30e6, 33e6, 36e6, 39e6, 43e6, 47e6,
-        51e6, 56e6, 62e6, 68e6, 75e6, 82e6, 91e6
+        43, 47, 51, 56, 62, 68, 75, 82, 91
     ];
 
     rv.r_values4band10pct = [
-        1.0, 1.2, 1.5, 1.8, 2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8, 8.2,
-        10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82,
-        100, 120, 150, 180, 220, 270, 330, 390, 470, 560, 680, 820,
-        1.0e3, 1.2e3, 1.5e3, 1.8e3, 2.2e3, 2.7e3, 3.3e3, 3.9e3, 4.7e3, 5.6e3,
-        6.8e3, 8.2e3,
-        10e3, 12e3, 15e3, 18e3, 22e3, 27e3, 33e3, 39e3, 47e3, 56e3, 68e3, 82e3,
-        100e3, 120e3, 150e3, 180e3, 220e3, 270e3, 330e3, 390e3, 470e3, 560e3,
-        680e3, 820e3,
-        1.0e6, 1.2e6, 1.5e6, 1.8e6, 2.2e6, 2.7e6, 3.3e6, 3.9e6, 4.7e6, 5.6e6,
-        6.8e6, 8.2e6,
-        10e6, 12e6, 15e6, 18e6, 22e6, 27e6, 33e6, 39e6, 47e6, 56e6, 68e6, 82e6
+        10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82
     ];
 
 })();
@@ -5086,6 +5067,11 @@ sparks.util.shuffle = function (o) {
         var superclass = sparks.circuit.Resistor4band.uber;
         superclass.init.apply(this, [id]);
         this.numBands = 4;
+
+        if (breadModel('getResOrderOfMagnitude') < 0){
+          var om = this.randInt(0, 3);
+          breadModel('setResOrderOfMagnitude', om);
+        }
 
         this.r_values5pct = this.filter(circuit.r_values.r_values4band5pct);
         this.r_values10pct = this.filter(circuit.r_values.r_values4band10pct);
@@ -5111,14 +5097,18 @@ sparks.util.shuffle = function (o) {
                 values = this.r_values10pct;
             }
 
+            var om = breadModel('getResOrderOfMagnitude');
+            var extra = this.randInt(0, 1);
+            om = om + extra;
+
+            var value = values[this.randInt(0, values.length-1)];
+
+            value = value * Math.pow(10,om);
+
+            this.nominalValue = value;
 
 
-			var firstNominal = circuit.Resistor.prototype.nominalValueMagnitude;
-            if(circuit.Resistor.prototype.nominalValueMagnitude == -1){
-	            this.nominalValue = Math.random()*2000;  // I switched this because some values were too large to measure with the multimeter
-	           	circuit.Resistor.prototype.nominalValueMagnitude = this.nominalValue;
-            }
-            this.nominalValue = (Math.floor((500-1)*Math.random()) ) * circuit.Resistor.prototype.nominalValueMagnitude;
+
 
 
             if (options && options.realEqualsNominal) {

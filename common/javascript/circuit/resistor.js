@@ -8,6 +8,25 @@
 
     sparks.circuit.Resistor = function (props, breadBoard) {
       sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);
+      
+      // if we have colors defined and not resistance
+      if ((this.resistance === undefined) && this.colors){
+        this.resistance = this.getResistance( this.colors );
+      }
+      
+      if ((this.resistance === undefined) && !this.colors) {
+        var resistor = new sparks.circuit.Resistor4band(name);
+        resistor.randomize(null);
+        this.resistance = resistor.getRealValue();
+        this.tolerance = resistor.tolerance;
+        this.colors = resistor.colors;
+      }
+      
+      if (!this.colors){
+        this.colors = this.getColors4Band( this.resistance, (!!this.tolerance ? this.tolerance : 0.05));
+      }
+      
+      this.nominalResistance =  this.getResistance( this.colors );
     };
 
     sparks.extend(sparks.circuit.Resistor, sparks.circuit.Component,
@@ -114,6 +133,59 @@
                 }
             }
             return values;
+        },
+        
+        getColors4Band: function (ohms, tolerance) {
+            var s = ohms.toString();
+            var decIx = s.indexOf('.');
+            var decLoc = decIx > -1 ? decIx : s.length;
+            s = s.replace('.', '');
+            var len = s.length;
+            for (var i = 0; i < 2 - len; ++i){ s += '0'; }
+            var mult = decLoc > 1 ? decLoc - 2 : 10;
+            return [ this.colorMap[s.charAt(0)],
+                     this.colorMap[s.charAt(1)],
+                     this.colorMap[decLoc - 2],
+                     this.toleranceColorMap[tolerance]
+                   ];
+        },
+        
+        getColors5Band: function (ohms, tolerance) {
+            var s = ohms.toString();
+            var decIx = s.indexOf('.');
+            var decLoc = decIx > -1 ? decIx : s.length;
+            s = s.replace('.', '');
+            var len = s.length;
+            for (var i = 0; i < 3 - len; ++i) { s += '0'; }
+            return [ this.colorMap[s.charAt(0)],
+                     this.colorMap[s.charAt(1)],
+                     this.colorMap[s.charAt(2)],
+                     this.colorMap[decLoc - 3],
+                     this.toleranceColorMap[tolerance]
+                   ];
+        },
+        
+        colorToNumber: function (color) {
+          for (var n in this.colorMap) {
+            if (this.colorMap[n] == color) { return parseInt(n,10); }
+          }
+          // alternate spelling...
+          if (color == "gray") {
+            return 8;
+          }
+          return null;
+        },
+        
+        getResistance: function(colors){
+          if (typeof(colors)==="string"){
+            colors = colors.split(",");
+          }
+          var resistance = this.colorToNumber(colors[0]);
+          for (var i = 1; i < colors.length - 2; i++) {
+            resistance = resistance * 10;
+            resistance += this.colorToNumber(colors[i]);
+          }
+          return resistance * Math.pow(10, this.colorToNumber(colors[i]));
         }
     });
 

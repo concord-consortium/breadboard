@@ -11,6 +11,11 @@
         var superclass = sparks.circuit.Resistor4band.uber;
         superclass.init.apply(this, [id]);
         this.numBands = 4;
+        
+        if (breadModel('getResOrderOfMagnitude') < 0){
+          var om = this.randInt(0, 3);
+          breadModel('setResOrderOfMagnitude', om);
+        }
 
         this.r_values5pct = this.filter(circuit.r_values.r_values4band5pct);
         this.r_values10pct = this.filter(circuit.r_values.r_values4band10pct);
@@ -35,20 +40,29 @@
             else {
                 values = this.r_values10pct;
             }
+            
+            var om = breadModel('getResOrderOfMagnitude');
+            var extra = this.randInt(0, 1);
+            om = om + extra;
+            
+            var value = values[this.randInt(0, values.length-1)];
+            
+            value = value * Math.pow(10,om);
+            
+            this.nominalValue = value;
 
 
 
-            //make nominalValue within 2 order of magnitude of first chosen resistor - jonah
-            //console.log('nominal value!!!!!!!!'+circuit.Resistor.prototype.nominalValueMagnitude);  //-1
-			var firstNominal = circuit.Resistor.prototype.nominalValueMagnitude;
-			//console.log('firstNominal '+circuit.Resistor.prototype.nominalValueMagnitude);
-            if(circuit.Resistor.prototype.nominalValueMagnitude == -1){
-	            //this.nominalValue = values[this.randInt(0, values.length-1)];
-	            this.nominalValue = Math.random()*2000;  // I switched this because some values were too large to measure with the multimeter
-	           	circuit.Resistor.prototype.nominalValueMagnitude = this.nominalValue;
-            }
-            this.nominalValue = (Math.floor((500-1)*Math.random()) ) * circuit.Resistor.prototype.nominalValueMagnitude;
-
+      //             //make nominalValue within 2 order of magnitude of first chosen resistor - jonah
+      //             //console.log('nominal value!!!!!!!!'+circuit.Resistor.prototype.nominalValueMagnitude);  //-1
+      // var firstNominal = circuit.Resistor.prototype.nominalValueMagnitude;
+      // //console.log('firstNominal '+circuit.Resistor.prototype.nominalValueMagnitude);
+      //             if(circuit.Resistor.prototype.nominalValueMagnitude == -1){
+	            // this.nominalValue = Math.random()*2000;  // I switched this because some values were too large to measure with the multimeter
+	            //               circuit.Resistor.prototype.nominalValueMagnitude = this.nominalValue;
+	            //            }
+	            //            this.nominalValue = (Math.floor((500-1)*Math.random()) ) * circuit.Resistor.prototype.nominalValueMagnitude;
+	           
 //            this.nominalValue = values[this.randInt(0, values.length-1)];
 
             if (options && options.realEqualsNominal) {

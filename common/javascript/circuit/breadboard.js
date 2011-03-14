@@ -34,67 +34,6 @@
       };
 
     ////////////////////////////////////////////////////////////////////////////////
-    //// R E S I S T O R ///////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////
-
-      this.Resistor = {
-        colorMap : { '-1': 'gold', '-2': 'silver',
-            0 : 'black', 1 : 'brown', 2 : 'red', 3 : 'orange',
-            4 : 'yellow', 5 : 'green', 6 : 'blue', 7 : 'violet', 8 : 'grey',
-            9 : 'white' },
-        toleranceColorMap : { 0.01 : 'brown', 0.02 : 'red', 5e-3 : 'green',
-            2.5e-3 : 'blue', 1e-3 : 'violet', 5e-4 : 'gray', 5e-2 : 'gold',
-            0.1 : 'silver', 0.2 : 'none' },
-        getColors4Band: function (ohms, tolerance) {
-            var s = ohms.toString();
-            var decIx = s.indexOf('.');
-            var decLoc = decIx > -1 ? decIx : s.length;
-            s = s.replace('.', '');
-            var len = s.length;
-            for (var i = 0; i < 2 - len; ++i){ s += '0'; }
-            var mult = decLoc > 1 ? decLoc - 2 : 10;
-            return [ this.colorMap[s.charAt(0)],
-                     this.colorMap[s.charAt(1)],
-                     this.colorMap[decLoc - 2],
-                     this.toleranceColorMap[tolerance]
-                   ];
-        },
-        getColors5Band: function (ohms, tolerance) {
-            var s = ohms.toString();
-            var decIx = s.indexOf('.');
-            var decLoc = decIx > -1 ? decIx : s.length;
-            s = s.replace('.', '');
-            var len = s.length;
-            for (var i = 0; i < 3 - len; ++i) { s += '0'; }
-            return [ this.colorMap[s.charAt(0)],
-                     this.colorMap[s.charAt(1)],
-                     this.colorMap[s.charAt(2)],
-                     this.colorMap[decLoc - 3],
-                     this.toleranceColorMap[tolerance]
-                   ];
-        },
-        colorToNumber: function (color) {
-          for (n in Resistor.colorMap) {
-            if (Resistor.colorMap[n] == color) { return parseInt(n); }
-          }
-          // alternate spelling...
-          if (color == "gray") return 8;
-          return null;
-        },
-        getResistance: function(colors){
-          if (typeof(colors)==="string"){
-            colors = colors.split(",");
-          }
-          var resistance = Resistor.colorToNumber(colors[0]);
-          for (var i = 1; i < colors.length - 2; i++) {
-            resistance = resistance * 10;
-            resistance += Resistor.colorToNumber(colors[i]);
-          }
-          return resistance * Math.pow(10, Resistor.colorToNumber(colors[i]));
-        }
-      };
-
-    ////////////////////////////////////////////////////////////////////////////////
     //// B R E A D - B O A R D - M O D E L /////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////
 
@@ -205,6 +144,7 @@
       };
 
       Breadboard.prototype.clear = function () {
+        this.resOrderOfMagnitude = -1;
         var destroyed = 0;
         for( k in this.components ){
           destroyed += !!this.component(k).destroy();
@@ -250,6 +190,8 @@
           }
         }
       };
+      
+      Breadboard.prototype.resOrderOfMagnitude = -1;
 
       //// BreadBoard Instance & Interface /////////////////////////////////////////
       var breadBoard = new Breadboard();
@@ -267,26 +209,6 @@
           // ensure no dupes, using either passed UID or type
           props.UID = interfaces.getUID(!!props.UID ? props.UID : props.kind);
           
-          switch(kind) {
-            case "resistor":
-              if ((props.resistance === undefined) && props.colors){
-                props.resistance = Resistor.getResistance( props.colors );
-              }
-              
-              if ((props.resistance === undefined) && !props.colors) {
-                var resistor = new sparks.circuit.Resistor4band(name);
-                resistor.randomize(null);
-                props.resistance = resistor.getRealValue()
-                props.colors = resistor.colors;
-              }
-              
-              if (!props.colors){
-                props.colors = Resistor.getColors4Band( props.resistance, (!!props.tolerance ? props.tolerance : 0.05));
-              }
-              
-              props.nominalResistance =  Resistor.getResistance( props.colors );
-          }
-          
           var newComponent;
           newComponent = breadBoard.component(props);
           return newComponent.UID;
@@ -296,10 +218,12 @@
             interfaces.insertComponent(spec.type, spec);
           });
         },
-        // inserts a new component into the breadboard. Expects a type, the connections,
-        // and other arguments as needed
-        // e.g. insert('battery', 'a1,a2', '5')
-        // e.g. insert('resistor, 'a1,left_positive_1', 'green,black,black,gold')
+        getResOrderOfMagnitude: function(){
+          return breadBoard.resOrderOfMagnitude;
+        },
+        setResOrderOfMagnitude: function(om){
+          breadBoard.resOrderOfMagnitude = om;
+        },
         insert: function(type, connections){
           console.log("ERROR: 'insert' is deprecated. Use 'insertComponent'");
         },

@@ -446,6 +446,8 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 
     sparks.config.root_dir = '/sparks-content';
 
+
+
     sparks.extend = function(Child, Parent, properties) {
       var F = function() {};
       F.prototype = Parent.prototype;
@@ -456,9 +458,9 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
           }
       }
       Child.prototype.constructor = Child;
+      Child.parentConstructor = Parent;
       Child.uber = Parent.prototype;
     };
-
 
 })();
 
