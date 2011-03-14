@@ -181,7 +181,6 @@ describe 'Page Reports'
         $input.each(function(i, choice){
           var $choice = $(choice);
           if ($choice.attr('value') === "200" || $choice.attr('value') === "300"){
-            console.log("got one");
             $choice.attr('selected', true);
             $choice.change();
           }

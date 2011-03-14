@@ -1,4 +1,6 @@
 //= require "qucsator"
+//= require <circuit/component>
+//= require <circuit/resistor>
 
 /* FILE breadboard.js */
 
@@ -195,7 +197,7 @@
         if(typeof props=='string'){
           return this.components[props];
         }else {
-          return new Component(props);
+          return new sparks.circuit.Component(props, breadBoard);
         }
       };
 
@@ -246,59 +248,6 @@
         }
       };
 
-      //// COMPONENT MODEL /////////////////////////////////////////////////////////
-      var Component = function (props) {
-        var i;
-        //console.log('ENTER Component');
-        for (i in props) {
-          this[i]=props[i];
-        }
-        this.breadBoard = breadBoard;
-        this.breadBoard.components[props.UID] = this;
-        
-        this.connections=[];
-        for (i in props.connections) {
-          this.connections[i] = this.breadBoard.getHole(props.connections[i]);
-          
-          if (!!this.breadBoard.holes[props.connections[i]]) {
-            this.breadBoard.holes[props.connections[i]].connections[this.breadBoard.holes[props.connections[i]].connections.length] = this;
-          }
-        }
-        
-        return this;
-      };
-
-      Component.prototype.move = function (connections) {
-        var i;
-        for (i in this.connections) {
-          for (var j in this.connections[i].connections) {
-            if (this.connections[i].connections[j] === this) {
-              this.connections[i].connections = [];
-            }
-          }
-          this.connections[i] = [];
-        }
-        this.connections = [];
-        for (i in connections){
-          this.connections[i] = this.breadBoard.holes[connections[i]];
-          this.breadBoard.holes[connections[i]].connections[this.breadBoard.holes[connections[i]].connections.length] = this;
-        }
-        return this;
-      };
-
-      Component.prototype.destroy = function destroy(){
-        for(var i in this.connections){
-          for( var j in this.connections[i].connections ){
-            if( this.connections[i].connections[j] === this ){
-              this.connections[i].connections = [];
-            }
-          }
-          this.connections[i] = [];
-        }
-        this.connections = [];
-        return delete this.breadBoard.components[this.name];
-      };
-
       //// BreadBoard Instance & Interface /////////////////////////////////////////
       var breadBoard = new Breadboard();
 
@@ -314,22 +263,6 @@
           
           // ensure no dupes, using either passed UID or type
           props.UID = interfaces.getUID(!!props.UID ? props.UID : props.kind);
-          
-          if (!props.label){
-            props.label = !!props.UID.split("/")[1] ? props.UID.split("/")[1] : null;
-          }
-          
-          if (typeof(props.connections) === "string"){
-            props.connections = props.connections.split(",");
-          }
-          
-          function ensureInt(val){
-            if (!!props[val] && typeof(props[val]) === "string")
-              props[val] = parseInt(props[val]);
-          }
-          
-          ensureInt("resistance");
-          ensureInt("voltage");
           
           switch(kind) {
             case "resistor":
@@ -365,46 +298,7 @@
         // e.g. insert('battery', 'a1,a2', '5')
         // e.g. insert('resistor, 'a1,left_positive_1', 'green,black,black,gold')
         insert: function(type, connections){
-          console.log("WARNING: 'insert' is deprecated. Use 'insertComponent'");
-          var props = {
-            UID         : interfaces.getUID(type),
-            kind        : type,
-            connections : connections.split(",")
-          };
-
-          switch(props.kind) {
-            case "resistor":
-             // props.UID = arguments[3];
-              if (typeof(arguments[2])==="string") {
-                props.resistance = Resistor.getResistance( arguments[2].split(",") );
-                props.colors = arguments[2];
-              }
-              else if (typeof(arguments[2])=="number") {
-                props.resistance = arguments[2];
-                props.colors = Resistor.getColors4Band( arguments[2], 0.01);
-              }
-              
-              // blargh
-              if (!!arguments[4]) {
-                props.colors = arguments[4].toString();
-              }
-              
-              // need better system for this
-              if (typeof(arguments[3])==="string") {
-                props.UID = arguments[3].split("/")[0];
-                props.label = !!arguments[3].split("/")[1] ? arguments[3].split("/")[1] : null;
-              }
-              break;
-            case "wire":
-             // props.UID = arguments[2];
-              break;
-            case 'battery':
-              props.voltage = arguments[2];
-              break;
-          }
-          var newComponent;
-          newComponent = breadBoard.component(props);
-          return newComponent.UID;
+          console.log("ERROR: 'insert' is deprecated. Use 'insertComponent'");
         },
         getUID: function(name){
           if (!breadBoard.components[name]){
@@ -461,6 +355,7 @@
           breadBoard.resetConnections(newHoleName, oldHoleName);
         },
         addRandomResistor: function(name, location, options){
+          console.log("WARNING: addRandomResistor is deprecated")
           var resistor = new sparks.circuit.Resistor4band(name);
           resistor.randomize((options | null));
           interfaces.insert('resistor', location, resistor.getRealValue(), name, resistor.colors);

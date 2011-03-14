@@ -3753,6 +3753,191 @@ sparks.util.shuffle = function (o) {
   };
 
 })();
+/* FILE resistor.js */
+/*globals console sparks */
+
+(function () {
+
+    sparks.circuit.Component = function (props, breadBoard) {
+
+      for (var i in props) {
+        this[i]=props[i];
+      }
+
+      this.breadBoard = breadBoard;
+      this.breadBoard.components[props.UID] = this;
+
+      if (!this.label){
+        this.label = !!this.UID.split("/")[1] ? this.UID.split("/")[1] : null;
+      }
+
+      if (typeof(this.connections) === "string"){
+        this.connections = this.connections.split(",");
+      }
+
+      for (i in this.connections) {
+        this.connections[i] = this.breadBoard.getHole(this.connections[i]);
+
+        if (!!this.breadBoard.holes[this.connections[i]]) {
+          this.breadBoard.holes[this.connections[i]].connections[this.breadBoard.holes[this.connections[i]].connections.length] = this;
+        }
+      }
+      this._ensureInt("resistance");
+      this._ensureInt("voltage");
+    };
+
+    sparks.circuit.Component.prototype =
+    {
+    	move: function (connections) {
+        var i;
+        for (i in this.connections) {
+          for (var j in this.connections[i].connections) {
+            if (this.connections[i].connections[j] === this) {
+              this.connections[i].connections = [];
+            }
+          }
+          this.connections[i] = [];
+        }
+        this.connections = [];
+        for (i in connections){
+          this.connections[i] = this.breadBoard.holes[connections[i]];
+          this.breadBoard.holes[connections[i]].connections[this.breadBoard.holes[connections[i]].connections.length] = this;
+        }
+      },
+
+      destroy: function (){
+        for(var i in this.connections){
+          for( var j in this.connections[i].connections ){
+            if( this.connections[i].connections[j] === this ){
+              this.connections[i].connections = [];
+            }
+          }
+          this.connections[i] = [];
+        }
+        this.connections = [];
+        delete this.breadBoard.components[this.name];
+      },
+
+      _ensureInt: function (val) {
+        if (!!this[val] && typeof(this[val]) === "string"){
+          this[val] = parseInt(this[val], 10);
+        }
+      }
+    };
+
+})();
+/* FILE resistor.js */
+
+(function () {
+
+    var circuit = sparks.circuit;
+    var flash = sparks.flash;
+
+    circuit.Resistor = function () {
+    };
+
+    circuit.Resistor.prototype =
+    {
+    	nominalValueMagnitude: -1,
+
+        colorMap: { '-1': 'gold', '-2': 'silver',
+            0 : 'black', 1 : 'brown', 2 : 'red', 3 : 'orange',
+            4 : 'yellow', 5 : 'green', 6 : 'blue', 7 : 'violet', 8 : 'grey',
+            9 : 'white' },
+
+        toleranceColorMap: { 0.01 : 'brown', 0.02 : 'red', 5e-3 : 'green',
+            2.5e-3 : 'blue', 1e-3 : 'violet', 5e-4 : 'gray', 5e-2 : 'gold',
+            0.1 : 'silver', 0.2 : 'none' },
+
+        toleranceValues: [ 0.01, 0.02 ],
+
+        init: function (id) {
+              this.id = id;
+              this.nominalValue = 0.0; //resistance value specified by band colors;
+              this.realValue = 0.0; //real resistance value in Ohms
+              this.tolerance = 0.0; //tolerance value
+              this.colors = []; //colors for each resistor band
+        },
+
+        getNumBands: function () {
+            return this.numBands;
+        },
+
+        getNominalValue: function () {
+            return this.nominalValue;
+        },
+
+        setNominalValue: function (value) {
+            this.nominalValue = value;
+        },
+
+        getTolerance: function () {
+            return this.tolerance;
+        },
+
+        setTolerance: function(value) {
+            this.tolerance = value;
+        },
+
+        getRealValue: function () {
+            return this.realValue;
+        },
+
+        setRealValue: function (value) {
+            this.realValue = value;
+        },
+
+        updateColors: function (resistance, tolerance) {
+            this.colors = this.getColors(resistance, tolerance);
+        },
+
+        show : function() {
+        },
+
+        calcRealValue: function (nominalValue, tolerance) {
+            var chance = Math.random();
+            if (chance > 0.8) {
+                var chance2 = Math.random();
+                if (chance2 < 0.5) {
+                    return nominalValue + nominalValue * (tolerance + Math.random() * tolerance);
+                }
+                else {
+                    return nominalValue - nominalValue * (tolerance + Math.random() * tolerance);
+                }
+            }
+
+            var realTolerance = tolerance * 0.9;
+            return nominalValue * this.randFloat(1 - realTolerance, 1 + realTolerance);
+        },
+
+        randInt: function (min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        },
+
+        randFloat: function (min, max) {
+            return this.randPseudoGaussian(3) * (max - min) + min;
+        },
+
+        randPseudoGaussian: function (n) {
+            var r = 0.0;
+            for (var i = 0; i < n; ++i) {
+                r += Math.random();
+            }
+            return r / n;
+        },
+
+        filter: function (in_values) {
+            var values = [];
+            for (var i = 0; i < in_values.length; ++i) {
+                if (in_values[i] >= 10.0 && in_values[i] < 2e6) {
+                    values.push(in_values[i]);
+                }
+            }
+            return values;
+        }
+    };
+
+})();
 
 /* FILE breadboard.js */
 
@@ -3932,7 +4117,7 @@ sparks.util.shuffle = function (o) {
         if(typeof props=='string'){
           return this.components[props];
         }else {
-          return new Component(props);
+          return new sparks.circuit.Component(props, breadBoard);
         }
       };
 
@@ -3977,57 +4162,6 @@ sparks.util.shuffle = function (o) {
         }
       };
 
-      var Component = function (props) {
-        var i;
-        for (i in props) {
-          this[i]=props[i];
-        }
-        this.breadBoard = breadBoard;
-        this.breadBoard.components[props.UID] = this;
-
-        this.connections=[];
-        for (i in props.connections) {
-          this.connections[i] = this.breadBoard.getHole(props.connections[i]);
-
-          if (!!this.breadBoard.holes[props.connections[i]]) {
-            this.breadBoard.holes[props.connections[i]].connections[this.breadBoard.holes[props.connections[i]].connections.length] = this;
-          }
-        }
-
-        return this;
-      };
-
-      Component.prototype.move = function (connections) {
-        var i;
-        for (i in this.connections) {
-          for (var j in this.connections[i].connections) {
-            if (this.connections[i].connections[j] === this) {
-              this.connections[i].connections = [];
-            }
-          }
-          this.connections[i] = [];
-        }
-        this.connections = [];
-        for (i in connections){
-          this.connections[i] = this.breadBoard.holes[connections[i]];
-          this.breadBoard.holes[connections[i]].connections[this.breadBoard.holes[connections[i]].connections.length] = this;
-        }
-        return this;
-      };
-
-      Component.prototype.destroy = function destroy(){
-        for(var i in this.connections){
-          for( var j in this.connections[i].connections ){
-            if( this.connections[i].connections[j] === this ){
-              this.connections[i].connections = [];
-            }
-          }
-          this.connections[i] = [];
-        }
-        this.connections = [];
-        return delete this.breadBoard.components[this.name];
-      };
-
       var breadBoard = new Breadboard();
 
       var interfaces = {
@@ -4040,22 +4174,6 @@ sparks.util.shuffle = function (o) {
           props.kind = kind;
 
           props.UID = interfaces.getUID(!!props.UID ? props.UID : props.kind);
-
-          if (!props.label){
-            props.label = !!props.UID.split("/")[1] ? props.UID.split("/")[1] : null;
-          }
-
-          if (typeof(props.connections) === "string"){
-            props.connections = props.connections.split(",");
-          }
-
-          function ensureInt(val){
-            if (!!props[val] && typeof(props[val]) === "string")
-              props[val] = parseInt(props[val]);
-          }
-
-          ensureInt("resistance");
-          ensureInt("voltage");
 
           switch(kind) {
             case "resistor":
@@ -4087,42 +4205,7 @@ sparks.util.shuffle = function (o) {
           });
         },
         insert: function(type, connections){
-          console.log("WARNING: 'insert' is deprecated. Use 'insertComponent'");
-          var props = {
-            UID         : interfaces.getUID(type),
-            kind        : type,
-            connections : connections.split(",")
-          };
-
-          switch(props.kind) {
-            case "resistor":
-              if (typeof(arguments[2])==="string") {
-                props.resistance = Resistor.getResistance( arguments[2].split(",") );
-                props.colors = arguments[2];
-              }
-              else if (typeof(arguments[2])=="number") {
-                props.resistance = arguments[2];
-                props.colors = Resistor.getColors4Band( arguments[2], 0.01);
-              }
-
-              if (!!arguments[4]) {
-                props.colors = arguments[4].toString();
-              }
-
-              if (typeof(arguments[3])==="string") {
-                props.UID = arguments[3].split("/")[0];
-                props.label = !!arguments[3].split("/")[1] ? arguments[3].split("/")[1] : null;
-              }
-              break;
-            case "wire":
-              break;
-            case 'battery':
-              props.voltage = arguments[2];
-              break;
-          }
-          var newComponent;
-          newComponent = breadBoard.component(props);
-          return newComponent.UID;
+          console.log("ERROR: 'insert' is deprecated. Use 'insertComponent'");
         },
         getUID: function(name){
           if (!breadBoard.components[name]){
@@ -4179,6 +4262,7 @@ sparks.util.shuffle = function (o) {
           breadBoard.resetConnections(newHoleName, oldHoleName);
         },
         addRandomResistor: function(name, location, options){
+          console.log("WARNING: addRandomResistor is deprecated")
           var resistor = new sparks.circuit.Resistor4band(name);
           resistor.randomize((options | null));
           interfaces.insert('resistor', location, resistor.getRealValue(), name, resistor.colors);
@@ -4805,118 +4889,6 @@ sparks.util.shuffle = function (o) {
                 this.powerOn;
         }
     });
-
-})();
-/* FILE resistor.js */
-
-(function () {
-
-    var circuit = sparks.circuit;
-    var flash = sparks.flash;
-
-    circuit.Resistor = function () {
-    };
-
-    circuit.Resistor.prototype =
-    {
-    	nominalValueMagnitude: -1,
-
-        colorMap: { '-1': 'gold', '-2': 'silver',
-            0 : 'black', 1 : 'brown', 2 : 'red', 3 : 'orange',
-            4 : 'yellow', 5 : 'green', 6 : 'blue', 7 : 'violet', 8 : 'grey',
-            9 : 'white' },
-
-        toleranceColorMap: { 0.01 : 'brown', 0.02 : 'red', 5e-3 : 'green',
-            2.5e-3 : 'blue', 1e-3 : 'violet', 5e-4 : 'gray', 5e-2 : 'gold',
-            0.1 : 'silver', 0.2 : 'none' },
-
-        toleranceValues: [ 0.01, 0.02 ],
-
-        init: function (id) {
-              this.id = id;
-              this.nominalValue = 0.0; //resistance value specified by band colors;
-              this.realValue = 0.0; //real resistance value in Ohms
-              this.tolerance = 0.0; //tolerance value
-              this.colors = []; //colors for each resistor band
-        },
-
-        getNumBands: function () {
-            return this.numBands;
-        },
-
-        getNominalValue: function () {
-            return this.nominalValue;
-        },
-
-        setNominalValue: function (value) {
-            this.nominalValue = value;
-        },
-
-        getTolerance: function () {
-            return this.tolerance;
-        },
-
-        setTolerance: function(value) {
-            this.tolerance = value;
-        },
-
-        getRealValue: function () {
-            return this.realValue;
-        },
-
-        setRealValue: function (value) {
-            this.realValue = value;
-        },
-
-        updateColors: function (resistance, tolerance) {
-            this.colors = this.getColors(resistance, tolerance);
-        },
-
-        show : function() {
-        },
-
-        calcRealValue: function (nominalValue, tolerance) {
-            var chance = Math.random();
-            if (chance > 0.8) {
-                var chance2 = Math.random();
-                if (chance2 < 0.5) {
-                    return nominalValue + nominalValue * (tolerance + Math.random() * tolerance);
-                }
-                else {
-                    return nominalValue - nominalValue * (tolerance + Math.random() * tolerance);
-                }
-            }
-
-            var realTolerance = tolerance * 0.9;
-            return nominalValue * this.randFloat(1 - realTolerance, 1 + realTolerance);
-        },
-
-        randInt: function (min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
-        },
-
-        randFloat: function (min, max) {
-            return this.randPseudoGaussian(3) * (max - min) + min;
-        },
-
-        randPseudoGaussian: function (n) {
-            var r = 0.0;
-            for (var i = 0; i < n; ++i) {
-                r += Math.random();
-            }
-            return r / n;
-        },
-
-        filter: function (in_values) {
-            var values = [];
-            for (var i = 0; i < in_values.length; ++i) {
-                if (in_values[i] >= 10.0 && in_values[i] < 2e6) {
-                    values.push(in_values[i]);
-                }
-            }
-            return values;
-        }
-    };
 
 })();
 /* FILE r-values.js */

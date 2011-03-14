@@ -17,7 +17,7 @@ describe 'Using multimeter with mock Flash connection'
     it "should call update when a probe is added"
      
       // we add a 100 ohm resistor
-      breadModel('insert', 'resistor', 'a1,a2', 'brown,black,brown,gold');
+      breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
       
       var updateCalled = false;
       
@@ -37,7 +37,7 @@ describe 'Using multimeter with mock Flash connection'
     it "should send a command to flash when both probes are added"
            
       // we add a 100 ohm resistor
-      breadModel('insert', 'resistor', 'a1,a2', 'brown,black,brown,gold');
+      breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
       
       var sendCalled = false;
       
@@ -58,7 +58,7 @@ describe 'Using multimeter with mock Flash connection'
     it "should send a resistance to flash when in res mode and both probes added"
      
       // we add a 100 ohm resistor
-      breadModel('insert', 'resistor', 'a1,a2', 'brown,black,brown,gold');
+      breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
       
       var sendCalled = false;
       var oldSendCommand = sparks.flash.sendCommand;
@@ -92,8 +92,8 @@ describe 'Using multimeter with mock Flash connection'
     it "should send a voltage to flash when in voltage mode and both probes added"
            
       // we add a 100 ohm resistor
-      breadModel('insert', 'resistor', 'a1,a2', 'brown,black,brown,gold');
-      breadModel('insert', 'battery', 'b1,b2', '9');
+      breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
+      breadModel('insertComponent', 'battery', {"connections": 'b1,b2', "voltage": 9});
       
       var sendCalled = false;
       var oldSendCommand = sparks.flash.sendCommand;

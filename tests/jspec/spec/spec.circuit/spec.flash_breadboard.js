@@ -27,12 +27,12 @@ describe 'Using breadboard with mock Flash connection'
         arguments[2].search(/resistor.*/).should.be_at_least 0
         arguments[3].should.be "a1,a2"
         arguments[4].should.be "4band"
-        arguments[5].should.be undefined
+        arguments[5].should.be null
         arguments[6].should.be "brown,black,brown,gold"
       }
      
       // we add a 100 ohm resistor
-      breadModel('insert', 'resistor', 'a1,a2', 'brown,black,brown,gold');
+      breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
       breadModel('updateFlash');
       sendCalled.should.be true
       
@@ -53,7 +53,7 @@ describe 'Using breadboard with mock Flash connection'
       }
      
       // we add a 100 ohm resistor with a label
-      breadModel('insert', 'resistor', 'a1,a2', 'brown,black,brown,gold', 'resistorX/R1');
+      breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold', "UID": "resistorX/R1"});
       breadModel('updateFlash');
       sendCalled.should.be true
       
@@ -72,7 +72,7 @@ describe 'Using breadboard with mock Flash connection'
       }
       
       // we add a wire
-      breadModel('insert', 'wire', 'left_positive1,a2');
+      breadModel('insertComponent', 'wire', {"connections": 'left_positive1,a2'});
       breadModel('updateFlash');
       sendCalled.should.be true
       
