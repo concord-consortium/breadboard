@@ -65,72 +65,72 @@ describe 'Activity Creator'
       
   end
   
-  describe 'Formula creation'
-
-      it 'should be able to create a simple formula'
-        var jsonActivity =
-          {
-            "pages": [
-              {
-                "questions": [
-                  {
-                    "prompt": "What is the resistance of R1?",
-                    "correct_answer": "[${x}]",
-                  },
-                  {
-                    "prompt": "What is the resistance of R1?",
-                    "correct_answer": "[${y}]",
-                  }
-                ]
-              }
-            ],
-            "formulas": [
-              "x = 10/2",
-              "y = Math.log(10)"
-            ]
-          };
-      
-      
-      
-          var ac = new sparks.ActivityConstructor(jsonActivity);
-      
-          sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be "5"
-          sparks.sparksActivity.pages[0].questions[1].correct_answer.should.be Math.log(10)
-      end
-      
-      it 'should be able to create a simple formula with circuit variables'
-        var jsonActivity =
-          {
-            "circuit": [
-               {
-                 "type": "resistor",
-                 "uid": "r1",
-                 "resistance": "100"
-               }
-            ],
-            "pages": [
-              {
-                "questions": [
-                  {
-                    "prompt": "What is the resistance of R1?",
-                    "correct_answer": "[${x}]",
-                  }
-                ]
-              }
-            ],
-            "formulas": [
-              "x = ${r1.resistance}/2"
-            ]
-          };
-      
-      
-      
-          var ac = new sparks.ActivityConstructor(jsonActivity);
-      
-          sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be "50"
-      end
-      
-  end
+  // describe 'Formula creation'
+  // 
+  //     it 'should be able to create a simple formula'
+  //       var jsonActivity =
+  //         {
+  //           "pages": [
+  //             {
+  //               "questions": [
+  //                 {
+  //                   "prompt": "What is the resistance of R1?",
+  //                   "correct_answer": "[${x}]",
+  //                 },
+  //                 {
+  //                   "prompt": "What is the resistance of R1?",
+  //                   "correct_answer": "[${y}]",
+  //                 }
+  //               ]
+  //             }
+  //           ],
+  //           "formulas": [
+  //             "x = 10/2",
+  //             "y = Math.log(10)"
+  //           ]
+  //         };
+  //     
+  //     
+  //     
+  //         var ac = new sparks.ActivityConstructor(jsonActivity);
+  //     
+  //         sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be "5"
+  //         sparks.sparksActivity.pages[0].questions[1].correct_answer.should.be Math.log(10)
+  //     end
+  //     
+  //     it 'should be able to create a simple formula with circuit variables'
+  //       var jsonActivity =
+  //         {
+  //           "circuit": [
+  //              {
+  //                "type": "resistor",
+  //                "uid": "r1",
+  //                "resistance": "100"
+  //              }
+  //           ],
+  //           "pages": [
+  //             {
+  //               "questions": [
+  //                 {
+  //                   "prompt": "What is the resistance of R1?",
+  //                   "correct_answer": "[${x}]",
+  //                 }
+  //               ]
+  //             }
+  //           ],
+  //           "formulas": [
+  //             "x = ${r1.resistance}/2"
+  //           ]
+  //         };
+  //     
+  //     
+  //     
+  //         var ac = new sparks.ActivityConstructor(jsonActivity);
+  //     
+  //         sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be "50"
+  //     end
+  //     
+  // end
   
   describe 'Activity displaying'
     it 'should be able to embed images in main body of page'
