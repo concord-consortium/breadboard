@@ -43,6 +43,8 @@
 
     sparks.config.root_dir = '/sparks-content';
     
+    
+    
     // YUI-style inheritance
     sparks.extend = function(Child, Parent, properties) {
       var F = function() {};
@@ -54,8 +56,8 @@
           }
       }
       Child.prototype.constructor = Child;
+      Child.parentConstructor = Parent;
       Child.uber = Parent.prototype;
     };
-
     
 })();

@@ -1,14 +1,16 @@
 /* FILE resistor.js */
+//= require "component"
+/*globals console sparks */
 
 (function () {
 
-    var circuit = sparks.circuit;
     var flash = sparks.flash;
 
-    circuit.Resistor = function () {
+    sparks.circuit.Resistor = function (props, breadBoard) {
+      sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);
     };
 
-    circuit.Resistor.prototype =
+    sparks.extend(sparks.circuit.Resistor, sparks.circuit.Component,
     {
     	nominalValueMagnitude: -1,
     	
@@ -113,6 +115,6 @@
             }
             return values;
         }
-    };
+    });
 
 })();

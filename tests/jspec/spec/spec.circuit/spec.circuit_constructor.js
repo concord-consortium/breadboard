@@ -145,6 +145,24 @@ describe 'Circuit Constructor'
     components['r1'].resistance.should.be_at_least 1
   end
   
+  it 'should be able to create a resistor which is a Resistor object'
+    var jsonCircuit = [
+      {
+        "type": "resistor",
+        "UID": "r1",
+        "connections": "c3,b4"
+      }
+    ];
+    breadModel("createCircuit", jsonCircuit);
+
+    var components = getBreadBoard().components;
+
+    // is a Component
+    components['r1'].move.should.not.be undefined
+    // is a Resistor
+    components['r1'].getNumBands.should.not.be undefined
+  end
+  
   it 'random nominal resistances should always be valid'
     var jsonCircuit = [
       {

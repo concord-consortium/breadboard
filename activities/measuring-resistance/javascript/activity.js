@@ -2,6 +2,7 @@
 //= require <string>
 //= require <ui>
 //= require <circuit/multimeter>
+//= require <circuit/component>
 //= require <circuit/resistor-4band>
 //= require <circuit/resistor-5band>
 //= require "activity-dom-helper"

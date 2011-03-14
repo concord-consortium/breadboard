@@ -1,6 +1,6 @@
 //= require "qucsator"
-//= require <circuit/component>
 //= require <circuit/resistor>
+//= require <circuit/component>
 
 /* FILE breadboard.js */
 
@@ -197,6 +197,9 @@
         if(typeof props=='string'){
           return this.components[props];
         }else {
+          if (props.kind === "resistor"){
+            return new sparks.circuit.Resistor(props, breadBoard);
+          }
           return new sparks.circuit.Component(props, breadBoard);
         }
       };
