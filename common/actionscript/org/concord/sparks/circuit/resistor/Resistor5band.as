@@ -262,11 +262,11 @@ package org.concord.sparks.circuit.resistor
         public override function setColors(colors:Array):void {
             trace('Enter setColors');
             this.colors = colors;
-            loadBandImage(band1Loader, 't_' + colors[0] + '.png');
+            loadBandImage(band1Loader, 's_' + colors[0] + '.png');
             loadBandImage(band2Loader, 's_' + colors[1] + '.png');
             loadBandImage(band3Loader, 's_' + colors[2] + '.png');
             loadBandImage(band4Loader, 's_' + colors[3] + '.png');
-            loadBandImage(band5Loader, 's_' + colors[4] + '.png');
+            loadBandImage(band5Loader, 't_' + colors[4] + '.png');
         }
     }
 }
