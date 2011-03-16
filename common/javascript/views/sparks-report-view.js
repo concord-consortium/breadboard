@@ -7,14 +7,11 @@
   
   sparks.SparksReportView.prototype = {
     
-    getPageReportView: function(page){
-      return this.createReportTableForPage(page);
+    getSessionReportView: function(sessionReport){
+      return this._createReportTableForSession(sessionReport);
     },
     
-    createReportTableForPage: function(page) {
-      $.each(page.questions, function(i, question){
-        sparks.sparksQuestionController.gradeQuestion(question);
-      });
+    _createReportTableForSession: function(sessionReport) {
       
       var $report = $('<table>').addClass('reportTable');
       
@@ -31,7 +28,7 @@
       var totalScore = 0;
       var totalPossibleScore = 0;
         
-      $.each(page.questions, function(i, question){
+      $.each(sessionReport.questions, function(i, question){
         var answer = !!question.answer ? question.answer + (!!question.units ? " "+question.units : '') : '';
         var correctAnswer = question.correct_answer + (!!question.correct_units ? " "+question.correct_units : '');
         var score = question.points_earned;

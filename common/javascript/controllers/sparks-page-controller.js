@@ -63,8 +63,8 @@
     },
     
     showReport: function(page){
-      var reportView = new sparks.SparksReportView();
-      var $report = reportView.getPageReportView(page);
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(page);
+      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
       page.view.showReport($report);
       
       this.saveData();

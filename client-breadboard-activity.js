@@ -2708,7 +2708,7 @@ sparks.util.shuffle = function (o) {
     toJSON: function() {
       var json = {};
       json.id = this.id;
-      json.shortPrompt = this.prompt;
+      json.shortPrompt = this.shortPrompt;
       json.correct_answer = this.correct_answer;
       json.answer = this.answer;
       json.options = this.options;
@@ -2718,6 +2718,77 @@ sparks.util.shuffle = function (o) {
       json.feedback = this.feedback;
       return json;
     }
+  };
+
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+/**
+ * report:
+ * {
+ *   pageReports: {
+ *         pageX:
+ *           {
+ *             sessionReports: [
+ *                       {
+ *                         questions: [],
+ *                         log: {},
+ *                         score: x,
+ *                         maxScore: y
+ *                       },
+ *              highestScore: x,  ?
+ *              maxScore: y       ?
+ */
+(function() {
+  sparks.SparksReport = function(){
+    this.pageReports = {};
+    this.view = null;
+  };
+
+  sparks.SparksPageReport = function(){
+    this.sessionReports = [];
+  };
+
+  sparks.SparksSessionReport = function(){
+    this.questions = [];
+    this.log = null;
+    this.score = -1;
+    this.maxScore = -1;
+  };
+
+  sparks.SparksReport.prototype = {
+
+    toJSON: function () {
+      var json = {};
+      json.pageReports = [];
+      $.each(this.pageReports, function(i, pageReport){
+        json.pageReports.push(pageReport.toJSON());
+      });
+      return json;
+    }
+
+  };
+
+  sparks.SparksPageReport.prototype = {
+
+    toJSON: function () {
+      var json = {};
+      json.sessionReports = [];
+      $.each(this.sessionReports, function(i, sessionReport){
+        json.sessionReports.push(sessionReport.toJSON());
+      });
+      return json;
+    }
+
+  };
+
+  sparks.SparksSessionReport.prototype = {
+
+    toJSON: function () {
+      var json = {};
+      return json;
+    }
+
   };
 
 })();
@@ -3031,14 +3102,11 @@ sparks.util.shuffle = function (o) {
 
   sparks.SparksReportView.prototype = {
 
-    getPageReportView: function(page){
-      return this.createReportTableForPage(page);
+    getSessionReportView: function(sessionReport){
+      return this._createReportTableForSession(sessionReport);
     },
 
-    createReportTableForPage: function(page) {
-      $.each(page.questions, function(i, question){
-        sparks.sparksQuestionController.gradeQuestion(question);
-      });
+    _createReportTableForSession: function(sessionReport) {
 
       var $report = $('<table>').addClass('reportTable');
 
@@ -3055,7 +3123,7 @@ sparks.util.shuffle = function (o) {
       var totalScore = 0;
       var totalPossibleScore = 0;
 
-      $.each(page.questions, function(i, question){
+      $.each(sessionReport.questions, function(i, question){
         var answer = !!question.answer ? question.answer + (!!question.units ? " "+question.units : '') : '';
         var correctAnswer = question.correct_answer + (!!question.correct_units ? " "+question.correct_units : '');
         var score = question.points_earned;
@@ -3224,7 +3292,7 @@ sparks.util.shuffle = function (o) {
 
     gradeQuestion: function(question) {
       if (!question.options || !question.options[0].option) {
-        if (question.answer === question.correct_answer){
+        if (""+question.answer === ""+question.correct_answer){
           question.answerIsCorrect = true;
           question.points_earned = question.points;
         } else {
@@ -3320,8 +3388,8 @@ sparks.util.shuffle = function (o) {
     },
 
     showReport: function(page){
-      var reportView = new sparks.SparksReportView();
-      var $report = reportView.getPageReportView(page);
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(page);
+      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
       page.view.showReport($report);
 
       this.saveData();
@@ -3453,6 +3521,89 @@ sparks.util.shuffle = function (o) {
   };
 
   sparks.sparksActivityController = new sparks.SparksActivityController();
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+
+  /*
+   * Sparks Report Controller can be accessed by the
+   * singleton variable sparks.sparksReportController
+   *
+   * There is only one singlton sparks.sparksReport object. This
+   * controller creates it when the controller is created.
+   */
+  sparks.SparksReportController = function(){
+    sparks.sparksReport = new sparks.SparksReport();
+    sparks.sparksReport.view = new sparks.SparksReportView();
+  };
+
+  sparks.SparksReportController.prototype = {
+
+    addNewSessionReport: function(page){
+      var sessionReport = new sparks.SparksSessionReport();
+
+      var jsonQuestions = [];
+      var score = 0;
+      var maxScore = 0;
+      $.each(page.questions, function(i, question){
+
+        sparks.sparksQuestionController.gradeQuestion(question);
+
+        score += question.points_earned;
+        maxScore += question.points;
+
+        jsonQuestions.push(question.toJSON());
+      });
+      sessionReport.questions = jsonQuestions;
+      sessionReport.score = score;
+      sessionReport.maxScore = maxScore;
+
+      this._addSessionReport(page, sessionReport);
+      return sessionReport;
+    },
+
+    _addSessionReport: function(page, sessionReport) {
+      if (!sparks.sparksReport.pageReports[page]){
+        sparks.sparksReport.pageReports[page] = new sparks.SparksPageReport();
+        sparks.sparksReport.pageReports[page].sessionReports = [];
+      }
+
+      sparks.sparksReport.pageReports[page].sessionReports.push(sessionReport);
+    },
+
+    getLastSessionReport: function(page) {
+      if (!sparks.sparksReport.pageReports[page]){
+        console.log("ERROR: No session reports for page");
+        return;
+      }
+
+      var sessionReports = sparks.sparksReport.pageReports[page].sessionReports;
+      return sessionReports[sessionReports.length - 1];
+    },
+
+    getBestSessionReport: function(page) {
+      if (!sparks.sparksReport.pageReports[page]){
+        console.log("ERROR: No session reports for page");
+        return;
+      }
+
+      var sessionReports = sparks.sparksReport.pageReports[page].sessionReports;
+      var bestSessionReport = null;
+      var topScore = -1;
+      for (var i in sessionReports) {
+        var report = sessionReports[i];
+        if (report.score >= topScore){       // >= because we want to get *last* top score
+          topScore = report.score;
+          bestSessionReport = report;
+        }
+      }
+      return bestSessionReport;
+    }
+
+  };
+
+  sparks.sparksReportController = new sparks.SparksReportController();
 })();
 /*globals console sparks $ breadModel getBreadBoard */
 

@@ -344,8 +344,7 @@ describe 'Page Reports'
       $select.val("200");                         // sets val of both selects
       $select.change();
       
-      var reportView = new sparks.SparksReportView();
-      reportView.getPageReportView(sparks.sparksActivity.pages[0]);
+      sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
       
       sparks.sparksActivity.pages[0].questions[0].answerIsCorrect.should.be true
       sparks.sparksActivity.pages[0].questions[0].points_earned.should.be 1
@@ -357,7 +356,33 @@ describe 'Page Reports'
       sparks.sparksActivity.pages[0].questions[3].points_earned.should.be 2
     end
     
-    it 'should be able to create a report of one page'
+    it 'should be able to calculate the score for one page'
+      // create six questions with answers all 100
+      var jsonActivity =
+        {
+          "pages":[{"questions":[]}]
+        };
+      for (var i = 0; i < 6; i++){
+        jsonActivity.pages[0].questions.push({"prompt": ""+i, "correct_answer": 100, "points": 1});
+      }
+      
+      var $questionsDiv = $("<div>");
+
+      var ac = new sparks.ActivityConstructor(jsonActivity);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.layoutActivity();
+
+      var $input = $questionsDiv.find('input');
+      $($input[0]).val("100");                          // sets q0 to correct answer
+      $($input[0]).change();
+      
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      
+      sessionReport.score.should.be 1
+      sessionReport.maxScore.should.be 6
+    end
+    
+    it 'should be able to create a report table of one page'
       var jsonActivity =
         {
           "pages":[
@@ -423,8 +448,8 @@ describe 'Page Reports'
       $select.val("200");                         // sets val of both selects
       $select.change();
       
-      var reportView = new sparks.SparksReportView();
-      var $report = reportView.getPageReportView(sparks.sparksActivity.pages[0]);
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
       
       var $headers = $report.find('th');
       $headers[0].innerHTML.should.be("Question");

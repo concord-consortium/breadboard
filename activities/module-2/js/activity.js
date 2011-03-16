@@ -2,6 +2,7 @@
 //= require <models/sparks-activity>
 //= require <models/sparks-page>
 //= require <models/sparks-question>
+//= require <models/sparks-report>
 //= require <views/sparks-activity-view>
 //= require <views/sparks-page-view>
 //= require <views/sparks-question-view>
@@ -9,6 +10,7 @@
 //= require <controllers/sparks-question-controller>
 //= require <controllers/sparks-page-controller>
 //= require <controllers/sparks-activity-controller>
+//= require <controllers/sparks-report-controller>
 //= require <activity-constructor>
 //= require <math-parser>
 //= require <string>
