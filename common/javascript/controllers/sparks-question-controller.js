@@ -125,7 +125,7 @@
     
     gradeQuestion: function(question) {
       if (!question.options || !question.options[0].option) {
-        if (question.answer === question.correct_answer){
+        if (""+question.answer === ""+question.correct_answer){
           question.answerIsCorrect = true;
           question.points_earned = question.points;
         } else {  

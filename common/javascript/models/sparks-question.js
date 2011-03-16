@@ -37,7 +37,7 @@
     toJSON: function() {
       var json = {};
       json.id = this.id;
-      json.shortPrompt = this.prompt;
+      json.shortPrompt = this.shortPrompt;
       json.correct_answer = this.correct_answer;
       json.answer = this.answer;
       json.options = this.options;
