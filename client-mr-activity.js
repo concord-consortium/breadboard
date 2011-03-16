@@ -3536,6 +3536,7 @@ sparks.util.shuffle = function (o) {
     ];
 
 })();
+/*globals console sparks $ breadModel getBreadBoard */
 
 /* FILE resistor-4band.js */
 
@@ -3562,34 +3563,34 @@ sparks.util.shuffle = function (o) {
         toleranceValues: [0.05, 0.1],
 
         randomize: function (options) {
-            var ix = this.randInt(0, 1);
-            var values;
 
-            this.tolerance = this.toleranceValues[ix];
+            var value = 0;
+            do {
+              var ix = this.randInt(0, 1);
+              var values;
 
-            if (options && options.rvalues) {
-                values = options.rvalues;
-            }
-            else if (this.tolerance == 0.05) {
-                values = this.r_values5pct;
-            }
-            else {
-                values = this.r_values10pct;
-            }
+              this.tolerance = this.toleranceValues[ix];
 
-            var om = breadModel('getResOrderOfMagnitude');
-            var extra = this.randInt(0, 1);
-            om = om + extra;
+              if (options && options.rvalues) {
+                  values = options.rvalues;
+              }
+              else if (this.tolerance == 0.05) {
+                  values = this.r_values5pct;
+              }
+              else {
+                  values = this.r_values10pct;
+              }
 
-            var value = values[this.randInt(0, values.length-1)];
+              var om = breadModel('getResOrderOfMagnitude');
+              var extra = this.randInt(0, 1);
+              om = om + extra;
 
-            value = value * Math.pow(10,om);
+              value = values[this.randInt(0, values.length-1)];
+
+              value = value * Math.pow(10,om);
+            } while (!this._resistanceIsUnique(value));
 
             this.nominalValue = value;
-
-
-
-
 
             if (options && options.realEqualsNominal) {
                 this.realValue = this.nominalValue;
@@ -3600,6 +3601,19 @@ sparks.util.shuffle = function (o) {
             console.log('r=' + this.nominalValue + ' t=' + this.tolerance);
 
             this.colors = this.getColors(this.nominalValue, this.tolerance);
+        },
+
+        _resistanceIsUnique: function (value) {
+          var components = getBreadBoard().components;
+
+          for (var i in components){
+            var resistor  = components[i];
+            var resistance = resistor.nominalResistance;
+            if (resistance == value){
+              return false;
+            }
+          }
+          return true;
         },
 
         getColors: function (ohms, tolerance) {

@@ -1,5 +1,6 @@
 //= require "resistor"
 //= require "r-values"
+/*globals console sparks $ breadModel getBreadBoard */
 
 /* FILE resistor-4band.js */
 
@@ -26,44 +27,34 @@
         toleranceValues: [0.05, 0.1],
         
         randomize: function (options) {
-            var ix = this.randInt(0, 1);
-            var values;
+            
+            var value = 0;
+            do {
+              var ix = this.randInt(0, 1);
+              var values;
 
-            this.tolerance = this.toleranceValues[ix];
-            
-            if (options && options.rvalues) {
-                values = options.rvalues;
-            }
-            else if (this.tolerance == 0.05) {
-                values = this.r_values5pct;
-            }
-            else {
-                values = this.r_values10pct;
-            }
-            
-            var om = breadModel('getResOrderOfMagnitude');
-            var extra = this.randInt(0, 1);
-            om = om + extra;
-            
-            var value = values[this.randInt(0, values.length-1)];
-            
-            value = value * Math.pow(10,om);
+              this.tolerance = this.toleranceValues[ix];
+
+              if (options && options.rvalues) {
+                  values = options.rvalues;
+              }
+              else if (this.tolerance == 0.05) {
+                  values = this.r_values5pct;
+              }
+              else {
+                  values = this.r_values10pct;
+              }
+              
+              var om = breadModel('getResOrderOfMagnitude');
+              var extra = this.randInt(0, 1);
+              om = om + extra;
+
+              value = values[this.randInt(0, values.length-1)];
+
+              value = value * Math.pow(10,om);
+            } while (!this._resistanceIsUnique(value));
             
             this.nominalValue = value;
-
-
-
-      //             //make nominalValue within 2 order of magnitude of first chosen resistor - jonah
-      //             //console.log('nominal value!!!!!!!!'+circuit.Resistor.prototype.nominalValueMagnitude);  //-1
-      // var firstNominal = circuit.Resistor.prototype.nominalValueMagnitude;
-      // //console.log('firstNominal '+circuit.Resistor.prototype.nominalValueMagnitude);
-      //             if(circuit.Resistor.prototype.nominalValueMagnitude == -1){
-	            // this.nominalValue = Math.random()*2000;  // I switched this because some values were too large to measure with the multimeter
-	            //               circuit.Resistor.prototype.nominalValueMagnitude = this.nominalValue;
-	            //            }
-	            //            this.nominalValue = (Math.floor((500-1)*Math.random()) ) * circuit.Resistor.prototype.nominalValueMagnitude;
-	           
-//            this.nominalValue = values[this.randInt(0, values.length-1)];
 
             if (options && options.realEqualsNominal) {
                 this.realValue = this.nominalValue;
@@ -74,6 +65,19 @@
             console.log('r=' + this.nominalValue + ' t=' + this.tolerance);
             
             this.colors = this.getColors(this.nominalValue, this.tolerance);
+        },
+        
+        _resistanceIsUnique: function (value) {
+          var components = getBreadBoard().components;
+
+          for (var i in components){
+            var resistor  = components[i];
+            var resistance = resistor.nominalResistance;
+            if (resistance == value){
+              return false;
+            }
+          }
+          return true;
         },
         
         // rvalue: resistance value

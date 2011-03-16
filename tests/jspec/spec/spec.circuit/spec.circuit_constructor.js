@@ -244,7 +244,7 @@ describe 'Circuit Constructor'
         "type": "resistor",
         "UID": "r4",
         "connections": "c6,b7"
-      },
+      }
     ];
     breadModel("createCircuit", jsonCircuit);
 
@@ -275,6 +275,44 @@ describe 'Circuit Constructor'
       om.should.be_greater_than lowestOM - 1
       om.should.be_less_than lowestOM + 2
     }
+    
+  end
+  
+  it 'should not create two resistor with the same resistance'
+  
+    var jsonCircuit = [];
+    // add 50 resistors
+    for (var i = 0; i < 30; i++){
+      jsonCircuit.push({"type": "resistor"});
+    }
+    breadModel("createCircuit", jsonCircuit);
+
+    var components = getBreadBoard().components;
+    
+    var resistances = [];
+    for (var i in components){
+      var resistor  = components[i];
+      var resistance = resistor.nominalResistance;
+      resistances.push(resistance);
+    }
+    
+    resistances.length.should.be 30
+    
+    function removeDupes(a)
+    {
+       var r = new Array();
+       o:for(var i = 0, n = a.length; i < n; i++) {
+          for(var x = i + 1 ; x < n; x++)
+          {
+             if(a[x]==a[i]) continue o;
+          }
+          r[r.length] = a[i];
+       }
+       return r;
+    }
+    
+    resistances = removeDupes(resistances);                  
+    resistances.length.should.be 30
     
   end
     
