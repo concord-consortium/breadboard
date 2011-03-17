@@ -3125,9 +3125,12 @@ sparks.util.shuffle = function (o) {
 
     getActivityReportView: function() {
       var $div = $('<div>');
-
+      $div.append('<h1>Activity results</h1>');
       var pages = sparks.sparksActivity.pages;
       var self = this;
+
+      var totalScore = 0;
+      var totalMaxScore = 0;
       $.each(pages, function(i, page){
         $div.append('<h2>Page '+(i+1)+"</h2>");
         var bestSessionReport = sparks.sparksReportController.getBestSessionReport(page);
@@ -3137,8 +3140,11 @@ sparks.util.shuffle = function (o) {
           sparks.sparksActivityController.repeatPage(page);
           });
         $div.append(returnButton);
+        totalScore += bestSessionReport.score;
+        totalMaxScore += bestSessionReport.maxScore;
       });
 
+      $div.find('h1').after("You scored <b>"+totalScore+"</b> out of a maximum of <b>"+totalMaxScore+"</b> points");
       return $div;
     },
 
@@ -3157,15 +3163,10 @@ sparks.util.shuffle = function (o) {
         )
       );
 
-      var totalScore = 0;
-      var totalPossibleScore = 0;
-
       $.each(sessionReport.questions, function(i, question){
         var answer = !!question.answer ? question.answer + (!!question.units ? " "+question.units : '') : '';
         var correctAnswer = question.correct_answer + (!!question.correct_units ? " "+question.correct_units : '');
         var score = question.points_earned;
-        totalScore += score;
-        totalPossibleScore += question.points;
         var feedback = "";
 
 
@@ -3195,7 +3196,7 @@ sparks.util.shuffle = function (o) {
           $('<th>').text("Total Score:"),
           $('<th>').text(""),
           $('<th>').text(""),
-          $('<th>').text(totalScore + "/" + totalPossibleScore),
+          $('<th>').text(sessionReport.score + "/" + sessionReport.maxScore),
           $('<th>').text("")
         )
       );
