@@ -41,7 +41,8 @@
     
     _addSessionReport: function(page, sessionReport) {
       if (!sparks.sparksReport.pageReports[page]){
-        sparks.sparksReport.pageReports[page] = new sparks.SparksPageReport();
+        var pageReport = new sparks.SparksPageReport();
+        sparks.sparksReport.pageReports[page] = pageReport;
         sparks.sparksReport.pageReports[page].sessionReports = [];
       }
       

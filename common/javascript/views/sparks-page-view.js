@@ -101,27 +101,32 @@
       $view.css("background-color", enable ? "rgb(253,255,184)" : "");
     },
     
-    showReport: function($table){
+    showReport: function($report, finalReport){
       
       this.$questionDiv.hide();
       if (!!this.$notesDiv) {this.$notesDiv.hide();}
       
+      $('.report').html('');
+      if (!!finalReport){
+        $('#breadboard').html('');
+      }
       this.$reportDiv = $('<div>').addClass('report').css('float', 'left').css('padding-top', '15px').css('padding-left', '40px');
-      this.$reportDiv.append($table);
+      this.$reportDiv.append($report);
       
       // this should be handled by reports classes...
       var allCorrect = true;
-      $.each(this.page.questions, function(i, question){
-        if (!question.answerIsCorrect){
-          allCorrect = false;
-        }
-      });
+      var notCorrectTables = $report.find('.notAllCorrect');
+      if (notCorrectTables.length > 0 || $report.hasClass('notAllCorrect')){
+        allCorrect = false;
+      }
       
       var areMorePage = !!sparks.sparksActivityController.areMorePage();
       
-      var comment = allCorrect ? "You got all the questions correct!"+(areMorePage ? " Move on to the next page." : "") :
-                              "You can get a higher score these questions. You can repeat the page by clicking the " +
-                              "<b>Repeat</b> button" + (areMorePage ? ", or move on to the next page." : ".");
+      var comment = allCorrect ? "You got all the questions correct! "+(!finalReport ? (areMorePage ? "Move on to the next page." : "You can now view the Activity Summary") : "") :
+                              "You can get a higher score these questions. " +
+                              (!finalReport ? "You can repeat the page by clicking the <b>Repeat</b> button" +
+                              (areMorePage ? ", or move on to the next page." : ", or view the Activity Summary") :
+                              "You can repeat any page by clicking the <b>Try again</b> button under the table");
       this.$reportDiv.append($("<div>").html(comment).css('width', 700).css('padding-top', "20px"));
       
       var $buttonDiv = $("<div>").css("padding", "20px").css("text-align", "center");
@@ -130,7 +135,9 @@
                           .css('padding-right', "10px").css('margin-right', "10px");
       var $nextPageButton = $("<button>").text("Next Page »").css('padding-left', "10px")
                           .css('padding-right', "10px").css('margin-left', "10px");
-         
+      var $viewActivityReportButton = $("<button>").text("View your activity summary").css('padding-left', "10px")
+                          .css('padding-right', "10px").css('margin-left', "10px");
+                                              
       $repeatButton.click(function(evt){
         sparks.sparksActivityController.repeatPage();
       });
@@ -139,13 +146,18 @@
         sparks.sparksActivityController.nextPage();
       });
       
+      $viewActivityReportButton.click(function(evt){
+        sparks.sparksActivityController.viewActivityReport();
+      });
+      
       if (!!sparks.sparksActivityController.areMorePage()){
         $buttonDiv.append($repeatButton, $nextPageButton);
       } else {
-        $buttonDiv.append($repeatButton);
+        $buttonDiv.append($repeatButton, $viewActivityReportButton);
       }
-      this.$reportDiv.append($buttonDiv);
-      
+      if (!finalReport){
+        this.$reportDiv.append($buttonDiv);
+      }
       this.$view.append(this.$reportDiv);            
     },
     

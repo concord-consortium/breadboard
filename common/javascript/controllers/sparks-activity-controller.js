@@ -118,6 +118,11 @@
       // breadModel("createCircuit", sparks.sparksActivity.circuit);
       // breadModel("createCircuit", sparks.sparksActivity.circuit);
       // breadModel('updateFlash');
+    },
+    
+    viewActivityReport: function() {
+      var $report = sparks.sparksReport.view.getActivityReportView();
+      this.currentPage.view.showReport($report, true);
     }
     
   };

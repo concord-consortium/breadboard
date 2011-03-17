@@ -2,6 +2,7 @@ describe 'Page Reports'
 
   before_each
     breadModel('clear');
+    sparks.sparksReportController = new sparks.SparksReportController();
   end
   
   describe 'Question grading'
@@ -382,6 +383,57 @@ describe 'Page Reports'
       sessionReport.maxScore.should.be 6
     end
     
+    it 'should be able to create multiple session reports for a page and get the best one'
+      // create six questions with answers all 100
+      var jsonActivity =
+        {
+          "pages":[{"questions":[]}]
+        };
+      for (var i = 0; i < 6; i++){
+        jsonActivity.pages[0].questions.push({"prompt": ""+i, "correct_answer": 100, "points": 1});
+      }
+      
+      var $questionsDiv = $("<div>");
+
+      var ac = new sparks.ActivityConstructor(jsonActivity);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.layoutActivity();
+
+      var $input = $questionsDiv.find('input');
+      $($input[0]).val("100");                          // sets q0 to correct answer
+      $($input[0]).change();
+      
+      var page = sparks.sparksActivity.pages[0];
+      
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(page);
+      
+      sessionReport.score.should.be 1
+      
+      $($input[1]).val("100");                          // sets q1 to correct answer
+      $($input[1]).change();
+    
+      var sessionReport2 = sparks.sparksReportController.addNewSessionReport(page);
+      
+      sessionReport2.score.should.be 2
+      
+      $($input[0]).val("0");                          // sets q0 and q1 back to incorrect answer
+      $($input[0]).change();
+      $($input[1]).val("0");
+      $($input[1]).change();
+    
+      var sessionReport3 = sparks.sparksReportController.addNewSessionReport(page);
+      
+      sessionReport3.score.should.be 0
+      
+      sparks.sparksReport.pageReports[page].sessionReports.length.should.be 3
+      
+      var bestReport = sparks.sparksReportController.getBestSessionReport(page);
+      bestReport.score.should.be 2
+    end
+  end
+  
+  describe "Report views"
+    
     it 'should be able to create a report table of one page'
       var jsonActivity =
         {
@@ -496,6 +548,75 @@ describe 'Page Reports'
       $ths5[0].innerHTML.should.be("Total Score:");
       $ths5[3].innerHTML.should.be("8/12");
       
+    end
+    
+    it 'should be able to create an activity reports with multiple pages and sessions'
+      // create two pages, six questions each, with answers all 100
+      var jsonActivity =
+        {
+          "pages":[{"questions":[]}, {"questions":[]}]
+        };
+      for (var i = 0; i < 6; i++){
+        jsonActivity.pages[0].questions.push({"prompt": ""+i, "correct_answer": 100, "points": 1});
+        jsonActivity.pages[1].questions.push({"prompt": ""+i, "correct_answer": 100, "points": 1});
+      }
+      
+      var $questionsDiv = $("<div>");
+
+      var ac = new sparks.ActivityConstructor(jsonActivity);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.layoutActivity();
+      
+      var page = sparks.sparksActivity.pages[0];
+
+      var $input = $questionsDiv.find('input');
+      $($input[0]).val("100");                          // sets q0 to correct answer
+      $($input[0]).change();
+      $($input[1]).val("100");                          // sets q1 to correct answer
+      $($input[1]).change();
+      
+      sparks.sparksReportController.addNewSessionReport(page);
+      
+      $($input[1]).val("0");                          // sets q1 to incorrect answer (second try is worse)
+      $($input[1]).change();
+      sparks.sparksReportController.addNewSessionReport(page);
+      
+      sparks.sparksActivityController.nextPage();
+      var page = sparks.sparksActivity.pages[1];
+      
+      var $input = $questionsDiv.find('input');
+      $($input[2]).val("100");                          // sets q2 of page 2 to correct answer
+      $($input[2]).change();
+      sparks.sparksReportController.addNewSessionReport(page);
+      
+      var $report = sparks.sparksReport.view.getActivityReportView();
+      $report.should.not.be undefined
+      
+      // confirm there are two titles 
+      var $titles = $report.find('h2');
+      $titles.length.should.be 2
+      $titles[1].innerHTML.should.be "Page 2"
+      
+      // confirm there are two tables, and the tables are correct
+      var $tables = $report.find('table');
+      $tables.length.should.be 2
+      
+      var $table1 = $($tables[0]);
+      var $trs = $table1.find('tr');
+      $($trs[1]).attr('class').should.be "correct"
+      $($trs[2]).attr('class').should.be "correct"
+      $($trs[3]).attr('class').should.be "incorrect"
+      
+      var $table2 = $($tables[1]);
+      var $trs2 = $table2.find('tr');
+      $($trs2[1]).attr('class').should.be "incorrect"
+      $($trs2[2]).attr('class').should.be "incorrect"
+      $($trs2[3]).attr('class').should.be "correct"
+      
+      // confirm there are two buttons to go back to previous activities
+      var $buttons = $report.find('button');
+      $buttons.length.should.be 2
+      $buttons[0].innerHTML.should.be "Try Page 1 again"
     end
     
   end

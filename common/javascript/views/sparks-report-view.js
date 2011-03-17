@@ -11,9 +11,29 @@
       return this._createReportTableForSession(sessionReport);
     },
     
+    getActivityReportView: function() {
+      var $div = $('<div>');
+      
+      var pages = sparks.sparksActivity.pages;
+      var self = this;
+      $.each(pages, function(i, page){
+        $div.append('<h2>Page '+(i+1)+"</h2>");
+        var bestSessionReport = sparks.sparksReportController.getBestSessionReport(page);
+        $div.append(self._createReportTableForSession(bestSessionReport));
+        var returnButton = $("<button>").addClass("return").text("Try Page "+(i+1)+" again");
+        returnButton.click(function(){
+          sparks.sparksActivityController.repeatPage(page);
+          });
+        $div.append(returnButton);
+      });
+      
+      return $div;
+    },
+    
     _createReportTableForSession: function(sessionReport) {
       
       var $report = $('<table>').addClass('reportTable');
+      $report.addClass((sessionReport.score == sessionReport.maxScore) ? "allCorrect" : "notAllCorrect");
       
       $report.append(
         $('<tr>').append(
