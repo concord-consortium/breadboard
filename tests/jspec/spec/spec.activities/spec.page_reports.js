@@ -592,6 +592,12 @@ describe 'Page Reports'
       var $report = sparks.sparksReport.view.getActivityReportView();
       $report.should.not.be undefined
       
+      // confirm total score is calculated correctly
+      var $score = $report.find('h1').next();        // this finds the <b>olded score
+      $score.html().should.be "3"
+      var $max = $report.find('h1').next().next();
+      $max.html().should.be "12"
+      
       // confirm there are two titles 
       var $titles = $report.find('h2');
       $titles.length.should.be 2
