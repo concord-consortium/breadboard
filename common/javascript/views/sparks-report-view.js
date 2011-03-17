@@ -67,6 +67,16 @@
         } else {
           feedback = question.feedback;
         }
+        
+        var $tutorialButton = null;
+        if (!!question.tutorial){
+          $tutorialButton = $("<button>").text("Tutorial").css('padding-left', "10px")
+                              .css('padding-right', "10px").css('margin-left', "20px");
+          $tutorialButton.click(function(){
+            window.open(question.tutorial,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
+          });
+        } else {
+        }
        
         $report.append(
           $('<tr>').append(
@@ -74,7 +84,7 @@
             $('<td>').html(answer),
             $('<td>').html(correctAnswer),
             $('<td>').html(score +"/" + question.points),
-            $('<td>').html(feedback)
+            $('<td>').html(feedback).append($tutorialButton)
           ).addClass(question.answerIsCorrect ? "correct" : "incorrect")
         );
       });

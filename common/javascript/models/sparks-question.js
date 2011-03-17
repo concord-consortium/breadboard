@@ -23,6 +23,7 @@
     this.points = 0;
     this.points_earned = -1;
     this.feedback = null;
+    this.tutorial = null;
     
     this.isSubQuestion = false;
     this.subquestionId = -1;
@@ -45,6 +46,7 @@
       json.points = this.points;
       json.points_earned = this.points_earned;
       json.feedback = this.feedback;
+      json.tutorial = this.tutorial;
       return json;
     }
   };

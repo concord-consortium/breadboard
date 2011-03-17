@@ -550,6 +550,56 @@ describe 'Page Reports'
       
     end
     
+    it 'should show tutorial links if they are specified'
+      var jsonActivity =
+        {
+          "pages":[
+            {
+              "questions": [
+                {
+                  "prompt": "What is the resistance of R1?",
+                  "options": [
+                      {
+                          "option": "200",
+                          "points": 0,
+                          "feedback": "Wrong!",
+                          "tutorial": "http://example.com/example"
+                      },
+                      {
+                          "option": "300",
+                          "points": 5
+                      }
+                  ]
+                }
+              ]
+            }
+          ]
+        };
+        
+      var $questionsDiv = $("<div>");
+
+      var ac = new sparks.ActivityConstructor(jsonActivity);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.layoutActivity();
+
+      var $select = $questionsDiv.find('select');
+      $select.val("200");
+      $select.change();
+      
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      
+      var $trs = $report.find('tr');
+      
+      var $tds1 = $($trs[1]).find('td');
+      $tds1[4].innerHTML.should.be("Wrong!<button>Tutorial</button>");
+      
+      window.should.receive('open', 'once').with_args("http://example.com/example", "", "menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no")
+      $button = $($tds1[4]).find('button');
+      $button.click();
+      
+    end
+    
     it 'should be able to create an activity reports with multiple pages and sessions'
       // create two pages, six questions each, with answers all 100
       var jsonActivity =

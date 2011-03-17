@@ -86,6 +86,7 @@
               question.options[i].option = sparks.mathParser.calculateMeasurement(question.options[i].option);
               question.options[i].points = jsonQuestion.options[i].points > 0 ? jsonQuestion.options[i].points : 0;
               question.options[i].feedback = jsonQuestion.options[i].feedback || "";
+              question.options[i].tutorial = jsonQuestion.options[i].tutorial || "";
             } else {
               question.options[i] = sparks.mathParser.calculateMeasurement(choice);
             }
@@ -138,6 +139,7 @@
           if (option.option === question.answer){
             question.points_earned = option.points;
             question.feedback = option.feedback;
+            question.tutorial = option.tutorial;
           }
           var points = option.points;
           if (points > maxPoints){

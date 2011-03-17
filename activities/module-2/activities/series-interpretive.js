@@ -41,8 +41,18 @@ sparks.jsonActivity = {
            {
              "prompt": "R<sub>1</sub>:",
              "shortPrompt": "Resistance of R1",
-             "correct_answer": "[${r1.nominalResistance}]",
-             "correct_units": "ohms"
+             "options": [
+                 {
+                     "option": "200",
+                     "points": 0,
+                     "feedback": "Wrong!",
+                     "tutorial": "http://example.com/example"
+                 },
+                 {
+                     "option": "300",
+                     "points": 5
+                 }
+             ]
            },
            {
              "prompt": "R<sub>2</sub>:",

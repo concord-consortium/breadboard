@@ -2699,6 +2699,7 @@ sparks.util.shuffle = function (o) {
     this.points = 0;
     this.points_earned = -1;
     this.feedback = null;
+    this.tutorial = null;
 
     this.isSubQuestion = false;
     this.subquestionId = -1;
@@ -2721,6 +2722,7 @@ sparks.util.shuffle = function (o) {
       json.points = this.points;
       json.points_earned = this.points_earned;
       json.feedback = this.feedback;
+      json.tutorial = this.tutorial;
       return json;
     }
   };
@@ -3180,13 +3182,23 @@ sparks.util.shuffle = function (o) {
           feedback = question.feedback;
         }
 
+        var $tutorialButton = null;
+        if (!!question.tutorial){
+          $tutorialButton = $("<button>").text("Tutorial").css('padding-left', "10px")
+                              .css('padding-right', "10px").css('margin-left', "20px");
+          $tutorialButton.click(function(){
+            window.open(question.tutorial,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
+          });
+        } else {
+        }
+
         $report.append(
           $('<tr>').append(
             $('<td>').html(question.shortPrompt),
             $('<td>').html(answer),
             $('<td>').html(correctAnswer),
             $('<td>').html(score +"/" + question.points),
-            $('<td>').html(feedback)
+            $('<td>').html(feedback).append($tutorialButton)
           ).addClass(question.answerIsCorrect ? "correct" : "incorrect")
         );
       });
@@ -3292,6 +3304,7 @@ sparks.util.shuffle = function (o) {
               question.options[i].option = sparks.mathParser.calculateMeasurement(question.options[i].option);
               question.options[i].points = jsonQuestion.options[i].points > 0 ? jsonQuestion.options[i].points : 0;
               question.options[i].feedback = jsonQuestion.options[i].feedback || "";
+              question.options[i].tutorial = jsonQuestion.options[i].tutorial || "";
             } else {
               question.options[i] = sparks.mathParser.calculateMeasurement(choice);
             }
@@ -3343,6 +3356,7 @@ sparks.util.shuffle = function (o) {
           if (option.option === question.answer){
             question.points_earned = option.points;
             question.feedback = option.feedback;
+            question.tutorial = option.tutorial;
           }
           var points = option.points;
           if (points > maxPoints){
