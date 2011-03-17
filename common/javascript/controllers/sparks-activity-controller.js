@@ -9,6 +9,7 @@
   sparks.SparksActivityController = function(){
     this.currentPage = null;
     this.currentPageIndex = -1;
+    this.pageIndexMap = {};
   };
   
   sparks.SparksActivityController.prototype = {
@@ -44,11 +45,12 @@
       
       activity.hide_circuit = !!jsonActivity.hide_circuit;
       
-      
+      var self = this;
       if (!!jsonActivity.pages){
         $.each(jsonActivity.pages, function(i, jsonPage){
           var page = sparks.sparksPageController.createPage(i, jsonPage);
           activity.pages.push(page);
+          self.pageIndexMap[page] = i;
         });
         
         if (this.currentPageIndex == -1){
@@ -97,9 +99,12 @@
       sparks.activityContstructor.layoutPage();
     },
     
-    repeatPage: function() {
-      console.log("repeating page");
-      console.log("this.currentPage = "+this.currentPage);
+    // if page is null, currentPage will be used
+    repeatPage: function(page) {
+      if (!!page){
+        this.currentPage = page;
+        this.currentPageIndex = this.pageIndexMap[page];
+      }
       $('#breadboard').html('');
       $('#image').html('');
       this.currentPage.view.clear();
