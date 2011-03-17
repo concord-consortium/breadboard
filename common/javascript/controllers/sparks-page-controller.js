@@ -14,8 +14,8 @@
     reset: function(){
     },
     
-    createPage: function(jsonPage) {
-      var page = new sparks.SparksPage();
+    createPage: function(id, jsonPage) {
+      var page = new sparks.SparksPage(id);
       
       page.questions = sparks.sparksQuestionController.createQuestionsArray(jsonPage.questions);
       page.currentQuestion = page.questions[0];

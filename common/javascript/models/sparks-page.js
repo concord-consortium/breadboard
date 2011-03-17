@@ -2,7 +2,8 @@
 
 (function() {
   
-  sparks.SparksPage = function(){
+  sparks.SparksPage = function(id){
+    this.id = id;
     this.questions = [];
     this.notes = null;
     this.view = null;
@@ -18,6 +19,10 @@
         json.questions.push(question.toJSON());
       });
       return json;
+    },
+    
+    toString: function () {
+      return "Page "+this.id;
     }
   };
   

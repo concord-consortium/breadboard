@@ -47,7 +47,7 @@
       
       if (!!jsonActivity.pages){
         $.each(jsonActivity.pages, function(i, jsonPage){
-          var page = sparks.sparksPageController.createPage(jsonPage);
+          var page = sparks.sparksPageController.createPage(i, jsonPage);
           activity.pages.push(page);
         });
         
