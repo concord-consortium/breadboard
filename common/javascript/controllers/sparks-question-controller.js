@@ -100,7 +100,7 @@
           }
         }
         
-        question.points = (jsonQuestion.points | 0);
+        question.points = (jsonQuestion.points | 1);
         question.image = jsonQuestion.image;
         
         // for now we put it in both places.
