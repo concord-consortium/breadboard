@@ -2816,7 +2816,7 @@ sparks.util.shuffle = function (o) {
       var json = {};
       json.sessionReports = [];
       $.each(this.sessionReports, function(i, sessionReport){
-        json.sessionReports.push(sessionReport.toJSON());
+        json.sessionReports.push(sessionReport);
       });
       return json;
     }
@@ -3468,15 +3468,6 @@ sparks.util.shuffle = function (o) {
       var sessionReport = sparks.sparksReportController.addNewSessionReport(page);
       var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
       page.view.showReport($report);
-
-      this.saveData();
-    },
-
-    saveData: function() {
-      if (!!sparks.activity.dataService){
-        var data = sparks.sparksActivity.toJSON();
-        sparks.activity.dataService.save(data);
-      }
     }
 
   };
@@ -3603,9 +3594,12 @@ sparks.util.shuffle = function (o) {
     },
 
     nextPage: function() {
+      sparks.sparksReportController.saveData();
+
       var nextPage = this.areMorePage();
       if (!nextPage){
         console.log("No more pages");
+        return;
       }
       this.currentPageIndex = this.currentPageIndex+1;
       this.currentPage = nextPage;
@@ -3616,6 +3610,8 @@ sparks.util.shuffle = function (o) {
     },
 
     repeatPage: function(page) {
+      sparks.sparksReportController.saveData();
+
       if (!!page){
         this.currentPage = page;
         this.currentPageIndex = this.pageIndexMap[page];
@@ -3633,6 +3629,8 @@ sparks.util.shuffle = function (o) {
     },
 
     viewActivityReport: function() {
+      sparks.sparksReportController.saveData();
+
       var $report = sparks.sparksReport.view.getActivityReportView();
       this.currentPage.view.showReport($report, true);
     }
@@ -3725,7 +3723,13 @@ sparks.util.shuffle = function (o) {
     showTutorial: function (url) {
       window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
       sparks.sparksLogController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
-      console.log(">>>" + sparks.sparksReport.pageReports[sparks.sparksActivity.pages[0]].sessionReports[0].log.events[0].name)
+    },
+
+    saveData: function() {
+      if (!!sparks.activity.dataService){
+        var data = sparks.sparksReport.toJSON();
+        sparks.activity.dataService.save(data);
+      }
     }
 
   };

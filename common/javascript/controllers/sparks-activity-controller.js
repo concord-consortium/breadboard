@@ -92,9 +92,12 @@
     },
     
     nextPage: function() {
+      sparks.sparksReportController.saveData();
+      
       var nextPage = this.areMorePage();
       if (!nextPage){
         console.log("No more pages");
+        return;
       }
       this.currentPageIndex = this.currentPageIndex+1;
       this.currentPage = nextPage;
@@ -106,6 +109,8 @@
     
     // if page is null, currentPage will be used
     repeatPage: function(page) {
+      sparks.sparksReportController.saveData();
+      
       if (!!page){
         this.currentPage = page;
         this.currentPageIndex = this.pageIndexMap[page];
@@ -123,6 +128,8 @@
     },
     
     viewActivityReport: function() {
+      sparks.sparksReportController.saveData();
+      
       var $report = sparks.sparksReport.view.getActivityReportView();
       this.currentPage.view.showReport($report, true);
     }
