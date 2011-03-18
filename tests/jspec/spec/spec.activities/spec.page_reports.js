@@ -563,7 +563,7 @@ describe 'Page Reports'
                           "option": "200",
                           "points": 0,
                           "feedback": "Wrong!",
-                          "tutorial": "http://example.com/example"
+                          "tutorial": "example.html"
                       },
                       {
                           "option": "300",
@@ -594,9 +594,13 @@ describe 'Page Reports'
       var $tds1 = $($trs[1]).find('td');
       $tds1[4].innerHTML.should.be("Wrong!<button>Tutorial</button>");
       
-      window.should.receive('open', 'once').with_args("http://example.com/example", "", "menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no")
+      var oldOpen = window.open;
+      window.open = function(){};
+      window.should.receive('open', 'once').with_args("example.html", "", "menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no")
       $button = $($tds1[4]).find('button');
       $button.click();
+      
+      window.open = oldOpen;
       
     end
     
