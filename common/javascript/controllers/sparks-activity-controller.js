@@ -73,6 +73,8 @@
       
       activity.view = new sparks.SparksActivityView(activity);
       
+      sparks.sparksLogController.startNewSession();
+      
       return activity;
     },
     
@@ -96,7 +98,10 @@
       }
       this.currentPageIndex = this.currentPageIndex+1;
       this.currentPage = nextPage;
+      
       sparks.activityContstructor.layoutPage();
+      
+      sparks.sparksLogController.startNewSession();
     },
     
     // if page is null, currentPage will be used
@@ -115,9 +120,6 @@
       } else {
         sparks.flash.activity.onActivityReady();
       }
-      // breadModel("createCircuit", sparks.sparksActivity.circuit);
-      // breadModel("createCircuit", sparks.sparksActivity.circuit);
-      // breadModel('updateFlash');
     },
     
     viewActivityReport: function() {

@@ -58,14 +58,16 @@
     }
     
   };
-  
-  sparks.SparksSessionReport.prototype = {
-    
-    toJSON: function () {
-      var json = {};
-      return json;
-    }
-    
-  };
+  // 
+  // sparks.SparksSessionReport.prototype = {
+  //   
+  //   toJSON: function () {
+  //     var json = {};
+  //     json.questions = this.questions;
+  //     
+  //     return json;
+  //   }
+  //   
+  // };
   
 })();

@@ -34,6 +34,7 @@
       sessionReport.questions = jsonQuestions;
       sessionReport.score = score;
       sessionReport.maxScore = maxScore;
+      sessionReport.log = sparks.sparksLogController.currentLog;
       
       this._addSessionReport(page, sessionReport);
       return sessionReport;
