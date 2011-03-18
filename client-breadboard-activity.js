@@ -2747,6 +2747,40 @@ sparks.util.shuffle = function (o) {
  *              maxScore: y       ?
  */
 (function() {
+  sparks.SparksLog = function(startTime){
+    this.events = [];
+    this.startTime = startTime;
+    this.endTime = -1;
+  };
+
+  sparks.LogEvent = function(name, value, time){
+    this.name = name;
+    this.value = value;
+    this.time = time;
+  };
+
+  sparks.LogEvent.CLICKED_TUTORIAL = "Clicked tutorial";
+
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+/**
+ * report:
+ * {
+ *   pageReports: {
+ *         pageX:
+ *           {
+ *             sessionReports: [
+ *                       {
+ *                         questions: [],
+ *                         log: {},
+ *                         score: x,
+ *                         maxScore: y
+ *                       },
+ *              highestScore: x,  ?
+ *              maxScore: y       ?
+ */
+(function() {
   sparks.SparksReport = function(){
     this.pageReports = {};
     this.view = null;
@@ -2784,15 +2818,6 @@ sparks.util.shuffle = function (o) {
       $.each(this.sessionReports, function(i, sessionReport){
         json.sessionReports.push(sessionReport.toJSON());
       });
-      return json;
-    }
-
-  };
-
-  sparks.SparksSessionReport.prototype = {
-
-    toJSON: function () {
-      var json = {};
       return json;
     }
 
@@ -3187,7 +3212,7 @@ sparks.util.shuffle = function (o) {
           $tutorialButton = $("<button>").text("Tutorial").css('padding-left', "10px")
                               .css('padding-right', "10px").css('margin-left', "20px");
           $tutorialButton.click(function(){
-            window.open(question.tutorial,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
+            sparks.sparksReportController.showTutorial(question.tutorial);
           });
         } else {
         }
@@ -3463,6 +3488,34 @@ sparks.util.shuffle = function (o) {
 (function() {
 
   /*
+   * Sparks Log Controller can be accessed by the
+   * singleton variable sparks.sparksLogController
+   */
+  sparks.SparksLogController = function(){
+    this.currentLog = null;
+  };
+
+  sparks.SparksLogController.prototype = {
+
+    startNewSession: function() {
+      this.currentLog = new sparks.SparksLog(new Date().valueOf());
+    },
+
+    addEvent: function (name, value) {
+      var evt = new sparks.LogEvent(name, value, new Date().valueOf());
+      this.currentLog.events.push(evt);
+      console.log(this.currentLog.events[0].name);
+    }
+
+  };
+
+  sparks.sparksLogController = new sparks.SparksLogController();
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+
+  /*
    * Sparks Activity Controller can be accessed by the
    * singleton variable sparks.sparksActivityController
    */
@@ -3531,6 +3584,8 @@ sparks.util.shuffle = function (o) {
 
       activity.view = new sparks.SparksActivityView(activity);
 
+      sparks.sparksLogController.startNewSession();
+
       return activity;
     },
 
@@ -3554,7 +3609,10 @@ sparks.util.shuffle = function (o) {
       }
       this.currentPageIndex = this.currentPageIndex+1;
       this.currentPage = nextPage;
+
       sparks.activityContstructor.layoutPage();
+
+      sparks.sparksLogController.startNewSession();
     },
 
     repeatPage: function(page) {
@@ -3619,6 +3677,7 @@ sparks.util.shuffle = function (o) {
       sessionReport.questions = jsonQuestions;
       sessionReport.score = score;
       sessionReport.maxScore = maxScore;
+      sessionReport.log = sparks.sparksLogController.currentLog;
 
       this._addSessionReport(page, sessionReport);
       return sessionReport;
@@ -3661,6 +3720,12 @@ sparks.util.shuffle = function (o) {
         }
       }
       return bestSessionReport;
+    },
+
+    showTutorial: function (url) {
+      window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
+      sparks.sparksLogController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
+      console.log(">>>" + sparks.sparksReport.pageReports[sparks.sparksActivity.pages[0]].sessionReports[0].log.events[0].name)
     }
 
   };

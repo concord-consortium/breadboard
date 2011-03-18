@@ -5,6 +5,10 @@ describe 'Page Reports'
     sparks.sparksReportController = new sparks.SparksReportController();
   end
   
+  after_each
+    sparks.sparksActivityController.reset();
+  end
+  
   describe 'Question grading'
 
       it 'should be able to get the student answers for simple questions'

@@ -73,7 +73,7 @@
           $tutorialButton = $("<button>").text("Tutorial").css('padding-left', "10px")
                               .css('padding-right', "10px").css('margin-left', "20px");
           $tutorialButton.click(function(){
-            window.open(question.tutorial,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
+            sparks.sparksReportController.showTutorial(question.tutorial);
           });
         } else {
         }
