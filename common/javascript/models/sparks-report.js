@@ -52,7 +52,7 @@
       var json = {};
       json.sessionReports = [];
       $.each(this.sessionReports, function(i, sessionReport){
-        json.sessionReports.push(sessionReport.toJSON());
+        json.sessionReports.push(sessionReport);
       });
       return json;
     }

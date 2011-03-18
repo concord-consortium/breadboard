@@ -82,7 +82,13 @@
     showTutorial: function (url) {
       window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
       sparks.sparksLogController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
-      console.log(">>>" + sparks.sparksReport.pageReports[sparks.sparksActivity.pages[0]].sessionReports[0].log.events[0].name)
+    },
+
+    saveData: function() {
+      if (!!sparks.activity.dataService){
+        var data = sparks.sparksReport.toJSON();
+        sparks.activity.dataService.save(data);
+      }
     }
     
   };

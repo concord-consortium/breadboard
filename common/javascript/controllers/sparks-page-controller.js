@@ -66,15 +66,6 @@
       var sessionReport = sparks.sparksReportController.addNewSessionReport(page);
       var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
       page.view.showReport($report);
-      
-      this.saveData();
-    },
-    
-    saveData: function() {
-      if (!!sparks.activity.dataService){
-        var data = sparks.sparksActivity.toJSON();
-        sparks.activity.dataService.save(data);
-      }
     }
     
   };
