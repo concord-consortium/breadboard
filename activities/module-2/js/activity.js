@@ -95,7 +95,7 @@
         
         activityLoaded: function() {
           console.log("ENTER: activityLoaded")
-          if (!!sparks.jsonActivity.circuit && !sparks.jsonActivity.hide_circuit){
+          if (!!sparks.jsonActivity.circuit && !sparks.jsonActivity.hide_circuit && !sparks.debug){
             this.loadFlash();
             // this will then call the other activity.js's initActivity (to be changed)
             // which will call onActivityReady

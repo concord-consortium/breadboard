@@ -7,6 +7,7 @@ describe 'Activity Interactions'
   after_each
     $('#questions_area').remove();
     $('#breadboard').remove();
+    sparks.debug = false;
   end
   
   describe 'Submit buttons'

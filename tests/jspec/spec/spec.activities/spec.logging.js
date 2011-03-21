@@ -46,15 +46,11 @@ describe 'Page Reports'
 
         var sessionReport = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
         var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
-        console.log("report");
-        console.log($report.html())
         var $trs = $report.find('tr');
 
         var $tds1 = $($trs[1]).find('td');
         $tds1[4].innerHTML.should.be("Wrong!<button>Tutorial</button>");
         $button = $($tds1[4]).find('button');
-        console.log(" ==== clicking! === ")
-        console.log($button.length)
         $button.click();
         
         var log = sessionReport.log;

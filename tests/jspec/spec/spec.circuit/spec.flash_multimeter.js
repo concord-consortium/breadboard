@@ -123,6 +123,48 @@ describe 'Using multimeter with mock Flash connection'
       sparks.flash.sendCommand = oldSendCommand;
       
     end
+    
+    it "should pop up a warning if we blow the fuse"
+           
+      // we add a 100 ohm resistor
+      breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
+      breadModel('insertComponent', 'battery', {"connections": 'b1,b2', "voltage": 9});
+      
+      var messageShown = false;
+      var oldMessageCommand = apMessageBox.error;
+      
+      apMessageBox.error = function() {
+        messageShown = true;
+      }
+      
+      receiveEvent('multimeter_dial', 'dcv_20', 0);
+      receiveEvent('connect', 'probe|probe_black|a1', 0);
+      receiveEvent('connect', 'probe|probe_red|a2', 0);
+      
+      messageShown.should.be false
+      
+      receiveEvent('multimeter_dial', 'dca_200m', 0);
+      
+      messageShown.should.be true
+      
+      // change dial to volts, should not call message
+      messageShown = false
+      receiveEvent('multimeter_dial', 'dcv_20', 0);
+      messageShown.should.be false
+      
+      // reset to amps. After getting the message move leads. Should not fire message
+      receiveEvent('multimeter_dial', 'dca_200m', 0);
+      messageShown = false
+      receiveEvent('connect', 'probe|probe_black|a2', 0);
+      messageShown.should.be false
+      
+      // move leads back with still set on amps. Should fire
+      receiveEvent('connect', 'probe|probe_black|a1', 0);
+      messageShown.should.be true
+      
+      apMessageBox.error = oldMessageCommand;
+      
+    end
 
     
  
