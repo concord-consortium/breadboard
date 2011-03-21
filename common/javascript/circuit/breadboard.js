@@ -362,8 +362,8 @@
           }
           result = -1 * result;
           
-          // round to 5 decimal places
-          result = Math.round(result*Math.pow(10,5))/Math.pow(10,5);
+          // round to 8 decimal places
+          result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
           //document.getElementById('dmm-output').innerHTML = "Meter Reading: " + result;
           return  result;
         },

@@ -4622,7 +4622,7 @@ sparks.util.shuffle = function (o) {
           }
           result = -1 * result;
 
-          result = Math.round(result*Math.pow(10,5))/Math.pow(10,5);
+          result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
           return  result;
         },
         updateFlash: function() {
@@ -5528,6 +5528,7 @@ sparks.util.shuffle = function (o) {
     sparks.config.root_dir = '../../..';
     sparks.activities.sm.config.root_dir = sparks.config.root_dir + '/activities/module-2';
 
+
 })();
 
 /* FILE activity-log.js */
@@ -6344,7 +6345,7 @@ var apMessageBox = apMessageBox || {};
 			{
 				img = $("<img />").attr({
 					src: __config.errorImage
-				}).css({ float: "left", "margin-right": "10px" });
+				}).css({ "float": "left", "margin-right": "10px" });
 
 				$(outer).append(img);
 			}
@@ -6352,7 +6353,7 @@ var apMessageBox = apMessageBox || {};
 			{
 				img = $("<img />").attr({
 					src: __config.informationImage
-				}).css({ float: "left", "margin-right": "10px" });
+				}).css({ "float": "left", "margin-right": "10px" });
 
 				$(outer).append(img);
 			}
