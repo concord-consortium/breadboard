@@ -30,5 +30,6 @@
   };
   
   sparks.LogEvent.CLICKED_TUTORIAL = "Clicked tutorial";
+  sparks.LogEvent.BLEW_FUSE = "Blew fuse";
   
 })();

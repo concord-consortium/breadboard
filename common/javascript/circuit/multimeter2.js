@@ -45,6 +45,9 @@
                   } else if (measurement === "current"){
                       console.log("going to measure current, m="+measurement);
                     this.i_value = Math.abs(breadModel('query', measurement, this.redProbeConnection + ',' + this.blackProbeConnection));
+                    if (this.i_value > .44){
+                      this.blowFuse();
+                    }
                   } else if (measurement === "resistance"){
                       console.log("going to measure resistance, m="+measurement);
                     this.r_value = Math.abs(breadModel('query', measurement, this.redProbeConnection + ',' + this.blackProbeConnection));
@@ -56,6 +59,20 @@
                 this.v_value = 0;
             }
             this.updateDisplay();
+            
+        },
+        
+        blowFuse: function() {
+          sparks.flash.sendCommand('mouse_up');
+          apMessageBox.error({
+          	title: "POW!",
+          	message: "<b>You just blew the fuse in your multimeter!</b><br><br> Remember not to pass too much current through it."+
+          	" We've replaced your fuse for you, but you lost some time.",
+          	errorImage: "../../lib/error-32x32.png",
+          	width: 400,
+          	height: 300
+          });
+          sparks.sparksLogController.addEvent(sparks.LogEvent.BLEW_FUSE);
         },
 
         allConnected: function () {
