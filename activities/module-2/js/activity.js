@@ -28,6 +28,7 @@
 //= require "reporter"
 //= require <assessment/activity-log>
 //= require <assessment/assessment>
+//= require <apMessageBox>
 
 /* FILE activity.js */
 
@@ -104,6 +105,7 @@
         },
         
         loadFlash: function () {
+          $('#breadboard').css("z-index", 0);
           $('#breadboard').flash({
               src: 'breadboardActivity1.swf',
               id: 'breadboardActivity1',
@@ -112,7 +114,8 @@
               height: 600,
               quality: 'high',
               allowFullScreen: false,
-              allowScriptAccess: 'sameDomain'
+              allowScriptAccess: 'sameDomain',
+              wmode: 'transparent'
           });
         },
         
