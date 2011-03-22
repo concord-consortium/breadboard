@@ -562,7 +562,7 @@ describe 'Page Reports'
               "questions": [
                 {
                   "prompt": "What is the resistance of R1?",
-                  "tutorial": "example.html",
+                  "tutorial": "/example.html",
                   "options": [
                       {
                           "option": "200",
@@ -577,13 +577,13 @@ describe 'Page Reports'
                 },
                 {
                   "prompt": "What is the resistance of R1?",
-                  "tutorial": "example2.html",
+                  "tutorial": "/example2.html",
                   "options": [
                       {
                           "option": "200",
                           "points": 0,
                           "feedback": "Wrong 2!",
-                          "tutorial": "example.html",            // this overrides question-level property
+                          "tutorial": "/example.html",            // this overrides question-level property
                       },
                       {
                           "option": "300",
@@ -619,7 +619,7 @@ describe 'Page Reports'
       var oldOpen = window.open;
       window.open = function(){};
       
-      window.should.receive('open', 'twice').with_args("example.html", "", "menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no")
+      window.should.receive('open', 'twice').with_args("/example.html", "", "menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no")
       $button = $($tds1[4]).find('button');
       $button.click();
       
@@ -628,6 +628,35 @@ describe 'Page Reports'
       
       window.open = oldOpen;
       
+    end
+    
+    it 'should use base tutorial url if necessary'
+      var oldOpen = window.open;
+      
+      var openCalled = false;
+      window.open = function(url){
+        url.should.be "http://example.com"
+        openCalled = true;
+      };
+      sparks.sparksReportController.showTutorial("http://example.com");
+      openCalled.should.be true
+      
+      openCalled = false;
+      window.open = function(url){
+        url.should.be "/example.html"
+        openCalled = true;
+      };
+      sparks.sparksReportController.showTutorial("/example.html");
+      openCalled.should.be true
+      
+      openCalled = false;
+      window.open = function(url){
+        url.should.be sparks.tutorial_base_url + "example.html"
+        openCalled = true;
+      };
+      sparks.sparksReportController.showTutorial("example.html");
+      openCalled.should.be true
+    
     end
     
     it 'should be able to create an activity reports with multiple pages and sessions'

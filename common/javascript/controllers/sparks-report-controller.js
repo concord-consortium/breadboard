@@ -79,7 +79,13 @@
       return bestSessionReport;
     },
     
-    showTutorial: function (url) {
+    showTutorial: function (_url) {
+      var url;
+      if (_url.indexOf("http:") < 0 && _url.indexOf("/") != 0){
+        url = sparks.tutorial_base_url + _url;
+      } else {
+        url = _url;
+      }
       window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
       sparks.sparksLogController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
     },
