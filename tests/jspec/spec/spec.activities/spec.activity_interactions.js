@@ -12,34 +12,35 @@ describe 'Activity Interactions'
   
   describe 'Submit buttons'
   
-   it 'should be able to click submit'
+   it 'should be able to click submit and get to the next question'
    
      sparks.debug = true;
      sparks.jsonActivity = {
        "title": "woo",
-       "questions": [
-         {
-           "prompt": "Question 1",
-           "correct_answer": ""
-         },
-         {
-           "prompt": "Question 2",
-           "correct_answer": ""
-         },
-         {
-           "prompt": "Question 3",
-           "correct_answer": ""
-         }
+       "pages": [
+          {
+            "questions": [
+               {
+                 "prompt": "Question 1",
+                 "correct_answer": ""
+               },
+               {
+                 "prompt": "Question 2",
+                 "correct_answer": ""
+               },
+               {
+                 "prompt": "Question 3",
+                 "correct_answer": ""
+               }
+             ]
+          }
        ]
      };
      
      var $breadboardDiv = $("<div>").attr('id','breadboard');
      var $questionsDiv = $("<div>").attr('id','questions_area');
-     var $questionsDiv = $("<div>").attr('id','questions_area');
-     var $reportDiv = $("<div>").attr('id','report_area');
      $(document.body).append($breadboardDiv);
      $(document.body).append($questionsDiv);
-     $(document.body).append($reportDiv);
      
      stub(sparks.util, 'readCookie').and_return(null);
      
@@ -69,97 +70,245 @@ describe 'Activity Interactions'
      $($buttons[1]).attr('disabled').should.be true
      $($buttons[2]).attr('disabled').should.be false
      
-     $($buttons[0]).parent().parent().should.be_visible
-     $reportDiv.should.not.be_visible
+    end
+    
+    it 'should show the page report after clicking the last submit'
+    
+      sparks.debug = true;
+      sparks.jsonActivity = {
+       "title": "woo",
+       "pages": [
+          {
+            "questions": [
+               {
+                 "prompt": "Question 1",
+                 "correct_answer": ""
+               },
+               {
+                 "prompt": "Question 2",
+                 "correct_answer": ""
+               }
+             ]
+          }
+       ]
+     };
+
+     var $breadboardDiv = $("<div>").attr('id','breadboard');
+     var $questionsDiv = $("<div>").attr('id','questions_area');
+     $(document.body).append($breadboardDiv);
+     $(document.body).append($questionsDiv);
+
+     stub(sparks.util, 'readCookie').and_return(null);
+
+     init();
      
-     $($buttons[2]).click();
+     $questionsDiv.find('.inner-questions').should.be_visible
+     $questionsDiv.find('.report').length.should.be 0
+
+     $buttons = $questionsDiv.find(':button');
+     $($buttons[0]).click();
+     $questionsDiv.find('.report').length.should.be 0
+     $($buttons[1]).click();
      
-     $($buttons[0]).parent().parent().should.not.be_visible
-     $reportDiv.should.be_visible
-     
+     $questionsDiv.find('.inner-questions').should.not.be_visible
+     $questionsDiv.find('.report').length.should.be 1
+    
     end
     
   end
   
-  describe 'Next Questions buttons'
+  describe 'Repeating Pages'
   
-   it 'should be able to click submit'
-   
-     sparks.debug = true;
-     sparks.jsonActivity = {
+    it 'should allow user to repeat a page'
+    
+      sparks.debug = true;
+      sparks.jsonActivity = {
        "title": "woo",
-       "questions": [
-        [
-         {
-           "prompt": "Question 1",
-           "correct_answer": ""
-         },
-         {
-           "prompt": "Question 2",
-           "correct_answer": ""
-         }
-        ],
-        [
-         {
-           "prompt": "Question 4",
-           "correct_answer": ""
-         },
-         {
-           "prompt": "Question 5",
-           "correct_answer": ""
-         }
-        ],
+       "pages": [
+          {
+            "questions": [
+               {
+                 "prompt": "Question 1",
+                 "correct_answer": ""
+               },
+               {
+                 "prompt": "Question 2",
+                 "correct_answer": ""
+               }
+             ]
+          },
+          {
+            "questions": [
+               {
+                 "prompt": "Question 1",
+                 "correct_answer": ""
+               },
+               {
+                 "prompt": "Question 2",
+                 "correct_answer": ""
+               },
+               {
+                  "prompt": "Question 3",
+                  "correct_answer": ""
+                }
+             ]
+          }
        ]
      };
-     
+
      var $breadboardDiv = $("<div>").attr('id','breadboard');
      var $questionsDiv = $("<div>").attr('id','questions_area');
-     var $questionsDiv = $("<div>").attr('id','questions_area');
-     var $reportDiv = $("<div>").attr('id','report_area');
      $(document.body).append($breadboardDiv);
      $(document.body).append($questionsDiv);
-     $(document.body).append($reportDiv);
-     
+
      stub(sparks.util, 'readCookie').and_return(null);
-     
+
      init();
      
-     $forms = $questionsDiv.find('form');
-     $forms.length.should.be 4
-     
-     $($forms[0]).parent().should.be_visible
-     $($forms[2]).parent().should.not.be_visible
-     
+     $questionsDiv.find('.inner-questions').should.be_visible
+     $questionsDiv.find('.report').length.should.be 0
+
      $buttons = $questionsDiv.find(':button');
-     $buttons.length.should.be 5
-     
-     $($buttons[0]).html().should.be 'Submit'
-     $($buttons[0]).attr('disabled').should.be false
-     
-     $($buttons[2]).html().indexOf('Next questions').should.be 0
-     $($buttons[2]).attr('disabled').should.be true
-     
      $($buttons[0]).click();
      $($buttons[1]).click();
      
-     $($buttons[2]).attr('disabled').should.be false
+     $questionsDiv.find('.inner-questions').should.not.be_visible
+     $questionsDiv.find('.report').length.should.be 1
      
-     $($buttons[2]).click();
+     var $reportButtons = $questionsDiv.find('.report').find(':button');
+     var $repeat = $($reportButtons[0]);
      
-     $($forms[0]).parent().should.not.be_visible
-     $($forms[2]).parent().should.be_visible
+     $repeat.html().should.be "Repeat"
      
-     $($buttons[3]).attr('disabled').should.be false
-     $($buttons[4]).attr('disabled').should.be true
+     $repeat.click();
      
-     $($buttons[3]).click();
-     $($buttons[4]).click();
+     $questionsDiv.find('.inner-questions').should.be_visible
+     $questionsDiv.find('.report').length.should.be 0
      
-     $($forms[2]).parent().parent().should.not.be_visible
-     $reportDiv.should.be_visible
+     $questionsDiv.find('form').length.should.be 2
       
     end
     
+    it 'should clear question answers when a page is repeated'
+    
+      sparks.debug = true;
+      sparks.jsonActivity = {
+       "title": "woo",
+       "pages": [
+          {
+            "questions": [
+               {
+                 "prompt": "Question 1",
+                 "correct_answer": ""
+               },
+               {
+                 "prompt": "Question 2",
+                 "correct_answer": ""
+               }
+             ]
+          }
+       ]
+     };
+
+     var $breadboardDiv = $("<div>").attr('id','breadboard');
+     var $questionsDiv = $("<div>").attr('id','questions_area');
+     $(document.body).append($breadboardDiv);
+     $(document.body).append($questionsDiv);
+
+     stub(sparks.util, 'readCookie').and_return(null);
+
+     init();
+     
+     $questionsDiv.find('input').val("test");
+     
+     $($questionsDiv.find('input')[0]).val().should.be "test"
+
+     $buttons = $questionsDiv.find(':button');
+     $($buttons[0]).click();
+     $($buttons[1]).click();
+     var $reportButtons = $questionsDiv.find('.report').find(':button');
+     var $repeat = $($reportButtons[0]);
+     
+     $repeat.click();
+     
+     $($questionsDiv.find('input')[0]).val().should.be ""
+      
+    end
+    
+    it 'should reset circuit when a page is repeated'
+    
+      sparks.debug = true;
+      sparks.jsonActivity = {
+       "title": "woo",
+       "circuit": [
+          {
+            "type": "resistor",
+            "UID": "r1",
+            "connections": "b2,b3"
+          },
+          {
+             "type": "resistor",
+             "UID": "r2",
+             "connections": "b3,b4"
+           }
+       ],
+       "pages": [
+          {
+            "questions": [
+               {
+                 "prompt": "Question 1",
+                 "correct_answer": ""
+               },
+               {
+                 "prompt": "Question 2",
+                 "correct_answer": ""
+               }
+             ]
+          }
+       ]
+     };
+
+     var $breadboardDiv = $("<div>").attr('id','breadboard');
+     var $questionsDiv = $("<div>").attr('id','questions_area');
+     $(document.body).append($breadboardDiv);
+     $(document.body).append($questionsDiv);
+
+     stub(sparks.util, 'readCookie').and_return(null);
+
+     console.log(" ======= ")
+     init();
+     
+     var components = getBreadBoard().components;
+     
+     var res1 = components.r1.resistance;
+     var res2 = components.r2.resistance;
+     console.log(res1 + " ::: " + res2);
+
+     $buttons = $questionsDiv.find(':button');
+     $($buttons[0]).click();
+     $($buttons[1]).click();
+     var $reportButtons = $questionsDiv.find('.report').find(':button');
+     var $repeat = $($reportButtons[0]);
+     $repeat.click();
+     
+     var components = getBreadBoard().components;
+     var bothResistorsAreTheSame = (components.r1.resistance === res1) && (components.r2.resistance === res2)
+     
+     console.log((components.r1.resistance === res1))
+     console.log((components.r2.resistance === res2))
+     console.log((components.r2.resistance) + " -- " +(res2))
+     console.log((components.r1.resistance === res1) && (components.r2.resistance === res2))
+     bothResistorsAreTheSame.should.not.be true
+     
+    var newres1 = components.r1.resistance;
+    var newres2 = components.r2.resistance;
+      console.log(res1 + " ::: " + res2);
+      
+      console.log(newres1 + " ::: " + newres2)
+     
+      
+    end
+  
   end
 
 end
