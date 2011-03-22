@@ -33,98 +33,116 @@ sparks.jsonActivity = {
         "connections": "left_negative3,a5"
       }
    ],
-  "questions": [
+   "pages": [
     {
-      "prompt": "What is the measured resistance of",
-      "subquestions": [
+      "questions": [
         {
-          "prompt": "R<sub>1</sub>:",
-          "shortPrompt": "Resistance of R1",
-          "correct_answer": "[${r1.resistance}]",
+          "prompt": "What is the rated resistance of",
+          "subquestions": [
+            {
+              "prompt": "R<sub>1</sub>:",
+              "shortPrompt": "Resistance of R1",
+              "options": [
+                  {
+                      "option": "200",
+                      "points": 0,
+                      "feedback": "Wrong!",
+                      "tutorial": "http://example.com/example"
+                  },
+                  {
+                      "option": "300",
+                      "points": 5
+                  }
+              ]
+            },
+            {
+              "prompt": "R<sub>2</sub>:",
+              "shortPrompt": "Resistance of R2",
+              "correct_answer": "[${r2.nominalResistance}]",
+              "correct_units": "ohms"
+            },
+            {
+              "prompt": "R<sub>3</sub>:",
+              "shortPrompt": "Resistance of R3",
+              "correct_answer": "[${r3.nominalResistance}]",
+              "correct_units": "ohms"
+            }
+          ]
+        },
+        {
+          "prompt": "What is the total rated resistance across all the resistors? ",
+          "shortPrompt": "Total resistance",
+          "correct_answer": "[${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance}]",
           "correct_units": "ohms"
         },
         {
-          "prompt": "R<sub>2</sub>:",
-          "shortPrompt": "Resistance of R2",
-          "correct_answer": "[${r2.resistance}]",
-          "correct_units": "ohms"
-        },
-        {
-          "prompt": "R<sub>3</sub>:",
-          "shortPrompt": "Resistance of R3",
-          "correct_answer": "[${r3.resistance}]",
-          "correct_units": "ohms"
+          "prompt": "Given that the battery is producing 9 Volts, what is the voltage drop across",
+          "subquestions": [
+            {
+              "prompt": "R<sub>1</sub>:",
+              "shortPrompt": "Voltage across R1",
+              "correct_answer": "[ 9 * ${r1.nominalResistance} / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
+              "correct_units": "V"
+            },
+            {
+              "prompt": "R<sub>2</sub>:",
+              "shortPrompt": "Voltage across R2",
+              "correct_answer": "[ 9 * ${r2.nominalResistance} / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
+              "correct_units": "V"
+            },
+            {
+              "prompt": "R<sub>3</sub>:",
+              "shortPrompt": "Voltage across R3",
+              "correct_answer": "[ 9 * ${r3.nominalResistance} / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
+              "correct_units": "V"
+            }
+           ]
         }
       ]
     },
     {
-      "prompt": "What is the total measured resistance across all the resistors? ",
-      "shortPrompt": "Total resistance",
-      "correct_answer": "[${r1.resistance} + ${r2.resistance} + ${r3.resistance}]",
-      "correct_units": "ohms"
-    },
-    {
-      "prompt": "Given that the battery is producing 9 Volts, what is the voltage drop across",
-      "subquestions": [
-        {
-          "prompt": "R<sub>1</sub>:",
-          "shortPrompt": "Voltage across R1",
-          "correct_answer": "[ 9 * ${r1.resistance} / (${r1.resistance} + ${r2.resistance} + ${r3.resistance})]",
-          "correct_units": "V"
-        },
-        {
-          "prompt": "R<sub>2</sub>:",
-          "shortPrompt": "Voltage across R2",
-          "correct_answer": "[ 9 * ${r2.resistance} / (${r1.resistance} + ${r2.resistance} + ${r3.resistance})]",
-          "correct_units": "V"
-        },
-        {
-          "prompt": "R<sub>3</sub>:",
-          "shortPrompt": "Voltage across R3",
-          "correct_answer": "[ 9 * ${r3.resistance} / (${r1.resistance} + ${r2.resistance} + ${r3.resistance})]",
-          "correct_units": "V"
-        }
+      "questions": [
+     {
+       "prompt": "What is the current through",
+       "subquestions": [
+         {
+           "prompt": "R<sub>1</sub>:",
+           "shortPrompt": "Current through R1",
+           "correct_answer": "[ 9 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
+           "correct_units": "A"
+         },
+         {
+           "prompt": "R<sub>2</sub>:",
+           "shortPrompt": "Current through R2",
+           "correct_answer": "[ 9 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
+           "correct_units": "A"
+         },
+         {
+           "prompt": "R<sub>3</sub>:",
+           "shortPrompt": "Current through R3",
+           "correct_answer": "[ 9 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
+           "correct_units": "A"
+         }
        ]
-    },
-    {
-      "prompt": "What is the current through",
-      "subquestions": [
-        {
-          "prompt": "R<sub>1</sub>:",
-          "shortPrompt": "Current through R1",
-          "correct_answer": "[ 9 / (${r1.resistance} + ${r2.resistance} + ${r3.resistance})]",
-          "correct_units": "A"
-        },
-        {
-          "prompt": "R<sub>2</sub>:",
-          "shortPrompt": "Current through R2",
-          "correct_answer": "[ 9 / (${r1.resistance} + ${r2.resistance} + ${r3.resistance})]",
-          "correct_units": "A"
-        },
-        {
-          "prompt": "R<sub>3</sub>:",
-          "shortPrompt": "Current through R3",
-          "correct_answer": "[ 9 / (${r1.resistance} + ${r2.resistance} + ${r3.resistance})]",
-          "correct_units": "A"
-        }
-      ]
-    },
-    {
-      "prompt": "What is the voltage across",
-      "subquestions": [
-        {
-          "prompt": "R<sub>1</sub> and R<sub>2</sub>:",
-          "shortPrompt": "Voltage across R1 and R2",
-          "correct_answer": "[ 9 * (${r1.resistance} + ${r2.resistance}) / (${r1.resistance} + ${r2.resistance} + ${r3.resistance})]",
-          "correct_units": "V"
-        },
-        {
-          "prompt": "R<sub>2</sub> and R<sub>3</sub>:",
-          "shortPrompt": "Voltage across R2 and R3",
-          "correct_answer": "[ 9 * (${r2.resistance} + ${r3.resistance}) / (${r1.resistance} + ${r2.resistance} + ${r3.resistance})]",
-          "correct_units": "V"
-        }
-      ]
-    }
-  ]
+     },
+     {
+       "prompt": "What is the voltage across",
+       "subquestions": [
+         {
+           "prompt": "R<sub>1</sub> and R<sub>2</sub>:",
+           "shortPrompt": "Voltage across R1 and R2",
+           "correct_answer": "[ 9 * (${r1.nominalResistance} + ${r2.nominalResistance}) / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
+           "correct_units": "V"
+         },
+         {
+           "prompt": "R<sub>2</sub> and R<sub>3</sub>:",
+           "shortPrompt": "Voltage across R2 and R3",
+           "correct_answer": "[ 9 * (${r2.nominalResistance} + ${r3.nominalResistance}) / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
+           "correct_units": "V"
+         }
+       ]
+     }
+     ]
+   }
+   ]
 };

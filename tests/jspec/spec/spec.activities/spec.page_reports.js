@@ -657,6 +657,7 @@ describe 'Page Reports'
       sparks.sparksReportController.showTutorial("example.html");
       openCalled.should.be true
     
+      window.open = oldOpen;
     end
     
     it 'should be able to create an activity reports with multiple pages and sessions'

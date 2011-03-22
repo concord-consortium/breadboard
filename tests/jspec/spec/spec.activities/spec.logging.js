@@ -21,7 +21,7 @@ describe 'Page Reports'
                             "option": "200",
                             "points": 0,
                             "feedback": "Wrong!",
-                            "tutorial": "example.html"
+                            "tutorial": "/example.html"
                         },
                         {
                             "option": "300",
@@ -57,7 +57,7 @@ describe 'Page Reports'
         var question = sparks.sparksActivity.pages[0].questions[0];
         log.events.length.should.be 1
         log.events[0].name.should.be sparks.LogEvent.CLICKED_TUTORIAL
-        log.events[0].value.should.be "example.html"
+        log.events[0].value.should.be "/example.html"
         log.events[0].time.should.be_greater_than 0
       end
       

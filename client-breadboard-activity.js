@@ -2560,24 +2560,36 @@ sparks.util.shuffle = function (o) {
       console.log('ENTER init');
       try {
           var activity = new sparks.config.Activity();
-          activity.learner_id = sparks.util.readCookie('learner_id');
-          if (activity.learner_id) {
-              var put_path = unescape(sparks.util.readCookie('save_path')) || 'undefined_path';
-              console.log('initActivity: learner_id=' + activity.learner_id + ' put_path=' + put_path);
-
-              if (put_path.indexOf("couchdb") > -1){
-                var user = {"id": activity.learner_id, "name": sparks.util.readCookie('student_name')};
-                activity.setDataService(new sparks.CouchDS(put_path, user));
-              } else {
-                activity.setDataService(new RestDS(null, null, put_path));
-              }
-          }
+          this.setSavePath(activity);
           activity.onDocumentReady();
           activity.onFlashReady();
           sparks.activity = activity;
       }
       catch (e) {
           console.log('ERROR: init: ' + e);
+      }
+    };
+
+    this.setSavePath = function (activity) {
+
+      activity.learner_id = sparks.util.readCookie('learner_id');
+
+      if (activity.learner_id) {
+          var put_path = unescape(sparks.util.readCookie('save_path')) || 'undefined_path';
+          console.log('initActivity!: learner_id=' + activity.learner_id + ' put_path=' + put_path);
+          console.log('woo')
+          if (put_path.indexOf("couchdb") > -1){
+            var user = {"id": activity.learner_id, "name": sparks.util.readCookie('student_name')};
+            activity.setDataService(new sparks.CouchDS(put_path, user));
+          } else {
+            activity.setDataService(new RestDS(null, null, put_path));
+          }
+
+          function askConfirm(){
+            return "Are you sure you want to leave this page?";
+          }
+          console.log("setting onbeforeunload")
+          window.onbeforeunload = askConfirm;
       }
     };
 
@@ -5536,7 +5548,6 @@ sparks.util.shuffle = function (o) {
 
     sparks.config.root_dir = '../../..';
     sparks.activities.sm.config.root_dir = sparks.config.root_dir + '/activities/module-2';
-
 
 })();
 
