@@ -17,10 +17,6 @@
   };
   
   sparks.ActivityConstructor.prototype = {
-  
-    layoutActivity: function() {
-      console.log("THIS IS OBSOLETE. USE layoutActivity");
-    },
     
     // not usually necessary. Justs for tests?
     setEmbeddingTargets: function(targets) {

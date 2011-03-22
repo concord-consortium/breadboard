@@ -3632,12 +3632,13 @@ sparks.util.shuffle = function (o) {
         this.currentPage = page;
         this.currentPageIndex = this.pageIndexMap[page];
       }
+
       $('#breadboard').html('');
       $('#image').html('');
       this.currentPage.view.clear();
 
-      if (!sparks.jsonActivity.hide_circuit){
-        breadModel('clear');
+      breadModel('clear');
+      if (!sparks.jsonActivity.hide_circuit && !sparks.debug){
         sparks.flash.activity.loadFlash();
       } else {
         sparks.flash.activity.onActivityReady();
@@ -3777,10 +3778,6 @@ sparks.util.shuffle = function (o) {
   };
 
   sparks.ActivityConstructor.prototype = {
-
-    layoutActivity: function() {
-      console.log("THIS IS OBSOLETE. USE layoutActivity");
-    },
 
     setEmbeddingTargets: function(targets) {
       if (!!targets.$breadboardDiv){

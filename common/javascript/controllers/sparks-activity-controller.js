@@ -115,12 +115,13 @@
         this.currentPage = page;
         this.currentPageIndex = this.pageIndexMap[page];
       }
+      
       $('#breadboard').html('');
       $('#image').html('');
       this.currentPage.view.clear();
       
-      if (!sparks.jsonActivity.hide_circuit){
-        breadModel('clear');
+      breadModel('clear');
+      if (!sparks.jsonActivity.hide_circuit && !sparks.debug){
         sparks.flash.activity.loadFlash();
       } else {
         sparks.flash.activity.onActivityReady();
