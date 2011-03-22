@@ -562,12 +562,28 @@ describe 'Page Reports'
               "questions": [
                 {
                   "prompt": "What is the resistance of R1?",
+                  "tutorial": "example.html",
                   "options": [
                       {
                           "option": "200",
                           "points": 0,
-                          "feedback": "Wrong!",
-                          "tutorial": "example.html"
+                          "feedback": "Wrong!"
+                      },
+                      {
+                          "option": "300",
+                          "points": 5
+                      }
+                  ]
+                },
+                {
+                  "prompt": "What is the resistance of R1?",
+                  "tutorial": "example2.html",
+                  "options": [
+                      {
+                          "option": "200",
+                          "points": 0,
+                          "feedback": "Wrong 2!",
+                          "tutorial": "example.html",            // this overrides question-level property
                       },
                       {
                           "option": "300",
@@ -597,11 +613,17 @@ describe 'Page Reports'
       
       var $tds1 = $($trs[1]).find('td');
       $tds1[4].innerHTML.should.be("Wrong!<button>Tutorial</button>");
+      var $tds2 = $($trs[2]).find('td');
+      $tds2[4].innerHTML.should.be("Wrong 2!<button>Tutorial</button>");
       
       var oldOpen = window.open;
       window.open = function(){};
-      window.should.receive('open', 'once').with_args("example.html", "", "menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no")
+      
+      window.should.receive('open', 'twice').with_args("example.html", "", "menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no")
       $button = $($tds1[4]).find('button');
+      $button.click();
+      
+      $button = $($tds2[4]).find('button');
       $button.click();
       
       window.open = oldOpen;

@@ -3347,6 +3347,7 @@ sparks.util.shuffle = function (o) {
 
         question.points = (jsonQuestion.points | 1);
         question.image = jsonQuestion.image;
+        question.tutorial = jsonQuestion.tutorial;
 
         questionsArray.push(question);
         sparks.assessment.questions.push(question);
@@ -3382,7 +3383,9 @@ sparks.util.shuffle = function (o) {
           if (option.option === question.answer){
             question.points_earned = option.points;
             question.feedback = option.feedback;
-            question.tutorial = option.tutorial;
+            if (!!option.tutorial){
+              question.tutorial = option.tutorial;
+            }
           }
           var points = option.points;
           if (points > maxPoints){
@@ -3727,7 +3730,7 @@ sparks.util.shuffle = function (o) {
     },
 
     saveData: function() {
-      if (!!sparks.activity.dataService){
+      if (!!sparks.activity && !!sparks.activity.dataService){
         var data = sparks.sparksReport.toJSON();
         sparks.activity.dataService.save(data);
       }
@@ -6492,7 +6495,7 @@ var apMessageBox = apMessageBox || {};
 
         activityLoaded: function() {
           console.log("ENTER: activityLoaded")
-          if (!!sparks.jsonActivity.circuit && !sparks.jsonActivity.hide_circuit){
+          if (!!sparks.jsonActivity.circuit && !sparks.jsonActivity.hide_circuit && !sparks.debug){
             this.loadFlash();
           } else {
             this.onActivityReady();

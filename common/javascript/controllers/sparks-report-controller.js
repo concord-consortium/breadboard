@@ -85,7 +85,7 @@
     },
 
     saveData: function() {
-      if (!!sparks.activity.dataService){
+      if (!!sparks.activity && !!sparks.activity.dataService){
         var data = sparks.sparksReport.toJSON();
         sparks.activity.dataService.save(data);
       }

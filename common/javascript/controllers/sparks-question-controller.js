@@ -103,6 +103,7 @@
         
         question.points = (jsonQuestion.points | 1);
         question.image = jsonQuestion.image;
+        question.tutorial = jsonQuestion.tutorial;
         
         // for now we put it in both places.
         questionsArray.push(question);
@@ -139,7 +140,9 @@
           if (option.option === question.answer){
             question.points_earned = option.points;
             question.feedback = option.feedback;
-            question.tutorial = option.tutorial;
+            if (!!option.tutorial){
+              question.tutorial = option.tutorial;
+            }
           }
           var points = option.points;
           if (points > maxPoints){
