@@ -127,11 +127,11 @@
       
       var areMorePage = !!sparks.sparksActivityController.areMorePage();
       
-      var comment = allCorrect ? "You got all the questions correct! "+(!finalReport ? (areMorePage ? "Move on to the next page." : "You can now view the Activity Summary") : "") :
-                              "You can get a higher score these questions. " +
+      var comment = allCorrect ? "You got all the questions correct! "+(!finalReport ? (areMorePage ? "Move on to the next page." : "You can now view the Activity Summary.") : "") :
+                              "You can get a higher score on these questions. " +
                               (!finalReport ? "You can repeat the page by clicking the <b>Repeat</b> button" +
-                              (areMorePage ? ", or move on to the next page." : ", or view the Activity Summary") :
-                              "You can repeat any page by clicking the <b>Try again</b> button under the table");
+                              (areMorePage ? ", or move on to the next page." : ", or click the Summary button to see your total score.") :
+                              "You can repeat any page by clicking the <b>Try again</b> button under the table.");
       this.$reportDiv.append($("<div>").html(comment).css('width', 700).css('padding-top', "20px"));
       
       var $buttonDiv = $("<div>").css("padding", "20px").css("text-align", "center");
