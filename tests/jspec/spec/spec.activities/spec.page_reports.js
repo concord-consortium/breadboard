@@ -434,6 +434,85 @@ describe 'Page Reports'
       var bestReport = sparks.sparksReportController.getBestSessionReport(page);
       bestReport.score.should.be 2
     end
+    
+    it 'should be able to give points for completing page in specified time'
+      var jsonActivity =
+        {
+          "pages":[
+            {
+              "time": {
+                "best": 60,
+                "worst": 120,
+                "points": 10
+              },
+              "questions": [
+                {
+                  "prompt": "What is the resistance of R1?",
+                  "correct_answer": "100",
+                  "points": 1
+                },
+                {
+                  "prompt": "What is the resistance of R2?",
+                  "correct_answer": "100",
+                  "points": 1
+                }
+              ]
+            }
+          ]
+        };
+        
+      var $questionsDiv = $("<div>");
+
+      var ac = new sparks.ActivityConstructor(jsonActivity);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.layoutActivity();
+
+      var $input = $questionsDiv.find('input');
+      $input.val("100");                          // sets val of both open-response q's
+      $input.change();
+      
+      var report = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      
+      report.timeTaken.should.be_greater_than 0
+      report.score.should.be 12
+      
+      // pretend it took 60 seconds
+      sparks.sparksLogController.startNewSession();
+      sparks.sparksLogController.endSession();
+      sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 60000
+      var report = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      
+      report.timeTaken.should.be 60
+      report.score.should.be 12
+      report.maxScore.should.be 12
+      report.bestTime.should.be 60
+      report.maxTimeScore.should.be 10
+      
+      // pretend it took 90 seconds
+      sparks.sparksLogController.startNewSession();
+      sparks.sparksLogController.endSession();
+      sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 90000
+      var report = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      
+      report.score.should.be 7
+      
+      // pretend it took 120 seconds
+      sparks.sparksLogController.startNewSession();
+      sparks.sparksLogController.endSession();
+      sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 120000
+      var report = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      
+      report.score.should.be 2
+      
+      // pretend it took 200 seconds
+      sparks.sparksLogController.startNewSession();
+      sparks.sparksLogController.endSession();
+      sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 200000
+      var report = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      
+      report.score.should.be 2
+    end
+    
   end
   
   describe "Report views"
@@ -508,7 +587,7 @@ describe 'Page Reports'
       var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
       
       var $headers = $report.find('th');
-      $headers[0].innerHTML.should.be("Question");
+      $headers[0].innerHTML.should.be("Item");
       $headers[1].innerHTML.should.be("Your answer");
       $headers[2].innerHTML.should.be("Correct answer");
       $headers[3].innerHTML.should.be("Score");
@@ -551,6 +630,75 @@ describe 'Page Reports'
       var $ths5 = $($trs[5]).find('th');
       $ths5[0].innerHTML.should.be("Total Score:");
       $ths5[3].innerHTML.should.be("8/12");
+      
+    end
+    
+    it 'should be able to create a report table that includes time'
+      var jsonActivity =
+        {
+          "pages":[
+            {
+              "time": {
+                "best": 60,
+                "worst": 120,
+                "points": 10
+              },
+              "questions": [
+                {
+                  "prompt": "What is the resistance of R1?",
+                  "correct_answer": "100",
+                  "points": 1
+                }
+              ]
+            }
+          ]
+        };
+        
+      var $questionsDiv = $("<div>");
+
+      var ac = new sparks.ActivityConstructor(jsonActivity);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.layoutActivity();
+
+      var $input = $questionsDiv.find('input');
+      $input.val("100");
+      $input.change();
+      
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      
+      var $trs = $report.find('tr');
+      
+      $($trs[2]).attr('class').should.be "correct"
+      var $tds2 = $($trs[2]).find('td');
+      $tds2[0].innerHTML.should.be("Time taken");
+      $tds2[1].innerHTML.should.be("0 sec.");
+      $tds2[2].innerHTML.should.be("&lt; 60 sec.");
+      $tds2[3].innerHTML.should.be("10/10");
+      $tds2[4].innerHTML.should.be("Excellent! You earned the bonus points for very fast work!");
+      
+      var $ths3 = $($trs[3]).find('th');
+      $ths3[0].innerHTML.should.be("Total Score:");
+      $ths3[3].innerHTML.should.be("11/11");
+      
+      
+      // pretend it took 200 seconds
+      sparks.sparksLogController.startNewSession();
+      sparks.sparksLogController.endSession();
+      sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 200000
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      
+      var $trs = $report.find('tr');
+      
+      $($trs[2]).attr('class').should.be "incorrect"
+      var $tds2 = $($trs[2]).find('td');
+      $tds2[1].innerHTML.should.be("200 sec.");
+      $tds2[3].innerHTML.should.be("0/10");
+      $tds2[4].innerHTML.should.be("You could score more bonus points by completing this page quicker!");
+      
+      var $ths3 = $($trs[3]).find('th');
+      $ths3[3].innerHTML.should.be("1/11");
       
     end
     

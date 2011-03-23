@@ -31,6 +31,10 @@ form {
 table {
   border-collapse: collapse;
 }
+table.reportTable {
+  margin-right: 20px;
+  font-size: 10pt;
+}
 tr.correct {
   background: #ddffdd;
 }

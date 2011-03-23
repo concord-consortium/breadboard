@@ -32,9 +32,31 @@
         jsonQuestions.push(question.toJSON());
       });
       sessionReport.questions = jsonQuestions;
+      
+      if (sparks.sparksLogController.currentLog.endTime < 0){
+        sparks.sparksLogController.endSession();
+      }
+      sessionReport.log = sparks.sparksLogController.currentLog;
+      sessionReport.timeTaken = (sessionReport.log.endTime - sessionReport.log.startTime) / 1000;
+      if (!!page.time){
+        var t = page.time;
+        var m = t.points / (t.best - t.worst);
+        var k = 0-m * t.worst;
+        var timeScore = (m * sessionReport.timeTaken) + k;
+        timeScore = timeScore > t.points ? t.points : timeScore;
+        timeScore = timeScore < 0 ? 0 : timeScore;
+        timeScore = Math.round(timeScore);
+        
+        sessionReport.timeScore = timeScore;
+        sessionReport.maxTimeScore = t.points;
+        sessionReport.bestTime = t.best;
+        
+        score += timeScore;
+        maxScore += t.points;
+      }
+      
       sessionReport.score = score;
       sessionReport.maxScore = maxScore;
-      sessionReport.log = sparks.sparksLogController.currentLog;
       
       this._addSessionReport(page, sessionReport);
       return sessionReport;
@@ -81,7 +103,7 @@
     
     showTutorial: function (_url) {
       var url;
-      if (_url.indexOf("http:") < 0 && _url.indexOf("/") != 0){
+      if (_url.indexOf("http:") < 0 && _url.indexOf("/") !== 0){
         url = sparks.tutorial_base_url + _url;
       } else {
         url = _url;

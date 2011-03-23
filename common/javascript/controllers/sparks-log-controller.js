@@ -16,10 +16,13 @@
       this.currentLog = new sparks.SparksLog(new Date().valueOf());
     },
     
+    endSession: function() {
+      this.currentLog.endTime = new Date().valueOf();
+    },
+    
     addEvent: function (name, value) {
       var evt = new sparks.LogEvent(name, value, new Date().valueOf());
       this.currentLog.events.push(evt);
-      console.log(this.currentLog.events[0].name);
     }
     
   };

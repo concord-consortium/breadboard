@@ -25,6 +25,8 @@
         page.notes = notes;
       }
       
+      page.time = jsonPage.time;
+      
       page.view = new sparks.SparksPageView(page);
       
       return page;
@@ -63,6 +65,7 @@
     },
     
     showReport: function(page){
+      sparks.sparksLogController.endSession();
       var sessionReport = sparks.sparksReportController.addNewSessionReport(page);
       var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
       page.view.showReport($report);

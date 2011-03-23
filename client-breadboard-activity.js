@@ -2665,6 +2665,7 @@ sparks.util.shuffle = function (o) {
     this.id = id;
     this.questions = [];
     this.notes = null;
+    this.time = {};
     this.view = null;
     this.currentQuestion = null;
   };
@@ -2806,6 +2807,10 @@ sparks.util.shuffle = function (o) {
   sparks.SparksSessionReport = function(){
     this.questions = [];
     this.log = null;
+    this.timeTaken = -1;
+    this.timeScore = -1;
+    this.maxTimeScore = -1;
+    this.bestTime = -1;
     this.score = -1;
     this.maxScore = -1;
   };
@@ -3195,7 +3200,7 @@ sparks.util.shuffle = function (o) {
 
       $report.append(
         $('<tr>').append(
-          $('<th>').text("Question"),
+          $('<th>').text("Item"),
           $('<th>').text("Your answer"),
           $('<th>').text("Correct answer"),
           $('<th>').text("Score"),
@@ -3240,6 +3245,19 @@ sparks.util.shuffle = function (o) {
           ).addClass(question.answerIsCorrect ? "correct" : "incorrect")
         );
       });
+
+      if (sessionReport.bestTime > 0){
+        $report.append(
+          $('<tr>').append(
+            $('<td>').html("Time taken"),
+            $('<td>').html(Math.round(sessionReport.timeTaken) + " sec."),
+            $('<td>').html("< "+sessionReport.bestTime + " sec."),
+            $('<td>').html(sessionReport.timeScore +"/" + sessionReport.maxTimeScore),
+            $('<td>').html(sessionReport.timeScore == sessionReport.maxTimeScore ? "Excellent! You earned the bonus points for very fast work!" :
+                                "You could score more bonus points by completing this page quicker!")
+          ).addClass(sessionReport.timeScore == sessionReport.maxTimeScore ? "correct" : "incorrect")
+        );
+      }
 
       $report.append(
         $('<tr>').append(
@@ -3444,6 +3462,8 @@ sparks.util.shuffle = function (o) {
         page.notes = notes;
       }
 
+      page.time = jsonPage.time;
+
       page.view = new sparks.SparksPageView(page);
 
       return page;
@@ -3481,6 +3501,7 @@ sparks.util.shuffle = function (o) {
     },
 
     showReport: function(page){
+      sparks.sparksLogController.endSession();
       var sessionReport = sparks.sparksReportController.addNewSessionReport(page);
       var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
       page.view.showReport($report);
@@ -3508,10 +3529,13 @@ sparks.util.shuffle = function (o) {
       this.currentLog = new sparks.SparksLog(new Date().valueOf());
     },
 
+    endSession: function() {
+      this.currentLog.endTime = new Date().valueOf();
+    },
+
     addEvent: function (name, value) {
       var evt = new sparks.LogEvent(name, value, new Date().valueOf());
       this.currentLog.events.push(evt);
-      console.log(this.currentLog.events[0].name);
     }
 
   };
@@ -3690,9 +3714,31 @@ sparks.util.shuffle = function (o) {
         jsonQuestions.push(question.toJSON());
       });
       sessionReport.questions = jsonQuestions;
+
+      if (sparks.sparksLogController.currentLog.endTime < 0){
+        sparks.sparksLogController.endSession();
+      }
+      sessionReport.log = sparks.sparksLogController.currentLog;
+      sessionReport.timeTaken = (sessionReport.log.endTime - sessionReport.log.startTime) / 1000;
+      if (!!page.time){
+        var t = page.time;
+        var m = t.points / (t.best - t.worst);
+        var k = 0-m * t.worst;
+        var timeScore = (m * sessionReport.timeTaken) + k;
+        timeScore = timeScore > t.points ? t.points : timeScore;
+        timeScore = timeScore < 0 ? 0 : timeScore;
+        timeScore = Math.round(timeScore);
+
+        sessionReport.timeScore = timeScore;
+        sessionReport.maxTimeScore = t.points;
+        sessionReport.bestTime = t.best;
+
+        score += timeScore;
+        maxScore += t.points;
+      }
+
       sessionReport.score = score;
       sessionReport.maxScore = maxScore;
-      sessionReport.log = sparks.sparksLogController.currentLog;
 
       this._addSessionReport(page, sessionReport);
       return sessionReport;
@@ -3739,7 +3785,7 @@ sparks.util.shuffle = function (o) {
 
     showTutorial: function (_url) {
       var url;
-      if (_url.indexOf("http:") < 0 && _url.indexOf("/") != 0){
+      if (_url.indexOf("http:") < 0 && _url.indexOf("/") !== 0){
         url = sparks.tutorial_base_url + _url;
       } else {
         url = _url;

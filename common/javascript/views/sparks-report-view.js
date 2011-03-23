@@ -43,7 +43,7 @@
       
       $report.append(
         $('<tr>').append(
-          $('<th>').text("Question"),
+          $('<th>').text("Item"),
           $('<th>').text("Your answer"),
           $('<th>').text("Correct answer"),
           $('<th>').text("Score"),
@@ -88,6 +88,19 @@
           ).addClass(question.answerIsCorrect ? "correct" : "incorrect")
         );
       });
+      
+      if (sessionReport.bestTime > 0){
+        $report.append(
+          $('<tr>').append(
+            $('<td>').html("Time taken"),
+            $('<td>').html(Math.round(sessionReport.timeTaken) + " sec."),
+            $('<td>').html("< "+sessionReport.bestTime + " sec."),
+            $('<td>').html(sessionReport.timeScore +"/" + sessionReport.maxTimeScore),
+            $('<td>').html(sessionReport.timeScore == sessionReport.maxTimeScore ? "Excellent! You earned the bonus points for very fast work!" :
+                                "You could score more bonus points by completing this page quicker!")
+          ).addClass(sessionReport.timeScore == sessionReport.maxTimeScore ? "correct" : "incorrect")
+        );
+      }
       
       $report.append(
         $('<tr>').append(

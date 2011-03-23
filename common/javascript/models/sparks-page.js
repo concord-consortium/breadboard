@@ -6,6 +6,7 @@
     this.id = id;
     this.questions = [];
     this.notes = null;
+    this.time = {};
     this.view = null;
     this.currentQuestion = null;
   };

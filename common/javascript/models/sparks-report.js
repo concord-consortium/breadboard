@@ -29,6 +29,10 @@
   sparks.SparksSessionReport = function(){
     this.questions = [];
     this.log = null;
+    this.timeTaken = -1;
+    this.timeScore = -1;
+    this.maxTimeScore = -1;
+    this.bestTime = -1;
     this.score = -1;
     this.maxScore = -1;
   };
