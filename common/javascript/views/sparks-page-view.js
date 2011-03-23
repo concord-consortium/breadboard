@@ -71,9 +71,9 @@
       });
 
       if (!!page.notes){
-        this.$notesDiv = $('<div>').addClass('notes').css('float','right');
+        this.$notesDiv = $('<span>').addClass('notes').css('float','right');
         this.$notesDiv.html(page.notes);
-        this.$view.append(this.$notesDiv);
+        this.$questionDiv.append(this.$notesDiv);
       }
       
       this.enableQuestion(page.currentQuestion);

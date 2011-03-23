@@ -125,7 +125,7 @@ body {
   margin: 30px;
   min-height: 350px;
   padding: 0;
-  width: 700px; }
+  width: 750px; }
 
 /* login form */
 #content-upper {
@@ -274,25 +274,6 @@ form ul {
   margin: 0; }
 form li {
   margin-bottom: 1.65em; }
-
-fieldset {
-  clear: both !important;
-  display: block !important; }
-
-legend {
-  clear: both;
-  color: #222222;
-  display: block;
-  font-size: 1.1em;
-  font-weight: bold;
-  margin: 1em 0 0 0 !important;
-  padding: 1em 0 0 0 !important; }
-
-form#project-signin legend {
-  display: none; }
-
-label {
-  font-weight: bold; }
 
 select, input {
   margin: 5px; }
@@ -471,7 +452,7 @@ h2, h3 {
   .graphic-input label.right {
     display: inline; }
 
-#page #wrapper .graphic-input {
+#wrapper .graphic-input {
   display: block; }
 
 .graphic-input li {
@@ -490,7 +471,6 @@ h2, h3 {
 
 #page #header li.graphic-input {
   background: url(/images/new/bg-sprite-btns.png) right -39px no-repeat;
-  display: block;
   padding-right: 8px;
   width: 153px; }
 #page #wrapper #secondary .graphic-input {

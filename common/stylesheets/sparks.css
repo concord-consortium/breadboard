@@ -8,7 +8,6 @@ img.no_border {
   border-style: none;
 }
 form { 
-  display: block;
   width: 100%;
   padding: 3pt;
 }
@@ -66,9 +65,10 @@ td {
 
 .notes {
   border: 4px solid #f0a0a0;
-  padding: 20px;
-  margin:10px;
-  margin-right:65px;
+  padding: 10px;
+  margin:2px;
+  margin-left:8px;
+  width: 190px;
 }
 
 .notes:before{
@@ -79,8 +79,12 @@ td {
 
 #questions_area, .report_area {
   font-size: 10pt;
-  border: 4px #ffbb7d solid;
-  padding-left: 10px;
+  border-top: 4px #ffbb7d solid;
+}
+
+#questions_area form {
+  width: 450px;
+  float: left;
 }
 
 .debug_area {
@@ -144,27 +148,4 @@ overflow: hidden; /*Disable scrollbars. Set to "scroll" to enable*/
 background-color: #f9eec1;
 color: #c71a1f;
 border-bottom-style:solid;
-}
-
-#maincontent{
-position: fixed; 
-top: 110px; /*Set top value to HeightOfTopFrameDiv*/
-left: 160px; /*Set left value to WidthOfLeftFrameDiv*/
-right: 70px; /*Set right value to WidthOfRightFrameDiv*/
-bottom: 0;
-overflow: auto; 
-background: #fff;
-}
-
-.innertube{
-margin: 5px; /*Margins for inner DIV inside each DIV (to provide padding)*/
-}
-
-* html #maincontent{ /*IE6 hack*/
-height: 100%; 
-width: 100%; 
-}
-
-* html #framecontentTop{ /*IE6 hack*/
-width: 100%;
 }
