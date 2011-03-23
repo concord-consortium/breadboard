@@ -2972,6 +2972,11 @@ sparks.util.shuffle = function (o) {
     enableView: function($view, enable) {
       $view.find('input, select, button').attr('disabled', !enable);
       $view.css("background-color", enable ? "rgb(253,255,184)" : "");
+      if (enable){
+        $view.find('button').removeClass('disabled');
+      } else {
+        $view.find('button').addClass('disabled');
+      }
     },
 
     showReport: function($report, finalReport){
