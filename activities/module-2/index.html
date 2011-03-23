@@ -5,6 +5,7 @@
     <meta content='text/html; charset=utf-8' http-equiv='Content-Type' />
 
     <link href='../../lib/jquery/css/ui-lightness/jquery-ui-1.8.custom.css' rel='stylesheet' type='text/css' />
+    <link href='../../common/stylesheets/app.css' rel='stylesheet' type='text/css' />
     <link href='../../common/stylesheets/sparks.css' rel='stylesheet' type='text/css' />
     
     <style>
@@ -18,57 +19,37 @@
     </script>
   </head>
   <body>
-  
-  <div id="framecontentLeft">
-    <div class="innertube">
-    </div>
-  </div>
-  <div id="framecontentRight">
-    <div class="innertube">
-    </div>
-  </div>
-  <div id="framecontentTop">
-    <div class="innertube">
-      <h1>
-        <span id="title"></span>
-      </h1>
-    </div>
-  </div>
-    
-    <div id="framecontentTopLeft">
-        <img class='no_border' src='../../common/icons/sparks-left-logo.png' />
-    </div>
-    
-    <div id="framecontentTopRight">
-    </div>
-    
-    <div id="maincontent">
-    <div class="innertube">
-    
-    <div id="breadboard">
-    </div>
-    <div id="image">
-    </div>
+    <a href="http://sparks.portal.concord.org/">
+      <img class='no_border' src='../../common/icons/sparks-left-logo.png' style="float:left; height:160px; margin: 20px"/>
+    </a>
+    <div class="wrapper" id="wrapper">
+      <div style="height: 60px; padding-top: 25px; padding-left: 35px; background-color: white;">
+        <h1>
+          <span id="title"></span>
+        </h1>
+      </div>
+      <div id="primary">
+        
+        <div id="breadboard">
+        </div>
+        <div id="image">
+        </div>
 
-    <br style="clear:both" />
-    <p/>
-    
-    <p/>
-    <button class='next_button'>Restart</button>
-    <span class='instruction_end_session'></span>
-    
-    <div id="questions_area">
-    </div>
-    
-    <div id="report_area" class="report_area"></div>
+        <br style="clear:both" />
+        <p/>
 
-    <p/>
-    <button class='next_button'>Restart</button>
-    <span class='instruction_end_session'></span>
-    
-    <div id="popup">Calculating...</div>
-    
-    </div>
+        <p/>
+
+        <div id="questions_area">
+        </div>
+        
+        
+      </div>
+      <div id="footer">
+        <div class="footer-inner">
+          <p id="footer_right"></p>
+        </div>
+      </div>
     </div>
 
   </body>
