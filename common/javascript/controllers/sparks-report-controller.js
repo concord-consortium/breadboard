@@ -45,7 +45,7 @@
         var timeScore = (m * sessionReport.timeTaken) + k;
         timeScore = timeScore > t.points ? t.points : timeScore;
         timeScore = timeScore < 0 ? 0 : timeScore;
-        timeScore = Math.round(timeScore);
+        timeScore = Math.floor(timeScore);
         
         sessionReport.timeScore = timeScore;
         sessionReport.maxTimeScore = t.points;
