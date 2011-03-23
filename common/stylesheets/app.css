@@ -296,7 +296,7 @@ textarea {
   border: none; }
 
 button {
-  background-color: #57a19f;
+  background-color: #f3951d;
   color: white;
   cursor: pointer;
   font-size: 1.2em;
@@ -307,7 +307,7 @@ button.disabled {
 }
 
 input[type=button], input.button, input[type='submit'] {
-  background-color: #57a19f;
+  background-color: #f3951d;
   color: white;
   cursor: pointer;
   font-size: 1.2em;
@@ -367,18 +367,6 @@ a.button {
   /* FF1+ */
   -webkit-border-radius: 12px;
   /* Saf3+, Chrome */ }
-
-input[type=button]:hover, input.button.over, input[type=submit]:hover {
-  background: #f3951d;
-  /* CSS 3 */
-  background: -webkit-gradient(linear, left top, left bottom, from(#f3951d), to(#dd6e0d));
-  background: -moz-linear-gradient(top, #f3951d, #dd6e0d); }
-
-a.button:hover, button.over {
-  background: #f3951d;
-  /* CSS 3 */
-  background: -webkit-gradient(linear, left top, left bottom, from(#f3951d), to(#dd6e0d));
-  background: -moz-linear-gradient(top, #f3951d, #dd6e0d); }
 
 p select {
   display: inline;
