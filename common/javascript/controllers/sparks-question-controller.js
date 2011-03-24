@@ -107,7 +107,6 @@
         
         // for now we put it in both places.
         questionsArray.push(question);
-        sparks.assessment.questions.push(question);
         
         question.prompt = oldPrompt;
         

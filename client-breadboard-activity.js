@@ -2624,11 +2624,30 @@ sparks.util.shuffle = function (o) {
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
-  sparks.SparksSection = function(){
+  sparks.SparksActivity = function(){
     sparks.sparksActivity = this;
 
-    sparks.activityLog = new sparks.Activity.ActivityLog();
-    sparks.assessment = new sparks.Activity.Assessment();
+    this.sections = [];
+  };
+
+  sparks.SparksActivity.prototype = {
+
+    toJSON: function () {
+      var json = {};
+      json.sections = [];
+      $.each(this.sections, function(i, section){
+        json.sections.push(section.toJSON());
+      });
+      return json;
+    }
+
+  };
+
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+  sparks.SparksSection = function(){
 
     this.image = null;
     this.circuit = null;
@@ -3187,7 +3206,8 @@ sparks.util.shuffle = function (o) {
     getActivityReportView: function() {
       var $div = $('<div>');
       $div.append('<h1>Activity results</h1>');
-      var pages = sparks.sparksActivity.pages;
+      var section = sparks.sparksActivityController.currentSection;
+      var pages = section.pages;
       var self = this;
 
       var totalScore = 0;
@@ -3396,7 +3416,6 @@ sparks.util.shuffle = function (o) {
         question.tutorial = jsonQuestion.tutorial;
 
         questionsArray.push(question);
-        sparks.assessment.questions.push(question);
 
         question.prompt = oldPrompt;
 
@@ -3638,9 +3657,10 @@ sparks.util.shuffle = function (o) {
 
     areMorePage: function() {
       var nextPage;
-      for (var i = 0; i < sparks.sparksActivity.pages.length-1; i++){
-        if (sparks.sparksActivity.pages[i] == this.currentPage){
-          nextPage = sparks.sparksActivity.pages[i+1];
+      var section = sparks.sparksActivityController.currentSection;
+      for (var i = 0; i < section.pages.length-1; i++){
+        if (section.pages[i] == this.currentPage){
+          nextPage = section.pages[i+1];
         }
       }
       if (!nextPage){
@@ -3695,6 +3715,32 @@ sparks.util.shuffle = function (o) {
   };
 
   sparks.sparksSectionController = new sparks.SparksSectionController();
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+
+  /*
+   * Sparks Activity Controller can be accessed by the
+   * singleton variable sparks.sparksActivityController
+   */
+  sparks.SparksActivityController = function(){
+    sparks.sparksActivity = new sparks.SparksActivity();
+    this.currentSection = null;
+  };
+
+  sparks.SparksActivityController.prototype = {
+
+    addSection: function (jsonSection) {
+      var section = sparks.sparksSectionController.createSection(jsonSection);
+      sparks.sparksActivity.sections.push(section);
+      this.currentSection = section;
+    }
+
+
+  };
+
+  sparks.sparksActivityController = new sparks.SparksActivityController();
 })();
 /*globals console sparks $ breadModel getBreadBoard */
 
@@ -3826,7 +3872,8 @@ sparks.util.shuffle = function (o) {
 (function() {
   sparks.ActivityConstructor = function(jsonSection){
     sparks.sparksSectionController.reset();
-    this.section = sparks.sparksSectionController.createSection(jsonSection);
+
+    sparks.sparksActivityController.addSection(jsonSection);
 
     this.jsonSection = jsonSection;
 
@@ -3861,8 +3908,8 @@ sparks.util.shuffle = function (o) {
         this.embeddingTargets.$questionsDiv = $('#questions_area');
      }
 
-     if (!!this.section.image){
-       var $imagediv = this.section.view.getImageView();
+     if (!!sparks.sparksActivityController.currentSection.image){
+       var $imagediv = sparks.sparksActivityController.currentSection.view.getImageView();
        this.embeddingTargets.$imageDiv.append($imagediv);
      }
 
@@ -6554,7 +6601,7 @@ var apMessageBox = apMessageBox || {};
             }
 
             if (sparks.debug && !!sparks.jsonSection){
-              self.activityLoaded();
+              self.sectionLoaded();
             } else {
               console.log("loading script for "+jsonSectionName);
               var self = this;
@@ -6565,13 +6612,13 @@ var apMessageBox = apMessageBox || {};
                 }
                 sparks.jsonSection.section_url = sparks.activity_base_url+jsonSectionName
                 sparks.jsonSection.images_url = sparks.activity_images_base_url+jsonSectionName
-                self.activityLoaded();
+                self.sectionLoaded();
               });
             }
         },
 
-        activityLoaded: function() {
-          console.log("ENTER: activityLoaded")
+        sectionLoaded: function() {
+          console.log("ENTER: sectionLoaded")
           if (!!sparks.jsonSection.circuit && !sparks.jsonSection.hide_circuit && !sparks.debug){
             this.loadFlash();
           } else {
@@ -6595,7 +6642,7 @@ var apMessageBox = apMessageBox || {};
         },
 
         onActivityReady: function () {
-          console.log("activity ready")
+          console.log("section ready")
           $('#title').text(sparks.jsonSection.title);
 
           var ac = new sparks.ActivityConstructor(sparks.jsonSection);

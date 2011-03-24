@@ -14,7 +14,8 @@
     getActivityReportView: function() {
       var $div = $('<div>');
       $div.append('<h1>Activity results</h1>');
-      var pages = sparks.sparksActivity.pages;
+      var section = sparks.sparksActivityController.currentSection;
+      var pages = section.pages;
       var self = this;
       
       var totalScore = 0;

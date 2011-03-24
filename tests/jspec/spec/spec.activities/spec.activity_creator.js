@@ -55,12 +55,13 @@ describe 'Activity Creator'
           var ac = new sparks.ActivityConstructor(jsonSection);
           
           sparks.sparksActivity.should.not.be undefined
-          sparks.sparksActivity.pages.length.should.be 1
+          var section = sparks.sparksActivityController.currentSection;
+          section.pages.length.should.be 1
           
-          sparks.sparksActivity.pages[0].questions.length.should.be 1
-          sparks.sparksActivity.pages[0].questions[0].prompt.should.be "What is the resistance of R1?"
-          sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be 100
-          sparks.sparksActivity.pages[0].questions[0].correct_units.should.be "V"
+          section.pages[0].questions.length.should.be 1
+          section.pages[0].questions[0].prompt.should.be "What is the resistance of R1?"
+          section.pages[0].questions[0].correct_answer.should.be 100
+          section.pages[0].questions[0].correct_units.should.be "V"
       end
       
   end

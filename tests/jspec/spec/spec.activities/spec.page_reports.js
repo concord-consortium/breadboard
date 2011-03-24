@@ -43,9 +43,11 @@ describe 'Page Reports'
         ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
         ac.layoutActivity();
         
-        sparks.sparksActivity.pages[0].questions.length.should.be 2
-        sparks.sparksActivity.pages[0].questions[0].answer.should.be ""
-        sparks.sparksActivity.pages[0].questions[1].answer.should.be ""
+        var section = sparks.sparksActivityController.currentSection;
+        
+        section.pages[0].questions.length.should.be 2
+        section.pages[0].questions[0].answer.should.be ""
+        section.pages[0].questions[1].answer.should.be ""
 
         var $input = $questionsDiv.find('input');
         $input.val("test");
@@ -55,8 +57,8 @@ describe 'Page Reports'
         $select.val("200");
         $select.change();
         
-        sparks.sparksActivity.pages[0].questions[0].answer.should.be "test"
-        sparks.sparksActivity.pages[0].questions[1].answer.should.be "200"
+        section.pages[0].questions[0].answer.should.be "test"
+        section.pages[0].questions[1].answer.should.be "200"
       end
       
       it 'should be able to grade student answers for simple questions'
@@ -123,20 +125,21 @@ describe 'Page Reports'
         $select.val("200");                         // sets val of both selects
         $select.change();
         
+        var section = sparks.sparksActivityController.currentSection;
         var qc = sparks.sparksQuestionController;
-        qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[0]);
-        qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[1]);
-        qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[2]);
-        qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[3]);
+        qc.gradeQuestion(section.pages[0].questions[0]);
+        qc.gradeQuestion(section.pages[0].questions[1]);
+        qc.gradeQuestion(section.pages[0].questions[2]);
+        qc.gradeQuestion(section.pages[0].questions[3]);
         
-        sparks.sparksActivity.pages[0].questions[0].answerIsCorrect.should.be true
-        sparks.sparksActivity.pages[0].questions[0].points_earned.should.be 1
-        sparks.sparksActivity.pages[0].questions[1].answerIsCorrect.should.be false
-        sparks.sparksActivity.pages[0].questions[1].points_earned.should.be 0
-        sparks.sparksActivity.pages[0].questions[2].answerIsCorrect.should.be true
-        sparks.sparksActivity.pages[0].questions[2].points_earned.should.be 5
-        sparks.sparksActivity.pages[0].questions[3].answerIsCorrect.should.be false
-        sparks.sparksActivity.pages[0].questions[3].points_earned.should.be 2
+        section.pages[0].questions[0].answerIsCorrect.should.be true
+        section.pages[0].questions[0].points_earned.should.be 1
+        section.pages[0].questions[1].answerIsCorrect.should.be false
+        section.pages[0].questions[1].points_earned.should.be 0
+        section.pages[0].questions[2].answerIsCorrect.should.be true
+        section.pages[0].questions[2].points_earned.should.be 5
+        section.pages[0].questions[3].answerIsCorrect.should.be false
+        section.pages[0].questions[3].points_earned.should.be 2
       end
       
       it 'should be able to grade student answers for radio button questions'
@@ -191,14 +194,15 @@ describe 'Page Reports'
           }
         });
         
+        var section = sparks.sparksActivityController.currentSection;
         var qc = sparks.sparksQuestionController;
-        qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[0]);
-        qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[1]);
+        qc.gradeQuestion(section.pages[0].questions[0]);
+        qc.gradeQuestion(section.pages[0].questions[1]);
         
-        sparks.sparksActivity.pages[0].questions[0].answerIsCorrect.should.be true
-        sparks.sparksActivity.pages[0].questions[0].points_earned.should.be 5
-        sparks.sparksActivity.pages[0].questions[1].answerIsCorrect.should.be false
-        sparks.sparksActivity.pages[0].questions[1].points_earned.should.be 0
+        section.pages[0].questions[0].answerIsCorrect.should.be true
+        section.pages[0].questions[0].points_earned.should.be 5
+        section.pages[0].questions[1].answerIsCorrect.should.be false
+        section.pages[0].questions[1].points_earned.should.be 0
       end
       
       it 'should be able to grade student answers for nested questions'
@@ -265,20 +269,21 @@ describe 'Page Reports'
         $select.val("100");                         // sets val of both selects
         $select.change();
         
+        var section = sparks.sparksActivityController.currentSection;
         var qc = sparks.sparksQuestionController;
-        qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[0]);
-        qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[1]);
-        qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[2]);
-        qc.gradeQuestion(sparks.sparksActivity.pages[0].questions[3]);
+        qc.gradeQuestion(section.pages[0].questions[0]);
+        qc.gradeQuestion(section.pages[0].questions[1]);
+        qc.gradeQuestion(section.pages[0].questions[2]);
+        qc.gradeQuestion(section.pages[0].questions[3]);
         
-        sparks.sparksActivity.pages[0].questions[0].answerIsCorrect.should.be true
-        sparks.sparksActivity.pages[0].questions[0].points_earned.should.be 1
-        sparks.sparksActivity.pages[0].questions[1].answerIsCorrect.should.be false
-        sparks.sparksActivity.pages[0].questions[1].points_earned.should.be 0
-        sparks.sparksActivity.pages[0].questions[2].answerIsCorrect.should.be true
-        sparks.sparksActivity.pages[0].questions[2].points_earned.should.be 5
-        sparks.sparksActivity.pages[0].questions[3].answerIsCorrect.should.be false
-        sparks.sparksActivity.pages[0].questions[3].points_earned.should.be 0
+        section.pages[0].questions[0].answerIsCorrect.should.be true
+        section.pages[0].questions[0].points_earned.should.be 1
+        section.pages[0].questions[1].answerIsCorrect.should.be false
+        section.pages[0].questions[1].points_earned.should.be 0
+        section.pages[0].questions[2].answerIsCorrect.should.be true
+        section.pages[0].questions[2].points_earned.should.be 5
+        section.pages[0].questions[3].answerIsCorrect.should.be false
+        section.pages[0].questions[3].points_earned.should.be 0
       end
       
   end
@@ -346,19 +351,20 @@ describe 'Page Reports'
       $input.change();
       
       var $select = $questionsDiv.find('select');
-      $select.val("200");                         // sets val of both selects
+      $select.val("200");                         // sets value of both selects
       $select.change();
       
-      sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      var section = sparks.sparksActivityController.currentSection;
+      sparks.sparksReportController.addNewSessionReport(section.pages[0]);
       
-      sparks.sparksActivity.pages[0].questions[0].answerIsCorrect.should.be true
-      sparks.sparksActivity.pages[0].questions[0].points_earned.should.be 1
-      sparks.sparksActivity.pages[0].questions[1].answerIsCorrect.should.be false
-      sparks.sparksActivity.pages[0].questions[1].points_earned.should.be 0
-      sparks.sparksActivity.pages[0].questions[2].answerIsCorrect.should.be true
-      sparks.sparksActivity.pages[0].questions[2].points_earned.should.be 5
-      sparks.sparksActivity.pages[0].questions[3].answerIsCorrect.should.be false
-      sparks.sparksActivity.pages[0].questions[3].points_earned.should.be 2
+      section.pages[0].questions[0].answerIsCorrect.should.be true
+      section.pages[0].questions[0].points_earned.should.be 1
+      section.pages[0].questions[1].answerIsCorrect.should.be false
+      section.pages[0].questions[1].points_earned.should.be 0
+      section.pages[0].questions[2].answerIsCorrect.should.be true
+      section.pages[0].questions[2].points_earned.should.be 5
+      section.pages[0].questions[3].answerIsCorrect.should.be false
+      section.pages[0].questions[3].points_earned.should.be 2
     end
     
     it 'should be able to calculate the score for one page'
@@ -381,7 +387,8 @@ describe 'Page Reports'
       $($input[0]).val("100");                          // sets q0 to correct answer
       $($input[0]).change();
       
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      var section = sparks.sparksActivityController.currentSection;
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
       
       sessionReport.score.should.be 1
       sessionReport.maxScore.should.be 6
@@ -407,7 +414,9 @@ describe 'Page Reports'
       $($input[0]).val("100");                          // sets q0 to correct answer
       $($input[0]).change();
       
-      var page = sparks.sparksActivity.pages[0];
+      var section = sparks.sparksActivityController.currentSection;
+      
+      var page = section.pages[0];
       
       var sessionReport = sparks.sparksReportController.addNewSessionReport(page);
       
@@ -471,7 +480,8 @@ describe 'Page Reports'
       $input.val("100");                          // sets val of both open-response q's
       $input.change();
       
-      var report = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      var section = sparks.sparksActivityController.currentSection;
+      var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
       
       report.timeTaken.should.be_greater_than 0
       report.score.should.be 12
@@ -480,7 +490,7 @@ describe 'Page Reports'
       sparks.sparksLogController.startNewSession();
       sparks.sparksLogController.endSession();
       sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 60000
-      var report = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
       
       report.timeTaken.should.be 60
       report.score.should.be 12
@@ -492,7 +502,7 @@ describe 'Page Reports'
       sparks.sparksLogController.startNewSession();
       sparks.sparksLogController.endSession();
       sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 90000
-      var report = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
       
       report.score.should.be 7
       
@@ -500,7 +510,7 @@ describe 'Page Reports'
       sparks.sparksLogController.startNewSession();
       sparks.sparksLogController.endSession();
       sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 120000
-      var report = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
       
       report.score.should.be 2
       
@@ -508,7 +518,7 @@ describe 'Page Reports'
       sparks.sparksLogController.startNewSession();
       sparks.sparksLogController.endSession();
       sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 200000
-      var report = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
       
       report.score.should.be 2
     end
@@ -583,7 +593,8 @@ describe 'Page Reports'
       $select.val("200");                         // sets val of both selects
       $select.change();
       
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      var section = sparks.sparksActivityController.currentSection;
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
       var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
       
       var $headers = $report.find('th');
@@ -664,7 +675,8 @@ describe 'Page Reports'
       $input.val("100");
       $input.change();
       
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      var section = sparks.sparksActivityController.currentSection;
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
       var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
       
       var $trs = $report.find('tr');
@@ -686,7 +698,7 @@ describe 'Page Reports'
       sparks.sparksLogController.startNewSession();
       sparks.sparksLogController.endSession();
       sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 200000
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
       var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
       
       var $trs = $report.find('tr');
@@ -754,7 +766,8 @@ describe 'Page Reports'
       $select.val("200");
       $select.change();
       
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+      var section = sparks.sparksActivityController.currentSection;
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
       var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
       
       var $trs = $report.find('tr');
@@ -825,7 +838,8 @@ describe 'Page Reports'
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
       
-      var page = sparks.sparksActivity.pages[0];
+      var section = sparks.sparksActivityController.currentSection;
+      var page = section.pages[0];
 
       var $input = $questionsDiv.find('input');
       $($input[0]).val("100");                          // sets q0 to correct answer
@@ -840,7 +854,7 @@ describe 'Page Reports'
       sparks.sparksReportController.addNewSessionReport(page);
       
       sparks.sparksSectionController.nextPage();
-      var page = sparks.sparksActivity.pages[1];
+      var page = section.pages[1];
       
       var $input = $questionsDiv.find('input');
       $($input[2]).val("100");                          // sets q2 of page 2 to correct answer

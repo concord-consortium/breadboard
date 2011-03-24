@@ -1,4 +1,4 @@
-describe 'Page Reports'
+describe 'Logging'
 
   before_each
     breadModel('clear');
@@ -43,8 +43,9 @@ describe 'Page Reports'
         var $select = $questionsDiv.find('select');
         $select.val("200");
         $select.change();
-
-        var sessionReport = sparks.sparksReportController.addNewSessionReport(sparks.sparksActivity.pages[0]);
+        
+        var section = sparks.sparksActivityController.currentSection;
+        var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
         var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
         var $trs = $report.find('tr');
 
@@ -54,7 +55,7 @@ describe 'Page Reports'
         $button.click();
         
         var log = sessionReport.log;
-        var question = sparks.sparksActivity.pages[0].questions[0];
+        var question = section.pages[0].questions[0];
         log.events.length.should.be 1
         log.events[0].name.should.be sparks.LogEvent.CLICKED_TUTORIAL
         log.events[0].value.should.be "/example.html"

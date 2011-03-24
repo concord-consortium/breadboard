@@ -3,7 +3,9 @@
 (function() {
   sparks.ActivityConstructor = function(jsonSection){
     sparks.sparksSectionController.reset();
-    this.section = sparks.sparksSectionController.createSection(jsonSection);
+    // this.section = sparks.sparksSectionController.createSection(jsonSection);
+    
+    sparks.sparksActivityController.addSection(jsonSection);
     
     this.jsonSection = jsonSection;
     
@@ -39,8 +41,8 @@
         this.embeddingTargets.$questionsDiv = $('#questions_area');
      }
      
-     if (!!this.section.image){
-       var $imagediv = this.section.view.getImageView();
+     if (!!sparks.sparksActivityController.currentSection.image){
+       var $imagediv = sparks.sparksActivityController.currentSection.view.getImageView();
        this.embeddingTargets.$imageDiv.append($imagediv);
      }
      

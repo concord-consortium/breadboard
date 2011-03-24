@@ -80,9 +80,10 @@
     
     areMorePage: function() {
       var nextPage;
-      for (var i = 0; i < sparks.sparksActivity.pages.length-1; i++){
-        if (sparks.sparksActivity.pages[i] == this.currentPage){
-          nextPage = sparks.sparksActivity.pages[i+1];
+      var section = sparks.sparksActivityController.currentSection;
+      for (var i = 0; i < section.pages.length-1; i++){
+        if (section.pages[i] == this.currentPage){
+          nextPage = section.pages[i+1];
         }
       }
       if (!nextPage){

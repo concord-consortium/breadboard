@@ -1,4 +1,5 @@
 //= require <activity>
+//= require <models/sparks-activity>
 //= require <models/sparks-section>
 //= require <models/sparks-page>
 //= require <models/sparks-question>
@@ -12,6 +13,7 @@
 //= require <controllers/sparks-page-controller>
 //= require <controllers/sparks-log-controller>
 //= require <controllers/sparks-section-controller>
+//= require <controllers/sparks-activity-controller>
 //= require <controllers/sparks-report-controller>
 //= require <activity-constructor>
 //= require <math-parser>
@@ -78,7 +80,7 @@
             }
             
             if (sparks.debug && !!sparks.jsonSection){
-              self.activityLoaded();
+              self.sectionLoaded();
             } else {
               console.log("loading script for "+jsonSectionName);
               var self = this;
@@ -89,13 +91,13 @@
                 }
                 sparks.jsonSection.section_url = sparks.activity_base_url+jsonSectionName
                 sparks.jsonSection.images_url = sparks.activity_images_base_url+jsonSectionName
-                self.activityLoaded();
+                self.sectionLoaded();
               });
             }
         },
         
-        activityLoaded: function() {
-          console.log("ENTER: activityLoaded")
+        sectionLoaded: function() {
+          console.log("ENTER: sectionLoaded")
           if (!!sparks.jsonSection.circuit && !sparks.jsonSection.hide_circuit && !sparks.debug){
             this.loadFlash();
             // this will then call the other activity.js's initActivity (to be changed)
@@ -121,7 +123,7 @@
         },
         
         onActivityReady: function () {
-          console.log("activity ready")
+          console.log("section ready")
           $('#title').text(sparks.jsonSection.title);
           
           var ac = new sparks.ActivityConstructor(sparks.jsonSection);

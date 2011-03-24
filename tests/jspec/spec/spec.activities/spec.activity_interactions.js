@@ -275,14 +275,12 @@ describe 'Activity Interactions'
 
      stub(sparks.util, 'readCookie').and_return(null);
 
-     console.log(" ======= ")
      init();
      
      var components = getBreadBoard().components;
      
      var res1 = components.r1.resistance;
      var res2 = components.r2.resistance;
-     console.log(res1 + " ::: " + res2);
 
      $buttons = $questionsDiv.find(':button');
      $($buttons[0]).click();
@@ -294,17 +292,11 @@ describe 'Activity Interactions'
      var components = getBreadBoard().components;
      var bothResistorsAreTheSame = (components.r1.resistance === res1) && (components.r2.resistance === res2)
      
-     console.log((components.r1.resistance === res1))
-     console.log((components.r2.resistance === res2))
-     console.log((components.r2.resistance) + " -- " +(res2))
-     console.log((components.r1.resistance === res1) && (components.r2.resistance === res2))
      bothResistorsAreTheSame.should.not.be true
      
     var newres1 = components.r1.resistance;
     var newres2 = components.r2.resistance;
-      console.log(res1 + " ::: " + res2);
       
-      console.log(newres1 + " ::: " + newres2)
      
       
     end

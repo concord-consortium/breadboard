@@ -29,16 +29,17 @@ describe 'Questions'
       
           var ac = new sparks.ActivityConstructor(jsonSection);
           
-          sparks.sparksActivity.should.not.be undefined
-          sparks.sparksActivity.pages.length.should.be 1
+          var section = sparks.sparksActivityController.currentSection;
+          section.should.not.be undefined
+          section.pages.length.should.be 1
       
-          sparks.sparksActivity.pages[0].questions.length.should.be 2
-          sparks.sparksActivity.pages[0].questions[0].prompt.should.be "What is the resistance of R1?"
-          sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be 100
-          sparks.sparksActivity.pages[0].questions[0].correct_units.should.be "V"
+          section.pages[0].questions.length.should.be 2
+          section.pages[0].questions[0].prompt.should.be "What is the resistance of R1?"
+          section.pages[0].questions[0].correct_answer.should.be 100
+          section.pages[0].questions[0].correct_units.should.be "V"
           
-          sparks.sparksActivity.pages[0].questions[1].prompt.should.be "What is your name?"
-          sparks.sparksActivity.pages[0].questions[1].correct_answer.should.be null
+          section.pages[0].questions[1].prompt.should.be "What is your name?"
+          section.pages[0].questions[1].correct_answer.should.be null
       end
       
       it 'should be able to create nested questions'
@@ -74,10 +75,11 @@ describe 'Questions'
       
           var ac = new sparks.ActivityConstructor(jsonSection);
           
-          sparks.sparksActivity.pages[0].questions.length.should.be 3
-          sparks.sparksActivity.pages[0].questions[0].prompt.should.be "R<sub>1</sub>:"
-          sparks.sparksActivity.pages[0].questions[1].prompt.should.be "R<sub>2</sub>:"
-          sparks.sparksActivity.pages[0].questions[2].prompt.should.be "What is the voltage across R1?"
+          var section = sparks.sparksActivityController.currentSection;
+          section.pages[0].questions.length.should.be 3
+          section.pages[0].questions[0].prompt.should.be "R<sub>1</sub>:"
+          section.pages[0].questions[1].prompt.should.be "R<sub>2</sub>:"
+          section.pages[0].questions[2].prompt.should.be "What is the voltage across R1?"
       end
       
       it 'should be able to create a multichoice question'
@@ -104,14 +106,16 @@ describe 'Questions'
       
           var ac = new sparks.ActivityConstructor(jsonSection);
       
-          sparks.sparksActivity.pages[0].questions.length.should.be 2
+          var section = sparks.sparksActivityController.currentSection;
           
-          sparks.sparksActivity.pages[0].questions[0].options.should.be null
+          section.pages[0].questions.length.should.be 2
           
-          sparks.sparksActivity.pages[0].questions[1].options.should.not.be null
-          sparks.sparksActivity.pages[0].questions[1].options.length.should.be 2
-          sparks.sparksActivity.pages[0].questions[1].options[0].should.be "100"
-          sparks.sparksActivity.pages[0].questions[1].options[1].should.be "200"
+          section.pages[0].questions[0].options.should.be null
+          
+          section.pages[0].questions[1].options.should.not.be null
+          section.pages[0].questions[1].options.length.should.be 2
+          section.pages[0].questions[1].options[0].should.be "100"
+          section.pages[0].questions[1].options[1].should.be "200"
       end
       
       it 'should be able to create a multichoice question with points and feedback'
@@ -139,12 +143,13 @@ describe 'Questions'
           };
           
           var ac = new sparks.ActivityConstructor(jsonSection);
-      
-          sparks.sparksActivity.pages[0].questions.length.should.be 1
+          var section = sparks.sparksActivityController.currentSection;
           
-          sparks.sparksActivity.pages[0].questions[0].options.should.not.be null
-          sparks.sparksActivity.pages[0].questions[0].options.length.should.be 2
-          sparks.sparksActivity.pages[0].questions[0].options[0].option.should.be "1 kV"
+          section.pages[0].questions.length.should.be 1
+          
+          section.pages[0].questions[0].options.should.not.be null
+          section.pages[0].questions[0].options.length.should.be 2
+          section.pages[0].questions[0].options[0].option.should.be "1 kV"
       end
       
   end
@@ -171,9 +176,10 @@ describe 'Questions'
         };
     
         var ac = new sparks.ActivityConstructor(jsonSection);
-    
-        sparks.sparksActivity.pages[0].questions.length.should.be 1
-        sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be 300
+        var section = sparks.sparksActivityController.currentSection;
+        
+        section.pages[0].questions.length.should.be 1
+        section.pages[0].questions[0].correct_answer.should.be 300
     end
     
     it 'should be able to calculate an answer from circuit variables'
@@ -197,9 +203,11 @@ describe 'Questions'
         };
     
         var ac = new sparks.ActivityConstructor(jsonSection);
-    
-        sparks.sparksActivity.pages[0].questions.length.should.be 1
-        sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be 150
+      
+        var section = sparks.sparksActivityController.currentSection;
+      
+        section.pages[0].questions.length.should.be 1
+        section.pages[0].questions[0].correct_answer.should.be 150
     end
     
     it 'should be able to handle calculated parts and non-calculated parts of an answer'
@@ -221,9 +229,10 @@ describe 'Questions'
         };
     
         var ac = new sparks.ActivityConstructor(jsonSection);
-    
-        sparks.sparksActivity.pages[0].questions.length.should.be 1
-        sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be "300 and 150"
+        var section = sparks.sparksActivityController.currentSection;
+        
+        section.pages[0].questions.length.should.be 1
+        section.pages[0].questions[0].correct_answer.should.be "300 and 150"
     end
     
     it 'should be able to format answer to engineering'
@@ -250,12 +259,13 @@ describe 'Questions'
         };
     
         var ac = new sparks.ActivityConstructor(jsonSection);
+        var section = sparks.sparksActivityController.currentSection;
         
-        sparks.sparksActivity.pages[0].questions.length.should.be 2
-        sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be 3
-        sparks.sparksActivity.pages[0].questions[0].correct_units.should.be "k&#x2126;"
+        section.pages[0].questions.length.should.be 2
+        section.pages[0].questions[0].correct_answer.should.be 3
+        section.pages[0].questions[0].correct_units.should.be "k&#x2126;"
         
-        sparks.sparksActivity.pages[0].questions[1].correct_answer.should.be "3 k&#x2126;"
+        section.pages[0].questions[1].correct_answer.should.be "3 k&#x2126;"
     end
     
     it 'should be able to create multichoice distractors from circuit variables'
@@ -280,11 +290,12 @@ describe 'Questions'
         };
     
         var ac = new sparks.ActivityConstructor(jsonSection);
-    
-        sparks.sparksActivity.pages[0].questions.length.should.be 1
-        sparks.sparksActivity.pages[0].questions[0].options.length.should.be 2
-        sparks.sparksActivity.pages[0].questions[0].options[0].should.be "100"
-        sparks.sparksActivity.pages[0].questions[0].options[1].should.be "50"
+        var section = sparks.sparksActivityController.currentSection;
+        
+        section.pages[0].questions.length.should.be 1
+        section.pages[0].questions[0].options.length.should.be 2
+        section.pages[0].questions[0].options[0].should.be "100"
+        section.pages[0].questions[0].options[1].should.be "50"
     end
     
   end

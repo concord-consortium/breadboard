@@ -212,8 +212,6 @@ describe 'Circuit Constructor'
     var resistors = ['r1','r2','r3','r4'];
     for (i in resistors){
       var resistor = components[resistors[i]];
-      console.log(resistor.tolerance + " : " + resistor.nominalResistance)
-      console.log(resistor.tolerance + " : " + getTen(resistor.nominalResistance))
       if (resistor.tolerance == 0.05){
         contains(validResistance5perc, getTen(resistor.nominalResistance)).should.be true
       } else {

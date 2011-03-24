@@ -27,15 +27,17 @@ describe 'Activity Pages'
              }
           ]
         };
-  
+        
         var ac = new sparks.ActivityConstructor(jsonSection);
         
         sparks.sparksActivity.should.not.be undefined
         
-        sparks.sparksActivity.pages.length.should.be 1
-        sparks.sparksActivity.pages[0].questions.length.should.be 1
+        var section = sparks.sparksActivityController.currentSection;
         
-        sparks.sparksActivity.pages[0].questions[0].prompt.should.be "What is the resistance of R1?"
+        section.pages.length.should.be 1
+        section.pages[0].questions.length.should.be 1
+        
+        section.pages[0].questions[0].prompt.should.be "What is the resistance of R1?"
     end
     
     it 'should be able to create multiple pages with questions'
@@ -71,14 +73,11 @@ describe 'Activity Pages'
         var ac = new sparks.ActivityConstructor(jsonSection);
         
         sparks.sparksActivity.should.not.be undefined
+        var section = sparks.sparksActivityController.currentSection;
         
-        sparks.sparksActivity.pages.length.should.be 2
-        sparks.sparksActivity.pages[0].questions.length.should.be 2
-        sparks.sparksActivity.pages[1].questions.length.should.be 1
-        
-        sparks.assessment.questions.length.should.be 3
-        
-        sparks.assessment.questions[2].should.be sparks.sparksActivity.pages[1].questions[0]
+        section.pages.length.should.be 2
+        section.pages[0].questions.length.should.be 2
+        section.pages[1].questions.length.should.be 1
     end
     
     

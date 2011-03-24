@@ -2,10 +2,7 @@
 
 (function() {
   sparks.SparksSection = function(){
-    sparks.sparksActivity = this;
-    
-    sparks.activityLog = new sparks.Activity.ActivityLog();
-    sparks.assessment = new sparks.Activity.Assessment();
+    // sparks.sparksActivity = this;
     
     this.image = null;
     this.circuit = null;
