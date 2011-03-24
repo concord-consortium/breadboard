@@ -69,7 +69,7 @@ table {
 
 body {
   background-color: #fee9aa;
-  background-image: url(/images/new/bg-body.png);
+  background-image: url(../../common/icons/bluebar.png);
   background-repeat: repeat-x;
   color: #3f3f3f; }
 
@@ -80,7 +80,7 @@ body {
   min-width: 860px; }
 
 #wrapper {
-  background: #f3f2ed url(/images/new/bg-content.gif) 0 0 repeat-y;
+  background-color: #dddddd;
   height: auto;
   margin: 0 auto;
   min-height: 600px;
