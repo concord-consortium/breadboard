@@ -80,7 +80,7 @@ body {
   min-width: 860px; }
 
 #wrapper {
-  background-color: #dddddd;
+  background-color: #fcfcee;
   height: auto;
   margin: 0 auto;
   min-height: 600px;
@@ -93,30 +93,6 @@ body {
   height: 179px;
   margin: 0; }
 
-
-
-.project-header h1 {
-  background-color: white;
-  background-image: url(/images/new/banners/jax.png);
-  background-repeat: no-repeat;
-  height: 172px;
-  margin: 0;
-  text-indent: -999em; }
-  .project-header h1.loops {
-    background: white url('"/images/new/banners/loops.png"') 0 0 no-repeat; }
-  .project-header h1 a {
-    background: transparent;
-    display: block;
-    height: 172px;
-    width: 100%; }
-
-/* MAIN CONTENT - two columns, #primary on right, #secondary on left */
-#content {
-  overflow: hidden;
-  overflow-y: visible;
-  padding-top: 40px;
-  padding-right: 30px;
-  position: relative; }
 
 /* ------- #primary ------- */
 #primary {
