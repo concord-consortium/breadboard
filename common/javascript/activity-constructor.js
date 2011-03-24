@@ -1,11 +1,11 @@
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
-  sparks.ActivityConstructor = function(jsonActivity){
-    sparks.sparksActivityController.reset();
-    this.activity = sparks.sparksActivityController.createActivity(jsonActivity);
+  sparks.ActivityConstructor = function(jsonSection){
+    sparks.sparksSectionController.reset();
+    this.section = sparks.sparksSectionController.createSection(jsonSection);
     
-    this.jsonActivity = jsonActivity;
+    this.jsonSection = jsonSection;
     
     this.embeddingTargets = {
       $breadboardDiv: null,
@@ -39,8 +39,8 @@
         this.embeddingTargets.$questionsDiv = $('#questions_area');
      }
      
-     if (!!this.activity.image){
-       var $imagediv = this.activity.view.getImageView();
+     if (!!this.section.image){
+       var $imagediv = this.section.view.getImageView();
        this.embeddingTargets.$imageDiv.append($imagediv);
      }
      
@@ -48,9 +48,9 @@
    },
    
    layoutPage: function() {
-     if (!!sparks.sparksActivityController.currentPage){
+     if (!!sparks.sparksSectionController.currentPage){
         this.embeddingTargets.$questionsDiv.html('');
-        var $page = sparks.sparksActivityController.currentPage.view.getView();
+        var $page = sparks.sparksSectionController.currentPage.view.getView();
         this.embeddingTargets.$questionsDiv.append($page);
       }
    }

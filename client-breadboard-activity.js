@@ -2624,7 +2624,7 @@ sparks.util.shuffle = function (o) {
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
-  sparks.SparksActivity = function(){
+  sparks.SparksSection = function(){
     sparks.sparksActivity = this;
 
     sparks.activityLog = new sparks.Activity.ActivityLog();
@@ -2637,13 +2637,13 @@ sparks.util.shuffle = function (o) {
 
     this.hide_circuit = false;
 
-    this.activity_url = "";
+    this.section_url = "";
     this.images_url = "";
 
     this.view = null;
   };
 
-  sparks.SparksActivity.prototype = {
+  sparks.SparksSection.prototype = {
 
     toJSON: function () {
       var json = {};
@@ -2846,16 +2846,16 @@ sparks.util.shuffle = function (o) {
 
 (function() {
 
-  sparks.SparksActivityView = function(activity){
-    this.activity = activity;
+  sparks.SparksSectionView = function(section){
+    this.section = section;
   };
 
-  sparks.SparksActivityView.prototype = {
+  sparks.SparksSectionView.prototype = {
 
     getImageView: function() {
       var $imagediv = $("<div>").addClass("question-image");
       $imagediv.append(
-        $("<img>").attr('src', this.getImgSrc(this.activity.image))
+        $("<img>").attr('src', this.getImgSrc(this.section.image))
       );
       return $imagediv;
     },
@@ -2863,8 +2863,8 @@ sparks.util.shuffle = function (o) {
     getImgSrc: function(fileName) {
       if (fileName.indexOf("http") > -1){
         return fileName;
-      } else if (!!this.activity.images_url) {
-        return this.activity.images_url + "/" + fileName;
+      } else if (!!this.section.images_url) {
+        return this.section.images_url + "/" + fileName;
       }
       console.log(fileName + " appears to be a relative filename, but there is no base activity url.");
       return "";
@@ -2997,7 +2997,7 @@ sparks.util.shuffle = function (o) {
         allCorrect = false;
       }
 
-      var areMorePage = !!sparks.sparksActivityController.areMorePage();
+      var areMorePage = !!sparks.sparksSectionController.areMorePage();
 
       var comment = allCorrect ? "You got all the questions correct! "+(!finalReport ? (areMorePage ? "Move on to the next page." : "You can now view the Activity Summary.") : "") :
                               "You can get a higher score on these questions. " +
@@ -3008,33 +3008,44 @@ sparks.util.shuffle = function (o) {
 
       var $buttonDiv = $("<div>").css("padding", "20px").css("text-align", "center");
 
-      var $repeatButton = $("<button>").text("Repeat").css('padding-left', "10px")
-                          .css('padding-right', "10px").css('margin-right', "10px");
-      var $nextPageButton = $("<button>").text("Next Page »").css('padding-left', "10px")
-                          .css('padding-right', "10px").css('margin-left', "10px");
-      var $viewActivityReportButton = $("<button>").text("View your activity summary").css('padding-left', "10px")
-                          .css('padding-right', "10px").css('margin-left', "10px");
-
-      $repeatButton.click(function(evt){
-        sparks.sparksActivityController.repeatPage();
-      });
-
-      $nextPageButton.click(function(evt){
-        sparks.sparksActivityController.nextPage();
-      });
-
-      $viewActivityReportButton.click(function(evt){
-        sparks.sparksActivityController.viewActivityReport();
-      });
-
-      if (!!sparks.sparksActivityController.areMorePage()){
-        $buttonDiv.append($repeatButton, $nextPageButton);
-      } else {
-        $buttonDiv.append($repeatButton, $viewActivityReportButton);
-      }
       if (!finalReport){
-        this.$reportDiv.append($buttonDiv);
+        var $repeatButton = $("<button>").text("Repeat").css('padding-left', "10px")
+                            .css('padding-right', "10px").css('margin-right', "10px");
+        var $nextPageButton = $("<button>").text("Next Page »").css('padding-left', "10px")
+                            .css('padding-right', "10px").css('margin-left', "10px");
+        var $viewSectionReportButton = $("<button>").text("View your activity summary").css('padding-left', "10px")
+                            .css('padding-right', "10px").css('margin-left', "10px");
+
+        $repeatButton.click(function(evt){
+          sparks.sparksSectionController.repeatPage();
+        });
+
+        $nextPageButton.click(function(evt){
+          sparks.sparksSectionController.nextPage();
+        });
+
+        $viewSectionReportButton.click(function(evt){
+          sparks.sparksSectionController.viewSectionReport();
+        });
+
+        if (!!sparks.sparksSectionController.areMorePage()){
+          $buttonDiv.append($repeatButton, $nextPageButton);
+        } else {
+          $buttonDiv.append($repeatButton, $viewSectionReportButton);
+        }
+      } else if (!!sparks.sparksActivity.nextActivity){
+        var $nextActivityButton = $("<button>").text("Go on to the next section").css('padding-left', "10px")
+                            .css('padding-right', "10px");
+
+        $nextActivityButton.click(function(evt){
+          sparks.sparksSectionController.nextActivity();
+        });
+
+        $buttonDiv.append($nextActivityButton);
       }
+
+      this.$reportDiv.append($buttonDiv);
+
       this.$view.append(this.$reportDiv);
     },
 
@@ -3144,8 +3155,8 @@ sparks.util.shuffle = function (o) {
     _getImgSrc: function(fileName) {
       if (fileName.indexOf("http") > -1){
         return fileName;
-      } else if (!!this.jsonActivity.images_url) {
-        return this.jsonActivity.images_url + "/" + fileName;
+      } else if (!!this.jsonSection.images_url) {
+        return this.jsonSection.images_url + "/" + fileName;
       }
       console.log(fileName + " appears to be a relative filename, but there is no base activity url.");
       return "";
@@ -3187,7 +3198,7 @@ sparks.util.shuffle = function (o) {
         $div.append(self._createReportTableForSession(bestSessionReport));
         var returnButton = $("<button>").addClass("return").text("Try Page "+(i+1)+" again");
         returnButton.click(function(){
-          sparks.sparksActivityController.repeatPage(page);
+          sparks.sparksSectionController.repeatPage(page);
           });
         $div.append(returnButton);
         totalScore += bestSessionReport.score;
@@ -3553,61 +3564,61 @@ sparks.util.shuffle = function (o) {
 
   /*
    * Sparks Activity Controller can be accessed by the
-   * singleton variable sparks.sparksActivityController
+   * singleton variable sparks.sparksSectionController
    */
-  sparks.SparksActivityController = function(){
+  sparks.SparksSectionController = function(){
     this.currentPage = null;
     this.currentPageIndex = -1;
     this.pageIndexMap = {};
   };
 
-  sparks.SparksActivityController.prototype = {
+  sparks.SparksSectionController.prototype = {
 
     reset: function(){
       sparks.sparksPageController.reset();
       sparks.sparksQuestionController.reset();
     },
 
-    createActivity: function(jsonActivity) {
-      var activity = new sparks.SparksActivity();
+    createSection: function(jsonSection) {
+      var section = new sparks.SparksSection();
 
-      if (!!jsonActivity.activity_url){
-        activity.activity_url = jsonActivity.activity_url;
+      if (!!jsonSection.section_url){
+        section.section_url = jsonSection.section_url;
       } else {
-        activity.activity_url = sparks.jsonActivity.activity_url;
+        section.section_url = sparks.jsonSection.section_url;
       }
 
-      if (!!jsonActivity.images_url){
-        activity.images_url = jsonActivity.images_url;
+      if (!!jsonSection.images_url){
+        section.images_url = jsonSection.images_url;
       } else {
-        activity.images_url = sparks.jsonActivity.images_url;
+        section.images_url = sparks.jsonSection.images_url;
       }
 
-      activity.image = jsonActivity.image;
+      section.image = jsonSection.image;
 
-      if (!!jsonActivity.circuit){
-        activity.circuit = jsonActivity.circuit;
-        breadModel("createCircuit", activity.circuit);
+      if (!!jsonSection.circuit){
+        section.circuit = jsonSection.circuit;
+        breadModel("createCircuit", section.circuit);
       }
 
-      activity.hide_circuit = !!jsonActivity.hide_circuit;
+      section.hide_circuit = !!jsonSection.hide_circuit;
 
       var self = this;
-      if (!!jsonActivity.pages){
-        $.each(jsonActivity.pages, function(i, jsonPage){
+      if (!!jsonSection.pages){
+        $.each(jsonSection.pages, function(i, jsonPage){
           var page = sparks.sparksPageController.createPage(i, jsonPage);
-          activity.pages.push(page);
+          section.pages.push(page);
           self.pageIndexMap[page] = i;
         });
 
         if (this.currentPageIndex == -1){
           this.currentPageIndex = 0;
         }
-        this.currentPage = activity.pages[this.currentPageIndex];
+        this.currentPage = section.pages[this.currentPageIndex];
       }
 
-      if (!!jsonActivity.formulas){
-        $.each(this.jsonActivity.formulas, function(i, formula){
+      if (!!jsonSection.formulas){
+        $.each(this.jsonSection.formulas, function(i, formula){
           var variables = {};
           var variable = formula.match(/.* =/)[0];
           variable = variable.substring(0,variable.length-2);
@@ -3618,11 +3629,11 @@ sparks.util.shuffle = function (o) {
         });
       }
 
-      activity.view = new sparks.SparksActivityView(activity);
+      section.view = new sparks.SparksSectionView(section);
 
       sparks.sparksLogController.startNewSession();
 
-      return activity;
+      return section;
     },
 
     areMorePage: function() {
@@ -3667,14 +3678,14 @@ sparks.util.shuffle = function (o) {
       this.currentPage.view.clear();
 
       breadModel('clear');
-      if (!sparks.jsonActivity.hide_circuit && !sparks.debug){
+      if (!sparks.jsonSection.hide_circuit && !sparks.debug){
         sparks.flash.activity.loadFlash();
       } else {
         sparks.flash.activity.onActivityReady();
       }
     },
 
-    viewActivityReport: function() {
+    viewSectionReport: function() {
       sparks.sparksReportController.saveData();
 
       var $report = sparks.sparksReport.view.getActivityReportView();
@@ -3683,7 +3694,7 @@ sparks.util.shuffle = function (o) {
 
   };
 
-  sparks.sparksActivityController = new sparks.SparksActivityController();
+  sparks.sparksSectionController = new sparks.SparksSectionController();
 })();
 /*globals console sparks $ breadModel getBreadBoard */
 
@@ -3732,7 +3743,7 @@ sparks.util.shuffle = function (o) {
         var timeScore = (m * sessionReport.timeTaken) + k;
         timeScore = timeScore > t.points ? t.points : timeScore;
         timeScore = timeScore < 0 ? 0 : timeScore;
-        timeScore = Math.round(timeScore);
+        timeScore = Math.floor(timeScore);
 
         sessionReport.timeScore = timeScore;
         sessionReport.maxTimeScore = t.points;
@@ -3813,11 +3824,11 @@ sparks.util.shuffle = function (o) {
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
-  sparks.ActivityConstructor = function(jsonActivity){
-    sparks.sparksActivityController.reset();
-    this.activity = sparks.sparksActivityController.createActivity(jsonActivity);
+  sparks.ActivityConstructor = function(jsonSection){
+    sparks.sparksSectionController.reset();
+    this.section = sparks.sparksSectionController.createSection(jsonSection);
 
-    this.jsonActivity = jsonActivity;
+    this.jsonSection = jsonSection;
 
     this.embeddingTargets = {
       $breadboardDiv: null,
@@ -3850,8 +3861,8 @@ sparks.util.shuffle = function (o) {
         this.embeddingTargets.$questionsDiv = $('#questions_area');
      }
 
-     if (!!this.activity.image){
-       var $imagediv = this.activity.view.getImageView();
+     if (!!this.section.image){
+       var $imagediv = this.section.view.getImageView();
        this.embeddingTargets.$imageDiv.append($imagediv);
      }
 
@@ -3859,9 +3870,9 @@ sparks.util.shuffle = function (o) {
    },
 
    layoutPage: function() {
-     if (!!sparks.sparksActivityController.currentPage){
+     if (!!sparks.sparksSectionController.currentPage){
         this.embeddingTargets.$questionsDiv.html('');
-        var $page = sparks.sparksActivityController.currentPage.view.getView();
+        var $page = sparks.sparksSectionController.currentPage.view.getView();
         this.embeddingTargets.$questionsDiv.append($page);
       }
    }
@@ -6532,28 +6543,28 @@ var apMessageBox = apMessageBox || {};
           console.log("document ready")
             var self = this;
 
-            var jsonActivityName = window.location.hash;
-            jsonActivityName = jsonActivityName.substring(1,jsonActivityName.length);
-            if (!jsonActivityName){
-              jsonActivityName = "series-interpretive";
+            var jsonSectionName = window.location.hash;
+            jsonSectionName = jsonSectionName.substring(1,jsonSectionName.length);
+            if (!jsonSectionName){
+              jsonSectionName = "series-interpretive";
             }
-            if (jsonActivityName.indexOf("local") == 0){
+            if (jsonSectionName.indexOf("local") == 0){
               sparks.activity_base_url = "/activities/module-2/activities/";
-              jsonActivityName = jsonActivityName.split("/")[1] + ".js";
+              jsonSectionName = jsonSectionName.split("/")[1] + ".js";
             }
 
-            if (sparks.debug && !!sparks.jsonActivity){
+            if (sparks.debug && !!sparks.jsonSection){
               self.activityLoaded();
             } else {
-              console.log("loading script for "+jsonActivityName);
+              console.log("loading script for "+jsonSectionName);
               var self = this;
-              $.getScript(sparks.activity_base_url+jsonActivityName, function() {
-                if (!sparks.jsonActivity){
-                  console.log("Activity failed to load from "+sparks.activity_base_url+jsonActivityName);
+              $.getScript(sparks.activity_base_url+jsonSectionName, function() {
+                if (!sparks.jsonSection){
+                  console.log("Activity failed to load from "+sparks.activity_base_url+jsonSectionName);
                   return;
                 }
-                sparks.jsonActivity.activity_url = sparks.activity_base_url+jsonActivityName
-                sparks.jsonActivity.images_url = sparks.activity_images_base_url+jsonActivityName
+                sparks.jsonSection.section_url = sparks.activity_base_url+jsonSectionName
+                sparks.jsonSection.images_url = sparks.activity_images_base_url+jsonSectionName
                 self.activityLoaded();
               });
             }
@@ -6561,7 +6572,7 @@ var apMessageBox = apMessageBox || {};
 
         activityLoaded: function() {
           console.log("ENTER: activityLoaded")
-          if (!!sparks.jsonActivity.circuit && !sparks.jsonActivity.hide_circuit && !sparks.debug){
+          if (!!sparks.jsonSection.circuit && !sparks.jsonSection.hide_circuit && !sparks.debug){
             this.loadFlash();
           } else {
             this.onActivityReady();
@@ -6585,21 +6596,21 @@ var apMessageBox = apMessageBox || {};
 
         onActivityReady: function () {
           console.log("activity ready")
-          $('#title').text(sparks.jsonActivity.title);
+          $('#title').text(sparks.jsonSection.title);
 
-          var ac = new sparks.ActivityConstructor(sparks.jsonActivity);
+          var ac = new sparks.ActivityConstructor(sparks.jsonSection);
 
           ac.layoutActivity();
 
-          if (!!sparks.jsonActivity.circuit && !sparks.jsonActivity.hide_circuit){
+          if (!!sparks.jsonSection.circuit && !sparks.jsonSection.hide_circuit){
             this.multimeter = new sparks.circuit.Multimeter2();
 
-            if (sparks.jsonActivity.show_multimeter === "true"){
+            if (sparks.jsonSection.show_multimeter === "true"){
               sparks.flash.sendCommand('set_multimeter_visibility','true');
               sparks.flash.sendCommand('set_probe_visibility','true');
 
-              if(sparks.jsonActivity.disable_multimeter_position){
-                this.multimeter.set_disable_multimeter_position(sparks.jsonActivity.disable_multimeter_position);
+              if(sparks.jsonSection.disable_multimeter_position){
+                this.multimeter.set_disable_multimeter_position(sparks.jsonSection.disable_multimeter_position);
               }
             }
           }
@@ -6638,7 +6649,7 @@ var apMessageBox = apMessageBox || {};
 
             var options = null;
 
-            if (!sparks.jsonActivity.hide_circuit){
+            if (!sparks.jsonSection.hide_circuit){
               breadModel('updateFlash');
             }
 

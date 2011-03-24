@@ -1,4 +1,4 @@
-sparks.jsonActivity = {
+sparks.jsonSection = {
   "title": "Interpreting a Series-Parallel Circuit",
   "show_multimeter": "false",
   "circuit": [

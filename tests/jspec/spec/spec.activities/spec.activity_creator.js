@@ -13,7 +13,7 @@ describe 'Activity Creator'
   
     // for more circuit creation examples, see spec.circuit_constructor
     it 'should be able to create a circuit'
-      var jsonActivity =
+      var jsonSection =
         {
           "circuit": [
              {
@@ -23,7 +23,7 @@ describe 'Activity Creator'
           ]
         };
   
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
   
       var board = getBreadBoard();
       var netlist = sparks.circuit.qucsator.makeNetlist(board);
@@ -35,7 +35,7 @@ describe 'Activity Creator'
 
       // for more question creation examples, see spec.questions
       it 'should be able to create a simple question'
-        var jsonActivity =
+        var jsonSection =
           {
             "pages": [
               {
@@ -52,7 +52,7 @@ describe 'Activity Creator'
       
       
       
-          var ac = new sparks.ActivityConstructor(jsonActivity);
+          var ac = new sparks.ActivityConstructor(jsonSection);
           
           sparks.sparksActivity.should.not.be undefined
           sparks.sparksActivity.pages.length.should.be 1
@@ -68,7 +68,7 @@ describe 'Activity Creator'
   // describe 'Formula creation'
   // 
   //     it 'should be able to create a simple formula'
-  //       var jsonActivity =
+  //       var jsonSection =
   //         {
   //           "pages": [
   //             {
@@ -92,14 +92,14 @@ describe 'Activity Creator'
   //     
   //     
   //     
-  //         var ac = new sparks.ActivityConstructor(jsonActivity);
+  //         var ac = new sparks.ActivityConstructor(jsonSection);
   //     
   //         sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be "5"
   //         sparks.sparksActivity.pages[0].questions[1].correct_answer.should.be Math.log(10)
   //     end
   //     
   //     it 'should be able to create a simple formula with circuit variables'
-  //       var jsonActivity =
+  //       var jsonSection =
   //         {
   //           "circuit": [
   //              {
@@ -125,7 +125,7 @@ describe 'Activity Creator'
   //     
   //     
   //     
-  //         var ac = new sparks.ActivityConstructor(jsonActivity);
+  //         var ac = new sparks.ActivityConstructor(jsonSection);
   //     
   //         sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be "50"
   //     end
@@ -135,16 +135,16 @@ describe 'Activity Creator'
   describe 'Activity displaying'
     it 'should be able to embed images in main body of page'
     
-      var jsonActivity =
+      var jsonSection =
         {
-          "activity_url": "http://test.com/myActivity",
+          "section_url": "http://test.com/myActivity",
           "images_url": "http://test.com/images/myActivity",
           "image": "test.jpg"
       };
       
       var $imageDiv = $("<div>");
         
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$imageDiv: $imageDiv});
       ac.layoutActivity();
       
@@ -159,7 +159,7 @@ describe 'Activity Creator'
   // 
   //   it 'should be able to create a circuit and calculate an answer'
   //     
-  //     var jsonActivity =
+  //     var jsonSection =
   //       {
   //         "circuit": [
   //           {
@@ -191,8 +191,8 @@ describe 'Activity Creator'
   //   
   //       var assessment = new sparks.Activity.Assessment();
   //   
-  //       var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
-  //       ac.createActivity();
+  //       var ac = new sparks.ActivityConstructor(jsonSection, assessment);
+  //       ac.createSection();
   //   
   //       assessment.questions.length.should.be 1
   //       assessment.questions[0].correct_answer.should.be "300"
@@ -201,7 +201,7 @@ describe 'Activity Creator'
   //   
   //   it 'should be able to embed questions into an activity'
   //   
-  //     var jsonActivity =
+  //     var jsonSection =
   //       {
   //         "questions": [
   //           {
@@ -220,10 +220,10 @@ describe 'Activity Creator'
   //       
   //     var assessment = new sparks.Activity.Assessment();
   //     
-  //     var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+  //     var ac = new sparks.ActivityConstructor(jsonSection, assessment);
   //     ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
   //     
-  //     ac.createActivity($questionsDiv);
+  //     ac.createSection($questionsDiv);
   //     
   //     var $forms = $questionsDiv.find('form');
   //     
@@ -255,7 +255,7 @@ describe 'Activity Creator'
   //   end
   //   
   //   it 'should be able to embed nested questions in an activity'
-  //     var jsonActivity =
+  //     var jsonSection =
   //       {
   //         "questions": [
   //           {
@@ -284,9 +284,9 @@ describe 'Activity Creator'
   //       var $questionsDiv = $("<div>");
   //   
   //       var assessment = new sparks.Activity.Assessment();
-  //       var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+  //       var ac = new sparks.ActivityConstructor(jsonSection, assessment);
   //       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-  //       ac.createActivity();
+  //       ac.createSection();
   //       
   //       var $forms = $questionsDiv.find('form');
   // 
@@ -311,7 +311,7 @@ describe 'Activity Creator'
   //   
   //   it 'should be able to embed options questions into an activity'
   //   
-  //     var jsonActivity =
+  //     var jsonSection =
   //       {
   //         "questions": [
   //           {
@@ -326,9 +326,9 @@ describe 'Activity Creator'
   //     var $questionsDiv = $("<div>");
   //       
   //     var assessment = new sparks.Activity.Assessment();
-  //     var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+  //     var ac = new sparks.ActivityConstructor(jsonSection, assessment);
   //     ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-  //     ac.createActivity();
+  //     ac.createSection();
   //     
   //     var $forms = $questionsDiv.find('form');
   //     var $question = $($forms[0]);
@@ -344,7 +344,7 @@ describe 'Activity Creator'
   //   
   //   it 'should be able to embed checkbox and radio options questions into an activity'
   //   
-  //     var jsonActivity =
+  //     var jsonSection =
   //       {
   //         "questions": [
   //           {
@@ -374,9 +374,9 @@ describe 'Activity Creator'
   //     var $questionsDiv = $("<div>");
   //       
   //     var assessment = new sparks.Activity.Assessment();
-  //     var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+  //     var ac = new sparks.ActivityConstructor(jsonSection, assessment);
   //     ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-  //     ac.createActivity();
+  //     ac.createSection();
   //     
   //     var $forms = $questionsDiv.find('form');
   //     var $question = $($forms[0]);
@@ -419,7 +419,7 @@ describe 'Activity Creator'
   //   
   //   it 'should be able to embed options questions into an activity with calculated distrators'
   //   
-  //     var jsonActivity =
+  //     var jsonSection =
   //       {
   //         "circuit": [
   //           {
@@ -448,9 +448,9 @@ describe 'Activity Creator'
   //     var $questionsDiv = $("<div>");
   //       
   //     var assessment = new sparks.Activity.Assessment();
-  //     var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+  //     var ac = new sparks.ActivityConstructor(jsonSection, assessment);
   //     ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-  //     ac.createActivity();
+  //     ac.createSection();
   //     
   //     var $forms = $questionsDiv.find('form');
   //     var $question = $($forms[0]);
@@ -466,7 +466,7 @@ describe 'Activity Creator'
   //   
   //   it 'should be able to embed calculated options questions correctly conveted to engineering'
   //   
-  //     var jsonActivity =
+  //     var jsonSection =
   //       {
   //         "circuit": [
   //           {
@@ -488,9 +488,9 @@ describe 'Activity Creator'
   //     var $questionsDiv = $("<div>");
   //     
   //     var assessment = new sparks.Activity.Assessment();
-  //     var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+  //     var ac = new sparks.ActivityConstructor(jsonSection, assessment);
   //     ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-  //     ac.createActivity();
+  //     ac.createSection();
   //   
   //     var $forms = $questionsDiv.find('form');
   //     var $question = $($forms[0]);
@@ -511,7 +511,7 @@ describe 'Activity Creator'
   //   end
   //   
   //   it 'should be able to embed a multichoice question with points and feedback'
-  //     var jsonActivity =
+  //     var jsonSection =
   //       {
   //           "questions": [
   //               {
@@ -547,9 +547,9 @@ describe 'Activity Creator'
   //       var $questionsDiv = $("<div>");
   // 
   //       var assessment = new sparks.Activity.Assessment();
-  //       var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+  //       var ac = new sparks.ActivityConstructor(jsonSection, assessment);
   //       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-  //       ac.createActivity();
+  //       ac.createSection();
   // 
   //       var $forms = $questionsDiv.find('form');
   //       var $question = $($forms[0]);
@@ -570,7 +570,7 @@ describe 'Activity Creator'
   //   
   //   it 'should be able to embed questions with images'
   //   
-  //     var jsonActivity =
+  //     var jsonSection =
   //       {
   //         "questions": [
   //           {
@@ -584,9 +584,9 @@ describe 'Activity Creator'
   //     var $questionsDiv = $("<div>");
   //       
   //     var assessment = new sparks.Activity.Assessment();
-  //     var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+  //     var ac = new sparks.ActivityConstructor(jsonSection, assessment);
   //     ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-  //     ac.createActivity();
+  //     ac.createSection();
   //     
   //     var $forms = $questionsDiv.find('form');
   //     var $question = $($forms[0]);
@@ -597,9 +597,9 @@ describe 'Activity Creator'
   //   
   //   it 'should be able to embed questions with relative images'
   //   
-  //     var jsonActivity =
+  //     var jsonSection =
   //       {
-  //         "activity_url": "http://test.com/myActivity",
+  //         "section_url": "http://test.com/myActivity",
   //         "images_url": "http://test.com/images/myActivity",
   //         "questions": [
   //           {
@@ -613,9 +613,9 @@ describe 'Activity Creator'
   //     var $questionsDiv = $("<div>");
   //       
   //     var assessment = new sparks.Activity.Assessment();
-  //     var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+  //     var ac = new sparks.ActivityConstructor(jsonSection, assessment);
   //     ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-  //     ac.createActivity();
+  //     ac.createSection();
   //     
   //     var $forms = $questionsDiv.find('form');
   //     var $question = $($forms[0]);
@@ -625,9 +625,9 @@ describe 'Activity Creator'
   //   
   //   it 'should be able to embed images in main body of page'
   //   
-  //     var jsonActivity =
+  //     var jsonSection =
   //       {
-  //         "activity_url": "http://test.com/myActivity",
+  //         "section_url": "http://test.com/myActivity",
   //         "images_url": "http://test.com/images/myActivity",
   //         "image": "test.jpg"
   //     };
@@ -635,9 +635,9 @@ describe 'Activity Creator'
   //     var $imageDiv = $("<div>");
   //       
   //     var assessment = new sparks.Activity.Assessment();
-  //     var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+  //     var ac = new sparks.ActivityConstructor(jsonSection, assessment);
   //     ac.setEmbeddingTargets({$imageDiv: $imageDiv});
-  //     ac.createActivity();
+  //     ac.createSection();
   //     
   //     var $img = $imageDiv.find('img');
   //     $img.length.should.be 1
@@ -647,7 +647,7 @@ describe 'Activity Creator'
   //   it 'should be able to have questions and no breadboard'
   //   
   //     sparks.debug = true;
-  //     sparks.jsonActivity = {
+  //     sparks.jsonSection = {
   //       "title": "woo",
   //       "questions": [
   //         {
@@ -673,7 +673,7 @@ describe 'Activity Creator'
   //   it 'should be able to include a flash breadboard'
   //   
   //   sparks.debug = true;
-  //   sparks.jsonActivity = {
+  //   sparks.jsonSection = {
   //       "title": "woo",
   //       "circuit": [
   //         {
@@ -711,9 +711,9 @@ describe 'Activity Creator'
   // 
   //   it 'should be able to display multiple pages of questions'
   //   
-  //     var jsonActivity =
+  //     var jsonSection =
   //       {
-  //         "activity_url": "http://test.com/myActivity",
+  //         "section_url": "http://test.com/myActivity",
   //         "images_url": "http://test.com/images/myActivity",
   //         "questions": [
   //           [
@@ -742,9 +742,9 @@ describe 'Activity Creator'
   //     var $questionsDiv = $("<div>");
   //     
   //     var assessment = new sparks.Activity.Assessment();
-  //     var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+  //     var ac = new sparks.ActivityConstructor(jsonSection, assessment);
   //     ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-  //     ac.createActivity();
+  //     ac.createSection();
   //   
   //     var $forms = $questionsDiv.find('form');
   //     $forms.length.should.be 4

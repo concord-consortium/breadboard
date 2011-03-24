@@ -77,7 +77,7 @@ describe 'Logging and Reporting'
     
     it "should be able to convert units on measurment questions"
       
-       var jsonActivity =
+       var jsonSection =
           {
               "questions": [
                   {
@@ -99,7 +99,7 @@ describe 'Logging and Reporting'
           };
           
           var assessment = new sparks.Activity.Assessment();
-          var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+          var ac = new sparks.ActivityConstructor(jsonSection, assessment);
           ac.createQuestions();
       
       assessment.questions[0].correct_answer.should.be "1"
@@ -157,7 +157,7 @@ describe 'Logging and Reporting'
     end
     
     it 'should be able to score multichoice questions with points'
-      var jsonActivity =
+      var jsonSection =
         {
             "questions": [
                 {
@@ -179,9 +179,9 @@ describe 'Logging and Reporting'
       var $questionsDiv = $("<div>");
 
       var assessment = new sparks.Activity.Assessment();
-      var ac = new sparks.ActivityConstructor(jsonActivity, assessment);
+      var ac = new sparks.ActivityConstructor(jsonSection, assessment);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.createActivity();
+      ac.createSection();
 
       var $forms = $questionsDiv.find('form');
       var $question = $($forms[0]);

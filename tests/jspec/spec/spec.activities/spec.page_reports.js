@@ -6,13 +6,13 @@ describe 'Page Reports'
   end
   
   after_each
-    sparks.sparksActivityController.reset();
+    sparks.sparksSectionController.reset();
   end
   
   describe 'Question grading'
 
       it 'should be able to get the student answers for simple questions'
-        var jsonActivity =
+        var jsonSection =
           {
             "pages":[
               {
@@ -39,7 +39,7 @@ describe 'Page Reports'
           
         var $questionsDiv = $("<div>");
 
-        var ac = new sparks.ActivityConstructor(jsonActivity);
+        var ac = new sparks.ActivityConstructor(jsonSection);
         ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
         ac.layoutActivity();
         
@@ -60,7 +60,7 @@ describe 'Page Reports'
       end
       
       it 'should be able to grade student answers for simple questions'
-        var jsonActivity =
+        var jsonSection =
           {
             "pages":[
               {
@@ -111,7 +111,7 @@ describe 'Page Reports'
           
         var $questionsDiv = $("<div>");
 
-        var ac = new sparks.ActivityConstructor(jsonActivity);
+        var ac = new sparks.ActivityConstructor(jsonSection);
         ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
         ac.layoutActivity();
 
@@ -140,7 +140,7 @@ describe 'Page Reports'
       end
       
       it 'should be able to grade student answers for radio button questions'
-        var jsonActivity =
+        var jsonSection =
           {
             "pages":[
               {
@@ -178,7 +178,7 @@ describe 'Page Reports'
           
         var $questionsDiv = $("<div>");
 
-        var ac = new sparks.ActivityConstructor(jsonActivity);
+        var ac = new sparks.ActivityConstructor(jsonSection);
         ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
         ac.layoutActivity();
 
@@ -202,7 +202,7 @@ describe 'Page Reports'
       end
       
       it 'should be able to grade student answers for nested questions'
-        var jsonActivity =
+        var jsonSection =
           {
             "pages":[
               {
@@ -253,7 +253,7 @@ describe 'Page Reports'
           
         var $questionsDiv = $("<div>");
 
-        var ac = new sparks.ActivityConstructor(jsonActivity);
+        var ac = new sparks.ActivityConstructor(jsonSection);
         ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
         ac.layoutActivity();
 
@@ -286,7 +286,7 @@ describe 'Page Reports'
   describe "Creating reports"
   
     it 'should be able to grade the answers on one page'
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[
             {
@@ -337,7 +337,7 @@ describe 'Page Reports'
         
       var $questionsDiv = $("<div>");
 
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
 
@@ -363,17 +363,17 @@ describe 'Page Reports'
     
     it 'should be able to calculate the score for one page'
       // create six questions with answers all 100
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[{"questions":[]}]
         };
       for (var i = 0; i < 6; i++){
-        jsonActivity.pages[0].questions.push({"prompt": ""+i, "correct_answer": 100, "points": 1});
+        jsonSection.pages[0].questions.push({"prompt": ""+i, "correct_answer": 100, "points": 1});
       }
       
       var $questionsDiv = $("<div>");
 
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
 
@@ -389,17 +389,17 @@ describe 'Page Reports'
     
     it 'should be able to create multiple session reports for a page and get the best one'
       // create six questions with answers all 100
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[{"questions":[]}]
         };
       for (var i = 0; i < 6; i++){
-        jsonActivity.pages[0].questions.push({"prompt": ""+i, "correct_answer": 100, "points": 1});
+        jsonSection.pages[0].questions.push({"prompt": ""+i, "correct_answer": 100, "points": 1});
       }
       
       var $questionsDiv = $("<div>");
 
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
 
@@ -436,7 +436,7 @@ describe 'Page Reports'
     end
     
     it 'should be able to give points for completing page in specified time'
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[
             {
@@ -463,7 +463,7 @@ describe 'Page Reports'
         
       var $questionsDiv = $("<div>");
 
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
 
@@ -518,7 +518,7 @@ describe 'Page Reports'
   describe "Report views"
     
     it 'should be able to create a report table of one page'
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[
             {
@@ -571,7 +571,7 @@ describe 'Page Reports'
         
       var $questionsDiv = $("<div>");
 
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
 
@@ -634,7 +634,7 @@ describe 'Page Reports'
     end
     
     it 'should be able to create a report table that includes time'
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[
             {
@@ -656,7 +656,7 @@ describe 'Page Reports'
         
       var $questionsDiv = $("<div>");
 
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
 
@@ -703,7 +703,7 @@ describe 'Page Reports'
     end
     
     it 'should show tutorial links if they are specified'
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[
             {
@@ -746,7 +746,7 @@ describe 'Page Reports'
         
       var $questionsDiv = $("<div>");
 
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
 
@@ -810,18 +810,18 @@ describe 'Page Reports'
     
     it 'should be able to create an activity reports with multiple pages and sessions'
       // create two pages, six questions each, with answers all 100
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[{"questions":[]}, {"questions":[]}]
         };
       for (var i = 0; i < 6; i++){
-        jsonActivity.pages[0].questions.push({"prompt": ""+i, "correct_answer": 100, "points": 1});
-        jsonActivity.pages[1].questions.push({"prompt": ""+i, "correct_answer": 100, "points": 1});
+        jsonSection.pages[0].questions.push({"prompt": ""+i, "correct_answer": 100, "points": 1});
+        jsonSection.pages[1].questions.push({"prompt": ""+i, "correct_answer": 100, "points": 1});
       }
       
       var $questionsDiv = $("<div>");
 
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
       
@@ -839,7 +839,7 @@ describe 'Page Reports'
       $($input[1]).change();
       sparks.sparksReportController.addNewSessionReport(page);
       
-      sparks.sparksActivityController.nextPage();
+      sparks.sparksSectionController.nextPage();
       var page = sparks.sparksActivity.pages[1];
       
       var $input = $questionsDiv.find('input');

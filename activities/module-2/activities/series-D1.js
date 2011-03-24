@@ -1,4 +1,4 @@
-sparks.jsonActivity = {
+sparks.jsonSection = {
   "title": "Measuring a Series Circuit",
   "show_multimeter": "true",
   "disable_multimeter_position": "r",//r,dcv,acv,dca,diode,hfe,c_10a,p_9v",

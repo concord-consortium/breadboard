@@ -13,7 +13,7 @@ describe 'Activity Pages'
   
     // for more circuit creation examples, see spec.circuit_constructor
     it 'should be able to create a page with one question'
-      var jsonActivity =
+      var jsonSection =
         {
           "pages": [
              {
@@ -28,7 +28,7 @@ describe 'Activity Pages'
           ]
         };
   
-        var ac = new sparks.ActivityConstructor(jsonActivity);
+        var ac = new sparks.ActivityConstructor(jsonSection);
         
         sparks.sparksActivity.should.not.be undefined
         
@@ -39,7 +39,7 @@ describe 'Activity Pages'
     end
     
     it 'should be able to create multiple pages with questions'
-      var jsonActivity =
+      var jsonSection =
         {
           "pages": [
              {
@@ -68,7 +68,7 @@ describe 'Activity Pages'
           ]
         };
   
-        var ac = new sparks.ActivityConstructor(jsonActivity);
+        var ac = new sparks.ActivityConstructor(jsonSection);
         
         sparks.sparksActivity.should.not.be undefined
         
@@ -87,7 +87,7 @@ describe 'Activity Pages'
   describe "Page displaying"
   
     it "should start by displaying page 1"
-      var jsonActivity =
+      var jsonSection =
         {
           "pages": [
             {
@@ -119,7 +119,7 @@ describe 'Activity Pages'
     
       var $questionsDiv = $("<div>");
       
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
     
@@ -134,7 +134,7 @@ describe 'Activity Pages'
     end
   
     it "should be able to display authored text"
-      var jsonActivity =
+      var jsonSection =
         {
           "pages": [
             {
@@ -167,7 +167,7 @@ describe 'Activity Pages'
   
       var $questionsDiv = $("<div>");
     
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
     

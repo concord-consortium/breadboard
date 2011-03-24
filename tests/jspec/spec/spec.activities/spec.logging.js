@@ -2,14 +2,14 @@ describe 'Page Reports'
 
   before_each
     breadModel('clear');
-    sparks.sparksActivityController = new sparks.SparksActivityController();
+    sparks.sparksSectionController = new sparks.SparksSectionController();
     sparks.sparksReportController = new sparks.SparksReportController();
   end
   
   describe 'Simple Logging'
 
       it 'should log when user clicks tutorial'
-        var jsonActivity =
+        var jsonSection =
           {
             "pages":[
               {
@@ -36,7 +36,7 @@ describe 'Page Reports'
 
         var $questionsDiv = $("<div>");
 
-        var ac = new sparks.ActivityConstructor(jsonActivity);
+        var ac = new sparks.ActivityConstructor(jsonSection);
         ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
         ac.layoutActivity();
 

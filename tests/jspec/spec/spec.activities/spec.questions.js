@@ -7,7 +7,7 @@ describe 'Questions'
   describe 'Creation'
 
       it 'should be able to create a simple question'
-        var jsonActivity =
+        var jsonSection =
           {
             "pages":[
               {
@@ -27,7 +27,7 @@ describe 'Questions'
       
           
       
-          var ac = new sparks.ActivityConstructor(jsonActivity);
+          var ac = new sparks.ActivityConstructor(jsonSection);
           
           sparks.sparksActivity.should.not.be undefined
           sparks.sparksActivity.pages.length.should.be 1
@@ -42,7 +42,7 @@ describe 'Questions'
       end
       
       it 'should be able to create nested questions'
-        var jsonActivity =
+        var jsonSection =
           {
             "pages":[
               {
@@ -72,7 +72,7 @@ describe 'Questions'
             ]
           };
       
-          var ac = new sparks.ActivityConstructor(jsonActivity);
+          var ac = new sparks.ActivityConstructor(jsonSection);
           
           sparks.sparksActivity.pages[0].questions.length.should.be 3
           sparks.sparksActivity.pages[0].questions[0].prompt.should.be "R<sub>1</sub>:"
@@ -81,7 +81,7 @@ describe 'Questions'
       end
       
       it 'should be able to create a multichoice question'
-        var jsonActivity =
+        var jsonSection =
           {
             "pages":[
               {
@@ -102,7 +102,7 @@ describe 'Questions'
             ]
           };
       
-          var ac = new sparks.ActivityConstructor(jsonActivity);
+          var ac = new sparks.ActivityConstructor(jsonSection);
       
           sparks.sparksActivity.pages[0].questions.length.should.be 2
           
@@ -115,7 +115,7 @@ describe 'Questions'
       end
       
       it 'should be able to create a multichoice question with points and feedback'
-        var jsonActivity =
+        var jsonSection =
           {
             "pages":[
               {
@@ -138,7 +138,7 @@ describe 'Questions'
             ]
           };
           
-          var ac = new sparks.ActivityConstructor(jsonActivity);
+          var ac = new sparks.ActivityConstructor(jsonSection);
       
           sparks.sparksActivity.pages[0].questions.length.should.be 1
           
@@ -155,7 +155,7 @@ describe 'Questions'
       
       breadModel('insertComponent', 'resistor', {"UID": "r1", "connections": "a1,a2", "colors": "orange,black,brown,gold"});
       
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[
             {
@@ -170,7 +170,7 @@ describe 'Questions'
           ]
         };
     
-        var ac = new sparks.ActivityConstructor(jsonActivity);
+        var ac = new sparks.ActivityConstructor(jsonSection);
     
         sparks.sparksActivity.pages[0].questions.length.should.be 1
         sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be 300
@@ -181,7 +181,7 @@ describe 'Questions'
       breadModel('insertComponent', 'resistor', {"UID": "r1", "connections": "a1,a2", "colors": "orange,black,brown,gold"});
       breadModel('insertComponent', 'resistor', {"UID": "r2", "connections": "a2,a3", "resistance": "300"});
       
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[
             {
@@ -196,7 +196,7 @@ describe 'Questions'
           ]
         };
     
-        var ac = new sparks.ActivityConstructor(jsonActivity);
+        var ac = new sparks.ActivityConstructor(jsonSection);
     
         sparks.sparksActivity.pages[0].questions.length.should.be 1
         sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be 150
@@ -206,7 +206,7 @@ describe 'Questions'
       
       breadModel('insertComponent', 'resistor', {"UID": "r1", "connections": "a1,a2", "colors": "orange,black,brown,gold"});
       
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[
             {
@@ -220,7 +220,7 @@ describe 'Questions'
           ]
         };
     
-        var ac = new sparks.ActivityConstructor(jsonActivity);
+        var ac = new sparks.ActivityConstructor(jsonSection);
     
         sparks.sparksActivity.pages[0].questions.length.should.be 1
         sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be "300 and 150"
@@ -230,7 +230,7 @@ describe 'Questions'
       
       breadModel('insertComponent', 'resistor', {"UID": "r1", "connections": "a1,a2", "resistance": "3000"});
       
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[
             {
@@ -249,7 +249,7 @@ describe 'Questions'
           ]
         };
     
-        var ac = new sparks.ActivityConstructor(jsonActivity);
+        var ac = new sparks.ActivityConstructor(jsonSection);
         
         sparks.sparksActivity.pages[0].questions.length.should.be 2
         sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be 3
@@ -263,7 +263,7 @@ describe 'Questions'
       breadModel('insertComponent', 'resistor', {"UID": "r1", "connections": "a1,a2", "resistance": "100"});
       breadModel('insertComponent', 'resistor', {"UID": "r2", "connections": "a2,a3", "resistance": "300"});
       
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[
             {
@@ -279,7 +279,7 @@ describe 'Questions'
           ]
         };
     
-        var ac = new sparks.ActivityConstructor(jsonActivity);
+        var ac = new sparks.ActivityConstructor(jsonSection);
     
         sparks.sparksActivity.pages[0].questions.length.should.be 1
         sparks.sparksActivity.pages[0].questions[0].options.length.should.be 2
@@ -292,7 +292,7 @@ describe 'Questions'
   describe "Question displaying"
   
     it "should be able to display simple questions"
-      var jsonActivity =
+      var jsonSection =
         {
           "pages": [
             {
@@ -312,7 +312,7 @@ describe 'Questions'
     
       var $questionsDiv = $("<div>");
       
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
     
@@ -324,7 +324,7 @@ describe 'Questions'
     end
     
     it "should be able to display a question with an image"
-      var jsonActivity =
+      var jsonSection =
         {
           "pages": [
             {
@@ -341,7 +341,7 @@ describe 'Questions'
     
       var $questionsDiv = $("<div>");
       
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
     
@@ -353,7 +353,7 @@ describe 'Questions'
     end
     
     it "should be able to display basic multiplechoice questions"
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[
             {
@@ -377,7 +377,7 @@ describe 'Questions'
       
       var $questionsDiv = $("<div>");
         
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
       
@@ -397,7 +397,7 @@ describe 'Questions'
     end
     
     it "should be able to display radio and checkbox questions"
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[
             {
@@ -448,7 +448,7 @@ describe 'Questions'
       
       var $questionsDiv = $("<div>");
         
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
       
@@ -494,7 +494,7 @@ describe 'Questions'
      * Note: This test has a 1 in 720 chance in failing due to random ordering
      */
     it "should be able to display multiplechoice questions in random order"
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[
             {
@@ -553,7 +553,7 @@ describe 'Questions'
       
       var $questionsDiv = $("<div>");
         
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
       
@@ -586,7 +586,7 @@ describe 'Questions'
     end
     
     it "should be able to display nested questions"
-      var jsonActivity =
+      var jsonSection =
         {
           "pages":[
             {
@@ -620,7 +620,7 @@ describe 'Questions'
       
       var $questionsDiv = $("<div>");
         
-      var ac = new sparks.ActivityConstructor(jsonActivity);
+      var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
       ac.layoutActivity();
       

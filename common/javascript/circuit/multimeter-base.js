@@ -256,7 +256,7 @@
 
         disable_multimeter_position : function (displayText) {
         	// how do I pass a variable from the "series" file into here?
-        	// something like: sparks.jsonActivity.disable_multimeter_position  ??    
+        	// something like: sparks.jsonSection.disable_multimeter_position  ??    
         	
         	// right now this is hard wired to disable R dial positions
         	switch (this.dialPosition)

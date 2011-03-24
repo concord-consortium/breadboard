@@ -67,28 +67,28 @@
           console.log("document ready")
             var self = this;
             
-            var jsonActivityName = window.location.hash;
-            jsonActivityName = jsonActivityName.substring(1,jsonActivityName.length);
-            if (!jsonActivityName){
-              jsonActivityName = "series-interpretive";
+            var jsonSectionName = window.location.hash;
+            jsonSectionName = jsonSectionName.substring(1,jsonSectionName.length);
+            if (!jsonSectionName){
+              jsonSectionName = "series-interpretive";
             }
-            if (jsonActivityName.indexOf("local") == 0){
+            if (jsonSectionName.indexOf("local") == 0){
               sparks.activity_base_url = "/activities/module-2/activities/";
-              jsonActivityName = jsonActivityName.split("/")[1] + ".js";
+              jsonSectionName = jsonSectionName.split("/")[1] + ".js";
             }
             
-            if (sparks.debug && !!sparks.jsonActivity){
+            if (sparks.debug && !!sparks.jsonSection){
               self.activityLoaded();
             } else {
-              console.log("loading script for "+jsonActivityName);
+              console.log("loading script for "+jsonSectionName);
               var self = this;
-              $.getScript(sparks.activity_base_url+jsonActivityName, function() {
-                if (!sparks.jsonActivity){
-                  console.log("Activity failed to load from "+sparks.activity_base_url+jsonActivityName);
+              $.getScript(sparks.activity_base_url+jsonSectionName, function() {
+                if (!sparks.jsonSection){
+                  console.log("Activity failed to load from "+sparks.activity_base_url+jsonSectionName);
                   return;
                 }
-                sparks.jsonActivity.activity_url = sparks.activity_base_url+jsonActivityName
-                sparks.jsonActivity.images_url = sparks.activity_images_base_url+jsonActivityName
+                sparks.jsonSection.section_url = sparks.activity_base_url+jsonSectionName
+                sparks.jsonSection.images_url = sparks.activity_images_base_url+jsonSectionName
                 self.activityLoaded();
               });
             }
@@ -96,7 +96,7 @@
         
         activityLoaded: function() {
           console.log("ENTER: activityLoaded")
-          if (!!sparks.jsonActivity.circuit && !sparks.jsonActivity.hide_circuit && !sparks.debug){
+          if (!!sparks.jsonSection.circuit && !sparks.jsonSection.hide_circuit && !sparks.debug){
             this.loadFlash();
             // this will then call the other activity.js's initActivity (to be changed)
             // which will call onActivityReady
@@ -122,21 +122,21 @@
         
         onActivityReady: function () {
           console.log("activity ready")
-          $('#title').text(sparks.jsonActivity.title);
+          $('#title').text(sparks.jsonSection.title);
           
-          var ac = new sparks.ActivityConstructor(sparks.jsonActivity);
+          var ac = new sparks.ActivityConstructor(sparks.jsonSection);
           
           ac.layoutActivity();
           
-          if (!!sparks.jsonActivity.circuit && !sparks.jsonActivity.hide_circuit){
+          if (!!sparks.jsonSection.circuit && !sparks.jsonSection.hide_circuit){
             this.multimeter = new sparks.circuit.Multimeter2();
             
-            if (sparks.jsonActivity.show_multimeter === "true"){
+            if (sparks.jsonSection.show_multimeter === "true"){
               sparks.flash.sendCommand('set_multimeter_visibility','true');
               sparks.flash.sendCommand('set_probe_visibility','true');
             
-              if(sparks.jsonActivity.disable_multimeter_position){
-                this.multimeter.set_disable_multimeter_position(sparks.jsonActivity.disable_multimeter_position);
+              if(sparks.jsonSection.disable_multimeter_position){
+                this.multimeter.set_disable_multimeter_position(sparks.jsonSection.disable_multimeter_position);
               }
             }
           }
@@ -199,7 +199,7 @@
             
             var options = null;
             
-            if (!sparks.jsonActivity.hide_circuit){
+            if (!sparks.jsonSection.hide_circuit){
               breadModel('updateFlash');
             }
             

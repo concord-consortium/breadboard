@@ -15,7 +15,7 @@ describe 'Activity Interactions'
    it 'should be able to click submit and get to the next question'
    
      sparks.debug = true;
-     sparks.jsonActivity = {
+     sparks.jsonSection = {
        "title": "woo",
        "pages": [
           {
@@ -75,7 +75,7 @@ describe 'Activity Interactions'
     it 'should show the page report after clicking the last submit'
     
       sparks.debug = true;
-      sparks.jsonActivity = {
+      sparks.jsonSection = {
        "title": "woo",
        "pages": [
           {
@@ -122,7 +122,7 @@ describe 'Activity Interactions'
     it 'should allow user to repeat a page'
     
       sparks.debug = true;
-      sparks.jsonActivity = {
+      sparks.jsonSection = {
        "title": "woo",
        "pages": [
           {
@@ -192,7 +192,7 @@ describe 'Activity Interactions'
     it 'should clear question answers when a page is repeated'
     
       sparks.debug = true;
-      sparks.jsonActivity = {
+      sparks.jsonSection = {
        "title": "woo",
        "pages": [
           {
@@ -238,7 +238,7 @@ describe 'Activity Interactions'
     it 'should reset circuit when a page is repeated'
     
       sparks.debug = true;
-      sparks.jsonActivity = {
+      sparks.jsonSection = {
        "title": "woo",
        "circuit": [
           {

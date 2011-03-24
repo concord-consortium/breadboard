@@ -25,7 +25,7 @@
         $div.append(self._createReportTableForSession(bestSessionReport));
         var returnButton = $("<button>").addClass("return").text("Try Page "+(i+1)+" again");
         returnButton.click(function(){
-          sparks.sparksActivityController.repeatPage(page);
+          sparks.sparksSectionController.repeatPage(page);
           });
         $div.append(returnButton);
         totalScore += bestSessionReport.score;

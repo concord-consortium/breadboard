@@ -100,8 +100,8 @@
     _getImgSrc: function(fileName) {
       if (fileName.indexOf("http") > -1){
         return fileName;
-      } else if (!!this.jsonActivity.images_url) {
-        return this.jsonActivity.images_url + "/" + fileName;
+      } else if (!!this.jsonSection.images_url) {
+        return this.jsonSection.images_url + "/" + fileName;
       }
       console.log(fileName + " appears to be a relative filename, but there is no base activity url.");
       return "";

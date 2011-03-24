@@ -125,7 +125,7 @@
         allCorrect = false;
       }
       
-      var areMorePage = !!sparks.sparksActivityController.areMorePage();
+      var areMorePage = !!sparks.sparksSectionController.areMorePage();
       
       var comment = allCorrect ? "You got all the questions correct! "+(!finalReport ? (areMorePage ? "Move on to the next page." : "You can now view the Activity Summary.") : "") :
                               "You can get a higher score on these questions. " +
@@ -136,33 +136,44 @@
       
       var $buttonDiv = $("<div>").css("padding", "20px").css("text-align", "center");
       
-      var $repeatButton = $("<button>").text("Repeat").css('padding-left', "10px")
-                          .css('padding-right', "10px").css('margin-right', "10px");
-      var $nextPageButton = $("<button>").text("Next Page »").css('padding-left', "10px")
-                          .css('padding-right', "10px").css('margin-left', "10px");
-      var $viewActivityReportButton = $("<button>").text("View your activity summary").css('padding-left', "10px")
-                          .css('padding-right', "10px").css('margin-left', "10px");
-                                              
-      $repeatButton.click(function(evt){
-        sparks.sparksActivityController.repeatPage();
-      });
-
-      $nextPageButton.click(function(evt){
-        sparks.sparksActivityController.nextPage();
-      });
-      
-      $viewActivityReportButton.click(function(evt){
-        sparks.sparksActivityController.viewActivityReport();
-      });
-      
-      if (!!sparks.sparksActivityController.areMorePage()){
-        $buttonDiv.append($repeatButton, $nextPageButton);
-      } else {
-        $buttonDiv.append($repeatButton, $viewActivityReportButton);
-      }
       if (!finalReport){
-        this.$reportDiv.append($buttonDiv);
+        var $repeatButton = $("<button>").text("Repeat").css('padding-left', "10px")
+                            .css('padding-right', "10px").css('margin-right', "10px");
+        var $nextPageButton = $("<button>").text("Next Page »").css('padding-left', "10px")
+                            .css('padding-right', "10px").css('margin-left', "10px");
+        var $viewSectionReportButton = $("<button>").text("View your activity summary").css('padding-left', "10px")
+                            .css('padding-right', "10px").css('margin-left', "10px");
+                                              
+        $repeatButton.click(function(evt){
+          sparks.sparksSectionController.repeatPage();
+        });
+
+        $nextPageButton.click(function(evt){
+          sparks.sparksSectionController.nextPage();
+        });
+      
+        $viewSectionReportButton.click(function(evt){
+          sparks.sparksSectionController.viewSectionReport();
+        });
+      
+        if (!!sparks.sparksSectionController.areMorePage()){
+          $buttonDiv.append($repeatButton, $nextPageButton);
+        } else {
+          $buttonDiv.append($repeatButton, $viewSectionReportButton);
+        }
+      } else if (!!sparks.sparksActivity.nextActivity){
+        var $nextActivityButton = $("<button>").text("Go on to the next section").css('padding-left', "10px")
+                            .css('padding-right', "10px");
+                                              
+        $nextActivityButton.click(function(evt){
+          sparks.sparksSectionController.nextActivity();
+        });
+        
+        $buttonDiv.append($nextActivityButton);
       }
+      
+      this.$reportDiv.append($buttonDiv);
+      
       this.$view.append(this.$reportDiv);            
     },
     

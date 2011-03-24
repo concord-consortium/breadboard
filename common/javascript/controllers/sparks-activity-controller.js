@@ -4,15 +4,15 @@
   
   /*
    * Sparks Activity Controller can be accessed by the
-   * singleton variable sparks.sparksActivityController
+   * singleton variable sparks.sparksSectionController
    */
-  sparks.SparksActivityController = function(){
+  sparks.SparksSectionController = function(){
     this.currentPage = null;
     this.currentPageIndex = -1;
     this.pageIndexMap = {};
   };
   
-  sparks.SparksActivityController.prototype = {
+  sparks.SparksSectionController.prototype = {
     
     reset: function(){
       // this.currentPage = null;
@@ -21,46 +21,46 @@
       sparks.sparksQuestionController.reset();
     },
     
-    createActivity: function(jsonActivity) {
-      var activity = new sparks.SparksActivity();
+    createSection: function(jsonSection) {
+      var section = new sparks.SparksSection();
       
-      if (!!jsonActivity.activity_url){
-        activity.activity_url = jsonActivity.activity_url;
+      if (!!jsonSection.section_url){
+        section.section_url = jsonSection.section_url;
       } else {
-        activity.activity_url = sparks.jsonActivity.activity_url;
+        section.section_url = sparks.jsonSection.section_url;
       }
       
-      if (!!jsonActivity.images_url){
-        activity.images_url = jsonActivity.images_url;
+      if (!!jsonSection.images_url){
+        section.images_url = jsonSection.images_url;
       } else {
-        activity.images_url = sparks.jsonActivity.images_url;
+        section.images_url = sparks.jsonSection.images_url;
       }
       
-      activity.image = jsonActivity.image;
+      section.image = jsonSection.image;
       
-      if (!!jsonActivity.circuit){
-        activity.circuit = jsonActivity.circuit;
-        breadModel("createCircuit", activity.circuit);
+      if (!!jsonSection.circuit){
+        section.circuit = jsonSection.circuit;
+        breadModel("createCircuit", section.circuit);
       }
       
-      activity.hide_circuit = !!jsonActivity.hide_circuit;
+      section.hide_circuit = !!jsonSection.hide_circuit;
       
       var self = this;
-      if (!!jsonActivity.pages){
-        $.each(jsonActivity.pages, function(i, jsonPage){
+      if (!!jsonSection.pages){
+        $.each(jsonSection.pages, function(i, jsonPage){
           var page = sparks.sparksPageController.createPage(i, jsonPage);
-          activity.pages.push(page);
+          section.pages.push(page);
           self.pageIndexMap[page] = i;
         });
         
         if (this.currentPageIndex == -1){
           this.currentPageIndex = 0;
         }
-        this.currentPage = activity.pages[this.currentPageIndex];
+        this.currentPage = section.pages[this.currentPageIndex];
       }
       
-      if (!!jsonActivity.formulas){
-        $.each(this.jsonActivity.formulas, function(i, formula){
+      if (!!jsonSection.formulas){
+        $.each(this.jsonSection.formulas, function(i, formula){
           var variables = {};
           var variable = formula.match(/.* =/)[0];
           variable = variable.substring(0,variable.length-2);
@@ -71,11 +71,11 @@
         });
       }
       
-      activity.view = new sparks.SparksActivityView(activity);
+      section.view = new sparks.SparksSectionView(section);
       
       sparks.sparksLogController.startNewSession();
       
-      return activity;
+      return section;
     },
     
     areMorePage: function() {
@@ -121,14 +121,14 @@
       this.currentPage.view.clear();
       
       breadModel('clear');
-      if (!sparks.jsonActivity.hide_circuit && !sparks.debug){
+      if (!sparks.jsonSection.hide_circuit && !sparks.debug){
         sparks.flash.activity.loadFlash();
       } else {
         sparks.flash.activity.onActivityReady();
       }
     },
     
-    viewActivityReport: function() {
+    viewSectionReport: function() {
       sparks.sparksReportController.saveData();
       
       var $report = sparks.sparksReport.view.getActivityReportView();
@@ -137,5 +137,5 @@
     
   };
 
-  sparks.sparksActivityController = new sparks.SparksActivityController();
+  sparks.sparksSectionController = new sparks.SparksSectionController();
 })();
