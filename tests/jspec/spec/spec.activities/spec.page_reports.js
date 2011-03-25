@@ -2,11 +2,14 @@ describe 'Page Reports'
 
   before_each
     breadModel('clear');
+    sparks.sparksActivityController.reset();
     sparks.sparksReportController = new sparks.SparksReportController();
+    sparks.sparksSectionController.reset();
   end
   
   after_each
     sparks.sparksSectionController.reset();
+    sparks.sparksActivityController.reset();
   end
   
   describe 'Question grading'
@@ -394,7 +397,7 @@ describe 'Page Reports'
       sessionReport.maxScore.should.be 6
     end
     
-    it 'should be able to create multiple session reports for a page and get the best one'
+    it 'should be able to create multiple session reports for a page and get the best one and total score'
       // create six questions with answers all 100
       var jsonSection =
         {
@@ -438,10 +441,58 @@ describe 'Page Reports'
       
       sessionReport3.score.should.be 0
       
-      sparks.sparksReport.pageReports[page].sessionReports.length.should.be 3
+      sparks.sparksReportController.currentSectionReport.pageReports[page].sessionReports.length.should.be 3
       
       var bestReport = sparks.sparksReportController.getBestSessionReport(page);
       bestReport.score.should.be 2
+      
+      var totalScore = sparks.sparksReportController.getTotalScoreForPage(page);
+      totalScore.should.be 3
+      
+    end
+    
+    it 'should be able to get total section score with multiple pages'
+      // create two pages, six questions each, with answers all 100
+      var jsonSection =
+        {
+          "pages":[{"questions":[]}, {"questions":[]}]
+        };
+      for (var i = 0; i < 6; i++){
+        jsonSection.pages[0].questions.push({"prompt": ""+i, "correct_answer": 100, "points": 1});
+        jsonSection.pages[1].questions.push({"prompt": ""+i, "correct_answer": 100, "points": 1});
+      }
+      
+      var $questionsDiv = $("<div>");
+
+      var ac = new sparks.ActivityConstructor(jsonSection);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.layoutActivity();
+      
+      var section = sparks.sparksActivityController.currentSection;
+      var page = section.pages[0];
+      
+      var $input = $questionsDiv.find('input');
+      $($input[0]).val("100");                          // sets q0 to correct answer
+      $($input[0]).change();
+      $($input[1]).val("100");                          // sets q1 to correct answer
+      $($input[1]).change();
+      
+      sparks.sparksReportController.addNewSessionReport(page);
+      
+      $($input[1]).val("0");                          // sets q1 to incorrect answer (second try is worse)
+      $($input[1]).change();
+      sparks.sparksReportController.addNewSessionReport(page);
+      
+      sparks.sparksSectionController.nextPage();
+      var page = section.pages[1];
+      
+      var $input = $questionsDiv.find('input');
+      $($input[2]).val("100");                          // sets q2 of page 2 to correct answer
+      $($input[2]).change();
+      sparks.sparksReportController.addNewSessionReport(page);
+      
+      var totalScore = sparks.sparksReportController.getTotalScoreForSection(sparks.sparksActivityController.currentSection);
+      totalScore.should.be 4
     end
     
     it 'should be able to give points for completing page in specified time'
@@ -595,8 +646,9 @@ describe 'Page Reports'
       
       var section = sparks.sparksActivityController.currentSection;
       var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+
       var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
-      
+
       var $headers = $report.find('th');
       $headers[0].innerHTML.should.be("Item");
       $headers[1].innerHTML.should.be("Your answer");
@@ -642,6 +694,60 @@ describe 'Page Reports'
       $ths5[0].innerHTML.should.be("Total Score:");
       $ths5[3].innerHTML.should.be("8/12");
       
+      var $h2 = $report.find('h2');
+      $h2.html().should.be "Your total score for this page so far: 8"
+    end
+    
+    it 'should be able to add up points for repeats of one page'
+      var jsonSection =
+        {
+          "pages":[
+            {
+              "questions": [
+                {
+                  "prompt": "What is the resistance of R1?",
+                  "correct_answer": "100",
+                  "points": 1
+                }
+              ]
+            }
+          ]
+        };
+        
+      var $questionsDiv = $("<div>");
+
+      var ac = new sparks.ActivityConstructor(jsonSection);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.layoutActivity();
+
+      var $input = $questionsDiv.find('input');
+      $input.val("100");                          // sets val of both open-response q's
+      $input.change();
+      
+      var section = sparks.sparksActivityController.currentSection;
+      
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      // and do it again
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      // get answer wrong
+      $input.val("0");                          // sets val of both open-response q's
+      $input.change();
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      // and do it right once more
+      $input.val("100");                          // sets val of both open-response q's
+      $input.change();
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+
+      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      
+      console.log($report.html())
+
+      var $trs = $report.find('tr');
+      var $ths2 = $($trs[2]).find('th');
+      $ths2[3].innerHTML.should.be("1/1");
+      
+      var $h2 = $report.find('h2');
+      $h2.html().should.be "Your total score for this page so far: 3"
     end
     
     it 'should be able to create a report table that includes time'

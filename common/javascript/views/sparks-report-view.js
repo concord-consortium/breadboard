@@ -8,32 +8,78 @@
   sparks.SparksReportView.prototype = {
     
     getSessionReportView: function(sessionReport){
-      return this._createReportTableForSession(sessionReport);
+      var $div = $('<div>');
+      $div.append(this._createReportTableForSession(sessionReport));
+      
+      var page = sparks.sparksSectionController.currentPage;
+      var totalScore = sparks.sparksReportController.getTotalScoreForPage(page);
+      $div.append($('<h2>').html("Your total score for this page so far: "+totalScore));
+      return $div;
     },
     
     getActivityReportView: function() {
       var $div = $('<div>');
       $div.append('<h1>Activity results</h1>');
-      var section = sparks.sparksActivityController.currentSection;
-      var pages = section.pages;
-      var self = this;
       
       var totalScore = 0;
-      var totalMaxScore = 0;
-      $.each(pages, function(i, page){
-        $div.append('<h2>Page '+(i+1)+"</h2>");
-        var bestSessionReport = sparks.sparksReportController.getBestSessionReport(page);
-        $div.append(self._createReportTableForSession(bestSessionReport));
-        var returnButton = $("<button>").addClass("return").text("Try Page "+(i+1)+" again");
-        returnButton.click(function(){
-          sparks.sparksSectionController.repeatPage(page);
-          });
-        $div.append(returnButton);
-        totalScore += bestSessionReport.score;
-        totalMaxScore += bestSessionReport.maxScore;
+      var self = this;
+      var currentSection = sparks.sparksActivityController.currentSection;
+      $.each(sparks.sparksActivity.sections, function(i, section){
+        
+        $div.append('<h2>Section '+(i+1)+': '+section.title+'</h2>');
+        console.log("making report for "+section.toString()+" ("+section.title+") here");
+        var pages = section.pages;
+        
+        var $table = $("<table>");
+        $.each(pages, function(i, page){
+          // $div.append('<h3>Page '+(i+1)+"</h3>");
+          // var bestSessionReport = sparks.sparksReportController.getBestSessionReport(page);
+          // $div.append(self._createReportTableForSession(bestSessionReport));
+          var score = sparks.sparksReportController.getTotalScoreForPage(page, section);
+          
+          var $tr = $("<tr>");
+          $tr.append("<td>Page "+(i+1)+": "+ score   +" points</td>");
+          if (section === currentSection){
+            var $td = $("<td>").css("border","0");
+            var returnButton = $("<button>").addClass("return").text("Try Page "+(i+1)+" again");
+            $td.append(returnButton);
+            $tr.append($td);
+            returnButton.click(function(){
+              sparks.sparksSectionController.repeatPage(page, section);
+              });
+
+          }
+          $table.append($tr);
+          
+          totalScore += score;
+          
+        });
+        $div.append($table);
       });
-      
-      $div.find('h1').after("You scored <b>"+totalScore+"</b> out of a maximum of <b>"+totalMaxScore+"</b> points");
+      // 
+      // 
+      // 
+      // var section = sparks.sparksActivityController.currentSection;
+      // var pages = section.pages;
+      // var self = this;
+      // 
+      // var totalScore = 0;
+      // var totalMaxScore = 0;
+      // $.each(pages, function(i, page){
+      //   // $div.append('<h3>Page '+(i+1)+"</h3>");
+      //   // var bestSessionReport = sparks.sparksReportController.getBestSessionReport(page);
+      //   // $div.append(self._createReportTableForSession(bestSessionReport));
+      //   var score = sparks.sparksReportController.getTotalScoreForPage(page);
+      //   $div.append("Page "+(i+1)+": "+ score   +" points");
+      //   var returnButton = $("<button>").addClass("return").text("Try Page "+(i+1)+" again");
+      //   returnButton.click(function(){
+      //     sparks.sparksSectionController.repeatPage(page);
+      //     });
+      //   $div.append(returnButton);
+      //   totalScore += score;
+      // });
+      $score = $("<span>").css("font-size", "11pt").html("<u>You have scored <b>"+totalScore+"</b> points so far.</u>");
+      $div.find('h1').after($score);
       return $div;
     },
     

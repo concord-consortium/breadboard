@@ -1,4 +1,4 @@
-/*globals console sparks $ breadModel getBreadBoard */
+/*globals console sparks $ breadModel getBreadBoard window */
 
 (function() {
   
@@ -12,9 +12,22 @@
   sparks.SparksReportController = function(){
     sparks.sparksReport = new sparks.SparksReport();
     sparks.sparksReport.view = new sparks.SparksReportView();
+    this.currentSectionReport = null;
   };
   
   sparks.SparksReportController.prototype = {
+    
+    startNewSection: function(section) {
+      console.log("creating new section report?")
+      if (!!sparks.sparksReport.sectionReports[section]){
+        console.log("already got one for this section")
+        this.currentSectionReport = sparks.sparksReport.sectionReports[section];
+        return;
+      }
+      console.log("   YES")
+      this.currentSectionReport = new sparks.SparksSectionReport();
+      sparks.sparksReport.sectionReports[section] = this.currentSectionReport;
+    },
     
     addNewSessionReport: function(page){
       var sessionReport = new sparks.SparksSessionReport();
@@ -57,38 +70,67 @@
       
       sessionReport.score = score;
       sessionReport.maxScore = maxScore;
-      
       this._addSessionReport(page, sessionReport);
       return sessionReport;
     },
     
     _addSessionReport: function(page, sessionReport) {
-      if (!sparks.sparksReport.pageReports[page]){
+      if (!this.currentSectionReport.pageReports[page]){
         var pageReport = new sparks.SparksPageReport();
-        sparks.sparksReport.pageReports[page] = pageReport;
-        sparks.sparksReport.pageReports[page].sessionReports = [];
+        this.currentSectionReport.pageReports[page] = pageReport;
+        this.currentSectionReport.pageReports[page].sessionReports = [];
       }
-      
-      sparks.sparksReport.pageReports[page].sessionReports.push(sessionReport);
+      this.currentSectionReport.pageReports[page].sessionReports.push(sessionReport);
+    },
+    
+    getTotalScoreForPage: function(page, section) {
+      var sectionReport;
+      if (!!section){
+        sectionReport = sparks.sparksReport.sectionReports[section];
+      } else {
+        sectionReport = this.currentSectionReport;
+      }
+      if (!sectionReport.pageReports[page]){
+        console.log("ERROR: No session reports for page");
+        return;
+      }
+      var sessionReports = sectionReport.pageReports[page].sessionReports;
+      var totalScore = 0;
+      for (var i in sessionReports) {
+        var report = sessionReports[i];
+        totalScore += report.score;
+      }
+      if (!!section)
+      console.log("For  "+section.toString()+", "+page.toString());
+      console.log(totalScore)
+      return totalScore;
+    },
+    
+    getTotalScoreForSection: function(section) {
+      var totalScore = 0;
+      var self = this;
+      $.each(section.pages, function(i, page){
+        totalScore += self.getTotalScoreForPage(page, section);
+      });
+      return totalScore;
     },
     
     getLastSessionReport: function(page) {
-      if (!sparks.sparksReport.pageReports[page]){
+      if (!this.currentSectionReport.pageReports[page]){
         console.log("ERROR: No session reports for page");
         return;
       }
       
-      var sessionReports = sparks.sparksReport.pageReports[page].sessionReports;
+      var sessionReports = this.currentSectionReport.pageReports[page].sessionReports;
       return sessionReports[sessionReports.length - 1];
     },
     
     getBestSessionReport: function(page) {
-      if (!sparks.sparksReport.pageReports[page]){
+      if (!this.currentSectionReport.pageReports[page]){
         console.log("ERROR: No session reports for page");
         return;
       }
-      
-      var sessionReports = sparks.sparksReport.pageReports[page].sessionReports;
+      var sessionReports = this.currentSectionReport.pageReports[page].sessionReports;
       var bestSessionReport = null;
       var topScore = -1;
       for (var i in sessionReports) {

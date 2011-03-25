@@ -27,6 +27,7 @@
 
       $.each(page.questions, function(i, question){
         
+        question.answer = '';
         var $question = question.view.getView();
         var $form;
         
@@ -108,6 +109,10 @@
     
     showReport: function($report, finalReport){
       
+      if (!!finalReport){
+          $('body').scrollTop(0);
+      }
+      
       this.$questionDiv.hide();
       if (!!this.$notesDiv) {this.$notesDiv.hide();}
       
@@ -127,11 +132,19 @@
       
       var areMorePage = !!sparks.sparksSectionController.areMorePage();
       
-      var comment = allCorrect ? "You got all the questions correct! "+(!finalReport ? (areMorePage ? "Move on to the next page." : "You can now view the Activity Summary.") : "") :
+      var comment;
+      if (!finalReport){
+      comment = allCorrect ? "You got all the questions correct! "+(!finalReport ? (areMorePage ? "Move on to the next page." : "You can now view the Activity Summary.") : "") :
                               "You can get a higher score on these questions. " +
                               (!finalReport ? "You can repeat the page by clicking the <b>Repeat</b> button" +
                               (areMorePage ? ", or move on to the next page." : ", or click the Summary button to see your total score.") :
                               "You can repeat any page by clicking the <b>Try again</b> button under the table.");
+      } else {
+        comment = "You can repeat any page by clicking the <b>Try again</b> button next to the page.";
+        if (!!sparks.sparksActivityController.currentSection.nextSection){
+          comment += "<p></p>When you are ready to score more points, move on to the next section!";
+        }
+      }
       this.$reportDiv.append($("<div>").html(comment).css('width', 700).css('padding-top', "20px"));
       
       var $buttonDiv = $("<div>").css("padding", "20px").css("text-align", "center");
@@ -161,12 +174,12 @@
         } else {
           $buttonDiv.append($repeatButton, $viewSectionReportButton);
         }
-      } else if (!!sparks.sparksActivity.nextActivity){
+      } else if (!!sparks.sparksActivityController.currentSection.nextSection){
         var $nextActivityButton = $("<button>").text("Go on to the next section").css('padding-left', "10px")
                             .css('padding-right', "10px");
                                               
         $nextActivityButton.click(function(evt){
-          sparks.sparksSectionController.nextActivity();
+          sparks.sparksActivityController.nextActivity();
         });
         
         $buttonDiv.append($nextActivityButton);

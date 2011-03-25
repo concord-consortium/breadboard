@@ -2,11 +2,14 @@ describe 'Activity Creator'
 
   before_each
     breadModel('clear');
+    sparks.sparksSectionController.reset();
+    sparks.sparksActivityController.reset();
   end
   
   after_each
     $('#questions_area').remove();
     $('#breadboard').remove();
+    sparks.sparksActivityController.reset();
   end
   
   describe 'Circuit creation'
@@ -144,11 +147,10 @@ describe 'Activity Creator'
       };
       
       var $imageDiv = $("<div>");
-        
+      
       var ac = new sparks.ActivityConstructor(jsonSection);
       ac.setEmbeddingTargets({$imageDiv: $imageDiv});
       ac.layoutActivity();
-      
       var $img = $imageDiv.find('img');
       $img.length.should.be 1
       $($imageDiv.find('img')[0]).attr('src').should.be "http://test.com/images/myActivity/test.jpg"

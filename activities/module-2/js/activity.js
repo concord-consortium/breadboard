@@ -5,6 +5,7 @@
 //= require <models/sparks-question>
 //= require <models/sparks-log>
 //= require <models/sparks-report>
+//= require <views/sparks-activity-view>
 //= require <views/sparks-section-view>
 //= require <views/sparks-page-view>
 //= require <views/sparks-question-view>
@@ -143,18 +144,8 @@
             }
           }
           
-          
-          if (sparks.config.debug) {
-              $('.debug_area').show();
-          }
-          else {
-             $('.debug_area').hide();
-          }
           $('#popup').hide();
-          $('.next_button').click(function () {
-              window.location.reload();
-          });
-
+          
           this.root_dir = sparks.config.root_dir + '/activities/module-2';
           $('body').scrollTop(0); //scroll to top
           
@@ -163,89 +154,15 @@
           this.reportArea = $('#report_area').hide();
           
           var self = this;
-          // $('button.submit').click(function (event) {
-          //     self.submitButtonClicked(self, event);
-          //     event.preventDefault();
-          // });
           
-          
-          this.startTry();
+          if (!sparks.jsonSection.hide_circuit){
+            breadModel('updateFlash');
+          }
         },
 
         // Initializations that can be done only when the flash movie is loaded
         onFlashReady: function () {
             //this.multimeter = new sparks.circuit.Multimeter2();
-        },
-        
-        // submitButtonClicked: function (activity, event) {
-        //     
-        //     var form = jQuery(event.target).parents('.question_form');
-        //     activity.disableForm(this.currentQuestion);
-        //     var nextForm = form.nextAll("form:first");
-        //     var $buttons = form.nextAll('.next-questions');
-        //     
-        //     if (nextForm.size() > 0) {
-        //       this.currentQuestion++;
-        //       this.enableForm(this.currentQuestion);
-        //     } else if ($buttons.length > 0){
-        //       $($buttons[0]).removeAttr('disabled');
-        //       this.currentQuestion++;
-        //       this.enableForm(this.currentQuestion);
-        //     } else {
-        //       this.completedTry();
-        //     }
-        // },
-        
-        startTry: function () {
-            $('.next_button').hide();
-            
-            var options = null;
-            
-            if (!sparks.jsonSection.hide_circuit){
-              breadModel('updateFlash');
-            }
-            
-            this.currentQuestion = 0;
-        
-            // this.enableForm(0);
-            // for (var i = 1; i < this.forms.length; ++i) {
-            //     this.disableForm(i);
-            // }
-            $('.next-questions').attr('disabled', 'disabled');
-        },
-        
-        completedTry: function () {
-            this.logResults();
-            // grader = new sm.Grader(this.log.session, {});
-            // feedback = grader.grade();
-            // this.reporter.report(this.log.session, feedback);
-            this.questionsArea.hide();
-            this.reportArea.show();
-            $('.next_button').show();
-        },
-
-        resetCircuit: function () {
-        },
-        
-        // enableForm: function (k) {
-        //     $(this.forms[k]).find('input, select, button').attr('disabled', false);
-        //     
-        //     $(this.forms[k]).css("background-color", "rgb(253,255,184)");
-        // },
-        
-        // disableForm: function (k) {
-        //     $(this.forms[k]).find('input, select, button').attr('disabled', true);
-        //     
-        //     $(this.forms[k]).css("background-color", "");
-        // },
-        
-        logResults: function () {
-          console.log("generatingReport");
-          // sparks.assessment.serializeQuestions($("form"));
-          // sparks.assessment.scoreAnswers();
-          // var table = sparks.assessment.generateReport();
-          // var $report = sparks.sparksPageController.createReportForPage(sparks.sparksActivity.pages[0]);
-          // this.reportArea.append($report);
         },
         
         receiveEvent: function (name, value, time) {

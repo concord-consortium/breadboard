@@ -5,6 +5,7 @@
     sparks.sparksActivity = this;
     
     this.sections = [];
+    this.view = null;
   };
   
   sparks.SparksActivity.prototype = {

@@ -24,6 +24,7 @@
     this.points_earned = -1;
     this.feedback = null;
     this.tutorial = null;
+    this.top_tutorial = null;
     
     this.isSubQuestion = false;
     this.subquestionId = -1;

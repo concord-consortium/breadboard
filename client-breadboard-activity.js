@@ -2628,6 +2628,7 @@ sparks.util.shuffle = function (o) {
     sparks.sparksActivity = this;
 
     this.sections = [];
+    this.view = null;
   };
 
   sparks.SparksActivity.prototype = {
@@ -2649,6 +2650,9 @@ sparks.util.shuffle = function (o) {
 (function() {
   sparks.SparksSection = function(){
 
+    this.title = "";
+    this.id = null;
+
     this.image = null;
     this.circuit = null;
     this.pages = [];
@@ -2658,6 +2662,8 @@ sparks.util.shuffle = function (o) {
 
     this.section_url = "";
     this.images_url = "";
+
+    this.nextSection = null;
 
     this.view = null;
   };
@@ -2671,6 +2677,24 @@ sparks.util.shuffle = function (o) {
         json.pages.push(page.toJSON());
       });
       return json;
+    },
+
+    toString: function () {
+      return "Section "+this.getIndex();
+    },
+
+    getIndex: function() {
+      var self = this;
+      var index = -1;
+      console.log("getting index for "+this.title)
+      $.each(sparks.sparksActivity.sections, function(i, section){
+        console.log("is it "+i+"?")
+        if (section === self){
+          console.log("yes!")
+          index = i;
+        }
+      });
+      return index;
     }
 
   };
@@ -2732,6 +2756,7 @@ sparks.util.shuffle = function (o) {
     this.points_earned = -1;
     this.feedback = null;
     this.tutorial = null;
+    this.top_tutorial = null;
 
     this.isSubQuestion = false;
     this.subquestionId = -1;
@@ -2815,6 +2840,11 @@ sparks.util.shuffle = function (o) {
  */
 (function() {
   sparks.SparksReport = function(){
+    this.sectionReports = {};
+    this.view = null;
+  };
+
+  sparks.SparksSectionReport = function(){
     this.pageReports = {};
     this.view = null;
   };
@@ -2835,6 +2865,19 @@ sparks.util.shuffle = function (o) {
   };
 
   sparks.SparksReport.prototype = {
+
+    toJSON: function () {
+      var json = {};
+      json.sectionReports = [];
+      $.each(this.sectionReports, function(i, sectionReport){
+        json.sectionReports.push(sectionReport.toJSON());
+      });
+      return json;
+    }
+
+  };
+
+  sparks.SparksSectionReport.prototype = {
 
     toJSON: function () {
       var json = {};
@@ -2865,11 +2908,30 @@ sparks.util.shuffle = function (o) {
 
 (function() {
 
+  sparks.SparksActivityView = function(activity){
+    this.activity = activity;
+  };
+
+  sparks.SparksActivityView.prototype = {
+
+
+  };
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+
   sparks.SparksSectionView = function(section){
     this.section = section;
   };
 
   sparks.SparksSectionView.prototype = {
+
+    clear: function() {
+      $('#breadboard').html('');
+      $('#image').html('');
+      sparks.sparksSectionController.currentPage.view.clear();
+    },
 
     getImageView: function() {
       var $imagediv = $("<div>").addClass("question-image");
@@ -2920,6 +2982,7 @@ sparks.util.shuffle = function (o) {
 
       $.each(page.questions, function(i, question){
 
+        question.answer = '';
         var $question = question.view.getView();
         var $form;
 
@@ -3000,6 +3063,10 @@ sparks.util.shuffle = function (o) {
 
     showReport: function($report, finalReport){
 
+      if (!!finalReport){
+          $('body').scrollTop(0);
+      }
+
       this.$questionDiv.hide();
       if (!!this.$notesDiv) {this.$notesDiv.hide();}
 
@@ -3018,11 +3085,19 @@ sparks.util.shuffle = function (o) {
 
       var areMorePage = !!sparks.sparksSectionController.areMorePage();
 
-      var comment = allCorrect ? "You got all the questions correct! "+(!finalReport ? (areMorePage ? "Move on to the next page." : "You can now view the Activity Summary.") : "") :
+      var comment;
+      if (!finalReport){
+      comment = allCorrect ? "You got all the questions correct! "+(!finalReport ? (areMorePage ? "Move on to the next page." : "You can now view the Activity Summary.") : "") :
                               "You can get a higher score on these questions. " +
                               (!finalReport ? "You can repeat the page by clicking the <b>Repeat</b> button" +
                               (areMorePage ? ", or move on to the next page." : ", or click the Summary button to see your total score.") :
                               "You can repeat any page by clicking the <b>Try again</b> button under the table.");
+      } else {
+        comment = "You can repeat any page by clicking the <b>Try again</b> button next to the page.";
+        if (!!sparks.sparksActivityController.currentSection.nextSection){
+          comment += "<p></p>When you are ready to score more points, move on to the next section!";
+        }
+      }
       this.$reportDiv.append($("<div>").html(comment).css('width', 700).css('padding-top', "20px"));
 
       var $buttonDiv = $("<div>").css("padding", "20px").css("text-align", "center");
@@ -3052,12 +3127,12 @@ sparks.util.shuffle = function (o) {
         } else {
           $buttonDiv.append($repeatButton, $viewSectionReportButton);
         }
-      } else if (!!sparks.sparksActivity.nextActivity){
+      } else if (!!sparks.sparksActivityController.currentSection.nextSection){
         var $nextActivityButton = $("<button>").text("Go on to the next section").css('padding-left', "10px")
                             .css('padding-right', "10px");
 
         $nextActivityButton.click(function(evt){
-          sparks.sparksSectionController.nextActivity();
+          sparks.sparksActivityController.nextActivity();
         });
 
         $buttonDiv.append($nextActivityButton);
@@ -3174,8 +3249,8 @@ sparks.util.shuffle = function (o) {
     _getImgSrc: function(fileName) {
       if (fileName.indexOf("http") > -1){
         return fileName;
-      } else if (!!this.jsonSection.images_url) {
-        return this.jsonSection.images_url + "/" + fileName;
+      } else if (!!sparks.jsonSection.images_url) {
+        return sparks.jsonSection.images_url + "/" + fileName;
       }
       console.log(fileName + " appears to be a relative filename, but there is no base activity url.");
       return "";
@@ -3200,32 +3275,53 @@ sparks.util.shuffle = function (o) {
   sparks.SparksReportView.prototype = {
 
     getSessionReportView: function(sessionReport){
-      return this._createReportTableForSession(sessionReport);
+      var $div = $('<div>');
+      $div.append(this._createReportTableForSession(sessionReport));
+
+      var page = sparks.sparksSectionController.currentPage;
+      var totalScore = sparks.sparksReportController.getTotalScoreForPage(page);
+      $div.append($('<h2>').html("Your total score for this page so far: "+totalScore));
+      return $div;
     },
 
     getActivityReportView: function() {
       var $div = $('<div>');
       $div.append('<h1>Activity results</h1>');
-      var section = sparks.sparksActivityController.currentSection;
-      var pages = section.pages;
-      var self = this;
 
       var totalScore = 0;
-      var totalMaxScore = 0;
-      $.each(pages, function(i, page){
-        $div.append('<h2>Page '+(i+1)+"</h2>");
-        var bestSessionReport = sparks.sparksReportController.getBestSessionReport(page);
-        $div.append(self._createReportTableForSession(bestSessionReport));
-        var returnButton = $("<button>").addClass("return").text("Try Page "+(i+1)+" again");
-        returnButton.click(function(){
-          sparks.sparksSectionController.repeatPage(page);
-          });
-        $div.append(returnButton);
-        totalScore += bestSessionReport.score;
-        totalMaxScore += bestSessionReport.maxScore;
-      });
+      var self = this;
+      var currentSection = sparks.sparksActivityController.currentSection;
+      $.each(sparks.sparksActivity.sections, function(i, section){
 
-      $div.find('h1').after("You scored <b>"+totalScore+"</b> out of a maximum of <b>"+totalMaxScore+"</b> points");
+        $div.append('<h2>Section '+(i+1)+': '+section.title+'</h2>');
+        console.log("making report for "+section.toString()+" ("+section.title+") here");
+        var pages = section.pages;
+
+        var $table = $("<table>");
+        $.each(pages, function(i, page){
+          var score = sparks.sparksReportController.getTotalScoreForPage(page, section);
+
+          var $tr = $("<tr>");
+          $tr.append("<td>Page "+(i+1)+": "+ score   +" points</td>");
+          if (section === currentSection){
+            var $td = $("<td>").css("border","0");
+            var returnButton = $("<button>").addClass("return").text("Try Page "+(i+1)+" again");
+            $td.append(returnButton);
+            $tr.append($td);
+            returnButton.click(function(){
+              sparks.sparksSectionController.repeatPage(page, section);
+              });
+
+          }
+          $table.append($tr);
+
+          totalScore += score;
+
+        });
+        $div.append($table);
+      });
+      $score = $("<span>").css("font-size", "11pt").html("<u>You have scored <b>"+totalScore+"</b> points so far.</u>");
+      $div.find('h1').after($score);
       return $div;
     },
 
@@ -3353,6 +3449,7 @@ sparks.util.shuffle = function (o) {
         var question = new sparks.SparksQuestion();
 
         question.id = self._id;
+        question.answer = '';
         question.shownId = self._shownId;
         self._id++;
 
@@ -3413,7 +3510,7 @@ sparks.util.shuffle = function (o) {
 
         question.points = (jsonQuestion.points | 1);
         question.image = jsonQuestion.image;
-        question.tutorial = jsonQuestion.tutorial;
+        question.top_tutorial = jsonQuestion.tutorial;
 
         questionsArray.push(question);
 
@@ -3446,11 +3543,16 @@ sparks.util.shuffle = function (o) {
         var maxPoints = 0;
         $.each(question.options, function(i, option){
           if (option.option === question.answer){
+            console.log(" this is the same as "+option.option)
             question.points_earned = option.points;
+            console.log("earned "+question.points_earned+" points")
             question.feedback = option.feedback;
-            if (!!option.tutorial){
+            if (!!option.tutorial) {
               question.tutorial = option.tutorial;
+            } else {
+              question.tutorial = question.top_tutorial;
             }
+
           }
           var points = option.points;
           if (points > maxPoints){
@@ -3459,8 +3561,9 @@ sparks.util.shuffle = function (o) {
             question.correct_answer = option.option;
           }
         });
-        if (question.points_earned == maxPoints){
-          question.answerIsCorrect = true;
+        question.answerIsCorrect = (question.points_earned == maxPoints);
+        if (question.answerIsCorrect){
+          question.tutorial = null;
         }
       }
       if (question.points_earned < 0) question.points_earned = 0;
@@ -3601,6 +3704,9 @@ sparks.util.shuffle = function (o) {
     createSection: function(jsonSection) {
       var section = new sparks.SparksSection();
 
+      section.id = jsonSection._id;
+      section.title = jsonSection.title;
+
       if (!!jsonSection.section_url){
         section.section_url = jsonSection.section_url;
       } else {
@@ -3647,6 +3753,7 @@ sparks.util.shuffle = function (o) {
           this.sparksActivity.variables[variable] = value;
         });
       }
+      section.nextSection = jsonSection.nextSection;
 
       section.view = new sparks.SparksSectionView(section);
 
@@ -3693,9 +3800,8 @@ sparks.util.shuffle = function (o) {
         this.currentPageIndex = this.pageIndexMap[page];
       }
 
-      $('#breadboard').html('');
-      $('#image').html('');
-      this.currentPage.view.clear();
+      var section = sparks.sparksActivityController.currentSection;
+      section.view.clear();
 
       breadModel('clear');
       if (!sparks.jsonSection.hide_circuit && !sparks.debug){
@@ -3726,15 +3832,59 @@ sparks.util.shuffle = function (o) {
    */
   sparks.SparksActivityController = function(){
     sparks.sparksActivity = new sparks.SparksActivity();
+    sparks.sparksActivity.view = new sparks.SparksActivityView(sparks.sparksActivity);
+
     this.currentSection = null;
   };
 
   sparks.SparksActivityController.prototype = {
 
     addSection: function (jsonSection) {
+      var _id = jsonSection._id;
+      console.log(jsonSection);
+      console.log("adding section with id "+_id);
+      var sectionExists = false;
+      var index = -1;
+      $.each(sparks.sparksActivity.sections, function(i, section){
+        if (section.id === _id){
+          sectionExists = true;
+          index = i;
+        }
+      });
       var section = sparks.sparksSectionController.createSection(jsonSection);
-      sparks.sparksActivity.sections.push(section);
       this.currentSection = section;
+
+      if (index > -1){
+        console.log("section exists")
+        sparks.sparksActivity.sections[index] = section;
+      } else {
+        console.log("new section")
+        sparks.sparksActivity.sections.push(section);
+        if (!!sparks.sparksSectionController.currentPage){
+          sparks.sparksSectionController.currentPageIndex = 0;
+          sparks.sparksSectionController.currentPage = section.pages[0];
+        }
+      }
+
+      sparks.sparksReportController.startNewSection(this.currentSection);
+    },
+
+    nextActivity: function () {
+      if (!this.currentSection.nextSection){
+        console.log("No next section");
+        return;
+      }
+      this.currentSection.view.clear();
+      window.location.hash = this.currentSection.nextSection;
+      sparks.activity.onDocumentReady();
+    },
+
+    reset: function () {
+      sparks.sparksActivity.sections = [];
+
+      sparks.sparksSectionController.currentPage = null;
+      sparks.sparksSectionController.currentPageIndex = -1;
+      sparks.sparksSectionController.pageIndexMap = {};
     }
 
 
@@ -3742,7 +3892,7 @@ sparks.util.shuffle = function (o) {
 
   sparks.sparksActivityController = new sparks.SparksActivityController();
 })();
-/*globals console sparks $ breadModel getBreadBoard */
+/*globals console sparks $ breadModel getBreadBoard window */
 
 (function() {
 
@@ -3756,9 +3906,22 @@ sparks.util.shuffle = function (o) {
   sparks.SparksReportController = function(){
     sparks.sparksReport = new sparks.SparksReport();
     sparks.sparksReport.view = new sparks.SparksReportView();
+    this.currentSectionReport = null;
   };
 
   sparks.SparksReportController.prototype = {
+
+    startNewSection: function(section) {
+      console.log("creating new section report?")
+      if (!!sparks.sparksReport.sectionReports[section]){
+        console.log("already got one for this section")
+        this.currentSectionReport = sparks.sparksReport.sectionReports[section];
+        return;
+      }
+      console.log("   YES")
+      this.currentSectionReport = new sparks.SparksSectionReport();
+      sparks.sparksReport.sectionReports[section] = this.currentSectionReport;
+    },
 
     addNewSessionReport: function(page){
       var sessionReport = new sparks.SparksSessionReport();
@@ -3801,38 +3964,67 @@ sparks.util.shuffle = function (o) {
 
       sessionReport.score = score;
       sessionReport.maxScore = maxScore;
-
       this._addSessionReport(page, sessionReport);
       return sessionReport;
     },
 
     _addSessionReport: function(page, sessionReport) {
-      if (!sparks.sparksReport.pageReports[page]){
+      if (!this.currentSectionReport.pageReports[page]){
         var pageReport = new sparks.SparksPageReport();
-        sparks.sparksReport.pageReports[page] = pageReport;
-        sparks.sparksReport.pageReports[page].sessionReports = [];
+        this.currentSectionReport.pageReports[page] = pageReport;
+        this.currentSectionReport.pageReports[page].sessionReports = [];
       }
+      this.currentSectionReport.pageReports[page].sessionReports.push(sessionReport);
+    },
 
-      sparks.sparksReport.pageReports[page].sessionReports.push(sessionReport);
+    getTotalScoreForPage: function(page, section) {
+      var sectionReport;
+      if (!!section){
+        sectionReport = sparks.sparksReport.sectionReports[section];
+      } else {
+        sectionReport = this.currentSectionReport;
+      }
+      if (!sectionReport.pageReports[page]){
+        console.log("ERROR: No session reports for page");
+        return;
+      }
+      var sessionReports = sectionReport.pageReports[page].sessionReports;
+      var totalScore = 0;
+      for (var i in sessionReports) {
+        var report = sessionReports[i];
+        totalScore += report.score;
+      }
+      if (!!section)
+      console.log("For  "+section.toString()+", "+page.toString());
+      console.log(totalScore)
+      return totalScore;
+    },
+
+    getTotalScoreForSection: function(section) {
+      var totalScore = 0;
+      var self = this;
+      $.each(section.pages, function(i, page){
+        totalScore += self.getTotalScoreForPage(page, section);
+      });
+      return totalScore;
     },
 
     getLastSessionReport: function(page) {
-      if (!sparks.sparksReport.pageReports[page]){
+      if (!this.currentSectionReport.pageReports[page]){
         console.log("ERROR: No session reports for page");
         return;
       }
 
-      var sessionReports = sparks.sparksReport.pageReports[page].sessionReports;
+      var sessionReports = this.currentSectionReport.pageReports[page].sessionReports;
       return sessionReports[sessionReports.length - 1];
     },
 
     getBestSessionReport: function(page) {
-      if (!sparks.sparksReport.pageReports[page]){
+      if (!this.currentSectionReport.pageReports[page]){
         console.log("ERROR: No session reports for page");
         return;
       }
-
-      var sessionReports = sparks.sparksReport.pageReports[page].sessionReports;
+      var sessionReports = this.currentSectionReport.pageReports[page].sessionReports;
       var bestSessionReport = null;
       var topScore = -1;
       for (var i in sessionReports) {
@@ -6662,17 +6854,7 @@ var apMessageBox = apMessageBox || {};
             }
           }
 
-
-          if (sparks.config.debug) {
-              $('.debug_area').show();
-          }
-          else {
-             $('.debug_area').hide();
-          }
           $('#popup').hide();
-          $('.next_button').click(function () {
-              window.location.reload();
-          });
 
           this.root_dir = sparks.config.root_dir + '/activities/module-2';
           $('body').scrollTop(0); //scroll to top
@@ -6683,42 +6865,12 @@ var apMessageBox = apMessageBox || {};
 
           var self = this;
 
-
-          this.startTry();
+          if (!sparks.jsonSection.hide_circuit){
+            breadModel('updateFlash');
+          }
         },
 
         onFlashReady: function () {
-        },
-
-
-        startTry: function () {
-            $('.next_button').hide();
-
-            var options = null;
-
-            if (!sparks.jsonSection.hide_circuit){
-              breadModel('updateFlash');
-            }
-
-            this.currentQuestion = 0;
-
-            $('.next-questions').attr('disabled', 'disabled');
-        },
-
-        completedTry: function () {
-            this.logResults();
-            this.questionsArea.hide();
-            this.reportArea.show();
-            $('.next_button').show();
-        },
-
-        resetCircuit: function () {
-        },
-
-
-
-        logResults: function () {
-          console.log("generatingReport");
         },
 
         receiveEvent: function (name, value, time) {

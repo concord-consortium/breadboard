@@ -18,6 +18,11 @@
  */
 (function() {
   sparks.SparksReport = function(){
+    this.sectionReports = {};
+    this.view = null;
+  };
+  
+  sparks.SparksSectionReport = function(){
     this.pageReports = {};
     this.view = null;
   };
@@ -38,6 +43,19 @@
   };
   
   sparks.SparksReport.prototype = {
+    
+    toJSON: function () {
+      var json = {};
+      json.sectionReports = [];
+      $.each(this.sectionReports, function(i, sectionReport){
+        json.sectionReports.push(sectionReport.toJSON());
+      });
+      return json;
+    }
+    
+  };
+  
+  sparks.SparksSectionReport.prototype = {
     
     toJSON: function () {
       var json = {};

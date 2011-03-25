@@ -8,6 +8,12 @@
   
   sparks.SparksSectionView.prototype = {
     
+    clear: function() {
+      $('#breadboard').html('');
+      $('#image').html('');
+      sparks.sparksSectionController.currentPage.view.clear();
+    },
+    
     getImageView: function() {
       var $imagediv = $("<div>").addClass("question-image");
       $imagediv.append(

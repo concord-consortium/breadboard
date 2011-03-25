@@ -2,6 +2,8 @@ describe 'Activity Pages'
 
   before_each
     breadModel('clear');
+    sparks.sparksSectionController.reset();
+    sparks.sparksActivityController.reset();
   end
   
   after_each

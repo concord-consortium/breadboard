@@ -1,6 +1,8 @@
 sparks.jsonSection = {
+  "_id": "asdasdasdfsdfsdfsd",
   "title": "Measuring a Series Circuit",
   "show_multimeter": "true",
+  "nextSection": "local/series-interpretive",
   //"disable_multimeter_position": "",//"r,dcv,acv,dca,diode,hfe,c_10a,p_9v",
   "circuit": [
       {
@@ -44,14 +46,14 @@ sparks.jsonSection = {
               "shortPrompt": "Resistance of R1",
               "options": [
                   {
-                      "option": "200",
+                      "option": "100",
                       "points": 0,
                       "feedback": "Wrong!",
                       "tutorial": "http://example.com/example"
                   },
                   {
-                      "option": "300",
-                      "points": 5
+                      "option": "200",
+                      "points": 10
                   }
               ]
             },

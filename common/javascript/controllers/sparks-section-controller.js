@@ -24,6 +24,9 @@
     createSection: function(jsonSection) {
       var section = new sparks.SparksSection();
       
+      section.id = jsonSection._id;
+      section.title = jsonSection.title;
+      
       if (!!jsonSection.section_url){
         section.section_url = jsonSection.section_url;
       } else {
@@ -70,6 +73,7 @@
           this.sparksActivity.variables[variable] = value;
         });
       }
+      section.nextSection = jsonSection.nextSection;
       
       section.view = new sparks.SparksSectionView(section);
       
@@ -117,9 +121,8 @@
         this.currentPageIndex = this.pageIndexMap[page];
       }
       
-      $('#breadboard').html('');
-      $('#image').html('');
-      this.currentPage.view.clear();
+      var section = sparks.sparksActivityController.currentSection;
+      section.view.clear();
       
       breadModel('clear');
       if (!sparks.jsonSection.hide_circuit && !sparks.debug){

@@ -41,6 +41,7 @@
         var question = new sparks.SparksQuestion();
         
         question.id = self._id;
+        question.answer = '';
         question.shownId = self._shownId;
         self._id++;
         
@@ -103,7 +104,7 @@
         
         question.points = (jsonQuestion.points | 1);
         question.image = jsonQuestion.image;
-        question.tutorial = jsonQuestion.tutorial;
+        question.top_tutorial = jsonQuestion.tutorial;
         
         // for now we put it in both places.
         questionsArray.push(question);
@@ -137,11 +138,16 @@
         var maxPoints = 0;
         $.each(question.options, function(i, option){
           if (option.option === question.answer){
+            console.log(" this is the same as "+option.option)
             question.points_earned = option.points;
+            console.log("earned "+question.points_earned+" points")
             question.feedback = option.feedback;
-            if (!!option.tutorial){
+            if (!!option.tutorial) {
               question.tutorial = option.tutorial;
+            } else {
+              question.tutorial = question.top_tutorial;
             }
+            
           }
           var points = option.points;
           if (points > maxPoints){
@@ -150,8 +156,9 @@
             question.correct_answer = option.option;
           }
         });
-        if (question.points_earned == maxPoints){
-          question.answerIsCorrect = true;
+        question.answerIsCorrect = (question.points_earned == maxPoints);
+        if (question.answerIsCorrect){
+          question.tutorial = null;
         }
       }
       if (question.points_earned < 0) question.points_earned = 0;
