@@ -118,6 +118,7 @@
       
       $('.report').html('');
       if (!!finalReport){
+        $('#image').html('');
         $('#breadboard').html('');
       }
       this.$reportDiv = $('<div>').addClass('report').css('float', 'left').css('padding-top', '15px').css('padding-left', '40px');
