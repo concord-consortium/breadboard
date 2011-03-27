@@ -3882,6 +3882,7 @@ sparks.util.shuffle = function (o) {
         return;
       }
       this.currentSection.view.clear();
+      breadModel('clear');
       window.location.hash = this.currentSection.nextSection;
       sparks.activity.onDocumentReady();
     },
