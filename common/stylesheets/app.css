@@ -1,5 +1,5 @@
 /* browser reset */
-body, div, h1, h2, h3, h4, h5, h6, p, ul, ol, li, dl, dd, dt, blockquote, button, fieldset, legend, label, input, textarea, form {
+body, div, h1, h2, h3, h4, h5, h6, p, ul, ol, li, dl, dd, dt, blockquote, fieldset, legend, label, input, textarea, form {
   margin: 0;
   padding: 0;
   border: 0; }
@@ -275,7 +275,7 @@ button {
   background-color: #f3951d;
   color: white;
   cursor: pointer;
-  font-size: 1.2em;
+  font-size: 1.1em;
   text-align: center; }
   
 button.disabled {
@@ -288,29 +288,6 @@ input[type=button], input.button, input[type='submit'] {
   cursor: pointer;
   font-size: 1.2em;
   text-align: center; }
-
-button {
-  background: #f3951d;
-  border: 0 solid #f3951d;
-  color: white;
-  font: 12px/1 Arial, Helvetica, sans-serif;
-  padding: 4px 14px;
-  /* CSS 3 */
-  background: -webkit-gradient(linear, left top, left bottom, from(#f3951d), to(#dd6e0d));
-  background: -moz-linear-gradient(top, #f3951d, #dd6e0d);
-  border-radius: 12px;
-  /* Opera 10.5, IE 9 */
-  -moz-border-radius: 12px;
-  /* FF1+ */
-  -webkit-border-radius: 12px;
-  /* Saf3+, Chrome */ }
-
-button.disabled {
-  background: #e5b789;
-  border: 0 solid #e5b789;
-  background: -webkit-gradient(linear, left top, left bottom, from(#e5b789), to(#e5b789));
-  background: -moz-linear-gradient(top, #e5b789, #e5b789);
-}
 
 input[type=button], input.button, input[type=submit] {
   background: #f3951d;
