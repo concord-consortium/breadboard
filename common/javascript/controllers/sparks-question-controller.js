@@ -138,9 +138,7 @@
         var maxPoints = 0;
         $.each(question.options, function(i, option){
           if (option.option === question.answer){
-            console.log(" this is the same as "+option.option)
             question.points_earned = option.points;
-            console.log("earned "+question.points_earned+" points")
             question.feedback = option.feedback;
             if (!!option.tutorial) {
               question.tutorial = option.tutorial;

@@ -35,6 +35,11 @@ sparks.jsonSection = {
    ],
   "pages": [
    {
+     "time": {
+      "best": 20,
+      "worst": 30,
+      "points": 10 
+     },
      "questions": [
        {
          "prompt": "What is the rated resistance of",

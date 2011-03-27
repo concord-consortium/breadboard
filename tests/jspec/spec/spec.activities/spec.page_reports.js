@@ -534,7 +534,7 @@ describe 'Page Reports'
       var section = sparks.sparksActivityController.currentSection;
       var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
       
-      report.timeTaken.should.be_greater_than 0
+      report.timeTaken.should.be_greater_than -1
       report.score.should.be 12
       
       // pretend it took 60 seconds
@@ -572,6 +572,65 @@ describe 'Page Reports'
       var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
       
       report.score.should.be 2
+    end
+    
+    it 'should not give time bonus if user scores less than default threshold'
+      var jsonSection =
+        {
+          "pages":[
+            {
+              "time": {
+                "best": 60,
+                "worst": 120,
+                "points": 10
+              },
+              "questions": [
+                {
+                  "prompt": "What is the resistance of R1?",
+                  "correct_answer": "100",
+                  "points": 1
+                },
+                {
+                  "prompt": "What is the resistance of R2?",
+                  "correct_answer": "200",
+                  "points": 1
+                }
+              ]
+            }
+          ]
+        };
+        
+      var $questionsDiv = $("<div>");
+
+      var ac = new sparks.ActivityConstructor(jsonSection);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.layoutActivity();
+
+      var $input = $questionsDiv.find('input');
+      $input.val("100");                          // get one question correct
+      $input.change();
+      
+      var section = sparks.sparksActivityController.currentSection;
+      var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      
+      report.timeTaken.should.be_greater_than -1
+      report.score.should.be 1
+      report.maxScore.should.be 12
+      report.timeScore.should.be 0
+      
+      // get both q's correct
+      sparks.sparksLogController.startNewSession();
+      $($input[1]).val("200");
+      $($input[1]).change();
+      
+      sparks.sparksLogController.endSession();
+      var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      
+      report.timeTaken.should.be_greater_than -1
+      report.score.should.be 12
+      report.maxScore.should.be 12
+      report.timeScore.should.be 10
+      
     end
     
   end
@@ -739,8 +798,6 @@ describe 'Page Reports'
       var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
 
       var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
-      
-      console.log($report.html())
 
       var $trs = $report.find('tr');
       var $ths2 = $($trs[2]).find('th');
@@ -817,6 +874,26 @@ describe 'Page Reports'
       
       var $ths3 = $($trs[3]).find('th');
       $ths3[3].innerHTML.should.be("1/11");
+      
+      // pretend we got below threshold
+      $input.val("0");
+      $input.change();
+      sparks.sparksLogController.startNewSession();
+      sparks.sparksLogController.endSession();
+      sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 20000
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      
+      var $trs = $report.find('tr');
+      
+      $($trs[2]).attr('class').should.be "incorrect"
+      var $tds2 = $($trs[2]).find('td');
+      $tds2[1].innerHTML.should.be("20 sec.");
+      $tds2[3].innerHTML.should.be("0/10");
+      $tds2[4].innerHTML.should.be("You didn&apos;t score enough points to earn the time bonus");
+      
+      var $ths3 = $($trs[3]).find('th');
+      $ths3[3].innerHTML.should.be("0/11");
       
     end
     

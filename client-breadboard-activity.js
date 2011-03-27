@@ -3292,7 +3292,6 @@ sparks.util.shuffle = function (o) {
       $.each(sparks.sparksActivity.sections, function(i, section){
 
         $div.append('<h2>Section '+(i+1)+': '+section.title+'</h2>');
-        console.log("making report for "+section.toString()+" ("+section.title+") here");
         var pages = section.pages;
 
         var $table = $("<table>");
@@ -3318,7 +3317,7 @@ sparks.util.shuffle = function (o) {
         });
         $div.append($table);
       });
-      $score = $("<span>").css("font-size", "11pt").html("<u>You have scored <b>"+totalScore+"</b> points so far.</u>");
+      var $score = $("<span>").css("font-size", "11pt").html("<u>You have scored <b>"+totalScore+"</b> points so far.</u>");
       $div.find('h1').after($score);
       return $div;
     },
@@ -3377,14 +3376,26 @@ sparks.util.shuffle = function (o) {
       });
 
       if (sessionReport.bestTime > 0){
+        var feedback;
+        if (sessionReport.timeScore == sessionReport.maxTimeScore){
+          feedback = "Excellent! You earned the bonus points for very fast work!";
+        } else {
+          var rawScore = sessionReport.score - sessionReport.timeScore;
+          var rawMaxScore = sessionReport.maxScore - sessionReport.maxTimeScore;
+          if (rawScore < rawMaxScore * 0.7){
+            feedback = "You didn't score enough points to earn the time bonus";
+          } else {
+            feedback = "You could score more bonus points by completing this page quicker!";
+          }
+        }
+
         $report.append(
           $('<tr>').append(
             $('<td>').html("Time taken"),
             $('<td>').html(Math.round(sessionReport.timeTaken) + " sec."),
             $('<td>').html("< "+sessionReport.bestTime + " sec."),
             $('<td>').html(sessionReport.timeScore +"/" + sessionReport.maxTimeScore),
-            $('<td>').html(sessionReport.timeScore == sessionReport.maxTimeScore ? "Excellent! You earned the bonus points for very fast work!" :
-                                "You could score more bonus points by completing this page quicker!")
+            $('<td>').html(feedback)
           ).addClass(sessionReport.timeScore == sessionReport.maxTimeScore ? "correct" : "incorrect")
         );
       }
@@ -3541,9 +3552,7 @@ sparks.util.shuffle = function (o) {
         var maxPoints = 0;
         $.each(question.options, function(i, option){
           if (option.option === question.answer){
-            console.log(" this is the same as "+option.option)
             question.points_earned = option.points;
-            console.log("earned "+question.points_earned+" points")
             question.feedback = option.feedback;
             if (!!option.tutorial) {
               question.tutorial = option.tutorial;
@@ -3938,19 +3947,24 @@ sparks.util.shuffle = function (o) {
       sessionReport.timeTaken = (sessionReport.log.endTime - sessionReport.log.startTime) / 1000;
       if (!!page.time){
         var t = page.time;
-        var m = t.points / (t.best - t.worst);
-        var k = 0-m * t.worst;
-        var timeScore = (m * sessionReport.timeTaken) + k;
-        timeScore = timeScore > t.points ? t.points : timeScore;
-        timeScore = timeScore < 0 ? 0 : timeScore;
-        timeScore = Math.floor(timeScore);
 
-        sessionReport.timeScore = timeScore;
+        sessionReport.timeScore = 0;
         sessionReport.maxTimeScore = t.points;
+
+        if (score >= maxScore * 0.7){
+          var m = t.points / (t.best - t.worst);
+          var k = 0-m * t.worst;
+          var timeScore = (m * sessionReport.timeTaken) + k;
+          timeScore = timeScore > t.points ? t.points : timeScore;
+          timeScore = timeScore < 0 ? 0 : timeScore;
+          timeScore = Math.floor(timeScore);
+
+          sessionReport.timeScore = timeScore;
+        }
         sessionReport.bestTime = t.best;
 
-        score += timeScore;
-        maxScore += t.points;
+        score += sessionReport.timeScore;
+        maxScore += sessionReport.maxTimeScore;
       }
 
       sessionReport.score = score;
@@ -3985,9 +3999,6 @@ sparks.util.shuffle = function (o) {
         var report = sessionReports[i];
         totalScore += report.score;
       }
-      if (!!section)
-      console.log("For  "+section.toString()+", "+page.toString());
-      console.log(totalScore)
       return totalScore;
     },
 

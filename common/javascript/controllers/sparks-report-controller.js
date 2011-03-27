@@ -50,19 +50,24 @@
       sessionReport.timeTaken = (sessionReport.log.endTime - sessionReport.log.startTime) / 1000;
       if (!!page.time){
         var t = page.time;
-        var m = t.points / (t.best - t.worst);
-        var k = 0-m * t.worst;
-        var timeScore = (m * sessionReport.timeTaken) + k;
-        timeScore = timeScore > t.points ? t.points : timeScore;
-        timeScore = timeScore < 0 ? 0 : timeScore;
-        timeScore = Math.floor(timeScore);
         
-        sessionReport.timeScore = timeScore;
+        sessionReport.timeScore = 0;
         sessionReport.maxTimeScore = t.points;
+        
+        if (score >= maxScore * 0.7){
+          var m = t.points / (t.best - t.worst);
+          var k = 0-m * t.worst;
+          var timeScore = (m * sessionReport.timeTaken) + k;
+          timeScore = timeScore > t.points ? t.points : timeScore;
+          timeScore = timeScore < 0 ? 0 : timeScore;
+          timeScore = Math.floor(timeScore);
+        
+          sessionReport.timeScore = timeScore;
+        }
         sessionReport.bestTime = t.best;
         
-        score += timeScore;
-        maxScore += t.points;
+        score += sessionReport.timeScore;
+        maxScore += sessionReport.maxTimeScore;
       }
       
       sessionReport.score = score;
@@ -97,9 +102,6 @@
         var report = sessionReports[i];
         totalScore += report.score;
       }
-      if (!!section)
-      console.log("For  "+section.toString()+", "+page.toString());
-      console.log(totalScore)
       return totalScore;
     },
     
