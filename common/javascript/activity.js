@@ -46,8 +46,9 @@
           console.log('initActivity!: learner_id=' + activity.learner_id + ' put_path=' + put_path);
           console.log('woo')
           if (put_path.indexOf("couchdb") > -1){
-            var user = {"id": activity.learner_id, "name": sparks.util.readCookie('student_name')};
-            activity.setDataService(new sparks.CouchDS(put_path, user));
+            var user = {"learner_id": activity.learner_id, "name": sparks.util.readCookie('student_name'),
+            "student_id": sparks.util.readCookie('student_id'), "class_id": sparks.util.readCookie('class_id')};
+            activity.setDataService(new sparks.CouchDS(put_path, user, sparks.util.readCookie('runnable_id')));
           } else {
             activity.setDataService(new RestDS(null, null, put_path));
           }

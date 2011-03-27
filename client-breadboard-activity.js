@@ -1985,9 +1985,10 @@ if (window.attachEvent) {
 /*globals console sparks $ jQuery debug */
 
 (function (){
-    sparks.CouchDS = function (_post_path, _user){
+    sparks.CouchDS = function (_post_path, _user, _runnable_id){
         this.data = "";
         this.user = _user;
+        this.runnableId = _runnable_id;
         this.enableLoadAndSave = true;
 
         this.postPath = _post_path.split(":")[0];
@@ -2000,6 +2001,8 @@ if (window.attachEvent) {
     {
         save: function (_data) {
           _data.user = this.user;
+          _data.runnable_id = this.runnableId;
+          _data.save_time = new Date().valueOf();
           $.couch.db(this.db).saveDoc(
             _data,
             {success: function() { console.log("Saved ok"); }}
@@ -2579,8 +2582,9 @@ sparks.util.shuffle = function (o) {
           console.log('initActivity!: learner_id=' + activity.learner_id + ' put_path=' + put_path);
           console.log('woo')
           if (put_path.indexOf("couchdb") > -1){
-            var user = {"id": activity.learner_id, "name": sparks.util.readCookie('student_name')};
-            activity.setDataService(new sparks.CouchDS(put_path, user));
+            var user = {"learner_id": activity.learner_id, "name": sparks.util.readCookie('student_name'),
+            "student_id": sparks.util.readCookie('student_id'), "class_id": sparks.util.readCookie('class_id')};
+            activity.setDataService(new sparks.CouchDS(put_path, user, sparks.util.readCookie('runnable_id')));
           } else {
             activity.setDataService(new RestDS(null, null, put_path));
           }
