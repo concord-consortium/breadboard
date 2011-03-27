@@ -17,8 +17,6 @@
     
     addSection: function (jsonSection) {
       var _id = jsonSection._id;
-      console.log(jsonSection);
-      console.log("adding section with id "+_id);
       var sectionExists = false;
       var index = -1;
       $.each(sparks.sparksActivity.sections, function(i, section){
@@ -31,10 +29,8 @@
       this.currentSection = section;
         
       if (index > -1){
-        console.log("section exists")
         sparks.sparksActivity.sections[index] = section;
       } else {
-        console.log("new section")
         sparks.sparksActivity.sections.push(section);
         if (!!sparks.sparksSectionController.currentPage){
           sparks.sparksSectionController.currentPageIndex = 0;

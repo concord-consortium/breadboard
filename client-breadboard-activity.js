@@ -2686,11 +2686,8 @@ sparks.util.shuffle = function (o) {
     getIndex: function() {
       var self = this;
       var index = -1;
-      console.log("getting index for "+this.title)
       $.each(sparks.sparksActivity.sections, function(i, section){
-        console.log("is it "+i+"?")
         if (section === self){
-          console.log("yes!")
           index = i;
         }
       });
@@ -3842,8 +3839,6 @@ sparks.util.shuffle = function (o) {
 
     addSection: function (jsonSection) {
       var _id = jsonSection._id;
-      console.log(jsonSection);
-      console.log("adding section with id "+_id);
       var sectionExists = false;
       var index = -1;
       $.each(sparks.sparksActivity.sections, function(i, section){
@@ -3856,10 +3851,8 @@ sparks.util.shuffle = function (o) {
       this.currentSection = section;
 
       if (index > -1){
-        console.log("section exists")
         sparks.sparksActivity.sections[index] = section;
       } else {
-        console.log("new section")
         sparks.sparksActivity.sections.push(section);
         if (!!sparks.sparksSectionController.currentPage){
           sparks.sparksSectionController.currentPageIndex = 0;
@@ -3913,13 +3906,10 @@ sparks.util.shuffle = function (o) {
   sparks.SparksReportController.prototype = {
 
     startNewSection: function(section) {
-      console.log("creating new section report?")
       if (!!sparks.sparksReport.sectionReports[section]){
-        console.log("already got one for this section")
         this.currentSectionReport = sparks.sparksReport.sectionReports[section];
         return;
       }
-      console.log("   YES")
       this.currentSectionReport = new sparks.SparksSectionReport();
       sparks.sparksReport.sectionReports[section] = this.currentSectionReport;
     },
@@ -4856,6 +4846,7 @@ sparks.util.shuffle = function (o) {
         },
         clear: function() {
           breadBoard.clear();
+          interfaces.clearHoleMap();
         },
         move: function(component, connections){
           breadBoard.component(component).move(connections.split(','));
@@ -4871,6 +4862,11 @@ sparks.util.shuffle = function (o) {
           var newHoleName = breadBoard.holeMap[oldHoleName];
           breadBoard.holeMap[oldHoleName] = undefined;
           breadBoard.resetConnections(newHoleName, oldHoleName);
+        },
+        clearHoleMap: function(){
+          $.each(breadBoard.holeMap, function(oldHoleName, newHoleName){
+            interfaces.unmapHole(oldHoleName);
+          })
         },
         addRandomResistor: function(name, location, options){
           console.log("WARNING: addRandomResistor is deprecated")

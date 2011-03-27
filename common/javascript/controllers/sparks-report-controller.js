@@ -18,13 +18,10 @@
   sparks.SparksReportController.prototype = {
     
     startNewSection: function(section) {
-      console.log("creating new section report?")
       if (!!sparks.sparksReport.sectionReports[section]){
-        console.log("already got one for this section")
         this.currentSectionReport = sparks.sparksReport.sectionReports[section];
         return;
       }
-      console.log("   YES")
       this.currentSectionReport = new sparks.SparksSectionReport();
       sparks.sparksReport.sectionReports[section] = this.currentSectionReport;
     },

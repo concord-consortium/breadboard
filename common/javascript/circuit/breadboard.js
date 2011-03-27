@@ -265,6 +265,7 @@
         },
         clear: function() {
           breadBoard.clear();
+          interfaces.clearHoleMap();
         },
         move: function(component, connections){
           breadBoard.component(component).move(connections.split(','));
@@ -280,6 +281,11 @@
           var newHoleName = breadBoard.holeMap[oldHoleName];
           breadBoard.holeMap[oldHoleName] = undefined;
           breadBoard.resetConnections(newHoleName, oldHoleName);
+        },
+        clearHoleMap: function(){
+          $.each(breadBoard.holeMap, function(oldHoleName, newHoleName){
+            interfaces.unmapHole(oldHoleName);
+          })
         },
         addRandomResistor: function(name, location, options){
           console.log("WARNING: addRandomResistor is deprecated")

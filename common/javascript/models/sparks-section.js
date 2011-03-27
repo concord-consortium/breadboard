@@ -40,11 +40,8 @@
     getIndex: function() {
       var self = this;
       var index = -1;
-      console.log("getting index for "+this.title)
       $.each(sparks.sparksActivity.sections, function(i, section){
-        console.log("is it "+i+"?")
         if (section === self){
-          console.log("yes!")
           index = i;
         }
       });
