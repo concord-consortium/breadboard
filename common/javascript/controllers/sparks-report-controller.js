@@ -155,6 +155,14 @@
 
     saveData: function() {
       if (!!sparks.activity && !!sparks.activity.dataService){
+        
+        var score = 0;
+        var self = this;
+        $.each(sparks.sparksActivity.sections, function(i, section){
+          score += self.getTotalScoreForSection(section);
+        });
+        sparks.sparksReport.score = score;
+        
         var data = sparks.sparksReport.toJSON();
         sparks.activity.dataService.save(data);
       }

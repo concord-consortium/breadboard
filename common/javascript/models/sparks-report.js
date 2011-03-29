@@ -19,6 +19,7 @@
 (function() {
   sparks.SparksReport = function(){
     this.sectionReports = {};
+    this.score = 0;
     this.view = null;
   };
   
@@ -50,6 +51,7 @@
       $.each(this.sectionReports, function(i, sectionReport){
         json.sectionReports.push(sectionReport.toJSON());
       });
+      json.score = this.score;
       return json;
     }
     
