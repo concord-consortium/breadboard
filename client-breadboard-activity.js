@@ -2834,6 +2834,7 @@ sparks.util.shuffle = function (o) {
 
   sparks.LogEvent.CLICKED_TUTORIAL = "Clicked tutorial";
   sparks.LogEvent.BLEW_FUSE = "Blew fuse";
+  sparks.LogEvent.DMM_MEASUREMENT = "DMM measurement";
 
 })();
 /*globals console sparks $ breadModel getBreadBoard */
@@ -5531,8 +5532,18 @@ sparks.util.shuffle = function (o) {
             else {
                 this.v_value = 0;
             }
+
+
             this.updateDisplay();
 
+            if (this.redProbeConnection && this.blackProbeConnection) {
+              sparks.sparksLogController.addEvent(sparks.LogEvent.DMM_MEASUREMENT, {
+                "measurement": measurement,
+                "dial_position": this.dialPosition,
+                "red_probe": this.redProbeConnection,
+                "black_probe": this.blackProbeConnection,
+                "result": this.displayText});
+            }
         },
 
         blowFuse: function() {

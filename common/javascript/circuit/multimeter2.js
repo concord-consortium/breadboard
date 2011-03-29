@@ -58,8 +58,18 @@
             else {
                 this.v_value = 0;
             }
+            
+            
             this.updateDisplay();
             
+            if (this.redProbeConnection && this.blackProbeConnection) {
+              sparks.sparksLogController.addEvent(sparks.LogEvent.DMM_MEASUREMENT, {
+                "measurement": measurement, 
+                "dial_position": this.dialPosition,
+                "red_probe": this.redProbeConnection,
+                "black_probe": this.blackProbeConnection,
+                "result": this.displayText});
+            }
         },
         
         blowFuse: function() {

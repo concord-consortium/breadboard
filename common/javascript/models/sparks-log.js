@@ -31,5 +31,6 @@
   
   sparks.LogEvent.CLICKED_TUTORIAL = "Clicked tutorial";
   sparks.LogEvent.BLEW_FUSE = "Blew fuse";
+  sparks.LogEvent.DMM_MEASUREMENT = "DMM measurement";
   
 })();
