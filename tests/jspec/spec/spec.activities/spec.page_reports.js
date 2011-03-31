@@ -1008,6 +1008,7 @@ describe 'Page Reports'
       // create two pages, six questions each, with answers all 100
       var jsonSection =
         {
+          "title": "Section title",
           "pages":[{"questions":[]}, {"questions":[]}]
         };
       for (var i = 0; i < 6; i++){
@@ -1049,30 +1050,22 @@ describe 'Page Reports'
       
       // confirm total score is calculated correctly
       var $score = $report.find('h1').next();        // this finds the <b>olded score
-      $score.html().should.be "3"
-      var $max = $report.find('h1').next().next();
-      $max.html().should.be "12"
+      $score.html().should.be "<u>You have scored <b>4</b> points so far.</u>"
       
       // confirm there are two titles 
       var $titles = $report.find('h2');
-      $titles.length.should.be 2
-      $titles[1].innerHTML.should.be "Page 2"
+      $titles.length.should.be 1
+      $titles[0].innerHTML.should.be "Section 1: Section title"
       
-      // confirm there are two tables, and the tables are correct
+      // confirm there is one table with two pages
       var $tables = $report.find('table');
-      $tables.length.should.be 2
+      $tables.length.should.be 1
       
       var $table1 = $($tables[0]);
       var $trs = $table1.find('tr');
-      $($trs[1]).attr('class').should.be "correct"
-      $($trs[2]).attr('class').should.be "correct"
-      $($trs[3]).attr('class').should.be "incorrect"
       
-      var $table2 = $($tables[1]);
-      var $trs2 = $table2.find('tr');
-      $($trs2[1]).attr('class').should.be "incorrect"
-      $($trs2[2]).attr('class').should.be "incorrect"
-      $($trs2[3]).attr('class').should.be "correct"
+      $($trs[0]).find('td')[0].innerHTML.should.be "Page 1: 3 points"
+      $($trs[1]).find('td')[0].innerHTML.should.be "Page 2: 1 points"
       
       // confirm there are two buttons to go back to previous activities
       var $buttons = $report.find('button');

@@ -175,12 +175,10 @@ describe 'Creating a breadboard'
       
       var board = getBreadBoard();
       var netlist = sparks.circuit.qucsator.makeNetlist(board);
-      console.log("{{{{{{{{{{{{{{{{}}}}}}}}}}}}}}}}")
       breadModel('clear');
       breadModel('insertComponent', 'wire', {"connections": 'a4,a6'});
       
       var netlist = sparks.circuit.qucsator.makeNetlist(board);
-      console.log(netlist)
       netlist.search(/TLIN:wire.* L4 L6/).should.be_at_least 0
     end
     
