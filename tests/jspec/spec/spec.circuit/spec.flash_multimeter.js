@@ -8,7 +8,6 @@ describe 'Using multimeter with mock Flash connection'
     end
     
     before_each
-      getBreadBoard().holeMap = {};
       breadModel('clear');
       receiveEvent('disconnect', 'probe|probe_black', 0);
       receiveEvent('disconnect', 'probe|probe_red', 0);

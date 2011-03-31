@@ -4906,9 +4906,7 @@ sparks.util.shuffle = function (o) {
           breadBoard.resetConnections(newHoleName, oldHoleName);
         },
         clearHoleMap: function(){
-          $.each(breadBoard.holeMap, function(oldHoleName, newHoleName){
-            interfaces.unmapHole(oldHoleName);
-          })
+          breadBoard.holeMap = {};
         },
         addRandomResistor: function(name, location, options){
           console.log("WARNING: addRandomResistor is deprecated")

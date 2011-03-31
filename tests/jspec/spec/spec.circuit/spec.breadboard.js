@@ -4,7 +4,6 @@ describe 'Creating a breadboard'
     end
     
     before_each
-      getBreadBoard().holeMap = {};
       breadModel('clear');
     end
     
@@ -96,6 +95,7 @@ describe 'Creating a breadboard'
     end
     
     it "should correctly add resistors with colors"
+    
       // we can add a 100 ohm resistor
       breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
       var board = getBreadBoard();
@@ -109,6 +109,7 @@ describe 'Creating a breadboard'
     end 
     
     it "should be able to add a random resistor"
+    
       // we can add a random resistor
       breadModel('insertComponent', 'resistor', {"connections": 'a1,a6', "UID": "r1"});
       var board = getBreadBoard();
@@ -126,6 +127,7 @@ describe 'Creating a breadboard'
     end
     
     it 'should be able to get holes from breadboard'
+    
       // board holes should be mapped to strip
       var a1Hole = getBreadBoard().getHole('a1');
       a1Hole.nodeName().should.be 'L1'
@@ -149,7 +151,6 @@ describe 'Creating a breadboard'
     end
     
     it 'should be able to map and unmap hole to a ghost hole'
-      breadModel('clear');
       
       // breadModel('insert', 'resistor', 'a1,yy', 'brown,black,brown,gold');
       breadModel('mapHole', "a4", "yy");
@@ -167,7 +168,6 @@ describe 'Creating a breadboard'
     end
     
     it 'should be able to unmap a ghost hole when breadboard clears'
-      breadModel('clear');
       
       // breadModel('insert', 'resistor', 'a1,yy', 'brown,black,brown,gold');
       breadModel('mapHole', "a4", "yy");

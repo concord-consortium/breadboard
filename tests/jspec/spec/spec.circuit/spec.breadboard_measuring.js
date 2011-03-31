@@ -1,12 +1,15 @@
 describe 'Measuring breadboard components with QUCS'
     before
       sparks.config.qucsate_server_url = "http://localhost:1234/sparks/qucsator/solve";
-      getBreadBoard().holeMap = {};
+      breadModel('clear');
+    end
+    
+    before_each
+       breadModel('clear');
     end
     
     it "should correctly measure resistance"
-      breadModel('clear');
-      
+    
       // we add a 100 ohm resistor
       breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
       var result = breadModel('query', 'resistance', 'a1,a2')
@@ -31,7 +34,6 @@ describe 'Measuring breadboard components with QUCS'
     end
     
     it "should correctly measure voltage"
-      breadModel('clear');
       
       // we add a 100 ohm resistor and a 5V battery
       breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
@@ -74,7 +76,6 @@ describe 'Measuring breadboard components with QUCS'
     //            R1
     //     0 _____|
     it "should correctly measure voltage even with a disconnected resistor"
-      breadModel('clear');
       
       // we add a 100 ohm resistor and a 9V battery
       breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
@@ -87,7 +88,6 @@ describe 'Measuring breadboard components with QUCS'
     
     
     it "should correctly measure current"
-      breadModel('clear');
       
       // we add a 100 ohm resistor and a 5V battery
       breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
