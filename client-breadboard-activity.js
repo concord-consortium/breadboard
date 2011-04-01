@@ -5476,6 +5476,8 @@ sparks.util.shuffle = function (o) {
 
 /* FILE multimeter2.js */
 
+/*globals console sparks $ breadModel getBreadBoard apMessageBox*/
+
 (function () {
 
     var circuit = sparks.circuit;
@@ -5490,39 +5492,33 @@ sparks.util.shuffle = function (o) {
         this.dialPosition = 'dcv_20';
         this.powerOn = true;
         this.update();
+        this.measurements = {};
     };
 
     sparks.extend(circuit.Multimeter2, circuit.MultimeterBase, {
 
         update: function () {
-            console.log('ENTER Multimeter2#update');
-            console.log('redProbeConnection=' + this.redProbeConnection);
-            console.log('blackProbeConnection=' + this.blackProbeConnection);
 
             if (this.redProbeConnection && this.blackProbeConnection) {
                 var measurement = null;
                 if (this.dialPosition.indexOf('dcv_') > -1){
-                  measurement = "voltage"
+                  measurement = "voltage";
                 } else if (this.dialPosition.indexOf('dca_') > -1){
-                   measurement = "current"
+                   measurement = "current";
                 } else if (this.dialPosition.indexOf('r_') > -1){
-                      measurement = "resistance"
+                      measurement = "resistance";
                 }
-                console.log("measurement = "+measurement+", this.dialPosition = "+this.dialPosition);
 
                 if (!!measurement){
                   if (measurement === "voltage"){
-                    console.log("going to measure voltage, m="+measurement);
-                    this.v_value = Math.abs(breadModel('query', measurement, this.redProbeConnection + ',' + this.blackProbeConnection));
+                    this.v_value = this.makeMeasurement(measurement);
                   } else if (measurement === "current"){
-                      console.log("going to measure current, m="+measurement);
-                    this.i_value = Math.abs(breadModel('query', measurement, this.redProbeConnection + ',' + this.blackProbeConnection));
-                    if (this.i_value > .44){
+                    this.i_value = this.makeMeasurement(measurement);
+                    if (this.i_value > 0.44){
                       this.blowFuse();
                     }
                   } else if (measurement === "resistance"){
-                      console.log("going to measure resistance, m="+measurement);
-                    this.r_value = Math.abs(breadModel('query', measurement, this.redProbeConnection + ',' + this.blackProbeConnection));
+                    this.r_value = this.makeMeasurement(measurement);
                     console.log("r_value = "+this.r_value);
                   }
                 }
@@ -5542,6 +5538,19 @@ sparks.util.shuffle = function (o) {
                 "black_probe": this.blackProbeConnection,
                 "result": this.displayText});
             }
+        },
+
+        makeMeasurement: function(measurementType) {
+          var netlist = sparks.circuit.qucsator.makeNetlist(getBreadBoard());
+          var measurmentKey = "" + netlist.replace(/\n/g, '') + this.redProbeConnection + this.blackProbeConnection + measurementType;
+          var existingMeasurement = this.measurements[measurmentKey];
+          if (existingMeasurement !== undefined && existingMeasurement !== null){
+            return existingMeasurement;
+          } else {
+            var measurement = Math.abs(breadModel('query', measurement, this.redProbeConnection + ',' + this.blackProbeConnection));
+            this.measurements[measurmentKey] = measurement;
+            return measurement;
+          }
         },
 
         blowFuse: function() {

@@ -3136,7 +3136,6 @@ sparks.util.shuffle = function (o) {
     sparks.extend(circuit.Multimeter, circuit.MultimeterBase, {
 
         update : function () {
-            console.log('ENTER update powerOn=', this.powerOn + ' ' + (typeof this.powerOn));
             this.r_value = sparks.activity.currentResistor.getRealValue();
             this.updateDisplay();
         },
