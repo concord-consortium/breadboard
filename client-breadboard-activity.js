@@ -5547,7 +5547,7 @@ sparks.util.shuffle = function (o) {
           if (existingMeasurement !== undefined && existingMeasurement !== null){
             return existingMeasurement;
           } else {
-            var measurement = Math.abs(breadModel('query', measurement, this.redProbeConnection + ',' + this.blackProbeConnection));
+            var measurement = Math.abs(breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection));
             this.measurements[measurmentKey] = measurement;
             return measurement;
           }
