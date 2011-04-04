@@ -3253,6 +3253,12 @@ sparks.util.shuffle = function (o) {
       }
 
       this.nominalResistance =  this.getResistance( this.colors );
+
+      if (!!this.open){
+        this.resistance = 1e10;
+      } else if (!!this.closed) {
+        this.resistance = 1e-6;
+      }
     };
 
     sparks.extend(sparks.circuit.Resistor, sparks.circuit.Component,

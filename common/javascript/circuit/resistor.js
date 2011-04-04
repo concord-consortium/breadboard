@@ -14,6 +14,7 @@
         this.resistance = this.getResistance( this.colors );
       }
       
+      // if we have neither colors nor resistance
       if ((this.resistance === undefined) && !this.colors) {
         var resistor = new sparks.circuit.Resistor4band(name);
         resistor.randomize(null);
@@ -22,11 +23,21 @@
         this.colors = resistor.colors;
       }
       
+      // if we have resistance and no colors
       if (!this.colors){
         this.colors = this.getColors4Band( this.resistance, (!!this.tolerance ? this.tolerance : 0.05));
       }
       
+      // at this point, we must have both real resiatance and colors
+      // calculate nominal resistance
       this.nominalResistance =  this.getResistance( this.colors );
+      
+      // now that everything has been set, if we have a fault set it now
+      if (!!this.open){
+        this.resistance = 1e10;
+      } else if (!!this.closed) {
+        this.resistance = 1e-6;
+      }
     };
 
     sparks.extend(sparks.circuit.Resistor, sparks.circuit.Component,
