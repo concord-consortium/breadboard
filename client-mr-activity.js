@@ -2564,6 +2564,23 @@ sparks.util.shuffle = function (o) {
   return o;
 };
 
+sparks.util.contains = function (array, obj) {
+  for (i in array){
+    if (array[i] == obj){
+      return true;
+    }
+  }
+  return false;
+};
+
+sparks.util.getKeys = function (json) {
+  var keys = [];
+  $.each(json, function(key){
+    keys.push(key);
+  })
+  return keys;
+};
+
 /* FILE activity.js */
 
 (function () {
@@ -3255,7 +3272,7 @@ sparks.util.shuffle = function (o) {
       this.nominalResistance =  this.getResistance( this.colors );
 
       if (!!this.open){
-        this.resistance = 1e10;
+        this.resistance = 1e12;
       } else if (!!this.closed) {
         this.resistance = 1e-6;
       }
@@ -3634,7 +3651,6 @@ sparks.util.shuffle = function (o) {
             else {
                 this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
             }
-            console.log('r=' + this.nominalValue + ' t=' + this.tolerance);
 
             this.colors = this.getColors(this.nominalValue, this.tolerance);
         },

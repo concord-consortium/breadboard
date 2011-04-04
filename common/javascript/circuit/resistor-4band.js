@@ -62,7 +62,6 @@
             else {
                 this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
             }
-            console.log('r=' + this.nominalValue + ' t=' + this.tolerance);
             
             this.colors = this.getColors(this.nominalValue, this.tolerance);
         },

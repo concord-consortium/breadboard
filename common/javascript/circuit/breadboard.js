@@ -192,6 +192,60 @@
       };
       
       Breadboard.prototype.resOrderOfMagnitude = -1;
+      
+      // Adds a fault to an existing circuit. A fault may affect one or
+      // more components. If fault.component is set, it will be applied to
+      // that component. Otherwise, if fault.count or fault.max are set, it
+      // will be applied to a number of random components.
+      Breadboard.prototype.addFault = function(fault) {
+        if (!!fault.component){
+          this.addFaultToComponent(fault, this.components[fault.component]);
+        } else {
+          // find out how many components we should be applying this to
+          var count;
+          if (!!fault.count) {
+            count = fault.count;
+          } else if (!!fault.max) {
+            count = Math.floor(Math.random() * fault.max) + 1;    // between 1 and max faults
+          }
+          
+          
+          // apply fault to valid components 'count' times, with no repitition. No checking is
+          // done to see if there are sufficient valid components for this to be possible, so
+          // application will hang if authored badly.
+          var faultyComponents = [];
+          var componentKeys = sparks.util.getKeys(this.components);
+          for (var i = 0; i < count; i++){
+            var randomComponent = null;
+            while (randomComponent === null) {
+              var rand = Math.floor(Math.random() * componentKeys.length);
+              var component = this.components[componentKeys[rand]];
+              if (!!component.resistance && !sparks.util.contains(faultyComponents, component)){
+                randomComponent = component;
+              }
+            }
+            this.addFaultToComponent(fault, randomComponent);
+            faultyComponents.push(randomComponent);
+          }
+        }
+      };
+      
+      // adds a fault to a specific component. If fault.type is an array, a random
+      // type will be picked
+      Breadboard.prototype.addFaultToComponent = function(fault, component) {
+        var type;
+        if (fault.type instanceof Array){
+          type = fault.type[Math.floor(Math.random() * fault.type.length)];
+        } else {
+          type = fault.type;
+        }
+        
+        if (type === "open") {
+          component.resistance = 1e12;
+        } else if (type === "closed") {
+          component.resistance = 1e-6;
+        }
+      };
 
       //// BreadBoard Instance & Interface /////////////////////////////////////////
       var breadBoard = new Breadboard();
@@ -216,6 +270,11 @@
         createCircuit: function(jsonCircuit){
           $.each(jsonCircuit, function(i, spec){
             interfaces.insertComponent(spec.type, spec);
+          });
+        },
+        addFaults: function(jsonFaults){
+          $.each(jsonFaults, function(i, fault){
+            breadBoard.addFault(fault);
           });
         },
         getResOrderOfMagnitude: function(){

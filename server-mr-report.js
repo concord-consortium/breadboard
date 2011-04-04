@@ -900,6 +900,23 @@ sparks.util.shuffle = function (o) {
   return o;
 };
 
+sparks.util.contains = function (array, obj) {
+  for (i in array){
+    if (array[i] == obj){
+      return true;
+    }
+  }
+  return false;
+};
+
+sparks.util.getKeys = function (json) {
+  var keys = [];
+  $.each(json, function(key){
+    keys.push(key);
+  })
+  return keys;
+};
+
 /* FILE feedback.js */
 
 (function () {

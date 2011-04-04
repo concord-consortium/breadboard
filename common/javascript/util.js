@@ -185,3 +185,20 @@ sparks.util.shuffle = function (o) {
   for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
   return o;
 };
+
+sparks.util.contains = function (array, obj) {
+  for (i in array){
+    if (array[i] == obj){
+      return true;
+    }
+  }
+  return false;
+};
+
+sparks.util.getKeys = function (json) {
+  var keys = [];
+  $.each(json, function(key){
+    keys.push(key);
+  })
+  return keys;
+};

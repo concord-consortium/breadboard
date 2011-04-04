@@ -2564,6 +2564,23 @@ sparks.util.shuffle = function (o) {
   return o;
 };
 
+sparks.util.contains = function (array, obj) {
+  for (i in array){
+    if (array[i] == obj){
+      return true;
+    }
+  }
+  return false;
+};
+
+sparks.util.getKeys = function (json) {
+  var keys = [];
+  $.each(json, function(key){
+    keys.push(key);
+  })
+  return keys;
+};
+
 /* FILE activity.js */
 
 (function () {
@@ -3755,6 +3772,11 @@ sparks.util.shuffle = function (o) {
         breadModel("createCircuit", section.circuit);
       }
 
+      if (!!jsonSection.faults){
+        section.faults = jsonSection.faults;
+        breadModel("addFaults", section.faults);
+      }
+
       section.hide_circuit = !!jsonSection.hide_circuit;
 
       var self = this;
@@ -4492,7 +4514,7 @@ sparks.util.shuffle = function (o) {
       this.nominalResistance =  this.getResistance( this.colors );
 
       if (!!this.open){
-        this.resistance = 1e10;
+        this.resistance = 1e12;
       } else if (!!this.closed) {
         this.resistance = 1e-6;
       }
@@ -4825,6 +4847,50 @@ sparks.util.shuffle = function (o) {
 
       Breadboard.prototype.resOrderOfMagnitude = -1;
 
+      Breadboard.prototype.addFault = function(fault) {
+        if (!!fault.component){
+          this.addFaultToComponent(fault, this.components[fault.component]);
+        } else {
+          var count;
+          if (!!fault.count) {
+            count = fault.count;
+          } else if (!!fault.max) {
+            count = Math.floor(Math.random() * fault.max) + 1;    // between 1 and max faults
+          }
+
+
+          var faultyComponents = [];
+          var componentKeys = sparks.util.getKeys(this.components);
+          for (var i = 0; i < count; i++){
+            var randomComponent = null;
+            while (randomComponent === null) {
+              var rand = Math.floor(Math.random() * componentKeys.length);
+              var component = this.components[componentKeys[rand]];
+              if (!!component.resistance && !sparks.util.contains(faultyComponents, component)){
+                randomComponent = component;
+              }
+            }
+            this.addFaultToComponent(fault, randomComponent);
+            faultyComponents.push(randomComponent);
+          }
+        }
+      };
+
+      Breadboard.prototype.addFaultToComponent = function(fault, component) {
+        var type;
+        if (fault.type instanceof Array){
+          type = fault.type[Math.floor(Math.random() * fault.type.length)];
+        } else {
+          type = fault.type;
+        }
+
+        if (type === "open") {
+          component.resistance = 1e12;
+        } else if (type === "closed") {
+          component.resistance = 1e-6;
+        }
+      };
+
       var breadBoard = new Breadboard();
 
       var interfaces = {
@@ -4845,6 +4911,11 @@ sparks.util.shuffle = function (o) {
         createCircuit: function(jsonCircuit){
           $.each(jsonCircuit, function(i, spec){
             interfaces.insertComponent(spec.type, spec);
+          });
+        },
+        addFaults: function(jsonFaults){
+          $.each(jsonFaults, function(i, fault){
+            breadBoard.addFault(fault);
           });
         },
         getResOrderOfMagnitude: function(){
@@ -5799,7 +5870,6 @@ sparks.util.shuffle = function (o) {
             else {
                 this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
             }
-            console.log('r=' + this.nominalValue + ' t=' + this.tolerance);
 
             this.colors = this.getColors(this.nominalValue, this.tolerance);
         },

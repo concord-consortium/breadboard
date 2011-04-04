@@ -32,6 +32,31 @@ describe 'Activity Creator'
       var netlist = sparks.circuit.qucsator.makeNetlist(board);
       netlist.search(/R:resistor.* L2 L3/).should.be_at_least 0
     end
+    
+    it 'should be able to create a circuit with faults'
+      var jsonSection =
+        {
+          "circuit": [
+             {
+               "type": "resistor",
+               "UID": "r1",
+               "connections": "b2,b3"
+             }
+          ],
+          "faults": [
+            {
+              "type": "open",
+              "component": "r1"
+            }
+          ]
+        };
+  
+      var ac = new sparks.ActivityConstructor(jsonSection);
+  
+      var board = getBreadBoard();
+      board.components["r1"].resistance.should.be 1e12
+    end
+    
   end
   
   describe 'Question creation'

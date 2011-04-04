@@ -46,6 +46,11 @@
         breadModel("createCircuit", section.circuit);
       }
       
+      if (!!jsonSection.faults){
+        section.faults = jsonSection.faults;
+        breadModel("addFaults", section.faults);
+      }
+      
       section.hide_circuit = !!jsonSection.hide_circuit;
       
       var self = this;
