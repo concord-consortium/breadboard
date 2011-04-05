@@ -2791,6 +2791,8 @@ sparks.util.getKeys = function (json) {
     this.tutorial = null;
     this.top_tutorial = null;
 
+    this.scoring = null;
+
     this.isSubQuestion = false;
     this.subquestionId = -1;
     this.commonPrompt = '';
@@ -3560,6 +3562,9 @@ sparks.util.getKeys = function (json) {
         question.image = jsonQuestion.image;
         question.top_tutorial = jsonQuestion.tutorial;
 
+
+        question.scoring = jsonQuestion.scoring;
+
         questionsArray.push(question);
 
         question.prompt = oldPrompt;
@@ -3579,12 +3584,14 @@ sparks.util.getKeys = function (json) {
     },
 
     gradeQuestion: function(question) {
-      if (!question.options || !question.options[0].option) {
+      if (!!question.scoring){
+        var parsedScoring = sparks.mathParser.replaceCircuitVariables(question.scoring);
+        eval("var functionStr = function(question){" + parsedScoring + "}");
+        functionStr(question);
+      } else if (!question.options || !question.options[0].option) {
         if (""+question.answer === ""+question.correct_answer){
-          question.answerIsCorrect = true;
           question.points_earned = question.points;
         } else {
-          question.answerIsCorrect = false;
           question.points_earned = 0;
         }
       } else {
@@ -3607,12 +3614,17 @@ sparks.util.getKeys = function (json) {
             question.correct_answer = option.option;
           }
         });
-        question.answerIsCorrect = (question.points_earned == maxPoints);
-        if (question.answerIsCorrect){
-          question.tutorial = null;
-        }
       }
-      if (question.points_earned < 0) question.points_earned = 0;
+
+      if (question.answerIsCorrect){
+        question.tutorial = null;
+      }
+
+      question.answerIsCorrect = (question.points_earned == question.points);
+
+      if (question.points_earned < 0) {
+        question.points_earned = 0;
+      }
     }
 
   };
@@ -4223,8 +4235,20 @@ sparks.util.getKeys = function (json) {
       calculation.
     */
    p.calculateSum = function(sum){
-   	  var varPattern = /\${[^}]+}/g  //  ${ X } --> value of X
-      var matches = sum.match(varPattern);
+      sum = p.replaceCircuitVariables(sum);
+      var calculatedSum = eval(sum);
+      if (!isNaN(Number(calculatedSum))){
+        return calculatedSum;
+      }
+
+      console.log("ERROR calculating Sum: Cannot compute the value of "+sum);
+      return -1;
+   };
+
+
+    p.replaceCircuitVariables = function(formula){
+      var varPattern = /\${[^}]+}/g  //  ${ X } --> value of X
+      var matches = formula.match(varPattern);
       if(!!matches){
        $.each(matches, function(i, match){
         var variable = match.substring(2,match.length-1).split('.');
@@ -4235,29 +4259,23 @@ sparks.util.getKeys = function (json) {
 
         if (!components[component]){
           console.log("ERROR calculating sum: No component name '"+component+"' in circuit");
-          sum = -1;
+          formula = '-1';
           return;
         }
 
         if (components[component][property] === undefined || components[component][property] === null){
           console.log("ERROR calculating sum: No property name '"+property+"' in component '"+component+"'");
-          sum = -1;
+          formula = '-1';
           return;
         }
 
         var value = components[component][property];
-        sum = sum.replace(match, value);
+        formula = formula.replace(match, value);
        });
       }
 
-      var calculatedSum = eval(sum);
-      if (!isNaN(Number(calculatedSum))){
-        return calculatedSum;
-      }
-
-      console.log("ERROR calculating Sum: Cannot compute the value of "+sum);
-      return -1;
-   };
+      return formula;
+    };
 
 
 })();

@@ -50,8 +50,20 @@
       calculation.
     */
    p.calculateSum = function(sum){
-   	  var varPattern = /\${[^}]+}/g  //  ${ X } --> value of X
-      var matches = sum.match(varPattern);
+      sum = p.replaceCircuitVariables(sum);
+      var calculatedSum = eval(sum);
+      if (!isNaN(Number(calculatedSum))){
+        return calculatedSum;
+      }
+      
+      console.log("ERROR calculating Sum: Cannot compute the value of "+sum);
+      return -1;
+   };
+    
+    
+    p.replaceCircuitVariables = function(formula){
+      var varPattern = /\${[^}]+}/g  //  ${ X } --> value of X
+      var matches = formula.match(varPattern);
       if(!!matches){
        $.each(matches, function(i, match){
         var variable = match.substring(2,match.length-1).split('.');
@@ -62,29 +74,23 @@
         
         if (!components[component]){
           console.log("ERROR calculating sum: No component name '"+component+"' in circuit");
-          sum = -1;
+          formula = '-1';
           return;
         }
         
         if (components[component][property] === undefined || components[component][property] === null){
           console.log("ERROR calculating sum: No property name '"+property+"' in component '"+component+"'");
-          sum = -1;
+          formula = '-1';
           return;
         }
         
         var value = components[component][property];
-        sum = sum.replace(match, value);
+        formula = formula.replace(match, value);
        });
       }
       
-      var calculatedSum = eval(sum);
-      if (!isNaN(Number(calculatedSum))){
-        return calculatedSum;
-      }
-      
-      console.log("ERROR calculating Sum: Cannot compute the value of "+sum);
-      return -1;
-   };
+      return formula;
+    };
 
 
 })();

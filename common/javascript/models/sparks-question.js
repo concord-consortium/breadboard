@@ -26,6 +26,8 @@
     this.tutorial = null;
     this.top_tutorial = null;
     
+    this.scoring = null;
+    
     this.isSubQuestion = false;
     this.subquestionId = -1;
     this.commonPrompt = '';

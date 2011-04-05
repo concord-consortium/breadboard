@@ -106,6 +106,9 @@
         question.image = jsonQuestion.image;
         question.top_tutorial = jsonQuestion.tutorial;
         
+        
+        question.scoring = jsonQuestion.scoring;
+        
         // for now we put it in both places.
         questionsArray.push(question);
         
@@ -126,12 +129,14 @@
     },
     
     gradeQuestion: function(question) {
-      if (!question.options || !question.options[0].option) {
+      if (!!question.scoring){
+        var parsedScoring = sparks.mathParser.replaceCircuitVariables(question.scoring);
+        eval("var functionStr = function(question){" + parsedScoring + "}");
+        functionStr(question);
+      } else if (!question.options || !question.options[0].option) {
         if (""+question.answer === ""+question.correct_answer){
-          question.answerIsCorrect = true;
           question.points_earned = question.points;
         } else {  
-          question.answerIsCorrect = false;
           question.points_earned = 0;
         }
       } else {
@@ -154,12 +159,17 @@
             question.correct_answer = option.option;
           }
         });
-        question.answerIsCorrect = (question.points_earned == maxPoints);
-        if (question.answerIsCorrect){
-          question.tutorial = null;
-        }
       }
-      if (question.points_earned < 0) question.points_earned = 0;
+      
+      if (question.answerIsCorrect){
+        question.tutorial = null;
+      }
+      
+      question.answerIsCorrect = (question.points_earned == question.points);
+      
+      if (question.points_earned < 0) {
+        question.points_earned = 0;
+      }
     }
     
   };

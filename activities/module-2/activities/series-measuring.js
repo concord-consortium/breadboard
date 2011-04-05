@@ -16,7 +16,8 @@ sparks.jsonSection = {
         "type": "resistor",
         "UID": "r2",
         "connections": "c17,c11",
-        "label": "R2"
+        "label": "R2",
+        "closed": true
         //"resistance":"100"
       },
       {

@@ -129,11 +129,9 @@ describe 'Page Reports'
         $select.change();
         
         var section = sparks.sparksActivityController.currentSection;
-        var qc = sparks.sparksQuestionController;
-        qc.gradeQuestion(section.pages[0].questions[0]);
-        qc.gradeQuestion(section.pages[0].questions[1]);
-        qc.gradeQuestion(section.pages[0].questions[2]);
-        qc.gradeQuestion(section.pages[0].questions[3]);
+        $.each(section.pages[0].questions, function(i, question){
+          sparks.sparksQuestionController.gradeQuestion(question);
+        });
         
         section.pages[0].questions[0].answerIsCorrect.should.be true
         section.pages[0].questions[0].points_earned.should.be 1
