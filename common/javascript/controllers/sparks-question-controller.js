@@ -130,9 +130,7 @@
     
     gradeQuestion: function(question) {
       if (!!question.scoring){
-        var parsedScoring = sparks.mathParser.replaceCircuitVariables(question.scoring);
-        eval("var functionStr = function(question){" + parsedScoring + "}");
-        functionStr(question);
+        this.runQuestionScript(question.scoring, question)
       } else if (!question.options || !question.options[0].option) {
         if (""+question.answer === ""+question.correct_answer){
           question.points_earned = question.points;
@@ -170,6 +168,12 @@
       if (question.points_earned < 0) {
         question.points_earned = 0;
       }
+    },
+    
+    runQuestionScript: function (script, question){
+      var parsedScript = sparks.mathParser.replaceCircuitVariables(script);
+      eval("var functionScript = function(question){" + parsedScript + "}");
+      functionScript(question);
     }
     
   };

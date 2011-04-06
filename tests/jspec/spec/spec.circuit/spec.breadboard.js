@@ -135,7 +135,7 @@ describe 'Creating a breadboard'
       
       it "should be able to add an shorted resistor"
     
-        breadModel('insertComponent', 'resistor', {"connections": 'a1,a6', "UID": "r1", "closed": true});
+        breadModel('insertComponent', 'resistor', {"connections": 'a1,a6', "UID": "r1", "shorted": true});
         var board = getBreadBoard();
         var res = board.components.r1;
         res.resistance.should.be 1e-6

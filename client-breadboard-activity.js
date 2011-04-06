@@ -3585,9 +3585,7 @@ sparks.util.getKeys = function (json) {
 
     gradeQuestion: function(question) {
       if (!!question.scoring){
-        var parsedScoring = sparks.mathParser.replaceCircuitVariables(question.scoring);
-        eval("var functionStr = function(question){" + parsedScoring + "}");
-        functionStr(question);
+        this.runQuestionScript(question.scoring, question)
       } else if (!question.options || !question.options[0].option) {
         if (""+question.answer === ""+question.correct_answer){
           question.points_earned = question.points;
@@ -3625,6 +3623,12 @@ sparks.util.getKeys = function (json) {
       if (question.points_earned < 0) {
         question.points_earned = 0;
       }
+    },
+
+    runQuestionScript: function (script, question){
+      var parsedScript = sparks.mathParser.replaceCircuitVariables(script);
+      eval("var functionScript = function(question){" + parsedScript + "}");
+      functionScript(question);
     }
 
   };
@@ -4533,7 +4537,7 @@ sparks.util.getKeys = function (json) {
 
       if (!!this.open){
         this.resistance = 1e20;
-      } else if (!!this.closed) {
+      } else if (!!this.shorted) {
         this.resistance = 1e-6;
       }
     };
@@ -4904,7 +4908,7 @@ sparks.util.getKeys = function (json) {
 
         if (type === "open") {
           component.resistance = 1e20;
-        } else if (type === "closed") {
+        } else if (type === "shorted") {
           component.resistance = 1e-6;
         }
       };

@@ -334,7 +334,7 @@ describe 'Circuit Constructor'
           "type": "resistor",
           "UID": "r2",
           "connections": "c4,b5",
-          "closed": true
+          "shorted": true
         }
       ];
       breadModel("createCircuit", jsonCircuit);
@@ -367,7 +367,7 @@ describe 'Circuit Constructor'
           "component": "r1"
         },
         {
-          "type": "closed",
+          "type": "shorted",
           "component": "r2"
         }
       ];
@@ -424,7 +424,7 @@ describe 'Circuit Constructor'
       
       faults = [
         {
-          "type": "closed",
+          "type": "shorted",
           "max": 25
         }
       ];
@@ -454,7 +454,7 @@ describe 'Circuit Constructor'
       
       faults = [
         {
-          "type": ["open", "closed"],
+          "type": ["open", "shorted"],
           "count": 25
         }
       ];

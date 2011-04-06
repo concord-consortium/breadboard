@@ -22,11 +22,11 @@ specResults = JSpec
 // .exec('spec/spec.common/spec.units.js')
 // 
 // .exec('spec/spec.circuit/spec.resistor_colors.js')
-// .exec('spec/spec.circuit/spec.breadboard.js')
-// .exec('spec/spec.circuit/spec.breadboard_measuring.js')
+.exec('spec/spec.circuit/spec.breadboard.js')
+.exec('spec/spec.circuit/spec.breadboard_measuring.js')
 // .exec('spec/spec.circuit/spec.flash_multimeter.js')
 // .exec('spec/spec.circuit/spec.flash_breadboard.js')
-// .exec('spec/spec.circuit/spec.circuit_constructor.js')
+.exec('spec/spec.circuit/spec.circuit_constructor.js')
 
 // .exec('spec/spec.activities/spec.pages.js')
 .exec('spec/spec.activities/spec.questions.js')

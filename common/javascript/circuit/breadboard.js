@@ -242,7 +242,7 @@
         
         if (type === "open") {
           component.resistance = 1e20;
-        } else if (type === "closed") {
+        } else if (type === "shorted") {
           component.resistance = 1e-6;
         }
       };

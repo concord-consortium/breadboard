@@ -3273,7 +3273,7 @@ sparks.util.getKeys = function (json) {
 
       if (!!this.open){
         this.resistance = 1e20;
-      } else if (!!this.closed) {
+      } else if (!!this.shorted) {
         this.resistance = 1e-6;
       }
     };
