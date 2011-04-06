@@ -3558,7 +3558,7 @@ sparks.util.getKeys = function (json) {
           }
         }
 
-        question.points = (jsonQuestion.points | 1);
+        question.points = (!!jsonQuestion.points ?  jsonQuestion.points : 1);
         question.image = jsonQuestion.image;
         question.top_tutorial = jsonQuestion.tutorial;
 
@@ -3570,6 +3570,7 @@ sparks.util.getKeys = function (json) {
         question.prompt = oldPrompt;
 
         question.view = new sparks.SparksQuestionView(question);
+        console.log("Question points = "+question.points);
       }
 
       if (!jsonQuestion.subquestions){
@@ -3618,7 +3619,7 @@ sparks.util.getKeys = function (json) {
         question.tutorial = null;
       }
 
-      question.answerIsCorrect = (question.points_earned == question.points);
+      question.answerIsCorrect = (question.points_earned >= question.points);
 
       if (question.points_earned < 0) {
         question.points_earned = 0;
