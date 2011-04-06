@@ -4532,7 +4532,7 @@ sparks.util.getKeys = function (json) {
       this.nominalResistance =  this.getResistance( this.colors );
 
       if (!!this.open){
-        this.resistance = 1e12;
+        this.resistance = 1e20;
       } else if (!!this.closed) {
         this.resistance = 1e-6;
       }
@@ -4903,7 +4903,7 @@ sparks.util.getKeys = function (json) {
         }
 
         if (type === "open") {
-          component.resistance = 1e12;
+          component.resistance = 1e20;
         } else if (type === "closed") {
           component.resistance = 1e-6;
         }
@@ -5034,7 +5034,7 @@ sparks.util.getKeys = function (json) {
               var voltmeterResistor = breadBoard.component({
                 UID: 'voltmeterResistor',
                 kind: 'resistor',
-                resistance: 1000000000000,
+                resistance: 1e12,
                 connections: connections.split(',')});
               tempComponents.push(voltmeterResistor);
             }

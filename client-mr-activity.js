@@ -3272,7 +3272,7 @@ sparks.util.getKeys = function (json) {
       this.nominalResistance =  this.getResistance( this.colors );
 
       if (!!this.open){
-        this.resistance = 1e12;
+        this.resistance = 1e20;
       } else if (!!this.closed) {
         this.resistance = 1e-6;
       }

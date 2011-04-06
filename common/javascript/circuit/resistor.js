@@ -34,7 +34,7 @@
       
       // now that everything has been set, if we have a fault set it now
       if (!!this.open){
-        this.resistance = 1e12;
+        this.resistance = 1e20;
       } else if (!!this.closed) {
         this.resistance = 1e-6;
       }

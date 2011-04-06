@@ -322,7 +322,7 @@ describe 'Circuit Constructor'
   
   describe "Creating faults in the circuit"
   
-    it 'should be able to create resistaors with simple faults'
+    it 'should be able to create resistors with simple faults'
       var jsonCircuit = [
         {
           "type": "resistor",
@@ -341,7 +341,7 @@ describe 'Circuit Constructor'
 
       var components = getBreadBoard().components;
   
-      components['r1'].resistance.should.be 1e12
+      components['r1'].resistance.should.be 1e20
       components['r2'].resistance.should.be 1e-6
   
     end
@@ -375,7 +375,7 @@ describe 'Circuit Constructor'
 
       var components = getBreadBoard().components;
   
-      components['r1'].resistance.should.be 1e12
+      components['r1'].resistance.should.be 1e20
       components['r2'].resistance.should.be 1e-6
   
     end
@@ -406,8 +406,8 @@ describe 'Circuit Constructor'
       var components = getBreadBoard().components;
       
       var oneResIsOpen = false;
-      if ((components['r1'].resistance === 1e12 && components['r2'].resistance < 1e9) ||
-            (components['r1'].resistance < 1e9 && components['r2'].resistance === 1e12)) {
+      if ((components['r1'].resistance === 1e20 && components['r2'].resistance < 1e9) ||
+            (components['r1'].resistance < 1e9 && components['r2'].resistance === 1e20)) {
         oneResIsOpen = true;
       }
       oneResIsOpen.should.be true
@@ -467,7 +467,7 @@ describe 'Circuit Constructor'
       $.each(components, function(i, component){
         if (component.resistance === 1e-6){
           numClosed++;
-        } else if (component.resistance === 1e12){
+        } else if (component.resistance === 1e20){
           numOpen++;
         }
       });
