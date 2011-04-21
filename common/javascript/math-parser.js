@@ -19,7 +19,7 @@
       if (!!matches){      	
         $.each(matches, function(i, match){
           var expression = match;
-          var result = p.calculateSum(expression);
+          var result = p.calculateSum(expression.substring(1, expression.length-1));
           answer = answer.replace(match,result);
         });
       }
@@ -52,12 +52,8 @@
    p.calculateSum = function(sum){
       sum = p.replaceCircuitVariables(sum);
       var calculatedSum = eval(sum);
-      if (!isNaN(Number(calculatedSum))){
-        return calculatedSum;
-      }
-      
-      console.log("ERROR calculating Sum: Cannot compute the value of "+sum);
-      return -1;
+          
+      return calculatedSum;
    };
     
     
