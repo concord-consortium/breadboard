@@ -13,9 +13,13 @@ LoadModule proxy_module libexec/apache2/mod_proxy.so
 LoadModule proxy_connect_module libexec/apache2/mod_proxy_connect.so
 LoadModule proxy_http_module libexec/apache2/mod_proxy_http.so
 
-# replace this with the location of qucs
+# replace this with the location of qucs, if desired
 ProxyPass        /sparks/ http://sparks.portal.concord.org/sparks/
 ProxyPassReverse /sparks/ http://sparks.portal.concord.org/sparks/
+
+# replace this with the location of couchDB, if desired
+ProxyPass        /couchdb/ http://couchdb.cosmos.concord.org/
+ProxyPassReverse /couchdb/ http://couchdb.cosmos.concord.org/
 
 # replace these paths with the location of your sparks environment
 DocumentRoot /Users/scytacki/Development/sparks
