@@ -2855,6 +2855,25 @@ sparks.util.getKeys = function (json) {
   sparks.LogEvent.BLEW_FUSE = "Blew fuse";
   sparks.LogEvent.DMM_MEASUREMENT = "DMM measurement";
 
+  sparks.SparksLog.prototype = {
+
+    measurements: function () {
+      return sparks.sparksLogController.numMeasurements(this);
+    },
+
+    uniqueVMeasurements: function () {
+      return sparks.sparksLogController.numUniqueMeasurements(this, "voltage");
+    },
+
+    uniqueIMeasurements: function () {
+      return sparks.sparksLogController.numUniqueMeasurements(this, "current");
+    },
+
+    uniqueRMeasurements: function () {
+      return sparks.sparksLogController.numUniqueMeasurements(this, "resistance");
+    }
+  };
+
 })();
 /*globals console sparks $ breadModel getBreadBoard */
 
@@ -3586,7 +3605,7 @@ sparks.util.getKeys = function (json) {
 
     gradeQuestion: function(question) {
       if (!!question.scoring){
-        this.runQuestionScript(question.scoring, question)
+        this.runQuestionScript(question.scoring, question);
       } else if (!question.options || !question.options[0].option) {
         if (""+question.answer === ""+question.correct_answer){
           question.points_earned = question.points;
@@ -3628,8 +3647,9 @@ sparks.util.getKeys = function (json) {
 
     runQuestionScript: function (script, question){
       var parsedScript = sparks.mathParser.replaceCircuitVariables(script);
-      eval("var functionScript = function(question){" + parsedScript + "}");
-      functionScript(question);
+      var functionScript;
+      eval("var functionScript = function(question, log){" + parsedScript + "}");
+      functionScript(question, sparks.sparksLogController.currentLog);
     }
 
   };
@@ -3737,6 +3757,33 @@ sparks.util.getKeys = function (json) {
     addEvent: function (name, value) {
       var evt = new sparks.LogEvent(name, value, new Date().valueOf());
       this.currentLog.events.push(evt);
+    },
+
+    numMeasurements: function(log) {
+      var count = 0;
+      $.each(log.events, function(i, evt){
+        if (evt.name == sparks.LogEvent.DMM_MEASUREMENT){
+          count ++;
+        }
+      });
+      return count;
+    },
+
+    numUniqueMeasurements: function(log, type) {
+      var count = 0;
+      var positions = [];
+      $.each(log.events, function(i, evt){
+        if (evt.name == sparks.LogEvent.DMM_MEASUREMENT){
+          if (evt.value.measurement == type) {
+            var position = evt.value.red_probe + "" + evt.value.black_probe;
+            if (!sparks.util.contains(positions, position)) {
+              count++;
+              positions.push(position);
+            }
+          }
+        }
+      });
+      return count;
     }
 
   };
@@ -4242,7 +4289,6 @@ sparks.util.getKeys = function (json) {
    p.calculateSum = function(sum){
       sum = p.replaceCircuitVariables(sum);
       var calculatedSum = eval(sum);
-
       return calculatedSum;
    };
 

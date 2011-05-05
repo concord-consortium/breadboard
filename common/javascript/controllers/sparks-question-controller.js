@@ -131,7 +131,7 @@
     
     gradeQuestion: function(question) {
       if (!!question.scoring){
-        this.runQuestionScript(question.scoring, question)
+        this.runQuestionScript(question.scoring, question);
       } else if (!question.options || !question.options[0].option) {
         if (""+question.answer === ""+question.correct_answer){
           question.points_earned = question.points;
@@ -173,8 +173,9 @@
     
     runQuestionScript: function (script, question){
       var parsedScript = sparks.mathParser.replaceCircuitVariables(script);
-      eval("var functionScript = function(question){" + parsedScript + "}");
-      functionScript(question);
+      var functionScript;
+      eval("var functionScript = function(question, log){" + parsedScript + "}");
+      functionScript(question, sparks.sparksLogController.currentLog);
     }
     
   };

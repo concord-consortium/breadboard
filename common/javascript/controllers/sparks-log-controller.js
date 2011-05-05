@@ -23,6 +23,33 @@
     addEvent: function (name, value) {
       var evt = new sparks.LogEvent(name, value, new Date().valueOf());
       this.currentLog.events.push(evt);
+    },
+    
+    numMeasurements: function(log) {
+      var count = 0;
+      $.each(log.events, function(i, evt){
+        if (evt.name == sparks.LogEvent.DMM_MEASUREMENT){
+          count ++;
+        }
+      });
+      return count;
+    },
+    
+    numUniqueMeasurements: function(log, type) {
+      var count = 0;
+      var positions = [];
+      $.each(log.events, function(i, evt){
+        if (evt.name == sparks.LogEvent.DMM_MEASUREMENT){
+          if (evt.value.measurement == type) {
+            var position = evt.value.red_probe + "" + evt.value.black_probe;
+            if (!sparks.util.contains(positions, position)) {
+              count++;
+              positions.push(position);
+            }
+          }
+        }
+      });
+      return count;
     }
     
   };

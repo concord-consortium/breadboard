@@ -33,4 +33,23 @@
   sparks.LogEvent.BLEW_FUSE = "Blew fuse";
   sparks.LogEvent.DMM_MEASUREMENT = "DMM measurement";
   
+  sparks.SparksLog.prototype = {
+    
+    measurements: function () {
+      return sparks.sparksLogController.numMeasurements(this);
+    },
+    
+    uniqueVMeasurements: function () {
+      return sparks.sparksLogController.numUniqueMeasurements(this, "voltage");
+    },
+    
+    uniqueIMeasurements: function () {
+      return sparks.sparksLogController.numUniqueMeasurements(this, "current");
+    },
+    
+    uniqueRMeasurements: function () {
+      return sparks.sparksLogController.numUniqueMeasurements(this, "resistance");
+    }
+  };
+  
 })();
