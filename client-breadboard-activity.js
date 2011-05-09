@@ -3589,7 +3589,6 @@ sparks.util.getKeys = function (json) {
         question.prompt = oldPrompt;
 
         question.view = new sparks.SparksQuestionView(question);
-        console.log("Question points = "+question.points);
       }
 
       if (!jsonQuestion.subquestions){
@@ -4289,6 +4288,7 @@ sparks.util.getKeys = function (json) {
    p.calculateSum = function(sum){
       sum = p.replaceCircuitVariables(sum);
       var calculatedSum = eval(sum);
+
       return calculatedSum;
    };
 

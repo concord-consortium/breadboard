@@ -115,7 +115,6 @@
         question.prompt = oldPrompt;
         
         question.view = new sparks.SparksQuestionView(question);
-        console.log("Question points = "+question.points);
       }
       
       if (!jsonQuestion.subquestions){

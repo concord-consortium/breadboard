@@ -7,6 +7,32 @@ describe 'Logging'
   end
   
   describe 'Simple Logging'
+  
+    it "should be able to start and end a session"
+      var activityLog = new sparks.Activity.ActivityLog();
+    
+      activityLog.beginSession();
+    
+      activityLog.currentSession().start_time.should.be_at_least 1
+      activityLog.currentSession().end_time.should.be null
+    
+      activityLog.endSession();
+    
+      var startTime = activityLog.currentSession().start_time;
+      activityLog.currentSession().end_time.should.be_at_least (startTime)
+    end
+  
+    it "should be able to start a session and log some stuff"
+      var activityLog = new sparks.Activity.ActivityLog();
+    
+      activityLog.beginSession();
+      activityLog.setValue("resistor 1 resistance", 200);
+      activityLog.log("connect", "probe_red", "a2");
+    
+      activityLog.sessions[0].properties["resistor 1 resistance"].should.be 200
+      activityLog.sessions[0].events[0].name.should.be "connect"
+      activityLog.sessions[0].events[0].value.should.be "probe_red|a2"
+    end
 
       it 'should log when user clicks tutorial'
         var jsonSection =

@@ -54,7 +54,7 @@ describe 'Activity Creator'
       var ac = new sparks.ActivityConstructor(jsonSection);
   
       var board = getBreadBoard();
-      board.components["r1"].resistance.should.be 1e12
+      board.components["r1"].resistance.should.be 1e20
     end
     
   end
