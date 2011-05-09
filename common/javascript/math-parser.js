@@ -44,13 +44,14 @@
     
     
     /*
-      When passed a string such as "100 + ${r1.resistance} / ${r2.nominalResistance}"
-      this will first substitute the actual values of the variables in ${...}, assuming
+      When passed a string such as "100 + r1.resistance / r2.nominalResistance"
+      this will first assign variables for components r1 & r2, assuming
       the components and their properties exist in the circuit, and then perform the
       calculation.
     */
    p.calculateSum = function(sum){
       sum = p.replaceCircuitVariables(sum);
+      
       var calculatedSum = eval(sum);
           
       return calculatedSum;
@@ -58,10 +59,20 @@
     
     
     p.replaceCircuitVariables = function(formula){
+      
+      // first add all the components as circuit variables at the start of the script
+      // add all breadboard components as variables
+      $.each(getBreadBoard().components, function(i, component){
+        formula = "var " + i + " = getBreadBoard().components['"+i+"']; " + formula;
+      });
+      
+      // then support old method of accessing circuit variables using ${...}
+      // NOTE: This is obsolete (but tested)
       var varPattern = /\${[^}]+}/g  //  ${ X } --> value of X
       var matches = formula.match(varPattern);
       if(!!matches){
        $.each(matches, function(i, match){
+        console.log("WARN: It is not necessary to use the notation '"+match+"', you can simply use "+match.substring(2,match.length-1))
         var variable = match.substring(2,match.length-1).split('.');
         var component = variable[0];
         var property = variable[1];

@@ -1,153 +1,119 @@
 sparks.jsonSection = {
-   "_id": "11231232133asdasdasd",
-  "title": "Interpreting a Series Circuit",
-  "show_multimeter": "false",
-  "circuit": [
-      {
-        "type": "resistor",
-        "UID": "r1",
-        "connections": "b23,b17",
-        "label": "R1"
-        //"resistance": "100"
-      },
-      {
-        "type": "resistor",
-        "UID": "r2",
-        "connections": "c17,c11",
-        "label": "R2"
-        //"resistance":"100"
-      },
-      {
-        "type": "resistor",
-        "UID": "r3",
-        "connections": "d11,d5",
-        "label": "R3"
-        //"resistance":"200"
-      },
-      {
-        "type": "wire",
-        "connections": "left_positive20,a23"
-      },
-      {
-        "type": "wire",
-        "connections": "left_negative3,a5"
-      }
-   ],
-  "pages": [
-   {
-     "time": {
-      "best": 20,
-      "worst": 30,
-      "points": 10 
-     },
-     "questions": [
+   "_id": "sams-five-resistors",
+   "_rev": "4-954257a9f0218312e43d9d5599a6043c",
+   "title": "Troubleshooting a five-resistor circuit",
+   "show_multimeter": "true",
+   "circuit": [
        {
-         "prompt": "What is the rated resistance of",
-         "subquestions": [
-           {
-             "prompt": "R<sub>1</sub>:",
-             "shortPrompt": "Resistance of R1",
-             "options": [
-                 {
-                     "option": "200",
-                     "points": 0,
-                     "feedback": "Wrong!",
-                     "tutorial": "http://example.com/example"
-                 },
-                 {
-                     "option": "300",
-                     "points": 5
-                 }
-             ]
-           },
-           {
-             "prompt": "R<sub>2</sub>:",
-             "shortPrompt": "Resistance of R2",
-             "correct_answer": "[${r2.nominalResistance}]",
-             "correct_units": "ohms"
-           },
-           {
-             "prompt": "R<sub>3</sub>:",
-             "shortPrompt": "Resistance of R3",
-             "correct_answer": "[${r3.nominalResistance}]",
-             "correct_units": "ohms"
-           }
-         ]
+           "type": "wire",
+           "connections": "left_negative24,a30"
        },
        {
-         "prompt": "What is the total rated resistance across all the resistors? ",
-         "shortPrompt": "Total resistance",
-         "correct_answer": "[${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance}]",
-         "correct_units": "ohms"
+           "type": "wire",
+           "connections": "left_positive1,a1"
        },
        {
-         "prompt": "Given that the battery is producing 9 Volts, what is the voltage drop across",
-         "subquestions": [
-           {
-             "prompt": "R<sub>1</sub>:",
-             "shortPrompt": "Voltage across R1",
-             "correct_answer": "[ 9 * ${r1.nominalResistance} / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
-             "correct_units": "V"
-           },
-           {
-             "prompt": "R<sub>2</sub>:",
-             "shortPrompt": "Voltage across R2",
-             "correct_answer": "[ 9 * ${r2.nominalResistance} / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
-             "correct_units": "V"
-           },
-           {
-             "prompt": "R<sub>3</sub>:",
-             "shortPrompt": "Voltage across R3",
-             "correct_answer": "[ 9 * ${r3.nominalResistance} / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
-             "correct_units": "V"
-           }
-          ]
+           "type": "resistor",
+           "UID": "r1",
+           "connections": "b30,b24",
+           "label": "R1"
+       },
+       {
+           "type": "resistor",
+           "UID": "r2",
+           "connections": "c24,c18",
+           "label": "R2"
+       },
+       {
+           "type": "resistor",
+           "UID": "r3",
+           "connections": "c13,c7",
+           "label": "R3"
+       },
+       {
+           "type": "resistor",
+           "UID": "r4",
+           "connections": "b7,b1",
+           "label": "R4"
+       },
+       {
+           "type": "resistor",
+           "UID": "r5",
+           "connections": "f18,f12",
+           "label": "R5"
+       },
+       {
+           "type": "wire",
+           "connections": "d24,g18"
+       },
+       {
+           "type": "wire",
+           "connections": "d7,g12"
+       },
+       {
+           "type": "wire",
+           "connections": "left_positive16,a18"
+       },
+       {
+           "type": "wire",
+           "connections": "left_negative10,a13"
        }
-     ]
-   },
-   {
-     "questions": [
-    {
-      "prompt": "What is the current through",
-      "subquestions": [
-        {
-          "prompt": "R<sub>1</sub>:",
-          "shortPrompt": "Current through R1",
-          "correct_answer": "[ 9 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
-          "correct_units": "A"
-        },
-        {
-          "prompt": "R<sub>2</sub>:",
-          "shortPrompt": "Current through R2",
-          "correct_answer": "[ 9 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
-          "correct_units": "A"
-        },
-        {
-          "prompt": "R<sub>3</sub>:",
-          "shortPrompt": "Current through R3",
-          "correct_answer": "[ 9 / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
-          "correct_units": "A"
-        }
-      ]
-    },
-    {
-      "prompt": "What is the voltage across",
-      "subquestions": [
-        {
-          "prompt": "R<sub>1</sub> and R<sub>2</sub>:",
-          "shortPrompt": "Voltage across R1 and R2",
-          "correct_answer": "[ 9 * (${r1.nominalResistance} + ${r2.nominalResistance}) / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
-          "correct_units": "V"
-        },
-        {
-          "prompt": "R<sub>2</sub> and R<sub>3</sub>:",
-          "shortPrompt": "Voltage across R2 and R3",
-          "correct_answer": "[ 9 * (${r2.nominalResistance} + ${r3.nominalResistance}) / (${r1.nominalResistance} + ${r2.nominalResistance} + ${r3.nominalResistance})]",
-          "correct_units": "V"
-        }
-      ]
-    }
-    ]
-  }
-  ]
+   ],
+   "faults": [
+       {
+           "type": [
+               "shorted",
+               "open"
+           ],
+           "count": 1
+       }
+   ],
+   "pages": [
+       {
+           "questions": [
+               {
+                   "prompt": "One of these resistors is bad.",
+                   "subquestions": [
+                       {
+                           "prompt": "Which one is it?",
+                           "options": [
+                               {
+                                   "option": "R1"
+                               },
+                               {
+                                   "option": "R2"
+                               },
+                               {
+                                   "option": "R3"
+                               },
+                               {
+                                   "option": "R4"
+                               },
+                               {
+                                   "option": "R5"
+                               }
+                           ],
+                           "keepOrder": "true",
+                           "points": 10,
+                           "scoring": "var badResistorName; if ((r1.resistance > 1e12)||(r1.resistance < 1e-5)) {badResistorName = 'R1'}  else if ((r2.resistance > 1e12)||(r2.resistance < 1e-5)) {badResistorName = 'R2'} else if ((r3.resistance > 1e12)||(r3.resistance < 1e-5)) {badResistorName = 'R3'} else if ((r4.resistance > 1e12)||(r4.resistance < 1e-5)) {badResistorName = 'R4'} else if ((r5.resistance > 1e12)||(r5.resistance < 1e-5)) {badResistorName = 'R5'}; if (question.answer === badResistorName) {question.points_earned = 10} question.correct_answer = badResistorName; console.log('from script, log = '+log); console.log(log); console.log('from script, this = ' + this); question.feedback = 'number of V measurements: '+log.uniqueVMeasurements()"
+                       },
+                       {
+                           "prompt": "Is it shorted or open?",
+                           "options": [
+                               {
+                                   "option": "Shorted"
+                               },
+                               {
+                                   "option": "Open"
+                               }
+                           ],
+                           "keepOrder": "true",
+                           "points": 5,
+                           "scoring": "var natureOfFault; if ((r1.resistance > 1e12)||(r2.resistance > 1e12)||(r3.resistance > 1e12)||(r4.resistance > 1e12)||(r5.resistance > 1e12)) {natureOfFault = 'Open'} else if ((r1.resistance < 1e-5)||(r2.resistance < 1e-5)||(r3.resistance < 1e-5)||(r4.resistance < 1e-5)||(r5.resistance < 1e-5)) {natureOfFault = 'Shorted'}; if (question.answer === natureOfFault) {question.points_earned = 5} question.correct_answer = natureOfFault"
+                       }
+                   ]
+               }
+           ]
+       }
+   ]
 };
