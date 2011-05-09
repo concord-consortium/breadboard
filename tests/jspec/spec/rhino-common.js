@@ -32,6 +32,7 @@ specResults = JSpec
 .exec('spec/spec.activities/spec.activity_creator.js')
 .exec('spec/spec.reporting/spec.page_reports.js')
 .exec('spec/spec.reporting/spec.logging.js')
+.exec('spec/spec.activities/spec.scripts.js')
 
 .exec('spec/spec.activities/spec.activity_interactions.js');
 
