@@ -37,7 +37,7 @@
   sparks.SparksLog.prototype = {
     
     measurements: function () {
-      return sparks.sparksLogController.numMeasurements(this);
+      return sparks.sparksLogController.numEvents(this, sparks.LogEvent.DMM_MEASUREMENT);
     },
     
     uniqueVMeasurements: function () {
@@ -58,6 +58,10 @@
     
     connectionMakes: function() {
       return sparks.sparksLogController.numConnectionChanges(this, "connect lead");
+    },
+    
+    blownFuses: function () {
+      return sparks.sparksLogController.numEvents(this, sparks.LogEvent.BLEW_FUSE);
     }
   };
   

@@ -2859,7 +2859,7 @@ sparks.util.getKeys = function (json) {
   sparks.SparksLog.prototype = {
 
     measurements: function () {
-      return sparks.sparksLogController.numMeasurements(this);
+      return sparks.sparksLogController.numEvents(this, sparks.LogEvent.DMM_MEASUREMENT);
     },
 
     uniqueVMeasurements: function () {
@@ -2880,6 +2880,10 @@ sparks.util.getKeys = function (json) {
 
     connectionMakes: function() {
       return sparks.sparksLogController.numConnectionChanges(this, "connect lead");
+    },
+
+    blownFuses: function () {
+      return sparks.sparksLogController.numEvents(this, sparks.LogEvent.BLEW_FUSE);
     }
   };
 
@@ -3767,10 +3771,10 @@ sparks.util.getKeys = function (json) {
       this.currentLog.events.push(evt);
     },
 
-    numMeasurements: function(log) {
+    numEvents: function(log, name) {
       var count = 0;
       $.each(log.events, function(i, evt){
-        if (evt.name == sparks.LogEvent.DMM_MEASUREMENT){
+        if (evt.name == name){
           count ++;
         }
       });

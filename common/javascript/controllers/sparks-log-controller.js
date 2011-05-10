@@ -25,10 +25,10 @@
       this.currentLog.events.push(evt);
     },
     
-    numMeasurements: function(log) {
+    numEvents: function(log, name) {
       var count = 0;
       $.each(log.events, function(i, evt){
-        if (evt.name == sparks.LogEvent.DMM_MEASUREMENT){
+        if (evt.name == name){
           count ++;
         }
       });
