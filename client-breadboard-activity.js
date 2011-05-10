@@ -2854,6 +2854,7 @@ sparks.util.getKeys = function (json) {
   sparks.LogEvent.CLICKED_TUTORIAL = "Clicked tutorial";
   sparks.LogEvent.BLEW_FUSE = "Blew fuse";
   sparks.LogEvent.DMM_MEASUREMENT = "DMM measurement";
+  sparks.LogEvent.CHANGED_CIRCUIT = "Changed circuit";
 
   sparks.SparksLog.prototype = {
 
@@ -7101,6 +7102,9 @@ var apMessageBox = apMessageBox || {};
                     if (!!args[2]){
                       breadModel('unmapHole', args[2]);
                     }
+                    sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+                      "type": "connect lead",
+                      "location": args[2]});
                 }
                 this.multimeter.update();
             } else if (name === 'disconnect') {
@@ -7119,6 +7123,9 @@ var apMessageBox = apMessageBox || {};
                   var newHole = breadModel('getGhostHole', hole+"ghost");
 
                   breadModel('mapHole', hole, newHole.nodeName());
+                  sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+                    "type": "disconnect lead",
+                    "location": hole});
                 }
                 this.multimeter.update();
             } else if (name === 'probe') {
