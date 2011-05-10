@@ -2872,6 +2872,14 @@ sparks.util.getKeys = function (json) {
 
     uniqueRMeasurements: function () {
       return sparks.sparksLogController.numUniqueMeasurements(this, "resistance");
+    },
+
+    connectionBreaks: function() {
+      return sparks.sparksLogController.numConnectionChanges(this, "disconnect lead");
+    },
+
+    connectionMakes: function() {
+      return sparks.sparksLogController.numConnectionChanges(this, "connect lead");
     }
   };
 
@@ -3781,6 +3789,16 @@ sparks.util.getKeys = function (json) {
               positions.push(position);
             }
           }
+        }
+      });
+      return count;
+    },
+
+    numConnectionChanges: function(log, type) {
+      var count = 0;
+      $.each(log.events, function(i, evt){
+        if (evt.name == sparks.LogEvent.CHANGED_CIRCUIT && evt.value.type == type){
+          count ++;
         }
       });
       return count;

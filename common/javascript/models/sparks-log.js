@@ -50,6 +50,14 @@
     
     uniqueRMeasurements: function () {
       return sparks.sparksLogController.numUniqueMeasurements(this, "resistance");
+    },
+    
+    connectionBreaks: function() {
+      return sparks.sparksLogController.numConnectionChanges(this, "disconnect lead");
+    },
+    
+    connectionMakes: function() {
+      return sparks.sparksLogController.numConnectionChanges(this, "connect lead");
     }
   };
   

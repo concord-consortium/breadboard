@@ -50,6 +50,16 @@
         }
       });
       return count;
+    },
+    
+    numConnectionChanges: function(log, type) {
+      var count = 0;
+      $.each(log.events, function(i, evt){
+        if (evt.name == sparks.LogEvent.CHANGED_CIRCUIT && evt.value.type == type){
+          count ++;
+        }
+      });
+      return count;
     }
     
   };
