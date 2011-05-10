@@ -3644,6 +3644,9 @@ sparks.util.getKeys = function (json) {
             question.correct_answer = option.option;
           }
         });
+        if (!!question.tutorial) {
+          question.tutorial = option.tutorial;
+        }
       }
 
       if (question.answerIsCorrect){
