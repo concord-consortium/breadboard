@@ -157,16 +157,17 @@
             question.correct_answer = option.option;
           }
         });
-        if (!!question.tutorial) {
-          question.tutorial = option.tutorial;
-        }
+      }
+      
+      question.answerIsCorrect = (question.points_earned >= question.points);
+      
+      if (!question.answerIsCorrect && !question.tutorial) {
+        question.tutorial = question.top_tutorial;
       }
       
       if (question.answerIsCorrect){
         question.tutorial = null;
       }
-      
-      question.answerIsCorrect = (question.points_earned >= question.points);
       
       if (question.points_earned < 0) {
         question.points_earned = 0;

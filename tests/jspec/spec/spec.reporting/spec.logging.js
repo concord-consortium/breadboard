@@ -69,7 +69,6 @@ describe 'Logging'
       $button.click();
       
       var log = sessionReport.log;
-      var question = section.pages[0].questions[0];
       log.events.length.should.be 1
       log.events[0].name.should.be sparks.LogEvent.CLICKED_TUTORIAL
       log.events[0].value.should.be "/example.html"

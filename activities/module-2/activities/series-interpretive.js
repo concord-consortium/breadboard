@@ -94,11 +94,13 @@ sparks.jsonSection = {
                                }
                            ],
                            "keepOrder": "true",
+                           "tutorial": "woo.html",
                            "points": 10,
                            "scoring": "var badResistorName; if ((r1.resistance > 1e12)||(r1.resistance < 1e-5)) {badResistorName = 'R1'}  else if ((r2.resistance > 1e12)||(r2.resistance < 1e-5)) {badResistorName = 'R2'} else if ((r3.resistance > 1e12)||(r3.resistance < 1e-5)) {badResistorName = 'R3'} else if ((r4.resistance > 1e12)||(r4.resistance < 1e-5)) {badResistorName = 'R4'} else if ((r5.resistance > 1e12)||(r5.resistance < 1e-5)) {badResistorName = 'R5'}; if (question.answer === badResistorName) {question.points_earned = 10} question.correct_answer = badResistorName; console.log('from script, log = '+log); console.log(log); console.log('from script, this = ' + this); question.feedback = 'number of V measurements: '+log.uniqueVMeasurements()"
                        },
                        {
                            "prompt": "Is it shorted or open?",
+                           "tutorial": "woo.html",
                            "options": [
                                {
                                    "option": "Shorted"
@@ -110,7 +112,23 @@ sparks.jsonSection = {
                            "keepOrder": "true",
                            "points": 5,
                            "scoring": "var natureOfFault; if ((r1.resistance > 1e12)||(r2.resistance > 1e12)||(r3.resistance > 1e12)||(r4.resistance > 1e12)||(r5.resistance > 1e12)) {natureOfFault = 'Open'} else if ((r1.resistance < 1e-5)||(r2.resistance < 1e-5)||(r3.resistance < 1e-5)||(r4.resistance < 1e-5)||(r5.resistance < 1e-5)) {natureOfFault = 'Shorted'}; if (question.answer === natureOfFault) {question.points_earned = 5} question.correct_answer = natureOfFault"
-                       }
+                       },
+                       {
+                            "prompt": "The answer to this question is yes",
+                            "tutorial": "/woo.html",
+                            "options": [
+                                {
+                                    "option": "yes",
+                                    "points": 5
+                                },
+                                {
+                                    "option": "no",
+                                    "points": 0
+                                }
+                            ],
+                            "keepOrder": "true",
+                            "points": 5
+                        }
                    ]
                }
            ]

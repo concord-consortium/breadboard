@@ -895,113 +895,6 @@ describe 'Page Reports'
       
     end
     
-    it 'should show tutorial links if they are specified'
-      var jsonSection =
-        {
-          "pages":[
-            {
-              "questions": [
-                {
-                  "prompt": "What is the resistance of R1?",
-                  "tutorial": "/example.html",
-                  "options": [
-                      {
-                          "option": "200",
-                          "points": 0,
-                          "feedback": "Wrong!"
-                      },
-                      {
-                          "option": "300",
-                          "points": 5
-                      }
-                  ]
-                },
-                {
-                  "prompt": "What is the resistance of R1?",
-                  "tutorial": "/example2.html",
-                  "options": [
-                      {
-                          "option": "200",
-                          "points": 0,
-                          "feedback": "Wrong 2!",
-                          "tutorial": "/example.html",            // this overrides question-level property
-                      },
-                      {
-                          "option": "300",
-                          "points": 5
-                      }
-                  ]
-                }
-              ]
-            }
-          ]
-        };
-        
-      var $questionsDiv = $("<div>");
-
-      var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
-
-      var $select = $questionsDiv.find('select');
-      $select.val("200");
-      $select.change();
-      
-      var section = sparks.sparksActivityController.currentSection;
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
-      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
-      
-      var $trs = $report.find('tr');
-      
-      var $tds1 = $($trs[1]).find('td');
-      $tds1[4].innerHTML.should.be("Wrong!<button>Tutorial</button>");
-      var $tds2 = $($trs[2]).find('td');
-      $tds2[4].innerHTML.should.be("Wrong 2!<button>Tutorial</button>");
-      
-      var oldOpen = window.open;
-      window.open = function(){};
-      
-      window.should.receive('open', 'twice').with_args("/example.html", "", "menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no")
-      $button = $($tds1[4]).find('button');
-      $button.click();
-      
-      $button = $($tds2[4]).find('button');
-      $button.click();
-      
-      window.open = oldOpen;
-      
-    end
-    
-    it 'should use base tutorial url if necessary'
-      var oldOpen = window.open;
-      
-      var openCalled = false;
-      window.open = function(url){
-        url.should.be "http://example.com"
-        openCalled = true;
-      };
-      sparks.sparksReportController.showTutorial("http://example.com");
-      openCalled.should.be true
-      
-      openCalled = false;
-      window.open = function(url){
-        url.should.be "/example.html"
-        openCalled = true;
-      };
-      sparks.sparksReportController.showTutorial("/example.html");
-      openCalled.should.be true
-      
-      openCalled = false;
-      window.open = function(url){
-        url.should.be sparks.tutorial_base_url + "example.html"
-        openCalled = true;
-      };
-      sparks.sparksReportController.showTutorial("example.html");
-      openCalled.should.be true
-    
-      window.open = oldOpen;
-    end
-    
     it 'should be able to create an activity reports with multiple pages and sessions'
       // create two pages, six questions each, with answers all 100
       var jsonSection =
@@ -1071,6 +964,222 @@ describe 'Page Reports'
       $buttons[0].innerHTML.should.be "Try Page 1 again"
     end
     
+  end
+  
+  describe 'Tutorial buttons'
+  
+    it 'should show tutorial links if they are specified and question is answered wrong'
+      var jsonSection =
+        {
+          "pages":[
+            {
+              "questions": [
+                {
+                  "prompt": "What is the resistance of R1?",
+                  "tutorial": "/example.html",
+                  "options": [
+                      {
+                          "option": "200",
+                          "points": 0,
+                          "feedback": "Wrong!"
+                      },
+                      {
+                          "option": "300",
+                          "points": 5
+                      }
+                  ]
+                },
+                {
+                  "prompt": "What is the resistance of R1?",
+                  "tutorial": "/example2.html",
+                  "options": [
+                      {
+                          "option": "100",
+                          "points": 0,
+                          "feedback": "Wrong! 2"
+                      },
+                      {
+                          "option": "200",
+                          "points": 5
+                      }
+                  ]
+                }
+              ]
+            }
+          ]
+        };
+      
+      var $questionsDiv = $("<div>");
+
+      var ac = new sparks.ActivityConstructor(jsonSection);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.layoutActivity();
+
+      var $select = $questionsDiv.find('select');
+      $select.val("200");
+      $select.change();
+    
+      var section = sparks.sparksActivityController.currentSection;
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+    
+      var $trs = $report.find('tr');
+    
+      var $tds1 = $($trs[1]).find('td');
+      $tds1[4].innerHTML.should.be("Wrong!<button>Tutorial</button>");
+      var $tds2 = $($trs[2]).find('td');
+      $tds2[4].innerHTML.should.be("");
+    
+      var oldOpen = window.open;
+      window.open = function(){};
+    
+      window.should.receive('open', 'once').with_args("/example.html", "", "menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no")
+      $button = $($tds1[4]).find('button');
+      $button.click();
+    
+      window.open = oldOpen;
+    
+    end
+  
+    it 'should show overriden tutorials for individual options if they are specified'
+      var jsonSection =
+        {
+          "pages":[
+            {
+              "questions": [
+                {
+                  "prompt": "What is the resistance of R1?",
+                  "tutorial": "/example.html",
+                  "options": [
+                      {
+                          "option": "200",
+                          "points": 0,
+                          "feedback": "Wrong!",
+                          "tutorial": "/example2.html",            // this overrides question-level property
+                      },
+                      {
+                          "option": "300",
+                          "points": 5
+                      }
+                  ]
+                }
+              ]
+            }
+          ]
+        };
+      
+      var $questionsDiv = $("<div>");
+
+      var ac = new sparks.ActivityConstructor(jsonSection);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.layoutActivity();
+
+      var $select = $questionsDiv.find('select');
+      $select.val("200");
+      $select.change();
+    
+      var section = sparks.sparksActivityController.currentSection;
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+    
+      var $trs = $report.find('tr');
+    
+      var $tds1 = $($trs[1]).find('td');
+      $tds1[4].innerHTML.should.be("Wrong!<button>Tutorial</button>");
+    
+      var oldOpen = window.open;
+      window.open = function(){};
+    
+      window.should.receive('open', 'once').with_args("/example2.html", "", "menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no")
+      $button = $($tds1[4]).find('button');
+      $button.click();
+    
+      window.open = oldOpen;
+    
+    end
+    
+    it 'should show top-level tutorials if question is skipped'
+      var jsonSection =
+        {
+          "pages":[
+            {
+              "questions": [
+                {
+                  "prompt": "What is the resistance of R1?",
+                  "tutorial": "/example.html",
+                  "options": [
+                      {
+                          "option": "200",
+                          "points": 0,
+                          "feedback": "Wrong!"
+                      },
+                      {
+                          "option": "300",
+                          "points": 5
+                      }
+                  ]
+                }
+              ]
+            }
+          ]
+        };
+      
+      var $questionsDiv = $("<div>");
+
+      var ac = new sparks.ActivityConstructor(jsonSection);
+      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      ac.layoutActivity();
+    
+      var section = sparks.sparksActivityController.currentSection;
+      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+    
+      var $trs = $report.find('tr');
+    
+      var $tds1 = $($trs[1]).find('td');
+      $tds1[4].innerHTML.should.be("<button>Tutorial</button>");
+    
+      var oldOpen = window.open;
+      window.open = function(){};
+    
+      window.should.receive('open', 'once').with_args("/example.html", "", "menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no")
+      $button = $($tds1[4]).find('button');
+      $button.click();
+    
+      window.open = oldOpen;
+    
+    end
+  
+    it 'should use base tutorial url if necessary'
+      var oldOpen = window.open;
+    
+      var openCalled = false;
+      window.open = function(url){
+        url.should.be "http://example.com"
+        openCalled = true;
+      };
+      sparks.sparksReportController.showTutorial("http://example.com");
+      openCalled.should.be true
+    
+      openCalled = false;
+      window.open = function(url){
+        url.should.be "/example.html"
+        openCalled = true;
+      };
+      sparks.sparksReportController.showTutorial("/example.html");
+      openCalled.should.be true
+    
+      openCalled = false;
+      window.open = function(url){
+        url.should.be sparks.tutorial_base_url + "example.html"
+        openCalled = true;
+      };
+      sparks.sparksReportController.showTutorial("example.html");
+      openCalled.should.be true
+  
+      window.open = oldOpen;
+    end
+  
   end
  
 end
