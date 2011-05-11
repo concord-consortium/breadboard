@@ -8,7 +8,7 @@ describe 'Authored Scripts'
   
   describe 'Question Answers'
 
-      it 'should be able to use scripts to define distractors'
+      it 'should be able to use scripts to define correct answers'
         breadModel('insertComponent', 'resistor', {"UID": "r1", "connections": "a1,a2", "colors": "orange,black,brown,gold"});
 
         var jsonSection =
