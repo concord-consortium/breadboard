@@ -125,6 +125,7 @@
       Breadboard.prototype.components={};
       Breadboard.prototype.holes={};
       Breadboard.prototype.holeMap={};  // map of holes where one replaces the other, e.g. {a1: 'newGhostHole'}
+      Breadboard.prototype.faultyComponents=[];
 
       Breadboard.prototype.makeStrip = function (name) {
         var stripLen = this.strips.length;
@@ -150,6 +151,7 @@
           destroyed += !!this.component(k).destroy();
         }
         this.components = {};
+        this.faultyComponents = [];
         return !!destroyed;
       };
       
@@ -213,19 +215,17 @@
           // apply fault to valid components 'count' times, with no repitition. No checking is
           // done to see if there are sufficient valid components for this to be possible, so
           // application will hang if authored badly.
-          var faultyComponents = [];
           var componentKeys = sparks.util.getKeys(this.components);
           for (var i = 0; i < count; i++){
             var randomComponent = null;
             while (randomComponent === null) {
               var rand = Math.floor(Math.random() * componentKeys.length);
               var component = this.components[componentKeys[rand]];
-              if (!!component.resistance && !sparks.util.contains(faultyComponents, component)){
+              if (!!component.resistance && !sparks.util.contains(this.faultyComponents, component)){
                 randomComponent = component;
               }
             }
             this.addFaultToComponent(fault, randomComponent);
-            faultyComponents.push(randomComponent);
           }
         }
       };
@@ -241,10 +241,29 @@
         }
         
         if (type === "open") {
+          component.open = true;
+          component.shorted = false;
           component.resistance = 1e20;
         } else if (type === "shorted") {
+          component.shorted = true;
+          component.open = false;
           component.resistance = 1e-6;
         }
+        
+        this.faultyComponents.push(component);
+      };
+      
+      // returns an array of faults
+      Breadboard.prototype.getFaults = function() {
+        return this.faultyComponents;
+      };
+      
+      // returns first fault
+      Breadboard.prototype.getFault = function() {
+        if (this.faultyComponents.length > 0){
+          return this.faultyComponents[0];
+        }
+        return null;
       };
 
       //// BreadBoard Instance & Interface /////////////////////////////////////////

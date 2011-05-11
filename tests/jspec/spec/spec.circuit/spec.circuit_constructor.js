@@ -340,8 +340,10 @@ describe 'Circuit Constructor'
       breadModel("createCircuit", jsonCircuit);
 
       var components = getBreadBoard().components;
-  
+      
+      components['r1'].open.should.be true
       components['r1'].resistance.should.be 1e20
+      components['r2'].shorted.should.be true
       components['r2'].resistance.should.be 1e-6
   
     end
@@ -374,8 +376,10 @@ describe 'Circuit Constructor'
       breadModel("addFaults", faults);
 
       var components = getBreadBoard().components;
-  
+      
+      components['r1'].open.should.be true
       components['r1'].resistance.should.be 1e20
+      components['r2'].shorted.should.be true
       components['r2'].resistance.should.be 1e-6
   
     end
@@ -406,8 +410,8 @@ describe 'Circuit Constructor'
       var components = getBreadBoard().components;
       
       var oneResIsOpen = false;
-      if ((components['r1'].resistance === 1e20 && components['r2'].resistance < 1e9) ||
-            (components['r1'].resistance < 1e9 && components['r2'].resistance === 1e20)) {
+      if ((components['r1'].open && !components['r2'].open) ||
+            (!components['r1'].open && components['r2'].open)) {
         oneResIsOpen = true;
       }
       oneResIsOpen.should.be true
@@ -479,6 +483,39 @@ describe 'Circuit Constructor'
       var total = numOpen + numClosed;
       total.should.be 25
       
+  
+    end
+    
+    it 'should be able to call getFaults and getFault'
+      var jsonCircuit = [
+        {
+          "type": "resistor",
+          "UID": "r1",
+          "connections": "c3,b4"
+        },
+        {
+          "type": "resistor",
+          "UID": "r2",
+          "connections": "c4,b5",
+          "open": true
+        },
+        {
+          "type": "resistor",
+          "UID": "r3",
+          "connections": "c5,b6",
+          "shorted": true
+        }
+      ];
+      breadModel("createCircuit", jsonCircuit);
+
+      var faultyComponents = getBreadBoard().getFaults();
+      
+      faultyComponents.length.should.be 2
+      faultyComponents[0].UID.should.be "r2"
+      faultyComponents[1].UID.should.be "r3"
+      
+      var firstFaultyComponent = getBreadBoard().getFault();
+      firstFaultyComponent.UID.should.be "r2"
   
     end
   
