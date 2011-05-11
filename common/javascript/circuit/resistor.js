@@ -29,8 +29,10 @@
       }
       
       // at this point, we must have both real resiatance and colors
-      // calculate nominal resistance
-      this.nominalResistance =  this.getResistance( this.colors );
+      // calculate nominal resistance, unless nominalResistance is defined
+      if (!this.nominalResistance){
+        this.nominalResistance =  this.getResistance( this.colors );
+      }
       
       // now that everything has been set, if we have a fault set it now
       if (!!this.open){

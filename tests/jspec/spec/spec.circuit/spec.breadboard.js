@@ -113,6 +113,15 @@ describe 'Creating a breadboard'
         netlist = sparks.circuit.qucsator.makeNetlist(board);
         netlist.search(/R:resistor.* L2 L3 R=\"4200 Ohm\"/).should.be_at_least 0
       end 
+      
+      it "should correctly add resistors with a different rated resistance"
+    
+        // we can add a 100 ohm resistor
+        breadModel('insertComponent', 'resistor', {"UID": 'r1', "connections": 'a1,a2', "resistance": '100', "nominalResistance": '200'});
+        var board = getBreadBoard();
+        board.components['r1'].resistance.should.be 100
+        board.components['r1'].nominalResistance.should.be 200
+      end
     
       it "should be able to add a random resistor"
     

@@ -3200,6 +3200,7 @@ sparks.util.getKeys = function (json) {
         }
       }
       this._ensureInt("resistance");
+      this._ensureInt("nominalResistance");
       this._ensureInt("voltage");
     };
 
@@ -3269,7 +3270,9 @@ sparks.util.getKeys = function (json) {
         this.colors = this.getColors4Band( this.resistance, (!!this.tolerance ? this.tolerance : 0.05));
       }
 
-      this.nominalResistance =  this.getResistance( this.colors );
+      if (!this.nominalResistance){
+        this.nominalResistance =  this.getResistance( this.colors );
+      }
 
       if (!!this.open){
         this.resistance = 1e20;

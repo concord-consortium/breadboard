@@ -4544,6 +4544,7 @@ sparks.util.getKeys = function (json) {
         }
       }
       this._ensureInt("resistance");
+      this._ensureInt("nominalResistance");
       this._ensureInt("voltage");
     };
 
@@ -4612,7 +4613,9 @@ sparks.util.getKeys = function (json) {
         this.colors = this.getColors4Band( this.resistance, (!!this.tolerance ? this.tolerance : 0.05));
       }
 
-      this.nominalResistance =  this.getResistance( this.colors );
+      if (!this.nominalResistance){
+        this.nominalResistance =  this.getResistance( this.colors );
+      }
 
       if (!!this.open){
         this.resistance = 1e20;
@@ -6132,9 +6135,30 @@ sparks.util.getKeys = function (json) {
         return (1/resistance);
       },
 
+      rNominalSeries: function() {
+        var resistors = this.getResistors(arguments);
+        console.log("woo")
+        var resistance = 0;
+        $.each(resistors, function(i, resistor){
+          console.log("adding "+resistor.nominalResistance)
+          resistance += resistor.nominalResistance;
+        });
+        return resistance;
+      },
+
+      rNominalParallel: function() {
+        var resistors = this.getResistors(arguments);
+
+        var resistance = 0;
+        $.each(resistors, function(i, resistor){
+          resistance += (1/resistor.nominalResistance);
+        });
+        return (1/resistance);
+      },
+
       vDiv: function(x, y){
         var resistors = this.getResistors(arguments);
-        return resistors[0].resistance / (resistors[0].resistance + resistors[1].resistance)
+        return resistors[0].resistance / (resistors[0].resistance + resistors[1].resistance);
       }
     };
 

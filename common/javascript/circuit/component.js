@@ -28,6 +28,7 @@
         }
       }
       this._ensureInt("resistance");
+      this._ensureInt("nominalResistance");
       this._ensureInt("voltage");
     };
 

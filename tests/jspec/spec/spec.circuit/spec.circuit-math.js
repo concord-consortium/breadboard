@@ -8,7 +8,8 @@ describe 'Circuit Math'
          "type": "resistor",
          "UID": "r1",
          "connections": "c3,b4",
-         "resistance": "100"
+         "resistance": "100",
+         "nominalResistance": "200"
        },
        {
          "type": "resistor",
@@ -30,6 +31,8 @@ describe 'Circuit Math'
   it 'should be able to calculate series resistances'
     cMath.rSeries("r1", "r2").should.be 400
     cMath.rSeries("r1", "r2", "r3").should.be 700
+    
+    cMath.rNominalSeries("r1", "r2").should.be 500
   end
   
   it 'should be able to calculate parallel resistances'
