@@ -19,6 +19,7 @@ specResults = JSpec
 .exec('spec/spec.common/spec.string.js')
 .exec('spec/spec.common/spec.util.js')
 .exec('spec/spec.common/spec.units.js')
+.exec('spec/spec.common/spec.math.js')
 
 .exec('spec/spec.circuit/spec.resistor_colors.js')
 .exec('spec/spec.circuit/spec.breadboard.js')
@@ -28,11 +29,10 @@ specResults = JSpec
 .exec('spec/spec.circuit/spec.circuit_constructor.js')
 
 .exec('spec/spec.activities/spec.pages.js')
-.exec('spec/spec.reporting/spec.questions.js')
 .exec('spec/spec.activities/spec.activity_creator.js')
-.exec('spec/spec.reporting/spec.page_reports.js')
-.exec('spec/spec.reporting/spec.logging.js')
+.exec('spec/spec.activities/spec.activity_interactions.js');
 .exec('spec/spec.activities/spec.scripts.js')
 
-.exec('spec/spec.activities/spec.activity_interactions.js');
-
+.exec('spec/spec.reporting/spec.questions.js')
+.exec('spec/spec.reporting/spec.page_reports.js')
+.exec('spec/spec.reporting/spec.logging.js')

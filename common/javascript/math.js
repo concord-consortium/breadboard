@@ -59,5 +59,16 @@
      math.getRoundedSigDigits = function (x, n) {
          return Math.round(x * Math.pow(10, n - math.leftMostPos(x) - 1));
      };
+     
+     
+     // *** extend the Math object with useful methods ***
+     
+     Math.log10 = function(x){
+       return Math.log(x)/Math.LN10;
+     }
+     
+     Math.powNdigits = function(x,n){
+       return Math.pow(10,Math.floor(Math.log(x)/Math.LN10-n+1));
+     }
     
 })();

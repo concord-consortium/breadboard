@@ -7002,6 +7002,67 @@ var apMessageBox = apMessageBox || {};
 
 })(jQuery);
 
+/* FILE math.js */
+
+(function () {
+    this.sparks.math = {};
+
+    var math = sparks.math;
+
+    math.equalExceptPowerOfTen = function(x, y) {
+        var sx = sparks.string.stripZerosAndDots(x.toString());
+        var sy = sparks.string.stripZerosAndDots(y.toString());
+
+        return sx === sy;
+    };
+
+     math.leftMostPos = function (x) {
+         x = Number(x);
+         if (isNaN(x) || x < 0) {
+             console.log('ERROR: math.leftMostPos: Invalid input ' + x);
+             return 0;
+         }
+         if (x === 0) {
+             return 0;
+         }
+         var n = 0;
+         var y = x;
+         if (x < 1) {
+             while (y < 1) {
+                 y *= 10;
+                 n -= 1;
+             }
+         }
+         else {
+             while (y >= 10) {
+                 y /= 10;
+                 n += 1;
+             }
+         }
+         return n;
+     };
+
+     math.roundToSigDigits = function(x, n) {
+         var k = Math.pow(10, n - math.leftMostPos(x) - 1);
+         return Math.round(x * k) / k;
+     };
+
+     math.getRoundedSigDigits = function (x, n) {
+         return Math.round(x * Math.pow(10, n - math.leftMostPos(x) - 1));
+     };
+
+
+
+     Math.log10 = function(x){
+       return Math.log(x)/Math.LN10;
+     }
+
+     Math.powNdigits = function(x,n){
+       return Math.pow(10,Math.floor(Math.log(x)/Math.LN10-n+1));
+     }
+
+})();
+
 /* FILE activity.js */
 
 (function () {

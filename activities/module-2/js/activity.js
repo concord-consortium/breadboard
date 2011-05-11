@@ -32,6 +32,7 @@
 //= require <assessment/activity-log>
 //= require <assessment/assessment>
 //= require <apMessageBox>
+//= require <math>
 
 /* FILE activity.js */
 

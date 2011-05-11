@@ -542,6 +542,16 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
          return Math.round(x * Math.pow(10, n - math.leftMostPos(x) - 1));
      };
 
+
+
+     Math.log10 = function(x){
+       return Math.log(x)/Math.LN10;
+     }
+
+     Math.powNdigits = function(x,n){
+       return Math.pow(10,Math.floor(Math.log(x)/Math.LN10-n+1));
+     }
+
 })();
 
 /* FILE unit.js */
