@@ -66,6 +66,9 @@
         formula = "var " + i + " = getBreadBoard().components['"+i+"']; " + formula;
       });
       
+      // add the breadboard itself as a variable
+      formula = "var breadboard = getBreadBoard(); " + formula;
+      
       // then support old method of accessing circuit variables using ${...}
       // NOTE: This is obsolete (but tested)
       var varPattern = /\${[^}]+}/g  //  ${ X } --> value of X

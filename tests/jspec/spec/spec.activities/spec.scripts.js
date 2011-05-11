@@ -118,6 +118,45 @@ describe 'Authored Scripts'
       section.pages[0].questions[1].answerIsCorrect.should.be false
       section.pages[0].questions[1].points_earned.should.be 0
     end
+    
+    it 'should be able to find faults from within a script'
+    
+      breadModel('insertComponent', 'resistor', {"UID": "r1", "resistance": "100"});
+      breadModel('insertComponent', 'resistor', {"UID": "r2", "resistance": "200", "open": true});
+      var jsonSection =
+        {
+          "pages":[
+            {
+              "questions": [
+                {
+                    "prompt": "Which resistor is faulty?",
+                    "points": 5,
+                    "scoring": "console.log(breadboard.getFault().UID); if (question.answer == breadboard.getFault().UID) {question.points_earned = 5}"
+                },
+                {
+                    "prompt": "List the faulty resistors in the feedback...",
+                    "points": 5,
+                    "scoring": "question.feedback = breadboard.getFaults()[0].UID"
+                }
+              ]
+            }
+          ]
+        };
+        
+      var ac = new sparks.ActivityConstructor(jsonSection);
+      var section = sparks.sparksActivityController.currentSection;
+      
+      section.pages[0].questions[0].answer = "r2"
+      
+      $.each(section.pages[0].questions, function(i, question){
+        sparks.sparksQuestionController.gradeQuestion(question);
+      });
+      
+      section.pages[0].questions[0].answerIsCorrect.should.be true
+      section.pages[0].questions[0].points_earned.should.be 5
+      section.pages[0].questions[1].answerIsCorrect.should.be false
+      section.pages[0].questions[1].feedback.should.be "r2"
+    end
   end
  
 end

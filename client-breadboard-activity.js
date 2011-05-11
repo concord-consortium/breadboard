@@ -4327,6 +4327,8 @@ sparks.util.getKeys = function (json) {
         formula = "var " + i + " = getBreadBoard().components['"+i+"']; " + formula;
       });
 
+      formula = "var breadboard = getBreadBoard(); " + formula;
+
       var varPattern = /\${[^}]+}/g  //  ${ X } --> value of X
       var matches = formula.match(varPattern);
       if(!!matches){
