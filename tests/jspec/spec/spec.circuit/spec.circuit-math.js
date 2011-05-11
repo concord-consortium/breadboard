@@ -15,22 +15,30 @@ describe 'Circuit Math'
          "UID": "r2",
          "connections": "c5,b6",
          "resistance": "300"
-       }
+       },
+       {
+          "type": "resistor",
+          "UID": "r3",
+          "connections": "c6,b7",
+          "resistance": "300"
+        }
      ];
      
      breadModel("createCircuit", jsonCircuit);
   end
   
   it 'should be able to calculate series resistances'
-    circMath.rSeries("r1", "r2").should.be 400
+    cMath.rSeries("r1", "r2").should.be 400
+    cMath.rSeries("r1", "r2", "r3").should.be 700
   end
   
   it 'should be able to calculate parallel resistances'
-    circMath.rParallel("r1", "r2").should.be 75
+    cMath.rParallel("r1", "r2").should.be 75
+    cMath.rParallel("r1", "r2", "r3").should.be 60
   end
   
-  it 'should calculate vDiv correctly'
-    circMath.vDiv("r1", "r2").should.be 0.25
+  it 'should be able to calculate voltage divider correctly'
+    cMath.vDiv("r1", "r2").should.be 0.25
   end
   
 end

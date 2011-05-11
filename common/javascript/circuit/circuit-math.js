@@ -46,6 +46,6 @@
       }
     };
     
-    this.circMath = new sparks.circuitMath();
+    this.cMath = new sparks.circuitMath();
     
 })();

@@ -6138,7 +6138,7 @@ sparks.util.getKeys = function (json) {
       }
     };
 
-    this.circMath = new sparks.circuitMath();
+    this.cMath = new sparks.circuitMath();
 
 })();
 
