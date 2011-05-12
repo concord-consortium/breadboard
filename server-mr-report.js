@@ -493,6 +493,8 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 
 })();
 
+/*globals console sparks */
+
 /* FILE math.js */
 
 (function () {
@@ -546,11 +548,16 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 
      Math.log10 = function(x){
        return Math.log(x)/Math.LN10;
-     }
+     };
 
      Math.powNdigits = function(x,n){
        return Math.pow(10,Math.floor(Math.log(x)/Math.LN10-n+1));
-     }
+     };
+
+     Math.toSigFigs = function(num, sigFigs) {
+       num = num.toPrecision(sigFigs);
+       return sigFigs > Math.log(num) * Math.LOG10E ? num : ""+parseFloat(num);
+     };
 
 })();
 

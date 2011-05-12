@@ -1,6 +1,8 @@
 //= require <string>
 //= require "setup-common"
 
+/*globals console sparks */
+
 /* FILE math.js */
 
 (function () {
@@ -65,10 +67,17 @@
      
      Math.log10 = function(x){
        return Math.log(x)/Math.LN10;
-     }
+     };
      
      Math.powNdigits = function(x,n){
        return Math.pow(10,Math.floor(Math.log(x)/Math.LN10-n+1));
-     }
+     };
+     
+     // Rounds to n sig figs (including adding on trailing zeros if necessary),
+     // and returns a string representation of the number.
+     Math.toSigFigs = function(num, sigFigs) {
+       num = num.toPrecision(sigFigs);
+       return sigFigs > Math.log(num) * Math.LOG10E ? num : ""+parseFloat(num);
+     };
     
 })();
