@@ -96,7 +96,11 @@
         console.log("ERROR: No session reports for page");
         return;
       }
-      var sessionReports = sectionReport.pageReports[page].sessionReports;
+      return this.getTotalScoreForPageReport(sectionReport.pageReports[page]);
+    },
+    
+    getTotalScoreForPageReport: function(pageReport) {
+      var sessionReports = pageReport.sessionReports;
       var totalScore = 0;
       for (var i in sessionReports) {
         var report = sessionReports[i];
@@ -166,6 +170,101 @@
         var data = sparks.sparksReport.toJSON();
         sparks.activity.dataService.save(data);
       }
+    },
+    
+    loadReport: function(jsonReport) {
+      this.fixData(jsonReport);
+    },
+    
+    showReport: function(studentName) {
+      var ds = new sparks.CouchDS("/couchdb:sparks_data");
+      ds.loadStudentData(studentName);
+    },
+    
+    fixData: function(jsonReport) {
+      if (jsonReport.save_time < 1301500000000){      // reports saved before 3/30/2011 (Tidewater run)
+        this.addSectionIds(jsonReport);
+      }
+    },
+    
+    addSectionIds: function(jsonReport) {
+      var self = this;
+      if (!jsonReport.sectionReports || jsonReport.sectionReports.length < 1){
+        return;
+      }
+      
+      var question = jsonReport.sectionReports[0].pageReports[0].sessionReports[0].questions[0];
+      var feedback = [];
+      $.each(question.options, function(i, option){
+        feedback.push(option.feedback);
+      });
+      
+      var sections = ["series-a-1d", "series-b-1a", "series-c-1", "series-c-2", "series-d-1",
+                      "series-d-2", "series-e-1", "series-e-2", "series-f-1"];
+      var sectionTitles = ["Understanding a Breadboard", "Understanding Series Resistances", "Calculating Total Circuit R (Series)", "Calculating V and I in Series Circuits", "Measuring to Calculate Total R",
+                      "Measuring V and I in Series Circuits", "Measuring Series Circuits", "Measuring Series R's in Circuits", "Troubleshooting a series circuit"];               
+      
+      sectionAttempt = 0;
+      trySection(sectionAttempt);
+      
+      function trySection(sectionNo){
+        if (sectionNo > sections.length-1){
+          console.log("ERROR fixing report data");
+          console.log(jsonReport);
+          alert("tried to fix data for "+jsonReport.user.name+"but failed. Check console");
+        }
+        $.couch.db("sparks").openDoc(sections[sectionNo], { success: function(response) { 
+          checkSection(response, sectionNo);
+          }}
+        );
+      }
+      
+      function arraysAreEquivalent(ar1, ar2){
+        var equiv = true;
+        $.each(ar1, function(i, val){
+          if (!sparks.util.contains(ar2, val)){
+            equiv = false;
+          }
+        });
+        return equiv;
+      }
+      
+      function checkSection(section, sectionNo){
+        var sectionQuestion = section.pages[0].questions[0];
+        var sectionFeedback = [];
+        $.each(sectionQuestion.options, function(i, option){
+          sectionFeedback.push(option.feedback);
+        });
+        if (arraysAreEquivalent(feedback, sectionFeedback)){
+          setSectionNames(sectionNo);
+        } else {
+          sectionAttempt++;
+          trySection(sectionAttempt);
+        }
+      }
+      
+      function setSectionNames(sectionNo){
+        $.each(jsonReport.sectionReports, function(i, sectionReport){
+          sectionReport.sectionId = sections[sectionNo + i];
+          sectionReport.sectionTitle = sectionTitles[sectionNo + i];
+        });
+        
+        
+        // FIXME: Should use regular save, so _rev changes if we fix multiple things
+        if (!sparks.activity.dataService){
+          var tempDs = new sparks.CouchDS("/couchdb:sparks_data");
+          tempDs.saveRawData(jsonReport);
+        } else {
+          sparks.activity.dataService.saveRawData(jsonReport);
+        }
+        
+        
+        //FIXME: Should do this at end
+        var $reportView = sparks.sparksReport.view.getFinalActivityReportView(jsonReport);
+        $('#questions_area').append($reportView);
+        // debugger
+      }
+      
     }
     
   };

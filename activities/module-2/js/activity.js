@@ -77,6 +77,11 @@
             if (!jsonSectionName){
               jsonSectionName = "series-interpretive";
             }
+            if (jsonSectionName.indexOf("report") == 0){
+              studentName = jsonSectionName.split("/")[1];
+              sparks.sparksReportController.showReport(studentName);
+              return;
+            }
             if (jsonSectionName.indexOf("local") == 0){
               sparks.activity_base_url = "/activities/module-2/activities/";
               jsonSectionName = jsonSectionName.split("/")[1] + ".js";

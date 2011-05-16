@@ -18,6 +18,7 @@
  */
 (function() {
   sparks.SparksReport = function(){
+    this.reportVersion = 1.0;
     this.sectionReports = {};
     this.score = 0;
     this.view = null;
@@ -52,6 +53,7 @@
         json.sectionReports.push(sectionReport.toJSON());
       });
       json.score = this.score;
+      json.reportVersion = this.reportVersion;
       return json;
     }
     

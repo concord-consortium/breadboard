@@ -2024,8 +2024,36 @@ if (window.attachEvent) {
 
         },
 
-        load: function (context,callback) {
+        saveRawData: function(_data) {
+          $.couch.db(this.db).saveDoc(
+            _data,
+            { success: function(response) {
+              console.log("Saved ok, id = "+response.id);
+             }}
+          );
+        },
 
+        loadStudentData: function (studentName) {
+          var self = this;
+          $.couch.db(this.db).view(
+            "session_scores/Scores%20per%20session",
+            {
+              keys:[studentName],
+              success: function(response) {
+                console.log("success");
+                console.log(response);
+                var id = response.rows[0].id;
+                self.handleData(id);             // temporary. Next we should handle entire array
+            }}
+          );
+        },
+
+        handleData: function (id) {
+          $.couch.db(this.db).openDoc(id,
+            { success: function(response) {
+              sparks.sparksReportController.loadReport(response);
+             }}
+          );
         }
     };
 })();

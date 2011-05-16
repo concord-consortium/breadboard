@@ -2024,8 +2024,36 @@ if (window.attachEvent) {
 
         },
 
-        load: function (context,callback) {
+        saveRawData: function(_data) {
+          $.couch.db(this.db).saveDoc(
+            _data,
+            { success: function(response) {
+              console.log("Saved ok, id = "+response.id);
+             }}
+          );
+        },
 
+        loadStudentData: function (studentName) {
+          var self = this;
+          $.couch.db(this.db).view(
+            "session_scores/Scores%20per%20session",
+            {
+              keys:[studentName],
+              success: function(response) {
+                console.log("success");
+                console.log(response);
+                var id = response.rows[0].id;
+                self.handleData(id);             // temporary. Next we should handle entire array
+            }}
+          );
+        },
+
+        handleData: function (id) {
+          $.couch.db(this.db).openDoc(id,
+            { success: function(response) {
+              sparks.sparksReportController.loadReport(response);
+             }}
+          );
         }
     };
 })();
@@ -2908,6 +2936,7 @@ sparks.util.getKeys = function (json) {
  */
 (function() {
   sparks.SparksReport = function(){
+    this.reportVersion = 1.0;
     this.sectionReports = {};
     this.score = 0;
     this.view = null;
@@ -2942,6 +2971,7 @@ sparks.util.getKeys = function (json) {
         json.sectionReports.push(sectionReport.toJSON());
       });
       json.score = this.score;
+      json.reportVersion = this.reportVersion;
       return json;
     }
 
@@ -3390,6 +3420,37 @@ sparks.util.getKeys = function (json) {
         });
         $div.append($table);
       });
+      var $score = $("<span>").css("font-size", "11pt").html("<u>You have scored <b>"+totalScore+"</b> points so far.</u>");
+      $div.find('h1').after($score);
+      return $div;
+    },
+
+    getFinalActivityReportView: function(report) {
+      var $div = $('<div>');
+      $div.append('<h1>Activity results</h1>');
+
+      var totalScore = 0;
+      var self = this;
+
+      $.each(report.sectionReports, function(i, sectionReport){
+
+        $div.append('<h2>Section '+(i+1)+': '+sectionReport.sectionTitle+'</h2>');
+        var pageReports = sectionReport.pageReports;
+
+        var $table = $("<table>");
+        $.each(pageReports, function(i, pageReport){
+          var score = sparks.sparksReportController.getTotalScoreForPageReport(pageReport);
+
+          var $tr = $("<tr>");
+          $tr.append("<td>Page "+(i+1)+": "+ score   +" points</td>");
+          $table.append($tr);
+
+          totalScore += score;
+
+        });
+        $div.append($table);
+      });
+
       var $score = $("<span>").css("font-size", "11pt").html("<u>You have scored <b>"+totalScore+"</b> points so far.</u>");
       $div.find('h1').after($score);
       return $div;
@@ -4128,7 +4189,11 @@ sparks.util.getKeys = function (json) {
         console.log("ERROR: No session reports for page");
         return;
       }
-      var sessionReports = sectionReport.pageReports[page].sessionReports;
+      return this.getTotalScoreForPageReport(sectionReport.pageReports[page]);
+    },
+
+    getTotalScoreForPageReport: function(pageReport) {
+      var sessionReports = pageReport.sessionReports;
       var totalScore = 0;
       for (var i in sessionReports) {
         var report = sessionReports[i];
@@ -4198,6 +4263,98 @@ sparks.util.getKeys = function (json) {
         var data = sparks.sparksReport.toJSON();
         sparks.activity.dataService.save(data);
       }
+    },
+
+    loadReport: function(jsonReport) {
+      this.fixData(jsonReport);
+    },
+
+    showReport: function(studentName) {
+      var ds = new sparks.CouchDS("/couchdb:sparks_data");
+      ds.loadStudentData(studentName);
+    },
+
+    fixData: function(jsonReport) {
+      if (jsonReport.save_time < 1301500000000){      // reports saved before 3/30/2011 (Tidewater run)
+        this.addSectionIds(jsonReport);
+      }
+    },
+
+    addSectionIds: function(jsonReport) {
+      var self = this;
+      if (!jsonReport.sectionReports || jsonReport.sectionReports.length < 1){
+        return;
+      }
+
+      var question = jsonReport.sectionReports[0].pageReports[0].sessionReports[0].questions[0];
+      var feedback = [];
+      $.each(question.options, function(i, option){
+        feedback.push(option.feedback);
+      });
+
+      var sections = ["series-a-1d", "series-b-1a", "series-c-1", "series-c-2", "series-d-1",
+                      "series-d-2", "series-e-1", "series-e-2", "series-f-1"];
+      var sectionTitles = ["Understanding a Breadboard", "Understanding Series Resistances", "Calculating Total Circuit R (Series)", "Calculating V and I in Series Circuits", "Measuring to Calculate Total R",
+                      "Measuring V and I in Series Circuits", "Measuring Series Circuits", "Measuring Series R's in Circuits", "Troubleshooting a series circuit"];
+
+      sectionAttempt = 0;
+      trySection(sectionAttempt);
+
+      function trySection(sectionNo){
+        if (sectionNo > sections.length-1){
+          console.log("ERROR fixing report data");
+          console.log(jsonReport);
+          alert("tried to fix data for "+jsonReport.user.name+"but failed. Check console");
+        }
+        $.couch.db("sparks").openDoc(sections[sectionNo], { success: function(response) {
+          checkSection(response, sectionNo);
+          }}
+        );
+      }
+
+      function arraysAreEquivalent(ar1, ar2){
+        var equiv = true;
+        $.each(ar1, function(i, val){
+          if (!sparks.util.contains(ar2, val)){
+            equiv = false;
+          }
+        });
+        return equiv;
+      }
+
+      function checkSection(section, sectionNo){
+        var sectionQuestion = section.pages[0].questions[0];
+        var sectionFeedback = [];
+        $.each(sectionQuestion.options, function(i, option){
+          sectionFeedback.push(option.feedback);
+        });
+        if (arraysAreEquivalent(feedback, sectionFeedback)){
+          setSectionNames(sectionNo);
+        } else {
+          sectionAttempt++;
+          trySection(sectionAttempt);
+        }
+      }
+
+      function setSectionNames(sectionNo){
+        $.each(jsonReport.sectionReports, function(i, sectionReport){
+          sectionReport.sectionId = sections[sectionNo + i];
+          sectionReport.sectionTitle = sectionTitles[sectionNo + i];
+        });
+
+
+        if (!sparks.activity.dataService){
+          var tempDs = new sparks.CouchDS("/couchdb:sparks_data");
+          tempDs.saveRawData(jsonReport);
+        } else {
+          sparks.activity.dataService.saveRawData(jsonReport);
+        }
+
+
+        var $reportView = sparks.sparksReport.view.getFinalActivityReportView(jsonReport);
+        $('#questions_area').append($reportView);
+      }
+
     }
 
   };
@@ -7183,6 +7340,11 @@ var apMessageBox = apMessageBox || {};
             jsonSectionName = jsonSectionName.substring(1,jsonSectionName.length);
             if (!jsonSectionName){
               jsonSectionName = "series-interpretive";
+            }
+            if (jsonSectionName.indexOf("report") == 0){
+              studentName = jsonSectionName.split("/")[1];
+              sparks.sparksReportController.showReport(studentName);
+              return;
             }
             if (jsonSectionName.indexOf("local") == 0){
               sparks.activity_base_url = "/activities/module-2/activities/";

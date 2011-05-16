@@ -82,6 +82,40 @@
       return $div;
     },
     
+    getFinalActivityReportView: function(report) {
+      var $div = $('<div>');
+      $div.append('<h1>Activity results</h1>');
+      
+      var totalScore = 0;
+      var self = this;
+      
+      $.each(report.sectionReports, function(i, sectionReport){
+        
+        $div.append('<h2>Section '+(i+1)+': '+sectionReport.sectionTitle+'</h2>');
+        var pageReports = sectionReport.pageReports;
+        
+        var $table = $("<table>");
+        $.each(pageReports, function(i, pageReport){
+          // $div.append('<h3>Page '+(i+1)+"</h3>");
+          // var bestSessionReport = sparks.sparksReportController.getBestSessionReport(page);
+          // $div.append(self._createReportTableForSession(bestSessionReport));
+          var score = sparks.sparksReportController.getTotalScoreForPageReport(pageReport);
+          
+          var $tr = $("<tr>");
+          $tr.append("<td>Page "+(i+1)+": "+ score   +" points</td>");
+          $table.append($tr);
+          
+          totalScore += score;
+          
+        });
+        $div.append($table);
+      });
+      
+      var $score = $("<span>").css("font-size", "11pt").html("<u>You have scored <b>"+totalScore+"</b> points so far.</u>");
+      $div.find('h1').after($score);
+      return $div;
+    },
+    
     _createReportTableForSession: function(sessionReport) {
       
       var $report = $('<table>').addClass('reportTable');
