@@ -34,6 +34,8 @@
     
     this.keepOrder = false;
     
+    this.category = "";
+    
     this.view = null;
   };
   
@@ -50,6 +52,7 @@
       json.points_earned = this.points_earned;
       json.feedback = this.feedback;
       json.tutorial = this.tutorial;
+      json.category = this.category;
       return json;
     }
   };

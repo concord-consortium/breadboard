@@ -79,6 +79,9 @@
       // });
       var $score = $("<span>").css("font-size", "11pt").html("<u>You have scored <b>"+totalScore+"</b> points so far.</u>");
       $div.find('h1').after($score);
+      
+      $div.append(this._createReportTableForCategories());
+      
       return $div;
     },
     
@@ -114,6 +117,28 @@
       var $score = $("<span>").css("font-size", "11pt").html("<u>You have scored <b>"+totalScore+"</b> points so far.</u>");
       $div.find('h1').after($score);
       return $div;
+    },
+    
+    _createReportTableForCategories: function() {
+      var categories = sparks.sparksReportController.getCategories(sparks.sparksReport);
+      
+      var $table = $("<table>");
+      $table.append(
+        $('<tr>').append(
+          $('<th>').text("Question Categories"),
+          $('<th>').text("% Answered Correctly")
+        )
+      );
+      
+      $.each(categories, function(category, score){
+        $table.append(
+          $('<tr>').append(
+            $('<td>').html(category),
+            $('<td>').html("<b>"+sparks.math.roundToSigDigits((score[0]/score[1])*100, 2)+"%</b> ("+score[0]+"/"+score[1]+")")
+          )
+        );
+      });
+      return $table;
     },
     
     _createReportTableForSession: function(sessionReport) {

@@ -156,6 +156,30 @@
       window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
       sparks.sparksLogController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
     },
+    
+    getCategories: function(report) {
+      var categories = {};
+      var self = this;
+      $.each(report.sectionReports, function(i, sectionReport){
+        $.each(sectionReport.pageReports, function(j, pageReport){
+          $.each(pageReport.sessionReports, function(k, sessionReport){
+            $.each(sessionReport.questions, function(l, question){
+              if (!!question.category){
+                var category = question.category;
+                if (!categories[category]){
+                  categories[category] = [0,0];
+                }
+                var right = categories[category][0];
+                var total = categories[category][1];
+                categories[category][0] = question.answerIsCorrect ? right + 1 : right;
+                categories[category][1] = total + 1;
+              }
+            });
+          });
+        });
+      });
+      return categories;
+    },
 
     saveData: function() {
       if (!!sparks.activity && !!sparks.activity.dataService){
@@ -173,7 +197,10 @@
     },
     
     loadReport: function(jsonReport) {
-      this.fixData(jsonReport);
+      this.fixData(jsonReport, function(fixedReport){
+        var $reportView = sparks.sparksReport.view.getFinalActivityReportView(jsonReport);
+        $('#questions_area').append($reportView);
+      });
     },
     
     showReport: function(studentName) {
@@ -181,15 +208,16 @@
       ds.loadStudentData(studentName);
     },
     
-    fixData: function(jsonReport) {
+    fixData: function(jsonReport, callback) {
       if (jsonReport.save_time < 1301500000000){      // reports saved before 3/30/2011 (Tidewater run)
-        this.addSectionIds(jsonReport);
+        this.addSectionIds(jsonReport, callback);
       }
     },
     
-    addSectionIds: function(jsonReport) {
+    addSectionIds: function(jsonReport, callback) {
       var self = this;
-      if (!jsonReport.sectionReports || jsonReport.sectionReports.length < 1){
+      if (!jsonReport.sectionReports || jsonReport.sectionReports.length < 1 || !!jsonReport.sectionReports[0].sectionId){
+        callback(jsonReport);
         return;
       }
       
@@ -201,8 +229,10 @@
       
       var sections = ["series-a-1d", "series-b-1a", "series-c-1", "series-c-2", "series-d-1",
                       "series-d-2", "series-e-1", "series-e-2", "series-f-1"];
-      var sectionTitles = ["Understanding a Breadboard", "Understanding Series Resistances", "Calculating Total Circuit R (Series)", "Calculating V and I in Series Circuits", "Measuring to Calculate Total R",
-                      "Measuring V and I in Series Circuits", "Measuring Series Circuits", "Measuring Series R's in Circuits", "Troubleshooting a series circuit"];               
+      var sectionTitles = ["Understanding a Breadboard", "Understanding Series Resistances", "Calculating Total Circuit R (Series)", 
+                            "Calculating V and I in Series Circuits", "Measuring to Calculate Total R",
+                            "Measuring V and I in Series Circuits", "Measuring Series Circuits", "Measuring Series R's in Circuits", 
+                            "Troubleshooting a series circuit"];               
       
       sectionAttempt = 0;
       trySection(sectionAttempt);
@@ -258,11 +288,7 @@
           sparks.activity.dataService.saveRawData(jsonReport);
         }
         
-        
-        //FIXME: Should do this at end
-        var $reportView = sparks.sparksReport.view.getFinalActivityReportView(jsonReport);
-        $('#questions_area').append($reportView);
-        // debugger
+        callback(jsonReport);
       }
       
     }
