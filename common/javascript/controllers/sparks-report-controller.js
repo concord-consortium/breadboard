@@ -204,7 +204,7 @@
     },
     
     showReport: function(studentName) {
-      var ds = new sparks.CouchDS("/couchdb:sparks_data");
+      var ds = new sparks.CouchDS("/couchdb:");
       ds.loadStudentData(studentName);
     },
     

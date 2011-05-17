@@ -4326,13 +4326,11 @@ sparks.util.getKeys = function (json) {
     },
 
     showReport: function(studentName) {
-      var ds = new sparks.CouchDS("/couchdb:sparks_data");
+      var ds = new sparks.CouchDS("/couchdb:");
       ds.loadStudentData(studentName);
     },
 
     fixData: function(jsonReport, callback) {
-      console.log("callback");
-      console.log(callback)
       if (jsonReport.save_time < 1301500000000){      // reports saved before 3/30/2011 (Tidewater run)
         this.addSectionIds(jsonReport, callback);
       }
@@ -4341,8 +4339,6 @@ sparks.util.getKeys = function (json) {
     addSectionIds: function(jsonReport, callback) {
       var self = this;
       if (!jsonReport.sectionReports || jsonReport.sectionReports.length < 1 || !!jsonReport.sectionReports[0].sectionId){
-        console.log("callback");
-        console.log(callback)
         callback(jsonReport);
         return;
       }
