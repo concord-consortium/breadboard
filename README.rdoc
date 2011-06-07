@@ -240,3 +240,5 @@ or, if you build qucs locally, modify file  /javascript/circuit/qucsator.js (aja
 
 When updating rubrics, just update locally, then go to /rubrics in Rails portal and edit/replace by hand
  
+
+test
