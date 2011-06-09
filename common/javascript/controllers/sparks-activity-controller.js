@@ -58,7 +58,7 @@
     },
     
     areMoreSections: function () {
-      return (!this.currentSectionIndex > sparks.sparksActivity.sections.length -1);
+      return !(this.currentSectionIndex >= sparks.sparksActivity.sections.length -1);
     },
     
     nextSection: function () {
