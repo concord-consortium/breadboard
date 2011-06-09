@@ -1887,16 +1887,16 @@ if (window.attachEvent) {
         this.saveDocRevision = null;
         this.user = null;
 
-        this.saveDataPostPath = "/couchdb/learnerdata";
+        this.saveDataPath = "/couchdb/learnerdata";
 
-        this.activityLoadPath = "/couchdb/activities";
+        this.activityPath = "/couchdb/activities";
     };
 
     sparks.CouchDS.prototype =
     {
 
         loadActivity: function(id, callback) {
-          $.couch.urlPrefix = this.activityLoadPath;
+          $.couch.urlPrefix = this.activityPath;
           $.couch.db('').openDoc(id,
             {
               success: function (response) {
@@ -1916,6 +1916,8 @@ if (window.attachEvent) {
             return;
           }
 
+          $.couch.urlPrefix = this.saveDataPath;
+
           _data.user = this.user;
           _data.runnable_id = this.runnableId;
           _data.save_time = new Date().valueOf();
@@ -1927,10 +1929,8 @@ if (window.attachEvent) {
             _data._rev = this.saveDocRevision;
           }
 
-          $.couch.urlPrefix = this.saveDataPostPath;
-
           var self = this;
-          $.couch.db(this.db).saveDoc(
+          $.couch.db('').saveDoc(
             _data,
             { success: function(response) {
               console.log("Saved ok, id = "+response.id);
@@ -1942,6 +1942,7 @@ if (window.attachEvent) {
         },
 
         saveRawData: function(_data) {
+          $.couch.urlPrefix = this.saveDataPath;
           $.couch.db(this.db).saveDoc(
             _data,
             { success: function(response) {
@@ -1950,17 +1951,24 @@ if (window.attachEvent) {
           );
         },
 
-        loadStudentData: function (studentName) {
+        loadStudentData: function (activity, studentName, callback) {
+          $.couch.urlPrefix = this.saveDataPath;
+          if (!studentName){
+            studentName = this.user.name;
+          }
           var self = this;
-          $.couch.db(this.db).view(
-            "session_scores/Scores%20per%20session",
+          $.couch.db('').view(
+            "session_scores/Scores%20per%20activity",
             {
-              keys:[studentName],
+              key:[studentName, activity],
               success: function(response) {
-                console.log("success");
+                console.log("success loading");
                 console.log(response);
-                var id = response.rows[0].id;
-                self.handleData(id);             // temporary. Next we should handle entire array
+                if (response.rows.length > 0){
+                  self.docUID = response.rows[response.rows.length-1].value.id;
+                  self.revision = response.rows[response.rows.length-1].value.rev;
+                  callback(response);
+                }
             }}
           );
         },
@@ -2745,11 +2753,14 @@ sparks.util.getKeys = function (json) {
     this.sectionReports = {};
     this.score = 0;
     this.view = null;
+    this.activity = null;
   };
 
   sparks.SparksSectionReport = function(){
     this.pageReports = {};
     this.view = null;
+    this.sectionId = null;
+    this.sectionTitle = null;
   };
 
   sparks.SparksPageReport = function(){
@@ -2771,6 +2782,7 @@ sparks.util.getKeys = function (json) {
 
     toJSON: function () {
       var json = {};
+      json.activity = sparks.sparksActivity.id;
       json.sectionReports = [];
       $.each(this.sectionReports, function(i, sectionReport){
         json.sectionReports.push(sectionReport.toJSON());
@@ -2786,6 +2798,8 @@ sparks.util.getKeys = function (json) {
 
     toJSON: function () {
       var json = {};
+      json.sectionId = this.sectionId;
+      json.sectionTitle = this.sectionTitle;
       json.pageReports = [];
       $.each(this.pageReports, function(i, pageReport){
         json.pageReports.push(pageReport.toJSON());
@@ -3817,6 +3831,13 @@ sparks.util.getKeys = function (json) {
 
       section.jsonSection = jsonSection;
 
+      if (!!jsonSection.pages){
+        $.each(jsonSection.pages, function(id, jsonPage){
+          var page = new sparks.SparksPage(id);
+          section.pages.push(page);
+        });
+      }
+
       section.view = new sparks.SparksSectionView(section);
 
       return section;
@@ -3930,16 +3951,20 @@ sparks.util.getKeys = function (json) {
 
     this.currentSection = null;
     this.currentSectionIndex = 0;
+    this.sectionMap = {};
   };
 
   sparks.SparksActivityController.prototype = {
 
     createActivity: function(activity, callback) {
+      sparks.sparksActivity.id = activity._id;
       var self = this;
+      var totalCreated = 0;
       $.each(activity.sections, function(i, jsonSectionName){
         sparks.couchDS.loadActivity(jsonSectionName, function(jsonSection) {
           self.addSection(jsonSection, i);
-          if (i === 0){
+          totalCreated++;
+          if (totalCreated == activity.sections.length){
             callback();
           }
         });
@@ -3954,6 +3979,7 @@ sparks.util.getKeys = function (json) {
       } else {
         sparks.sparksActivity.sections.push(section);
       }
+      this.sectionMap[section.id] = section;
 
       return section;
 
@@ -3965,7 +3991,7 @@ sparks.util.getKeys = function (json) {
     },
 
     areMoreSections: function () {
-      return (!this.currentSectionIndex > sparks.sparksActivity.sections.length -1);
+      return !(this.currentSectionIndex >= sparks.sparksActivity.sections.length -1);
     },
 
     nextSection: function () {
@@ -3977,6 +4003,10 @@ sparks.util.getKeys = function (json) {
       this.setCurrentSection(this.currentSectionIndex + 1);
       sparks.sparksSectionController.loadCurrentSection();
       sparks.sparksActivity.view.layoutCurrentSection();
+    },
+
+    findSection: function(id){
+      return this.sectionMap[id];
     },
 
     reset: function () {
@@ -4017,6 +4047,8 @@ sparks.util.getKeys = function (json) {
         return;
       }
       this.currentSectionReport = new sparks.SparksSectionReport();
+      this.currentSectionReport.sectionId = section.id;
+      this.currentSectionReport.sectionTitle = section.title;
       sparks.sparksReport.sectionReports[section] = this.currentSectionReport;
     },
 
@@ -4027,6 +4059,7 @@ sparks.util.getKeys = function (json) {
       var score = 0;
       var maxScore = 0;
       $.each(page.questions, function(i, question){
+
         sparks.sparksQuestionController.gradeQuestion(question);
 
         score += question.points_earned;
@@ -4085,9 +4118,9 @@ sparks.util.getKeys = function (json) {
       } else {
         sectionReport = this.currentSectionReport;
       }
-      if (!sectionReport.pageReports[page]){
+      if (!sectionReport || !sectionReport.pageReports[page]){
         console.log("ERROR: No session reports for page");
-        return;
+        return 0;
       }
       return this.getTotalScoreForPageReport(sectionReport.pageReports[page]);
     },
@@ -4103,6 +4136,7 @@ sparks.util.getKeys = function (json) {
     },
 
     getTotalScoreForSection: function(section) {
+      console.log("getting score for "+section.id)
       var totalScore = 0;
       var self = this;
       $.each(section.pages, function(i, page){
@@ -4175,7 +4209,7 @@ sparks.util.getKeys = function (json) {
     },
 
     saveData: function() {
-      if (!!sparks.activity && !!sparks.activity.dataService){
+      if (!!sparks.sparksActivity.id && !!sparks.couchDS.user){
 
         var score = 0;
         var self = this;
@@ -4185,14 +4219,36 @@ sparks.util.getKeys = function (json) {
         sparks.sparksReport.score = score;
 
         var data = sparks.sparksReport.toJSON();
-        sparks.activity.dataService.save(data);
+        sparks.couchDS.save(data);
       }
     },
 
     loadReport: function(jsonReport) {
-      this.fixData(jsonReport, function(fixedReport){
-        var $reportView = sparks.sparksReport.view.getFinalActivityReportView(jsonReport);
-        $('#questions_area').append($reportView);
+      console.log("loading report")
+      sparks.sparksReport.score = jsonReport.score;
+      $.each(jsonReport.sectionReports, function(i, jsonSectionReport){
+        var sectionReport = new sparks.SparksSectionReport();
+        var section = sparks.sparksActivityController.findSection(jsonSectionReport.sectionId);
+        sparks.sparksReport.sectionReports[section] = sectionReport;
+        sectionReport.sectionId = jsonSectionReport.sectionId;
+        sectionReport.sectionTitle = jsonSectionReport.sectionTitle;
+        console.log("added section report for "+ sectionReport.sectionTitle)
+        $.each(jsonSectionReport.pageReports, function(j, jsonPageReport){
+          console.log("adding page report")
+          var pageReport = new sparks.SparksPageReport();
+          var page = section.pages[j];
+          console.log("page")
+          console.log(page)
+          sectionReport.pageReports[page] = pageReport;
+          $.each(jsonPageReport.sessionReports, function(k, jsonSessionReport){
+            console.log("adding session report")
+            var sessionReport = new sparks.SparksSessionReport();
+            $.each(jsonSessionReport, function(key, val){
+              sessionReport[key] = val;
+            });
+            pageReport.sessionReports.push(sessionReport);
+          });
+        });
       });
     },
 
@@ -4299,15 +4355,9 @@ sparks.util.getKeys = function (json) {
     if (!jsonActivity.type || jsonActivity.type !== "activity"){
       var jsonSection = jsonActivity;
       var section = sparks.sparksActivityController.addSection(jsonSection);
-      sparks.sparksActivityController.setCurrentSection(0);
-      sparks.sparksSectionController.loadCurrentSection();
-      sparks.sparksActivity.view.layoutCurrentSection();
+      this.loadFirstSection();
     } else {
-      sparks.sparksActivityController.createActivity(jsonActivity, function(){
-        sparks.sparksActivityController.setCurrentSection(0);
-        sparks.sparksSectionController.loadCurrentSection();
-        sparks.sparksActivity.view.layoutCurrentSection();
-      });
+      sparks.sparksActivityController.createActivity(jsonActivity, this.loadFirstSection);
     }
 
     sparks.activityConstructor = this;
@@ -4315,6 +4365,30 @@ sparks.util.getKeys = function (json) {
   };
 
   sparks.ActivityConstructor.prototype = {
+    loadFirstSection: function() {
+      if (!!sparks.sparksActivity.id && sparks.couchDS.user){
+        sparks.couchDS.loadStudentData(sparks.sparksActivity.id, sparks.couchDS.user.name,
+          function(response){
+            jsonReport = response.rows[response.rows.length-1].value;
+            sparks.sparksReportController.loadReport(jsonReport);
+            var lastSectionId;
+            $.each(sparks.sparksActivity.sections, function(i, section){
+              if (!!sparks.sparksReport.sectionReports[section]){
+                lastSectionId = i;
+              }
+            })
+            console.log(lastSectionId)
+            sparks.sparksActivityController.setCurrentSection(lastSectionId);
+            sparks.sparksSectionController.loadCurrentSection();
+            sparks.sparksActivity.view.layoutCurrentSection();
+          }
+        );
+      } else {
+        sparks.sparksActivityController.setCurrentSection(0);
+        sparks.sparksSectionController.loadCurrentSection();
+        sparks.sparksActivity.view.layoutCurrentSection();
+      }
+    }
 
   };
 })();
@@ -4370,7 +4444,9 @@ sparks.util.getKeys = function (json) {
     */
    p.calculateSum = function(sum){
       sum = p.replaceCircuitVariables(sum);
+
       var calculatedSum = eval(sum);
+
       return calculatedSum;
    };
 
@@ -5220,8 +5296,11 @@ sparks.util.getKeys = function (json) {
             connections:  ["right_positive1", "right_negative1"]}));
 
           var result;
+
           q.qucsate(q.makeNetlist(breadBoard),
                   function (r) { result = r.meter; } );
+
+          console.log('result=' + result);
 
           $.each(tempComponents, function(i, component){
             component.destroy();
@@ -5752,6 +5831,7 @@ sparks.util.getKeys = function (json) {
     sparks.extend(circuit.Multimeter2, circuit.MultimeterBase, {
 
         update: function () {
+
             if (this.redProbeConnection && this.blackProbeConnection) {
                 var measurement = null;
                 if (this.dialPosition.indexOf('dcv_') > -1){
@@ -5795,16 +5875,12 @@ sparks.util.getKeys = function (json) {
 
         makeMeasurement: function(measurementType) {
           var netlist = sparks.circuit.qucsator.makeNetlist(getBreadBoard());
-
           var measurmentKey = "" + netlist.replace(/\n/g, '') + this.redProbeConnection + this.blackProbeConnection + measurementType;
-
           var existingMeasurement = this.measurements[measurmentKey];
-
           if (existingMeasurement !== undefined && existingMeasurement !== null){
             return existingMeasurement;
           } else {
             var measurement = Math.abs(breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection));
-            console.log(measurement);
             this.measurements[measurmentKey] = measurement;
             return measurement;
           }
@@ -6506,13 +6582,32 @@ var apMessageBox = apMessageBox || {};
   });
 
   this.onDocumentReady = function () {
+    var learner_id = sparks.util.readCookie('learner_id');
+
+    if (learner_id) {
+       console.log("setting user "+learner_id)
+       var user = {"learner_id": activity.learner_id, "name": sparks.util.readCookie('student_name'),
+         "student_id": sparks.util.readCookie('student_id'), "class_id": sparks.util.readCookie('class_id')};
+       sparks.couchDS.setUser(user);
+
+       function askConfirm(){
+         return "Are you sure you want to leave this page?";
+       }
+       window.onbeforeunload = askConfirm;
+    }
+
+    var user = {"learner_id": "sam_l_id", "name": "sam",
+              "student_id": "sam_s_id", "class_id": "class"};
+    sparks.couchDS.setUser(user);
+
+
     var activityName = window.location.hash;
     activityName = activityName.substring(1,activityName.length);
     if (!activityName){
       activityName = "series-interpretive";
     }
 
-    console.log("Loading "+activityName);
+    console.log("loading "+activityName);
     sparks.couchDS.loadActivity(activityName, function(activity) {
       console.log(activity);
       var ac = new sparks.ActivityConstructor(activity);

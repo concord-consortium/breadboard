@@ -44,6 +44,14 @@
       
       section.jsonSection = jsonSection;
       
+      // cheat and create dummy pages for report
+      if (!!jsonSection.pages){
+        $.each(jsonSection.pages, function(id, jsonPage){
+          var page = new sparks.SparksPage(id);
+          section.pages.push(page);
+        });
+      }
+      
       section.view = new sparks.SparksSectionView(section);
       
       return section;

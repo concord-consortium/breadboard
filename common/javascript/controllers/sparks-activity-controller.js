@@ -11,17 +11,20 @@
     
     this.currentSection = null;
     this.currentSectionIndex = 0;
+    this.sectionMap = {};
   };
   
   sparks.SparksActivityController.prototype = {
     
     createActivity: function(activity, callback) {
+      sparks.sparksActivity.id = activity._id;
       var self = this;
+      var totalCreated = 0;
       $.each(activity.sections, function(i, jsonSectionName){
         sparks.couchDS.loadActivity(jsonSectionName, function(jsonSection) {
           self.addSection(jsonSection, i);
-          // for now
-          if (i === 0){
+          totalCreated++;
+          if (totalCreated == activity.sections.length){
             callback();
           }
         });
@@ -46,6 +49,7 @@
       } else {
         sparks.sparksActivity.sections.push(section);
       }
+      this.sectionMap[section.id] = section;
       
       return section;
       
@@ -74,6 +78,10 @@
       //       breadModel('clear');
       //       window.location.hash = this.currentSection.nextSection;
       //       sparks.activity.onDocumentReady();
+    },
+    
+    findSection: function(id){
+      return this.sectionMap[id];
     },
     
     reset: function () {

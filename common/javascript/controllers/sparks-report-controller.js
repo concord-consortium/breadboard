@@ -23,6 +23,8 @@
         return;
       }
       this.currentSectionReport = new sparks.SparksSectionReport();
+      this.currentSectionReport.sectionId = section.id;
+      this.currentSectionReport.sectionTitle = section.title;
       sparks.sparksReport.sectionReports[section] = this.currentSectionReport;
     },
     
@@ -92,9 +94,9 @@
       } else {
         sectionReport = this.currentSectionReport;
       }
-      if (!sectionReport.pageReports[page]){
+      if (!sectionReport || !sectionReport.pageReports[page]){
         console.log("ERROR: No session reports for page");
-        return;
+        return 0;
       }
       return this.getTotalScoreForPageReport(sectionReport.pageReports[page]);
     },
@@ -110,6 +112,7 @@
     },
     
     getTotalScoreForSection: function(section) {
+      console.log("getting score for "+section.id)
       var totalScore = 0;
       var self = this;
       $.each(section.pages, function(i, page){
@@ -182,7 +185,7 @@
     },
 
     saveData: function() {
-      if (!!sparks.activity && !!sparks.activity.dataService){
+      if (!!sparks.sparksActivity.id && !!sparks.couchDS.user){
         
         var score = 0;
         var self = this;
@@ -192,14 +195,31 @@
         sparks.sparksReport.score = score;
         
         var data = sparks.sparksReport.toJSON();
-        sparks.activity.dataService.save(data);
+        sparks.couchDS.save(data);
       }
     },
     
     loadReport: function(jsonReport) {
-      this.fixData(jsonReport, function(fixedReport){
-        var $reportView = sparks.sparksReport.view.getFinalActivityReportView(jsonReport);
-        $('#questions_area').append($reportView);
+      console.log("loading report")
+      sparks.sparksReport.score = jsonReport.score;
+      $.each(jsonReport.sectionReports, function(i, jsonSectionReport){
+        var sectionReport = new sparks.SparksSectionReport();
+        var section = sparks.sparksActivityController.findSection(jsonSectionReport.sectionId);
+        sparks.sparksReport.sectionReports[section] = sectionReport;
+        sectionReport.sectionId = jsonSectionReport.sectionId;
+        sectionReport.sectionTitle = jsonSectionReport.sectionTitle;
+        $.each(jsonSectionReport.pageReports, function(j, jsonPageReport){
+          var pageReport = new sparks.SparksPageReport();
+          var page = section.pages[j];
+          sectionReport.pageReports[page] = pageReport;
+          $.each(jsonPageReport.sessionReports, function(k, jsonSessionReport){
+            var sessionReport = new sparks.SparksSessionReport();
+            $.each(jsonSessionReport, function(key, val){
+              sessionReport[key] = val;
+            });
+            pageReport.sessionReports.push(sessionReport);
+          });
+        });
       });
     },
     

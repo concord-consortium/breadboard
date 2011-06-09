@@ -22,11 +22,14 @@
     this.sectionReports = {};
     this.score = 0;
     this.view = null;
+    this.activity = null;
   };
   
   sparks.SparksSectionReport = function(){
     this.pageReports = {};
     this.view = null;
+    this.sectionId = null;
+    this.sectionTitle = null;
   };
   
   sparks.SparksPageReport = function(){
@@ -48,6 +51,7 @@
     
     toJSON: function () {
       var json = {};
+      json.activity = sparks.sparksActivity.id;
       json.sectionReports = [];
       $.each(this.sectionReports, function(i, sectionReport){
         json.sectionReports.push(sectionReport.toJSON());
@@ -63,6 +67,8 @@
     
     toJSON: function () {
       var json = {};
+      json.sectionId = this.sectionId;
+      json.sectionTitle = this.sectionTitle;
       json.pageReports = [];
       $.each(this.pageReports, function(i, pageReport){
         json.pageReports.push(pageReport.toJSON());

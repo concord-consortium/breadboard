@@ -1887,16 +1887,16 @@ if (window.attachEvent) {
         this.saveDocRevision = null;
         this.user = null;
 
-        this.saveDataPostPath = "/couchdb/learnerdata";
+        this.saveDataPath = "/couchdb/learnerdata";
 
-        this.activityLoadPath = "/couchdb/activities";
+        this.activityPath = "/couchdb/activities";
     };
 
     sparks.CouchDS.prototype =
     {
 
         loadActivity: function(id, callback) {
-          $.couch.urlPrefix = this.activityLoadPath;
+          $.couch.urlPrefix = this.activityPath;
           $.couch.db('').openDoc(id,
             {
               success: function (response) {
@@ -1916,6 +1916,8 @@ if (window.attachEvent) {
             return;
           }
 
+          $.couch.urlPrefix = this.saveDataPath;
+
           _data.user = this.user;
           _data.runnable_id = this.runnableId;
           _data.save_time = new Date().valueOf();
@@ -1927,10 +1929,8 @@ if (window.attachEvent) {
             _data._rev = this.saveDocRevision;
           }
 
-          $.couch.urlPrefix = this.saveDataPostPath;
-
           var self = this;
-          $.couch.db(this.db).saveDoc(
+          $.couch.db('').saveDoc(
             _data,
             { success: function(response) {
               console.log("Saved ok, id = "+response.id);
@@ -1942,6 +1942,7 @@ if (window.attachEvent) {
         },
 
         saveRawData: function(_data) {
+          $.couch.urlPrefix = this.saveDataPath;
           $.couch.db(this.db).saveDoc(
             _data,
             { success: function(response) {
@@ -1950,17 +1951,24 @@ if (window.attachEvent) {
           );
         },
 
-        loadStudentData: function (studentName) {
+        loadStudentData: function (activity, studentName, callback) {
+          $.couch.urlPrefix = this.saveDataPath;
+          if (!studentName){
+            studentName = this.user.name;
+          }
           var self = this;
-          $.couch.db(this.db).view(
-            "session_scores/Scores%20per%20session",
+          $.couch.db('').view(
+            "session_scores/Scores%20per%20activity",
             {
-              keys:[studentName],
+              key:[studentName, activity],
               success: function(response) {
-                console.log("success");
+                console.log("success loading");
                 console.log(response);
-                var id = response.rows[0].id;
-                self.handleData(id);             // temporary. Next we should handle entire array
+                if (response.rows.length > 0){
+                  self.docUID = response.rows[response.rows.length-1].value.id;
+                  self.revision = response.rows[response.rows.length-1].value.rev;
+                  callback(response);
+                }
             }}
           );
         },
