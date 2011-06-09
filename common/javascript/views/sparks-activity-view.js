@@ -17,6 +17,8 @@
     
     layoutCurrentSection: function() {
       var section = sparks.sparksActivityController.currentSection;
+      
+      $('#loading').hide();
 
       this.divs.$titleDiv.text(section.title);
       

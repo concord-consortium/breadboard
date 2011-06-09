@@ -22,6 +22,7 @@
   sparks.ActivityConstructor.prototype = {
     loadFirstSection: function() {
       if (!!sparks.sparksActivity.id && sparks.couchDS.user){
+        $('#loading-text').text('Loading previous work')
         sparks.couchDS.loadStudentData(sparks.sparksActivity.id, sparks.couchDS.user.name,
           function(response){
             jsonReport = response.rows[response.rows.length-1].value;
