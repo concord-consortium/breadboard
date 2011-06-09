@@ -6589,7 +6589,7 @@ var apMessageBox = apMessageBox || {};
 
     if (learner_id) {
        console.log("setting user "+learner_id)
-       var user = {"learner_id": activity.learner_id, "name": sparks.util.readCookie('student_name'),
+       var user = {"learner_id": learner_id, "name": sparks.util.readCookie('student_name'),
          "student_id": sparks.util.readCookie('student_id'), "class_id": sparks.util.readCookie('class_id')};
        sparks.couchDS.setUser(user);
 
@@ -6598,11 +6598,6 @@ var apMessageBox = apMessageBox || {};
        }
        window.onbeforeunload = askConfirm;
     }
-
-    var user = {"learner_id": "sam_l_id", "name": "sam",
-              "student_id": "sam_s_id", "class_id": "class"};
-    sparks.couchDS.setUser(user);
-
 
     var activityName = window.location.hash;
     activityName = activityName.substring(1,activityName.length);

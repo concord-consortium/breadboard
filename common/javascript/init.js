@@ -61,7 +61,7 @@
        
     if (learner_id) {
        console.log("setting user "+learner_id)
-       var user = {"learner_id": activity.learner_id, "name": sparks.util.readCookie('student_name'),
+       var user = {"learner_id": learner_id, "name": sparks.util.readCookie('student_name'),
          "student_id": sparks.util.readCookie('student_id'), "class_id": sparks.util.readCookie('class_id')};
        sparks.couchDS.setUser(user);
        
