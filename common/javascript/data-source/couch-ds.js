@@ -43,7 +43,7 @@
           _data.save_time = new Date().valueOf();
           
           if (!!this.saveDocUID){
-            console.log("saving with known id "+this.saveDocUID)
+            console.log("saving with known id "+this.saveDocUID);
             _data._id = this.saveDocUID;
           }
           if (!!this.saveDocRevision){
@@ -73,7 +73,7 @@
           );
         },
     
-        loadStudentData: function (activity, studentName, callback) {
+        loadStudentData: function (activity, studentName, success, failure) {
           $.couch.urlPrefix = this.saveDataPath;
           if (!studentName){
             studentName = this.user.name;
@@ -89,8 +89,10 @@
                 if (response.rows.length > 0){
                   sparks.couchDS.saveDocUID = response.rows[response.rows.length-1].value._id;
                   sparks.couchDS.saveDocRevision = response.rows[response.rows.length-1].value._rev;
-                  console.log("setting id to "+sparks.couchDS.saveDocUID)
-                  callback(response);
+                  console.log("setting id to "+sparks.couchDS.saveDocUID);
+                  success(response);
+                } else {
+                  failure();
                 }
             }}
           );

@@ -37,6 +37,11 @@
             sparks.sparksActivityController.setCurrentSection(lastSectionId);
             sparks.sparksSectionController.loadCurrentSection();
             sparks.sparksActivity.view.layoutCurrentSection();
+          },
+          function(){
+            sparks.sparksActivityController.setCurrentSection(0);
+            sparks.sparksSectionController.loadCurrentSection();
+            sparks.sparksActivity.view.layoutCurrentSection();
           }
         );
       } else {
