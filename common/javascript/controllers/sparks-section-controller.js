@@ -96,6 +96,9 @@
         }
         this.currentPage = section.pages[this.currentPageIndex];
       }
+      
+      sparks.vars = {};          // used for storing authored script variables
+      
       sparks.sparksLogController.startNewSession();
       sparks.sparksReportController.startNewSection(section);
     },

@@ -3882,6 +3882,9 @@ sparks.util.getKeys = function (json) {
         }
         this.currentPage = section.pages[this.currentPageIndex];
       }
+
+      sparks.vars = {};          // used for storing authored script variables
+
       sparks.sparksLogController.startNewSession();
       sparks.sparksReportController.startNewSection(section);
     },
@@ -4232,16 +4235,11 @@ sparks.util.getKeys = function (json) {
         sparks.sparksReport.sectionReports[section] = sectionReport;
         sectionReport.sectionId = jsonSectionReport.sectionId;
         sectionReport.sectionTitle = jsonSectionReport.sectionTitle;
-        console.log("added section report for "+ sectionReport.sectionTitle)
         $.each(jsonSectionReport.pageReports, function(j, jsonPageReport){
-          console.log("adding page report")
           var pageReport = new sparks.SparksPageReport();
           var page = section.pages[j];
-          console.log("page")
-          console.log(page)
           sectionReport.pageReports[page] = pageReport;
           $.each(jsonPageReport.sessionReports, function(k, jsonSessionReport){
-            console.log("adding session report")
             var sessionReport = new sparks.SparksSessionReport();
             $.each(jsonSessionReport, function(key, val){
               sessionReport[key] = val;
@@ -6595,11 +6593,6 @@ var apMessageBox = apMessageBox || {};
        }
        window.onbeforeunload = askConfirm;
     }
-
-    var user = {"learner_id": "sam_l_id", "name": "sam",
-              "student_id": "sam_s_id", "class_id": "class"};
-    sparks.couchDS.setUser(user);
-
 
     var activityName = window.location.hash;
     activityName = activityName.substring(1,activityName.length);

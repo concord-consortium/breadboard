@@ -46,6 +46,43 @@ describe 'Authored Scripts'
           section.pages[0].questions[1].correct_answer.should.be "R1 is 300"
       end
       
+      it 'should be able to store script variables across scripts'
+
+        var jsonSection =
+          {
+            "circuit": [
+              {
+                 "type": "resistor",
+                 "UID": "r1",
+                 "connections": "b2,b3",
+                 "colors": ["orange","black","brown","gold"]
+               }
+            ],
+            "pages":[
+              {
+                "questions": [
+                  {
+                    "prompt": "What is the resistance of R1?",
+                    "correct_answer": "[sparks.vars.a = 10/2; sparks.vars.a]",
+                    "correct_units": "ohms"
+                  },
+                  {
+                    "prompt": "What is the resistance of R1?",
+                    "correct_answer": "[sparks.vars.a]",
+                    "correct_units": "ohms"
+                  }
+                ]
+              }
+            ]
+          };
+          
+          var ac = new sparks.ActivityConstructor(jsonSection);
+          var section = sparks.sparksActivityController.currentSection;
+          
+          section.pages[0].questions[0].correct_answer.should.be 5
+          section.pages[0].questions[1].correct_answer.should.be 5
+      end
+      
   end
     
    describe 'Question Grading'
