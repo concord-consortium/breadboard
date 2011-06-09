@@ -22,21 +22,21 @@
   sparks.ActivityConstructor.prototype = {
     loadFirstSection: function() {
       if (!!sparks.sparksActivity.id && sparks.couchDS.user){
-        $('#loading-text').text('Loading previous work')
+        $('#loading-text').text('Loading previous work');
         sparks.couchDS.loadStudentData(sparks.sparksActivity.id, sparks.couchDS.user.name,
           function(response){
-            jsonReport = response.rows[response.rows.length-1].value;
+            var jsonReport = response.rows[response.rows.length-1].value;
             sparks.sparksReportController.loadReport(jsonReport);
             var lastSectionId;
             $.each(sparks.sparksActivity.sections, function(i, section){
               if (!!sparks.sparksReport.sectionReports[section]){
                 lastSectionId = i;
               }
-            })
-            console.log(lastSectionId)
+            });
             sparks.sparksActivityController.setCurrentSection(lastSectionId);
             sparks.sparksSectionController.loadCurrentSection();
             sparks.sparksActivity.view.layoutCurrentSection();
+            sparks.sparksSectionController.viewSectionReport();
           },
           function(){
             sparks.sparksActivityController.setCurrentSection(0);
