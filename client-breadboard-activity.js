@@ -3062,6 +3062,7 @@ sparks.util.getKeys = function (json) {
 
       $('.report').html('');
       if (!!finalReport){
+        sparks.flash.loaded = false;
         $('#image').html('');
         $('#breadboard').html('');
       }
@@ -4008,8 +4009,8 @@ sparks.util.getKeys = function (json) {
         console.log("No next section");
         return;
       }
-
       this.setCurrentSection(this.currentSectionIndex + 1);
+      sparks.sparksSectionController.currentPageIndex = 0;
       sparks.sparksSectionController.loadCurrentSection();
       sparks.sparksActivity.view.layoutCurrentSection();
     },
@@ -4473,7 +4474,6 @@ sparks.util.getKeys = function (json) {
       var matches = formula.match(varPattern);
       if(!!matches){
        $.each(matches, function(i, match){
-        console.log("WARN: It is not necessary to use the notation '"+match+"', you can simply use "+match.substring(2,match.length-1))
         var variable = match.substring(2,match.length-1).split('.');
         var component = variable[0];
         var property = variable[1];

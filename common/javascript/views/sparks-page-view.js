@@ -118,6 +118,7 @@
       
       $('.report').html('');
       if (!!finalReport){
+        sparks.flash.loaded = false;
         $('#image').html('');
         $('#breadboard').html('');
       }

@@ -70,8 +70,8 @@
         console.log("No next section");
         return;
       }
-      
       this.setCurrentSection(this.currentSectionIndex + 1);
+      sparks.sparksSectionController.currentPageIndex = 0;
       sparks.sparksSectionController.loadCurrentSection();
       sparks.sparksActivity.view.layoutCurrentSection();
       // this.currentSection.view.clear();
