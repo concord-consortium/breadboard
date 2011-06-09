@@ -71,11 +71,6 @@
        }
        window.onbeforeunload = askConfirm;
     }
-     
-    var user = {"learner_id": "sam_l_id", "name": "sam",
-              "student_id": "sam_s_id", "class_id": "class"};
-    sparks.couchDS.setUser(user);
-    
     
     var activityName = window.location.hash;
     activityName = activityName.substring(1,activityName.length);
