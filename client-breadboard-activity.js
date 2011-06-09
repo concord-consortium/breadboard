@@ -1935,8 +1935,8 @@ if (window.attachEvent) {
             _data,
             { success: function(response) {
               console.log("Saved ok, id = "+response.id);
-              self.docUID = response.id;
-              self.revision = response.rev;
+              self.saveDocUID = response.id;
+              self.saveDocRevision = response.rev;
              }}
           );
 
