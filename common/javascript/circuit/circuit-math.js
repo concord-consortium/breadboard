@@ -42,7 +42,6 @@
       
       rNominalSeries: function() {
         var resistors = this.getResistors(arguments);
-        console.log("woo")
         var resistance = 0;
         $.each(resistors, function(i, resistor){
           console.log("adding "+resistor.nominalResistance)

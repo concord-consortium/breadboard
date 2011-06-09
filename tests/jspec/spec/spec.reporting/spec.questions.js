@@ -99,7 +99,8 @@ describe 'Questions'
                     "prompt": "What is the resistance of R1?",
                     "correct_answer": "100",
                     "correct_units": "V",
-                    "options": ["100", "200"]
+                    "options": ["100", "200"],
+                    "keepOrder": true
                   }
                 ]
               }
@@ -137,7 +138,8 @@ describe 'Questions'
                                 "option": "200",
                                 "feedback": "That's so wrong"
                             }
-                        ] 
+                        ],
+                        "keepOrder": true
                     } 
                 ]
               }
@@ -160,10 +162,16 @@ describe 'Questions'
   
     it 'should be able to substitute a circuit variable in an answer'
       
-      breadModel('insertComponent', 'resistor', {"UID": "r1", "connections": "a1,a2", "colors": "orange,black,brown,gold"});
-      
       var jsonSection =
         {
+          "circuit": [
+            {
+               "type": "resistor",
+               "UID": "r1",
+               "connections": "b2,b3",
+               "colors": ["orange","black","brown","gold"]
+             }
+          ],
           "pages":[
             {
               "questions": [
@@ -191,6 +199,20 @@ describe 'Questions'
       
       var jsonSection =
         {
+          "circuit": [
+            {
+               "type": "resistor",
+               "UID": "r1",
+               "connections": "b2,b3",
+               "colors": ["orange","black","brown","gold"]
+             },
+             {
+                "type": "resistor",
+                "UID": "r2",
+                "connections": "b2,b3",
+                "resistance": 300
+              }
+          ],
           "pages":[
             {
               "questions": [
@@ -214,11 +236,22 @@ describe 'Questions'
     
     it 'should support old format for circuit variables'
       
-      breadModel('insertComponent', 'resistor', {"UID": "r1", "connections": "a1,a2", "colors": "orange,black,brown,gold"});
-      breadModel('insertComponent', 'resistor', {"UID": "r2", "connections": "a2,a3", "resistance": "300"});
-      
       var jsonSection =
         {
+          "circuit": [
+            {
+               "type": "resistor",
+               "UID": "r1",
+               "connections": "b2,b3",
+               "colors": ["orange","black","brown","gold"]
+             },
+             {
+                "type": "resistor",
+                "UID": "r2",
+                "connections": "b2,b3",
+                "resistance": 300
+              }
+          ],
           "pages":[
             {
               "questions": [
@@ -242,10 +275,16 @@ describe 'Questions'
     
     it 'should be able to handle calculated parts and non-calculated parts of an answer'
       
-      breadModel('insertComponent', 'resistor', {"UID": "r1", "connections": "a1,a2", "colors": "orange,black,brown,gold"});
-      
       var jsonSection =
         {
+          "circuit": [
+            {
+               "type": "resistor",
+               "UID": "r1",
+               "connections": "b2,b3",
+               "colors": ["orange","black","brown","gold"]
+             }
+          ],
           "pages":[
             {
               "questions": [
@@ -267,10 +306,16 @@ describe 'Questions'
     
     it 'should be able to format answer to engineering'
       
-      breadModel('insertComponent', 'resistor', {"UID": "r1", "connections": "a1,a2", "resistance": "3000"});
-      
       var jsonSection =
         {
+          "circuit": [
+            {
+               "type": "resistor",
+               "UID": "r1",
+               "connections": "b2,b3",
+               "resistance": 3000
+             }
+          ],
           "pages":[
             {
               "questions": [
@@ -305,6 +350,20 @@ describe 'Questions'
       
       var jsonSection =
         {
+          "circuit": [
+            {
+               "type": "resistor",
+               "UID": "r1",
+               "connections": "b2,b3",
+               "resistance": 100
+             },
+             {
+                "type": "resistor",
+                "UID": "r2",
+                "connections": "b2,b3",
+                "resistance": 300
+              }
+          ],
           "pages":[
             {
               "questions": [
@@ -312,7 +371,8 @@ describe 'Questions'
                   "prompt": "What is the resistance of R1?",
                   "correct_answer": "[r1.resistance]",
                   "correct_units": "ohms",
-                  "options": ["[r1.resistance]", "[r1.resistance/2]"]
+                  "options": ["[r1.resistance]", "[r1.resistance/2]"],
+                  "keepOrder": true
                 }
               ]
             }
@@ -451,8 +511,8 @@ describe 'Questions'
       var $questionsDiv = $("<div>");
       
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
     
       var $forms = $questionsDiv.find('form');
       $forms.length.should.be 2
@@ -480,8 +540,8 @@ describe 'Questions'
       var $questionsDiv = $("<div>");
       
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
     
       var $forms = $questionsDiv.find('form');
       var $question = $($forms[0]);
@@ -516,8 +576,8 @@ describe 'Questions'
       var $questionsDiv = $("<div>");
         
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
       
       var $forms = $questionsDiv.find('form');
       var $question = $($forms[0]);
@@ -587,8 +647,8 @@ describe 'Questions'
       var $questionsDiv = $("<div>");
         
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
       
       var $forms = $questionsDiv.find('form');
       var $question = $($forms[0]);
@@ -692,8 +752,8 @@ describe 'Questions'
       var $questionsDiv = $("<div>");
         
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
       
       var $forms = $questionsDiv.find('form');
       var $question1 = $($forms[0]);
@@ -759,8 +819,8 @@ describe 'Questions'
       var $questionsDiv = $("<div>");
         
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
       
       var $forms = $questionsDiv.find('form');
 

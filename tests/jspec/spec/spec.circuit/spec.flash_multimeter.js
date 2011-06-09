@@ -1,10 +1,10 @@
 describe 'Using multimeter with mock Flash connection'
     before
       stub(sparks.util, 'readCookie').and_return(null);
-      // mock_request().and_return(sparks.jsonSection, 'application/javascript', 200)
-      init();
-      sparks.activity.onActivityReady();
+      mock_request().and_return(sparks.jsonSection, 'application/javascript', 200)
       sparks.config.qucsate_server_url = "http://localhost:1234/sparks/qucsator/solve";
+      onDocumentReady();
+      unmock_request();
     end
     
     before_each
@@ -55,7 +55,7 @@ describe 'Using multimeter with mock Flash connection'
     end
     
     it "should send a resistance to flash when in res mode and both probes added"
-     
+      
       // we add a 100 ohm resistor
       breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
       

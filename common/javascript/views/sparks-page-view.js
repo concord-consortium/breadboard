@@ -142,7 +142,7 @@
                               "You can repeat any page by clicking the <b>Try again</b> button under the table.");
       } else {
         comment = "You can repeat any page by clicking the <b>Try again</b> button next to the page.";
-        if (!!sparks.sparksActivityController.currentSection.nextSection){
+        if (sparks.sparksActivityController.areMoreSections()){
           comment += "<p></p>When you are ready to score more points, move on to the next section!";
         }
       }
@@ -175,12 +175,12 @@
         } else {
           $buttonDiv.append($repeatButton, $viewSectionReportButton);
         }
-      } else if (!!sparks.sparksActivityController.currentSection.nextSection){
+      } else if (sparks.sparksActivityController.areMoreSections()){
         var $nextActivityButton = $("<button>").text("Go on to the next section").css('padding-left', "10px")
                             .css('padding-right', "10px");
                                               
         $nextActivityButton.click(function(evt){
-          sparks.sparksActivityController.nextActivity();
+          sparks.sparksActivityController.nextSection();
         });
         
         $buttonDiv.append($nextActivityButton);

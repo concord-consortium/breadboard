@@ -121,8 +121,8 @@ describe 'Activity Pages'
       var $questionsDiv = $("<div>");
       
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
     
       var $forms = $questionsDiv.find('form');
       $forms.length.should.be 2
@@ -169,8 +169,8 @@ describe 'Activity Pages'
       var $questionsDiv = $("<div>");
     
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
     
       var $notes = $questionsDiv.find('.notes');
     

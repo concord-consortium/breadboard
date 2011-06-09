@@ -10,6 +10,10 @@
     this.currentPage = null;
     this.currentPageIndex = -1;
     this.pageIndexMap = {};
+    
+    this.multimeter = null; // this is a kind of strange place for this, yes
+    
+    this.jsonSection = null;
   };
   
   sparks.SparksSectionController.prototype = {
@@ -27,32 +31,50 @@
       section.id = jsonSection._id;
       section.title = jsonSection.title;
       
-      if (!!jsonSection.section_url){
-        section.section_url = jsonSection.section_url;
-      } else {
-        section.section_url = sparks.jsonSection.section_url;
-      }
-      
-      if (!!jsonSection.images_url){
-        section.images_url = jsonSection.images_url;
-      } else {
-        section.images_url = sparks.jsonSection.images_url;
-      }
+      section.section_url = sparks.activity_base_url + section.id;
+      section.images_url = sparks.activity_images_base_url + section.id;
       
       section.image = jsonSection.image;
       
-      if (!!jsonSection.circuit){
-        section.circuit = jsonSection.circuit;
+      section.circuit = jsonSection.circuit;
+      section.faults = jsonSection.faults;
+      section.hide_circuit = !!jsonSection.hide_circuit;
+      section.show_multimeter = !(!(jsonSection.show_multimeter) || jsonSection.show_multimeter === "false");
+      section.disable_multimeter_position = jsonSection.disable_multimeter_position;
+      
+      section.jsonSection = jsonSection;
+      
+      section.view = new sparks.SparksSectionView(section);
+      
+      return section;
+    },
+    
+    loadCurrentSection: function() {
+      var section = sparks.sparksActivityController.currentSection;
+      breadModel("clear");
+      
+      if (!!section.circuit){
         breadModel("createCircuit", section.circuit);
+        
+        this.multimeter = new sparks.circuit.Multimeter2();
+        if (section.show_multimeter){
+          sparks.flash.sendCommand('set_multimeter_visibility','true');
+          sparks.flash.sendCommand('set_probe_visibility','true');
+        
+          if(section.disable_multimeter_position){
+            this.multimeter.set_disable_multimeter_position(section.disable_multimeter_position);
+          }
+        }
       }
       
-      if (!!jsonSection.faults){
-        section.faults = jsonSection.faults;
+      if (!!section.faults){
         breadModel("addFaults", section.faults);
       }
       
-      section.hide_circuit = !!jsonSection.hide_circuit;
+      section.pages = [];
+      sparks.sparksQuestionController.reset();
       
+      var jsonSection = section.jsonSection;
       var self = this;
       if (!!jsonSection.pages){
         $.each(jsonSection.pages, function(i, jsonPage){
@@ -66,39 +88,18 @@
         }
         this.currentPage = section.pages[this.currentPageIndex];
       }
-      
-      if (!!jsonSection.formulas){
-        $.each(this.jsonSection.formulas, function(i, formula){
-          var variables = {};
-          var variable = formula.match(/.* =/)[0];
-          variable = variable.substring(0,variable.length-2);
-          formula = "variables."+formula;
-          eval(formula);
-          var value = variables[0];
-          this.sparksActivity.variables[variable] = value;
-        });
-      }
-      section.nextSection = jsonSection.nextSection;
-      
-      section.view = new sparks.SparksSectionView(section);
-      
       sparks.sparksLogController.startNewSession();
-      
-      return section;
+      sparks.sparksReportController.startNewSection(section);
     },
     
     areMorePage: function() {
       var nextPage;
       var section = sparks.sparksActivityController.currentSection;
-      for (var i = 0; i < section.pages.length-1; i++){
-        if (section.pages[i] == this.currentPage){
-          nextPage = section.pages[i+1];
-        }
-      }
-      if (!nextPage){
+      if (this.currentPageIndex < section.pages.length - 1){
+        return section.pages[this.currentPageIndex+1];
+      } else {
         return false;
       }
-      return nextPage;
     },
     
     nextPage: function() {
@@ -112,7 +113,7 @@
       this.currentPageIndex = this.currentPageIndex+1;
       this.currentPage = nextPage;
       
-      sparks.activityContstructor.layoutPage();
+      sparks.sparksActivity.view.layoutPage();
       
       sparks.sparksLogController.startNewSession();
     },
@@ -127,14 +128,16 @@
       }
       
       var section = sparks.sparksActivityController.currentSection;
-      section.view.clear();
+      // section.view.clear();
       
-      breadModel('clear');
-      if (!sparks.jsonSection.hide_circuit && !sparks.debug){
-        sparks.flash.activity.loadFlash();
-      } else {
-        sparks.flash.activity.onActivityReady();
-      }
+      this.loadCurrentSection();
+      sparks.sparksActivity.view.layoutCurrentSection();
+      
+      // if (!sparks.jsonSection.hide_circuit && !sparks.debug){
+      //   sparks.flash.activity.loadFlash();
+      // } else {
+      //   sparks.flash.activity.onActivityReady();
+      // }
     },
     
     viewSectionReport: function() {

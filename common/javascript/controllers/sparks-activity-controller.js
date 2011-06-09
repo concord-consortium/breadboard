@@ -8,48 +8,72 @@
    */
   sparks.SparksActivityController = function(){
     sparks.sparksActivity = new sparks.SparksActivity();
-    sparks.sparksActivity.view = new sparks.SparksActivityView(sparks.sparksActivity);
     
     this.currentSection = null;
+    this.currentSectionIndex = 0;
   };
   
   sparks.SparksActivityController.prototype = {
     
-    addSection: function (jsonSection) {
-      var _id = jsonSection._id;
-      var sectionExists = false;
-      var index = -1;
-      $.each(sparks.sparksActivity.sections, function(i, section){
-        if (section.id === _id){
-          sectionExists = true;
-          index = i;
-        }
+    createActivity: function(activity, callback) {
+      var self = this;
+      $.each(activity.sections, function(i, jsonSectionName){
+        sparks.couchDS.loadActivity(jsonSectionName, function(jsonSection) {
+          self.addSection(jsonSection, i);
+          // for now
+          if (i === 0){
+            callback();
+          }
+        });
       });
+    },
+    
+    addSection: function (jsonSection, index) {
+      // var _id = jsonSection._id;
+      // var sectionExists = false;
+      // var index = -1;
+      // $.each(sparks.sparksActivity.sections, function(i, section){
+      //   if (section.id === _id){
+      //     sectionExists = true;
+      //     index = i;
+      //   }
+      // });
       var section = sparks.sparksSectionController.createSection(jsonSection);
-      this.currentSection = section;
+      // this.currentSection = section;
         
-      if (index > -1){
+      if (index !== undefined){
         sparks.sparksActivity.sections[index] = section;
       } else {
         sparks.sparksActivity.sections.push(section);
-        if (!!sparks.sparksSectionController.currentPage){
-          sparks.sparksSectionController.currentPageIndex = 0;
-          sparks.sparksSectionController.currentPage = section.pages[0];
-        }
       }
       
-      sparks.sparksReportController.startNewSection(this.currentSection);
+      return section;
+      
+      // 
     },
     
-    nextActivity: function () {
-      if (!this.currentSection.nextSection){
+    setCurrentSection: function(i) {
+      this.currentSection = sparks.sparksActivity.sections[i];
+      this.currentSectionIndex = i;
+    },
+    
+    areMoreSections: function () {
+      return (!this.currentSectionIndex > sparks.sparksActivity.sections.length -1);
+    },
+    
+    nextSection: function () {
+      if (this.currentSectionIndex > sparks.sparksActivity.sections.length -1) {
         console.log("No next section");
         return;
       }
-      this.currentSection.view.clear();
-      breadModel('clear');
-      window.location.hash = this.currentSection.nextSection;
-      sparks.activity.onDocumentReady();
+      
+      this.setCurrentSection(this.currentSectionIndex + 1);
+      sparks.sparksSectionController.loadCurrentSection();
+      sparks.sparksActivity.view.layoutCurrentSection();
+      // this.currentSection.view.clear();
+      //       breadModel('clear');
+      //       window.location.hash = this.currentSection.nextSection;
+      //       sparks.activity.onDocumentReady();
     },
     
     reset: function () {

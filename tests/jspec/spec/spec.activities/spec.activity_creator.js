@@ -166,19 +166,18 @@ describe 'Activity Creator'
     
       var jsonSection =
         {
-          "section_url": "http://test.com/myActivity",
-          "images_url": "http://test.com/images/myActivity",
+          "_id": "test",
           "image": "test.jpg"
       };
       
       var $imageDiv = $("<div>");
       
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$imageDiv: $imageDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$imageDiv: $imageDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
       var $img = $imageDiv.find('img');
       $img.length.should.be 1
-      $($imageDiv.find('img')[0]).attr('src').should.be "http://test.com/images/myActivity/test.jpg"
+      $($imageDiv.find('img')[0]).attr('src').should.be "http://couchdb.cosmos.concord.org/sparks/test/test.jpg"
     end
     
   end

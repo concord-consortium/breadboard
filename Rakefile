@@ -37,7 +37,7 @@ namespace :combine do
     desc "Concatenate all JavaScript for breadboard activity (client)"
     task :breadboard_activity do
       sprocket([
-          'activities/module-2/js/activity.js'
+          'common/javascript/init.js'
         ],
         'client-breadboard-activity.js')
     end

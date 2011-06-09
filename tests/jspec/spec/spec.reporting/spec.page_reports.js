@@ -43,8 +43,8 @@ describe 'Page Reports'
         var $questionsDiv = $("<div>");
 
         var ac = new sparks.ActivityConstructor(jsonSection);
-        ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-        ac.layoutActivity();
+        sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+        sparks.sparksActivity.view.layoutCurrentSection();
         
         var section = sparks.sparksActivityController.currentSection;
         
@@ -117,8 +117,8 @@ describe 'Page Reports'
         var $questionsDiv = $("<div>");
 
         var ac = new sparks.ActivityConstructor(jsonSection);
-        ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-        ac.layoutActivity();
+        sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+        sparks.sparksActivity.view.layoutCurrentSection();
 
         var $input = $questionsDiv.find('input');
         $input.val("100");                          // sets val of both open-response q's
@@ -183,8 +183,8 @@ describe 'Page Reports'
         var $questionsDiv = $("<div>");
 
         var ac = new sparks.ActivityConstructor(jsonSection);
-        ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-        ac.layoutActivity();
+        sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+        sparks.sparksActivity.view.layoutCurrentSection();
 
         var $input = $questionsDiv.find('input');
         $input.each(function(i, choice){
@@ -259,8 +259,8 @@ describe 'Page Reports'
         var $questionsDiv = $("<div>");
 
         var ac = new sparks.ActivityConstructor(jsonSection);
-        ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-        ac.layoutActivity();
+        sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+        sparks.sparksActivity.view.layoutCurrentSection();
 
         var $input = $questionsDiv.find('input');
         $input.val("100");                          // sets val of both open-response q's
@@ -344,8 +344,8 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $input.val("100");                          // sets val of both open-response q's
@@ -381,8 +381,8 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $($input[0]).val("100");                          // sets q0 to correct answer
@@ -408,8 +408,8 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $($input[0]).val("100");                          // sets q0 to correct answer
@@ -463,8 +463,8 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
       
       var section = sparks.sparksActivityController.currentSection;
       var page = section.pages[0];
@@ -522,8 +522,8 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $input.val("100");                          // sets val of both open-response q's
@@ -601,8 +601,8 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $input.val("100");                          // get one question correct
@@ -690,8 +690,8 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $input.val("100");                          // sets val of both open-response q's
@@ -774,8 +774,8 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $input.val("100");                          // sets val of both open-response q's
@@ -829,8 +829,8 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $input.val("100");
@@ -910,8 +910,8 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
       
       var section = sparks.sparksActivityController.currentSection;
       var page = section.pages[0];
@@ -948,9 +948,9 @@ describe 'Page Reports'
       $titles.length.should.be 1
       $titles[0].innerHTML.should.be "Section 1: Section title"
       
-      // confirm there is one table with two pages
+      // confirm there is two table with two pages
       var $tables = $report.find('table');
-      $tables.length.should.be 1
+      $tables.length.should.be 2
       
       var $table1 = $($tables[0]);
       var $trs = $table1.find('tr');
@@ -1012,8 +1012,8 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
 
       var $select = $questionsDiv.find('select');
       $select.val("200");
@@ -1071,8 +1071,8 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
 
       var $select = $questionsDiv.find('select');
       $select.val("200");
@@ -1127,8 +1127,8 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      ac.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      ac.layoutActivity();
+      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.sparksActivity.view.layoutCurrentSection();
     
       var section = sparks.sparksActivityController.currentSection;
       var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);

@@ -6,14 +6,16 @@
 //= require <jquery/plugins/jquery.bgiframe.min>
 //= require <jquery/plugins/jquery.flash>
 //= require <jquery/plugins/jquery.couch>
-//= require <data-service/RestDS-jQuery>
-//= require <data-service/couchDS>
+//= require <data-source/couch-ds>
 //= require <flash_version_detection>
 //= require <flash_version_detection>
 //= require <flash_comm>
 //= require <util>
 
 /* FILE activity.js */
+
+// Note: This is only used for Module 1, measuring-resistance. This class is not
+// used for the breadboard activities
 
 (function () {
     

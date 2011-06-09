@@ -2,9 +2,23 @@
 
 /* FILE flash_comm.js */
 
+/*globals console sparks $ document window alert navigator*/
+
 (function () {
 
     sparks.flash = {};
+    
+    sparks.flash.loaded = false;
+    
+    sparks.flash.queuedMessages = [];
+    
+    sparks.flash.init = function() {
+      sparks.flash.loaded = true;
+      var length = sparks.flash.queuedMessages.length;
+      for (var i = 0; i < length; i++){
+        sparks.flash.sendCommand.apply(this, sparks.flash.queuedMessages.pop());
+      }
+    };
 
     sparks.flash.getFlashMovie = function (movieName) {
       var isIE = navigator.appName.indexOf("Microsoft") != -1;
@@ -12,14 +26,19 @@
     };
 
     sparks.flash.sendCommand = function () {
+      if (!sparks.flash.loaded){
+        sparks.flash.queuedMessages.push(arguments);
+        return;
+      }
+      
       try {
         var params = [];
         for (var i = 0; i < arguments.length; ++i) {
           params[i] = arguments[i];
         }
         var flash = sparks.flash.getFlashMovie(sparks.config.flash_id);
+        
         var retVal = flash.sendMessageToFlash.apply(flash, params).split('|');
-        console.log('Returned by flash: ' + retVal);
         if (retVal[0] == 'flash_error') {
           alert('Flash error:\n' + retVal[1]);
         }
@@ -31,75 +50,112 @@
 
     // To be called from Flash thru ExternalInterface
     this.receiveEvent = function (name, value, time) {
-      if (sparks.flash.activity) {
-          return sparks.flash.activity.receiveEvent(name, value, time);
-      }
-        
+      console.log('ENTER sm.Activity#receiveEvent');
       console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
-      var activity = sparks.activity;
-      var multimeter = activity.multimeter;
-      var wasConnected = multimeter.allConnected();
-
-      if (name == 'connect') {
-          var ids = value.split('|');
-          if (ids[0] == 'red_probe') {
-              multimeter.redProbeConnection = ids[1];
-          }
-          else if (ids[0] == 'black_probe') {
-              multimeter.blackProbeConnection = ids[1];
-          }
-          else if (ids[0] == 'red_plug') {
-              multimeter.redPlugConnection = ids[1];
-          }
-          else if (ids[0] == 'black_plug') {
-              multimeter.blackPlugConnection = ids[1];
-          }
-          multimeter.update();
-          activity.log.add(name, { conn1 : ids[0], conn2 : ids[1] });
-          if (multimeter.allConnected()) {
-              activity.log.add('make_circuit');
-          }
-      }
-      else if (name == 'disconnect') {
-          if (value == 'red_probe') {
-              multimeter.redProbeConnection = null;
-          }
-          else if (value == 'black_probe') {
-              multimeter.blackProbeConnection = null;
-          }
-          else if (value == 'red_plug') {
-              multimeter.redPlugConnection = null;
-          }
-          else if (value == 'black_plug') {
-              multimeter.blackPlugConnection = null;
-          }
-          multimeter.update();
-          activity.log.add(name, { value: value});
-          if (wasConnected) {
-              activity.log.add('break_circuit');
-          }
-      }
-      else if (name == 'multimeter_dial') {
-          multimeter.dialPosition = value;
-          multimeter.update();
-          activity.log.add(name, { value: multimeter.dialPosition });
-      }
-      else if (name == 'multimeter_power') {
-          multimeter.powerOn = value == 'true' ? true : false;
-          multimeter.update();
-          activity.log.add(name, { value: multimeter.powerOn });
-          if (value === 'true' && multimeter.allConnected()) {
-              activity.log.add('make_circuit');
-          }
-          else if (value == 'false' && wasConnected) {
-              activity.log.add('break_circuit');
-          }
-      }
-      else if (name == 'not_ready') {
-          alert('Sorry, you can only access the circuit after you have answered question #1.');
-      }
       
-      return null;
-    };
+      var v;
+      var t = '';
+      var args = value.split('|');
+      
+      if (name === 'connect') {
+          if (args[0] === 'probe') {
+              if (args[1] === 'probe_red') {
+                  sparks.sparksSectionController.multimeter.redProbeConnection = args[2];
+              }
+              else if (args[1] === 'probe_black') {
+                  sparks.sparksSectionController.multimeter.blackProbeConnection = args[2];
+              }
+              else {
+                  alert('Activity#receiveEvent: connect: unknonw probe name ' + args[1]);
+              }
+          }
+          if (args[0] === 'component') {
+              // for now, we're just dealing with the situation of replacing one lead that had been lifted
+              if (!!args[2]){
+                breadModel('unmapHole', args[2]);
+              }
+              sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+                "type": "connect lead", 
+                "location": args[2]});
+          }
+          sparks.sparksSectionController.multimeter.update();
+      } else if (name === 'disconnect') {
+          if (args[0] === 'probe') {
+              if (args[1] === 'probe_red') {
+                  sparks.sparksSectionController.multimeter.redProbeConnection = null;
+              }
+              else if (args[1] === 'probe_black') {
+                  sparks.sparksSectionController.multimeter.blackProbeConnection = null;
+              }
+              else {
+                  alert('Activity#receiveEvent: disconnect: Unknonw probe name ' + args[1]);
+              }
+          } else if (args[0] === 'component') {
+            var hole = args[2];
+            var newHole = breadModel('getGhostHole', hole+"ghost");
+            
+            breadModel('mapHole', hole, newHole.nodeName());
+            sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+              "type": "disconnect lead", 
+              "location": hole});
+          }
+          sparks.sparksSectionController.multimeter.update();
+      } else if (name === 'probe') {
+          $('#popup').dialog();
+          
+          v = breadModel('query', 'voltage', 'a23,a17');
+          t += v.toFixed(3);
+          v = breadModel('query', 'voltage', 'b17,b11');
+          t += ' ' + v.toFixed(3);
+          v = breadModel('query', 'voltage', 'c11,c5');
+          t += ' ' + v.toFixed(3);
+          $('#dbg_voltage').text(t);
+
+          // Disconnect wire1
+          breadModel('move', 'wire1', 'left_positive1,a22');
+          
+          v = breadModel('query', 'resistance', 'a23,a17');
+          t = v.toFixed(3);
+          v = breadModel('query', 'resistance', 'b17,b11');
+          t += ' ' + v.toFixed(3);
+          v = breadModel('query', 'resistance', 'c11,c5');
+          t += ' ' + v.toFixed(3);
+          
+          $('#dbg_resistance').text(t);
+          
+          v = breadModel('query', 'current', 'a22,a23');
+          t = v.toFixed(3);
+          
+          breadModel('move', 'wire1', 'left_positive1,a23');
+          breadModel('move', 'resistor1', 'a23,a16');
+          v = breadModel('query', 'current', 'a16,b17');
+          t += ' ' + v.toFixed(3);
+          
+          breadModel('move', 'resistor1', 'a23,a17');
+          breadModel('move', 'resistor2', 'b17,b10');
+          v = breadModel('query', 'current', 'b10,c11');
+          t += ' ' + v.toFixed(3);
+          
+          breadModel('move', 'resistor2', 'b17,b11');
+          
+          $('#dbg_current').text(t);
+
+          $('#popup').dialog('close');
+      } else if (name == 'multimeter_dial') {
+          console.log('changed multimeter dial'+value);
+          sparks.sparksSectionController.multimeter.dialPosition = value;
+          sparks.sparksSectionController.multimeter.update();
+          // activity.log.add(name, { value: this.multimeter.dialPosition });
+      } else if (name == 'multimeter_power') {
+          sparks.sparksSectionController.multimeter.powerOn = value == 'true' ? true : false;
+          sparks.sparksSectionController.multimeter.update();
+          // activity.log.add(name, { value: this.multimeter.powerOn });
+          //                 if (value === 'true' && this.multimeter.allConnected()) {
+          //                     activity.log.add('make_circuit');
+          //                 } else if (value == 'false' && wasConnected) {
+          //                     activity.log.add('break_circuit');
+          //                 }
+      }
+  }
 
 })();

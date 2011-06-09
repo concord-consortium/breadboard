@@ -1879,138 +1879,55 @@ if (window.attachEvent) {
   }
 
 })(jQuery);
-(function (){
-    RestDS = function (readKey,writeKey,_post_path){
-        this.data = "";
-        this.enableLoadAndSave = true;
-        this.postPath = _post_path || "/models/";
-        this.getPath = this.postPath;
-        this.setKeys(readKey,writeKey);
-    };
-
-    RestDS.prototype =
-    {
-        setKeys: function (read,write) {
-            if (read) {
-                this.load(this,function (){});// just load data
-                this.readKey = read;
-            }
-            if (write) {
-                this.writeKey = write;
-            }
-            else {
-                this.writeKey= this.randomString();
-            }
-        },
-
-        randomString: function () {
-            var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
-            var string_length = 8;
-            var randomstring = '';
-            for (var i=0; i<string_length; i++) {
-                var rnum = Math.floor(Math.random() * chars.length);
-                randomstring += chars.substring(rnum,rnum+1);
-            }
-            return randomstring;
-        },
-
-        save: function (_data) {
-            this.data = _data;
-            var post_to = this.postPath;
-            debug('post_to=' + post_to);
-            /*
-            var xmlhttp = HTTP.newRequest();
-            xmlhttp.open('PUT', post_to, false);
-            xmlhttp.send(this.data);
-            */
-            jQuery.post(post_to, this.data);
-            this.readKey = this.writeKey;
-            $('#readKey').text("Your Key:" + this.readKey);
-            debug("readKey written: " + this.readKey);
-        },
-
-        load: function (context,callback) {
-            if (this.readKey) {
-            	var key = this.readKey;
-                this.writeKey = key;
-                this.readKey = key;
-            }
-            else {
-                if (this.writeKey) {
-                    this.readKey = this.writeKey;
-                }
-                else {
-                    this.readKey = this.writeKey = this.randomString();
-                }
-            }
-            var get_from = this.getPath;
-            var self = this;
-            debug("just about to load with " + this.readKey);
-            if (this.readKey) {
-                self = this;
-                /*
-                new Ajax.Request(get_from, {
-                    asynchronous: true,
-                    method: 'GET',
-                    onSuccess: function (rsp) {
-                        var text = rsp.responseText;
-                        var _data = eval(text);
-                        self.data = _data;
-                        callback(_data,context,callback);
-                        debug("returned from load");
-                    },
-                    onFailure: function (req,err) {
-                        debug("failed!");
-                    }
-                });
-                */
-                jQuery.get(get_from, function (rsp, textStatus) {
-                    console.log('rsp=' + rsp);
-                    var _data = eval(rsp);
-                    self.data = _data;
-                    callback(_data,context,callback);
-                    debug("returned from load");
-                });
-            }
-            else {
-                debug("load caleld, but no read key specified...");
-            }
-        },
-
-        toString: function () {
-            return "Data Service (" + this.postPath + "" + this.writeKey + ")";
-        }
-    };
-})();
-/*globals console sparks $ jQuery debug */
+/*globals console sparks $*/
 
 (function (){
-    sparks.CouchDS = function (_post_path, _user, _runnable_id){
-        this.docUID = null;
-        this.revision = null;
-        this.user = _user;
-        this.runnableId = _runnable_id;
-        this.enableLoadAndSave = true;
+    sparks.CouchDS = function (){
+        this.saveDocUID = null;
+        this.saveDocRevision = null;
+        this.user = null;
 
-        this.postPath = _post_path.split(":")[0];
-        this.db = _post_path.split(":")[1].split("/")[0];
+        this.saveDataPostPath = "/couchdb/learnerdata";
 
-        $.couch.urlPrefix = this.postPath;
+        this.activityLoadPath = "/couchdb/activities";
     };
 
     sparks.CouchDS.prototype =
     {
+
+        loadActivity: function(id, callback) {
+          $.couch.urlPrefix = this.activityLoadPath;
+          $.couch.db('').openDoc(id,
+            {
+              success: function (response) {
+                console.log("Loaded "+response._id);
+                callback(response);
+              }
+            }
+          );
+        },
+
+        setUser: function(_user) {
+          this.user = _user;
+        },
+
         save: function (_data) {
+          if (!this.user){
+            return;
+          }
+
           _data.user = this.user;
           _data.runnable_id = this.runnableId;
           _data.save_time = new Date().valueOf();
 
-          if (!!this.docUID){
-            _data._id = this.docUID;
+          if (!!this.saveDocUID){
+            _data._id = this.saveDocUID;
           }
-          if (!! this.revision){
-            _data._rev = this.revision;
+          if (!!this.saveDocRevision){
+            _data._rev = this.saveDocRevision;
           }
+
+          $.couch.urlPrefix = this.saveDataPostPath;
 
           var self = this;
           $.couch.db(this.db).saveDoc(
@@ -2056,265 +1973,29 @@ if (window.attachEvent) {
           );
         }
     };
+
+    sparks.couchDS = new sparks.CouchDS();
 })();
 
-/* FILE flash_version_dectection.js */
-
-
-var isIE  = (navigator.appVersion.indexOf("MSIE") != -1) ? true : false;
-var isWin = (navigator.appVersion.toLowerCase().indexOf("win") != -1) ? true : false;
-var isOpera = (navigator.userAgent.indexOf("Opera") != -1) ? true : false;
-
-function ControlVersion()
-{
-    var version;
-    var axo;
-    try {
-        axo = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.7");
-        version = axo.GetVariable("$version");
-    } catch (e) {
-    }
-    if (!version)
-    {
-        try {
-            axo = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.6");
-
-
-            version = "WIN 6,0,21,0";
-            axo.AllowScriptAccess = "always";
-            version = axo.GetVariable("$version");
-        } catch (e2) {
-        }
-    }
-    if (!version)
-    {
-        try {
-            axo = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.3");
-            version = axo.GetVariable("$version");
-        } catch (e3) {
-        }
-    }
-    if (!version)
-    {
-        try {
-            axo = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.3");
-            version = "WIN 3,0,18,0";
-        } catch (e4) {
-        }
-    }
-    if (!version)
-    {
-        try {
-            axo = new ActiveXObject("ShockwaveFlash.ShockwaveFlash");
-            version = "WIN 2,0,0,11";
-        } catch (e5) {
-            version = -1;
-        }
-    }
-
-    return version;
-}
-function GetSwfVer(){
-    var flashVer = -1;
-
-    if (navigator.plugins && navigator.plugins.length > 0) {
-        if (navigator.plugins["Shockwave Flash 2.0"] || navigator.plugins["Shockwave Flash"]) {
-            var swVer2 = navigator.plugins["Shockwave Flash 2.0"] ? " 2.0" : "";
-            var flashDescription = navigator.plugins["Shockwave Flash" + swVer2].description;
-            var descArray = flashDescription.split(" ");
-            var tempArrayMajor = descArray[2].split(".");
-            var versionMajor = tempArrayMajor[0];
-            var versionMinor = tempArrayMajor[1];
-            var versionRevision = descArray[3];
-            if (versionRevision === "") {
-                versionRevision = descArray[4];
-            }
-            if (versionRevision[0] == "d") {
-                versionRevision = versionRevision.substring(1);
-            } else if (versionRevision[0] == "r") {
-                versionRevision = versionRevision.substring(1);
-                if (versionRevision.indexOf("d") > 0) {
-                    versionRevision = versionRevision.substring(0, versionRevision.indexOf("d"));
-                }
-            }
-            var flashVer = versionMajor + "." + versionMinor + "." + versionRevision;
-        }
-    }
-    else if (navigator.userAgent.toLowerCase().indexOf("webtv/2.6") != -1) flashVer = 4;
-    else if (navigator.userAgent.toLowerCase().indexOf("webtv/2.5") != -1) flashVer = 3;
-    else if (navigator.userAgent.toLowerCase().indexOf("webtv") != -1) flashVer = 2;
-    else if ( isIE && isWin && !isOpera ) {
-        flashVer = ControlVersion();
-    }
-    return flashVer;
-}
-function DetectFlashVer(reqMajorVer, reqMinorVer, reqRevision)
-{
-    versionStr = GetSwfVer();
-    if (versionStr == -1 ) {
-        return false;
-    } else if (versionStr != 0) {
-        if(isIE && isWin && !isOpera) {
-            tempArray         = versionStr.split(" ");  // ["WIN", "2,0,0,11"]
-            tempString        = tempArray[1];           // "2,0,0,11"
-            versionArray      = tempString.split(",");  // ['2', '0', '0', '11']
-        } else {
-            versionArray      = versionStr.split(".");
-        }
-        var versionMajor      = versionArray[0];
-        var versionMinor      = versionArray[1];
-        var versionRevision   = versionArray[2];
-        if (versionMajor > parseFloat(reqMajorVer)) {
-            return true;
-        } else if (versionMajor == parseFloat(reqMajorVer)) {
-            if (versionMinor > parseFloat(reqMinorVer))
-                return true;
-            else if (versionMinor == parseFloat(reqMinorVer)) {
-                if (versionRevision >= parseFloat(reqRevision))
-                    return true;
-            }
-        }
-        return false;
-    }
-}
-function AC_AddExtension(src, ext)
-{
-  if (src.indexOf('?') != -1)
-    return src.replace(/\?/, ext+'?');
-  else
-    return src + ext;
-}
-function AC_Generateobj(objAttrs, params, embedAttrs)
-{
-  var str = '';
-  if (isIE && isWin && !isOpera)
-  {
-    str += '<object ';
-    for (var i in objAttrs)
-    {
-      str += i + '="' + objAttrs[i] + '" ';
-    }
-    str += '>';
-    for (var i in params)
-    {
-      str += '<param name="' + i + '" value="' + params[i] + '" /> ';
-    }
-    str += '</object>';
-  }
-  else
-  {
-    str += '<embed ';
-    for (var i in embedAttrs)
-    {
-      str += i + '="' + embedAttrs[i] + '" ';
-    }
-    str += '> </embed>';
-  }
-  document.write(str);
-}
-function AC_FL_RunContent(){
-  var ret =
-    AC_GetArgs
-    (  arguments, ".swf", "movie", "clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
-     , "application/x-shockwave-flash"
-    );
-  AC_Generateobj(ret.objAttrs, ret.params, ret.embedAttrs);
-}
-function AC_SW_RunContent(){
-  var ret =
-    AC_GetArgs
-    (  arguments, ".dcr", "src", "clsid:166B1BCA-3F9C-11CF-8075-444553540000"
-     , null
-    );
-  AC_Generateobj(ret.objAttrs, ret.params, ret.embedAttrs);
-}
-function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
-  var ret = new Object();
-  ret.embedAttrs = new Object();
-  ret.params = new Object();
-  ret.objAttrs = new Object();
-  for (var i=0; i < args.length; i=i+2){
-    var currArg = args[i].toLowerCase();
-    switch (currArg){
-      case "classid":
-        break;
-      case "pluginspage":
-        ret.embedAttrs[args[i]] = args[i+1];
-        break;
-      case "src":
-      case "movie":
-        args[i+1] = AC_AddExtension(args[i+1], ext);
-        ret.embedAttrs["src"] = args[i+1];
-        ret.params[srcParamName] = args[i+1];
-        break;
-      case "onafterupdate":
-      case "onbeforeupdate":
-      case "onblur":
-      case "oncellchange":
-      case "onclick":
-      case "ondblclick":
-      case "ondrag":
-      case "ondragend":
-      case "ondragenter":
-      case "ondragleave":
-      case "ondragover":
-      case "ondrop":
-      case "onfinish":
-      case "onfocus":
-      case "onhelp":
-      case "onmousedown":
-      case "onmouseup":
-      case "onmouseover":
-      case "onmousemove":
-      case "onmouseout":
-      case "onkeypress":
-      case "onkeydown":
-      case "onkeyup":
-      case "onload":
-      case "onlosecapture":
-      case "onpropertychange":
-      case "onreadystatechange":
-      case "onrowsdelete":
-      case "onrowenter":
-      case "onrowexit":
-      case "onrowsinserted":
-      case "onstart":
-      case "onscroll":
-      case "onbeforeeditfocus":
-      case "onactivate":
-      case "onbeforedeactivate":
-      case "ondeactivate":
-      case "type":
-      case "codebase":
-      case "id":
-        ret.objAttrs[args[i]] = args[i+1];
-        break;
-      case "width":
-      case "height":
-      case "align":
-      case "vspace":
-      case "hspace":
-      case "class":
-      case "title":
-      case "accesskey":
-      case "name":
-      case "tabindex":
-        ret.embedAttrs[args[i]] = ret.objAttrs[args[i]] = args[i+1];
-        break;
-      default:
-        ret.embedAttrs[args[i]] = ret.params[args[i]] = args[i+1];
-    }
-  }
-  ret.objAttrs["classid"] = classid;
-  if (mimeType) ret.embedAttrs["type"] = mimeType;
-  return ret;
-}
-
 /* FILE flash_comm.js */
+
+/*globals console sparks $ document window alert navigator*/
 
 (function () {
 
     sparks.flash = {};
+
+    sparks.flash.loaded = false;
+
+    sparks.flash.queuedMessages = [];
+
+    sparks.flash.init = function() {
+      sparks.flash.loaded = true;
+      var length = sparks.flash.queuedMessages.length;
+      for (var i = 0; i < length; i++){
+        sparks.flash.sendCommand.apply(this, sparks.flash.queuedMessages.pop());
+      }
+    };
 
     sparks.flash.getFlashMovie = function (movieName) {
       var isIE = navigator.appName.indexOf("Microsoft") != -1;
@@ -2322,14 +2003,19 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
     };
 
     sparks.flash.sendCommand = function () {
+      if (!sparks.flash.loaded){
+        sparks.flash.queuedMessages.push(arguments);
+        return;
+      }
+
       try {
         var params = [];
         for (var i = 0; i < arguments.length; ++i) {
           params[i] = arguments[i];
         }
         var flash = sparks.flash.getFlashMovie(sparks.config.flash_id);
+
         var retVal = flash.sendMessageToFlash.apply(flash, params).split('|');
-        console.log('Returned by flash: ' + retVal);
         if (retVal[0] == 'flash_error') {
           alert('Flash error:\n' + retVal[1]);
         }
@@ -2340,76 +2026,104 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
     };
 
     this.receiveEvent = function (name, value, time) {
-      if (sparks.flash.activity) {
-          return sparks.flash.activity.receiveEvent(name, value, time);
-      }
-
+      console.log('ENTER sm.Activity#receiveEvent');
       console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
-      var activity = sparks.activity;
-      var multimeter = activity.multimeter;
-      var wasConnected = multimeter.allConnected();
 
-      if (name == 'connect') {
-          var ids = value.split('|');
-          if (ids[0] == 'red_probe') {
-              multimeter.redProbeConnection = ids[1];
-          }
-          else if (ids[0] == 'black_probe') {
-              multimeter.blackProbeConnection = ids[1];
-          }
-          else if (ids[0] == 'red_plug') {
-              multimeter.redPlugConnection = ids[1];
-          }
-          else if (ids[0] == 'black_plug') {
-              multimeter.blackPlugConnection = ids[1];
-          }
-          multimeter.update();
-          activity.log.add(name, { conn1 : ids[0], conn2 : ids[1] });
-          if (multimeter.allConnected()) {
-              activity.log.add('make_circuit');
-          }
-      }
-      else if (name == 'disconnect') {
-          if (value == 'red_probe') {
-              multimeter.redProbeConnection = null;
-          }
-          else if (value == 'black_probe') {
-              multimeter.blackProbeConnection = null;
-          }
-          else if (value == 'red_plug') {
-              multimeter.redPlugConnection = null;
-          }
-          else if (value == 'black_plug') {
-              multimeter.blackPlugConnection = null;
-          }
-          multimeter.update();
-          activity.log.add(name, { value: value});
-          if (wasConnected) {
-              activity.log.add('break_circuit');
-          }
-      }
-      else if (name == 'multimeter_dial') {
-          multimeter.dialPosition = value;
-          multimeter.update();
-          activity.log.add(name, { value: multimeter.dialPosition });
-      }
-      else if (name == 'multimeter_power') {
-          multimeter.powerOn = value == 'true' ? true : false;
-          multimeter.update();
-          activity.log.add(name, { value: multimeter.powerOn });
-          if (value === 'true' && multimeter.allConnected()) {
-              activity.log.add('make_circuit');
-          }
-          else if (value == 'false' && wasConnected) {
-              activity.log.add('break_circuit');
-          }
-      }
-      else if (name == 'not_ready') {
-          alert('Sorry, you can only access the circuit after you have answered question #1.');
-      }
+      var v;
+      var t = '';
+      var args = value.split('|');
 
-      return null;
-    };
+      if (name === 'connect') {
+          if (args[0] === 'probe') {
+              if (args[1] === 'probe_red') {
+                  sparks.sparksSectionController.multimeter.redProbeConnection = args[2];
+              }
+              else if (args[1] === 'probe_black') {
+                  sparks.sparksSectionController.multimeter.blackProbeConnection = args[2];
+              }
+              else {
+                  alert('Activity#receiveEvent: connect: unknonw probe name ' + args[1]);
+              }
+          }
+          if (args[0] === 'component') {
+              if (!!args[2]){
+                breadModel('unmapHole', args[2]);
+              }
+              sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+                "type": "connect lead",
+                "location": args[2]});
+          }
+          sparks.sparksSectionController.multimeter.update();
+      } else if (name === 'disconnect') {
+          if (args[0] === 'probe') {
+              if (args[1] === 'probe_red') {
+                  sparks.sparksSectionController.multimeter.redProbeConnection = null;
+              }
+              else if (args[1] === 'probe_black') {
+                  sparks.sparksSectionController.multimeter.blackProbeConnection = null;
+              }
+              else {
+                  alert('Activity#receiveEvent: disconnect: Unknonw probe name ' + args[1]);
+              }
+          } else if (args[0] === 'component') {
+            var hole = args[2];
+            var newHole = breadModel('getGhostHole', hole+"ghost");
+
+            breadModel('mapHole', hole, newHole.nodeName());
+            sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+              "type": "disconnect lead",
+              "location": hole});
+          }
+          sparks.sparksSectionController.multimeter.update();
+      } else if (name === 'probe') {
+          $('#popup').dialog();
+
+          v = breadModel('query', 'voltage', 'a23,a17');
+          t += v.toFixed(3);
+          v = breadModel('query', 'voltage', 'b17,b11');
+          t += ' ' + v.toFixed(3);
+          v = breadModel('query', 'voltage', 'c11,c5');
+          t += ' ' + v.toFixed(3);
+          $('#dbg_voltage').text(t);
+
+          breadModel('move', 'wire1', 'left_positive1,a22');
+
+          v = breadModel('query', 'resistance', 'a23,a17');
+          t = v.toFixed(3);
+          v = breadModel('query', 'resistance', 'b17,b11');
+          t += ' ' + v.toFixed(3);
+          v = breadModel('query', 'resistance', 'c11,c5');
+          t += ' ' + v.toFixed(3);
+
+          $('#dbg_resistance').text(t);
+
+          v = breadModel('query', 'current', 'a22,a23');
+          t = v.toFixed(3);
+
+          breadModel('move', 'wire1', 'left_positive1,a23');
+          breadModel('move', 'resistor1', 'a23,a16');
+          v = breadModel('query', 'current', 'a16,b17');
+          t += ' ' + v.toFixed(3);
+
+          breadModel('move', 'resistor1', 'a23,a17');
+          breadModel('move', 'resistor2', 'b17,b10');
+          v = breadModel('query', 'current', 'b10,c11');
+          t += ' ' + v.toFixed(3);
+
+          breadModel('move', 'resistor2', 'b17,b11');
+
+          $('#dbg_current').text(t);
+
+          $('#popup').dialog('close');
+      } else if (name == 'multimeter_dial') {
+          console.log('changed multimeter dial'+value);
+          sparks.sparksSectionController.multimeter.dialPosition = value;
+          sparks.sparksSectionController.multimeter.update();
+      } else if (name == 'multimeter_power') {
+          sparks.sparksSectionController.multimeter.powerOn = value == 'true' ? true : false;
+          sparks.sparksSectionController.multimeter.update();
+      }
+  }
 
 })();
 
@@ -2609,80 +2323,168 @@ sparks.util.getKeys = function (json) {
   return keys;
 };
 
-/* FILE activity.js */
+/* FILE unit.js */
 
 (function () {
 
-    sparks.config.root_dir = '../..';
+    this.sparks.unit = {};
 
-    $(document).ready(function () {
-        init();
-    });
+    var u = sparks.unit;
 
-    this.init = function () {
-      console.log('ENTER init');
-      try {
-          var activity = new sparks.config.Activity();
-          this.setSavePath(activity);
-          activity.onDocumentReady();
-          activity.onFlashReady();
-          sparks.activity = activity;
+    u.labels = { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' };
+
+    u.toEngineering = function (value, units){
+      value = Number(value);
+
+      if (value >= 1000000){
+        var MUnits = "mega"+units;
+        units = MUnits;
+        value = u.round(value/1000000,2);
+      } else if (value >= 1000){
+        var kUnits = "kilo"+units;
+        units = kUnits;
+        value = u.round(value/1000,2);
+      } else if (value === 0 ) {
+        units = units;
+        value = 0;
+      } else if (value < 0.000001){
+        var nUnits = "nano"+units;
+        units = nUnits;
+        value = u.round(value * 1000000000,2);
+      } else if (value < 0.001){
+        var uUnits = "micro"+units;
+        units = uUnits;
+        value = u.round(value * 1000000,2);
+      } else if (value < 1) {
+        var mUnits = "milli"+units;
+        units = mUnits;
+        value = u.round(value * 1000,2);
+      } else {
+        units = units;
+        value = u.round(value,2);
       }
-      catch (e) {
-          console.log('ERROR: init: ' + e);
+
+      return {"value": value, "units": units};
+    };
+
+    u.round = function(num, dec) {
+    	var result = Math.round( Math.round( num * Math.pow( 10, dec + 2 ) ) / Math.pow( 10, 2 ) ) / Math.pow(10,dec);
+    	return result;
+    };
+
+    u.sigFigs = function(n, sig) {
+        var mult = Math.pow(10,
+            sig - Math.floor(Math.log(n) / Math.LN10) - 1);
+        return Math.round(n * mult) / mult;
+    };
+
+    u.isMeasurement = function(string) {
+      var isMeasurementPattern = /^\s?\d+.?\d*\s?\D+\s?$/
+      var matched = string.match(isMeasurementPattern);
+      return !!matched;
+    };
+
+    /**
+    * assumes this will be in the form ddd uu
+    * i.e. a pure number and a unit, separated by an optional space
+    * '50 ohms' and '50V' are both valid
+    */
+    u.convertMeasurement = function(measurement) {
+      if (!this.isMeasurement(measurement)){
+        return measurement
       }
-    };
 
-    this.setSavePath = function (activity) {
-
-      activity.learner_id = sparks.util.readCookie('learner_id');
-
-      if (activity.learner_id) {
-          var put_path = unescape(sparks.util.readCookie('save_path')) || 'undefined_path';
-          console.log('initActivity!: learner_id=' + activity.learner_id + ' put_path=' + put_path);
-          console.log('woo')
-          if (put_path.indexOf("couchdb") > -1){
-            var user = {"learner_id": activity.learner_id, "name": sparks.util.readCookie('student_name'),
-            "student_id": sparks.util.readCookie('student_id'), "class_id": sparks.util.readCookie('class_id')};
-            activity.setDataService(new sparks.CouchDS(put_path, user, sparks.util.readCookie('runnable_id')));
-          } else {
-            activity.setDataService(new RestDS(null, null, put_path));
-          }
-
-          function askConfirm(){
-            return "Are you sure you want to leave this page?";
-          }
-          console.log("setting onbeforeunload")
-          window.onbeforeunload = askConfirm;
+      var numPattern = /\d+\.?\d*/g
+      var nmatched = measurement.match(numPattern);
+      if (!nmatched){
+        return measurement;
       }
+      var value = nmatched[0];
+
+      var unitPattern =  /(?=\d*.?\d*)[^\d\.\s]+/g
+      var umatched = measurement.match(unitPattern);
+      if (!umatched){
+        return measurement;
+      }
+      var unit = umatched[0];
+
+      var eng = u.toEngineering(value, unit)
+      return eng.value + " " + eng.units;
     };
 
-    /*
-     * This function gets called from Flash after Flash has set up the external
-     * interface. Therefore all code that sends messages to Flash should be
-     * initiated from this function.
-     */
-    this.initActivity = function () {
-        console.log("flash loaded");
-        sparks.activity.onActivityReady();
-    };
-
-    sparks.Activity = function () {
-
-    };
-
-    sparks.Activity.prototype = {
-
-        init: function () {
-        },
-
-        setDataService: function () {
-        },
-
-        buttonize: function () {
-            $('button').button();
+    u.normalizeToOhms = function (value, unit) {
+        switch (unit) {
+        case u.labels.ohms:
+            return value;
+        case u.labels.kilo_ohms:
+            return value * 1000;
+        case u.labels.mega_ohms:
+            return value * 1e6;
         }
+        return null;
     };
+
+    u.ohmCompatible = function (unit) {
+        if (unit == u.labels.ohms || unit == u.labels.kilo_ohms ||
+            unit == u.labels.mega_ohms)
+        {
+            return true;
+        }
+        return false;
+    };
+
+    u.res_str = function (value) {
+        var vstr, unit, val;
+
+        if (typeof value !== 'number' || isNaN(Number(value))) {
+            return 'Invalid Value ' + String(value);
+        }
+
+        if (value < 1000) {
+            val = value;
+            unit = u.labels.ohms;
+        }
+        else if (value < 1e6) {
+            val = value / 1000;
+            unit = u.labels.kilo_ohms;
+        }
+        else {
+            val = value / 1e6;
+            unit = u.labels.mega_ohms;
+        }
+
+        if (val.toFixed) {
+            val = val.toFixed(6);
+        }
+
+        vstr = String(val).replace(/(\.[0-9]*[1-9])0*/, '$1');
+        vstr = vstr.replace(/([0-9])\.0+$/, '$1');
+        return vstr + ' ' + unit;
+    };
+
+    u.res_unit_str = function (value, mult) {
+        var vstr;
+        var unit = u.labels.ohms;
+
+        if (mult === 'k') {
+            vstr = String(value / 1000.0);
+            unit = u.labels.kilo_ohms;
+        }
+        else if (mult === 'M') {
+            vstr = String(value / 1000000.0);
+            unit = u.labels.mega_ohms;
+        }
+        else {
+            vstr = String(value);
+            unit = u.labels.ohms;
+        }
+        return vstr + ' ' + unit;
+    };
+
+    u.pct_str = function (value) {
+        return (value * 100) + ' %';
+    };
+
 
 })();
 /*globals console sparks $ breadModel getBreadBoard */
@@ -3013,11 +2815,76 @@ sparks.util.getKeys = function (json) {
 
   sparks.SparksActivityView = function(activity){
     this.activity = activity;
+
+    this.divs = {
+      $breadboardDiv: $('#breadboard'),
+      $imageDiv: $('#image'),
+      $questionsDiv: $('#questions_area'),
+      $titleDiv: $('#title')
+    };
   };
 
   sparks.SparksActivityView.prototype = {
 
+    layoutCurrentSection: function() {
+      var section = sparks.sparksActivityController.currentSection;
 
+      this.divs.$titleDiv.text(section.title);
+
+      this.divs.$imageDiv.html('');
+
+      if (!!section.image){
+        var $image = sparks.sparksActivityController.currentSection.view.getImageView();
+        this.divs.$imageDiv.append($image);
+      }
+
+      if (!!section.circuit && !section.hide_circuit){
+        if (sparks.flash.loaded){
+          sparks.flash.loaded = false;
+          this.divs.$breadboardDiv.html('');
+        }
+        this.loadFlash();
+        breadModel('updateFlash');
+      }
+
+      this.layoutPage();
+    },
+
+    layoutPage: function() {
+      if (!!sparks.sparksSectionController.currentPage){
+        this.divs.$questionsDiv.html('');
+        var $page = sparks.sparksSectionController.currentPage.view.getView();
+        this.divs.$questionsDiv.append($page);
+      }
+      $('body').scrollTop(0);
+    },
+
+    loadFlash: function () {
+       this.divs.$breadboardDiv.css("z-index", 0);
+       this.divs.$breadboardDiv.flash({
+           src: 'breadboardActivity1.swf',
+           id: 'breadboardActivity1',
+           name: 'breadboardActivity1',
+           width: 900,
+           height: 600,
+           quality: 'high',
+           allowFullScreen: false,
+           allowScriptAccess: 'sameDomain',
+           wmode: 'transparent'
+       });
+     },
+
+     setEmbeddingTargets: function(targets) {
+       if (!!targets.$breadboardDiv){
+         this.divs.$breadboardDiv = targets.$breadboardDiv;
+       }
+       if (!!targets.$imageDiv){
+         this.divs.$imageDiv = targets.$imageDiv;
+       }
+       if (!!targets.$questionsDiv){
+         this.divs.$questionsDiv = targets.$questionsDiv;
+       }
+     }
   };
 })();
 /*globals console sparks $ breadModel getBreadBoard */
@@ -3198,7 +3065,7 @@ sparks.util.getKeys = function (json) {
                               "You can repeat any page by clicking the <b>Try again</b> button under the table.");
       } else {
         comment = "You can repeat any page by clicking the <b>Try again</b> button next to the page.";
-        if (!!sparks.sparksActivityController.currentSection.nextSection){
+        if (sparks.sparksActivityController.areMoreSections()){
           comment += "<p></p>When you are ready to score more points, move on to the next section!";
         }
       }
@@ -3231,12 +3098,12 @@ sparks.util.getKeys = function (json) {
         } else {
           $buttonDiv.append($repeatButton, $viewSectionReportButton);
         }
-      } else if (!!sparks.sparksActivityController.currentSection.nextSection){
+      } else if (sparks.sparksActivityController.areMoreSections()){
         var $nextActivityButton = $("<button>").text("Go on to the next section").css('padding-left', "10px")
                             .css('padding-right', "10px");
 
         $nextActivityButton.click(function(evt){
-          sparks.sparksActivityController.nextActivity();
+          sparks.sparksActivityController.nextSection();
         });
 
         $buttonDiv.append($nextActivityButton);
@@ -3918,6 +3785,10 @@ sparks.util.getKeys = function (json) {
     this.currentPage = null;
     this.currentPageIndex = -1;
     this.pageIndexMap = {};
+
+    this.multimeter = null; // this is a kind of strange place for this, yes
+
+    this.jsonSection = null;
   };
 
   sparks.SparksSectionController.prototype = {
@@ -3933,32 +3804,50 @@ sparks.util.getKeys = function (json) {
       section.id = jsonSection._id;
       section.title = jsonSection.title;
 
-      if (!!jsonSection.section_url){
-        section.section_url = jsonSection.section_url;
-      } else {
-        section.section_url = sparks.jsonSection.section_url;
-      }
-
-      if (!!jsonSection.images_url){
-        section.images_url = jsonSection.images_url;
-      } else {
-        section.images_url = sparks.jsonSection.images_url;
-      }
+      section.section_url = sparks.activity_base_url + section.id;
+      section.images_url = sparks.activity_images_base_url + section.id;
 
       section.image = jsonSection.image;
 
-      if (!!jsonSection.circuit){
-        section.circuit = jsonSection.circuit;
+      section.circuit = jsonSection.circuit;
+      section.faults = jsonSection.faults;
+      section.hide_circuit = !!jsonSection.hide_circuit;
+      section.show_multimeter = !(!(jsonSection.show_multimeter) || jsonSection.show_multimeter === "false");
+      section.disable_multimeter_position = jsonSection.disable_multimeter_position;
+
+      section.jsonSection = jsonSection;
+
+      section.view = new sparks.SparksSectionView(section);
+
+      return section;
+    },
+
+    loadCurrentSection: function() {
+      var section = sparks.sparksActivityController.currentSection;
+      breadModel("clear");
+
+      if (!!section.circuit){
         breadModel("createCircuit", section.circuit);
+
+        this.multimeter = new sparks.circuit.Multimeter2();
+        if (section.show_multimeter){
+          sparks.flash.sendCommand('set_multimeter_visibility','true');
+          sparks.flash.sendCommand('set_probe_visibility','true');
+
+          if(section.disable_multimeter_position){
+            this.multimeter.set_disable_multimeter_position(section.disable_multimeter_position);
+          }
+        }
       }
 
-      if (!!jsonSection.faults){
-        section.faults = jsonSection.faults;
+      if (!!section.faults){
         breadModel("addFaults", section.faults);
       }
 
-      section.hide_circuit = !!jsonSection.hide_circuit;
+      section.pages = [];
+      sparks.sparksQuestionController.reset();
 
+      var jsonSection = section.jsonSection;
       var self = this;
       if (!!jsonSection.pages){
         $.each(jsonSection.pages, function(i, jsonPage){
@@ -3972,39 +3861,18 @@ sparks.util.getKeys = function (json) {
         }
         this.currentPage = section.pages[this.currentPageIndex];
       }
-
-      if (!!jsonSection.formulas){
-        $.each(this.jsonSection.formulas, function(i, formula){
-          var variables = {};
-          var variable = formula.match(/.* =/)[0];
-          variable = variable.substring(0,variable.length-2);
-          formula = "variables."+formula;
-          eval(formula);
-          var value = variables[0];
-          this.sparksActivity.variables[variable] = value;
-        });
-      }
-      section.nextSection = jsonSection.nextSection;
-
-      section.view = new sparks.SparksSectionView(section);
-
       sparks.sparksLogController.startNewSession();
-
-      return section;
+      sparks.sparksReportController.startNewSection(section);
     },
 
     areMorePage: function() {
       var nextPage;
       var section = sparks.sparksActivityController.currentSection;
-      for (var i = 0; i < section.pages.length-1; i++){
-        if (section.pages[i] == this.currentPage){
-          nextPage = section.pages[i+1];
-        }
-      }
-      if (!nextPage){
+      if (this.currentPageIndex < section.pages.length - 1){
+        return section.pages[this.currentPageIndex+1];
+      } else {
         return false;
       }
-      return nextPage;
     },
 
     nextPage: function() {
@@ -4018,7 +3886,7 @@ sparks.util.getKeys = function (json) {
       this.currentPageIndex = this.currentPageIndex+1;
       this.currentPage = nextPage;
 
-      sparks.activityContstructor.layoutPage();
+      sparks.sparksActivity.view.layoutPage();
 
       sparks.sparksLogController.startNewSession();
     },
@@ -4032,14 +3900,10 @@ sparks.util.getKeys = function (json) {
       }
 
       var section = sparks.sparksActivityController.currentSection;
-      section.view.clear();
 
-      breadModel('clear');
-      if (!sparks.jsonSection.hide_circuit && !sparks.debug){
-        sparks.flash.activity.loadFlash();
-      } else {
-        sparks.flash.activity.onActivityReady();
-      }
+      this.loadCurrentSection();
+      sparks.sparksActivity.view.layoutCurrentSection();
+
     },
 
     viewSectionReport: function() {
@@ -4063,48 +3927,56 @@ sparks.util.getKeys = function (json) {
    */
   sparks.SparksActivityController = function(){
     sparks.sparksActivity = new sparks.SparksActivity();
-    sparks.sparksActivity.view = new sparks.SparksActivityView(sparks.sparksActivity);
 
     this.currentSection = null;
+    this.currentSectionIndex = 0;
   };
 
   sparks.SparksActivityController.prototype = {
 
-    addSection: function (jsonSection) {
-      var _id = jsonSection._id;
-      var sectionExists = false;
-      var index = -1;
-      $.each(sparks.sparksActivity.sections, function(i, section){
-        if (section.id === _id){
-          sectionExists = true;
-          index = i;
-        }
+    createActivity: function(activity, callback) {
+      var self = this;
+      $.each(activity.sections, function(i, jsonSectionName){
+        sparks.couchDS.loadActivity(jsonSectionName, function(jsonSection) {
+          self.addSection(jsonSection, i);
+          if (i === 0){
+            callback();
+          }
+        });
       });
-      var section = sparks.sparksSectionController.createSection(jsonSection);
-      this.currentSection = section;
+    },
 
-      if (index > -1){
+    addSection: function (jsonSection, index) {
+      var section = sparks.sparksSectionController.createSection(jsonSection);
+
+      if (index !== undefined){
         sparks.sparksActivity.sections[index] = section;
       } else {
         sparks.sparksActivity.sections.push(section);
-        if (!!sparks.sparksSectionController.currentPage){
-          sparks.sparksSectionController.currentPageIndex = 0;
-          sparks.sparksSectionController.currentPage = section.pages[0];
-        }
       }
 
-      sparks.sparksReportController.startNewSection(this.currentSection);
+      return section;
+
     },
 
-    nextActivity: function () {
-      if (!this.currentSection.nextSection){
+    setCurrentSection: function(i) {
+      this.currentSection = sparks.sparksActivity.sections[i];
+      this.currentSectionIndex = i;
+    },
+
+    areMoreSections: function () {
+      return (!this.currentSectionIndex > sparks.sparksActivity.sections.length -1);
+    },
+
+    nextSection: function () {
+      if (this.currentSectionIndex > sparks.sparksActivity.sections.length -1) {
         console.log("No next section");
         return;
       }
-      this.currentSection.view.clear();
-      breadModel('clear');
-      window.location.hash = this.currentSection.nextSection;
-      sparks.activity.onDocumentReady();
+
+      this.setCurrentSection(this.currentSectionIndex + 1);
+      sparks.sparksSectionController.loadCurrentSection();
+      sparks.sparksActivity.view.layoutCurrentSection();
     },
 
     reset: function () {
@@ -4155,7 +4027,6 @@ sparks.util.getKeys = function (json) {
       var score = 0;
       var maxScore = 0;
       $.each(page.questions, function(i, question){
-
         sparks.sparksQuestionController.gradeQuestion(question);
 
         score += question.points_earned;
@@ -4421,59 +4292,30 @@ sparks.util.getKeys = function (json) {
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
-  sparks.ActivityConstructor = function(jsonSection){
-    sparks.sparksSectionController.reset();
+  sparks.ActivityConstructor = function(jsonActivity){
 
-    sparks.sparksActivityController.addSection(jsonSection);
+    sparks.sparksActivity.view = new sparks.SparksActivityView();
 
-    this.jsonSection = jsonSection;
+    if (!jsonActivity.type || jsonActivity.type !== "activity"){
+      var jsonSection = jsonActivity;
+      var section = sparks.sparksActivityController.addSection(jsonSection);
+      sparks.sparksActivityController.setCurrentSection(0);
+      sparks.sparksSectionController.loadCurrentSection();
+      sparks.sparksActivity.view.layoutCurrentSection();
+    } else {
+      sparks.sparksActivityController.createActivity(jsonActivity, function(){
+        sparks.sparksActivityController.setCurrentSection(0);
+        sparks.sparksSectionController.loadCurrentSection();
+        sparks.sparksActivity.view.layoutCurrentSection();
+      });
+    }
 
-    this.embeddingTargets = {
-      $breadboardDiv: null,
-      $imageDiv: null,
-      $questionsDiv: null
-    };
-    sparks.activityContstructor = this;
+    sparks.activityConstructor = this;
 
   };
 
   sparks.ActivityConstructor.prototype = {
 
-    setEmbeddingTargets: function(targets) {
-      if (!!targets.$breadboardDiv){
-        this.embeddingTargets.$breadboardDiv = targets.$breadboardDiv;
-      }
-      if (!!targets.$imageDiv){
-        this.embeddingTargets.$imageDiv = targets.$imageDiv;
-      }
-      if (!!targets.$questionsDiv){
-        this.embeddingTargets.$questionsDiv = targets.$questionsDiv;
-      }
-    },
-
-   layoutActivity: function() {
-     if (!this.embeddingTargets.$imageDiv){
-         this.embeddingTargets.$imageDiv = $('#image');
-      }
-     if (!this.embeddingTargets.$questionsDiv){
-        this.embeddingTargets.$questionsDiv = $('#questions_area');
-     }
-
-     if (!!sparks.sparksActivityController.currentSection.image){
-       var $imagediv = sparks.sparksActivityController.currentSection.view.getImageView();
-       this.embeddingTargets.$imageDiv.append($imagediv);
-     }
-
-     this.layoutPage();
-   },
-
-   layoutPage: function() {
-     if (!!sparks.sparksSectionController.currentPage){
-        this.embeddingTargets.$questionsDiv.html('');
-        var $page = sparks.sparksSectionController.currentPage.view.getView();
-        this.embeddingTargets.$questionsDiv.append($page);
-      }
-   }
   };
 })();
 (function () {
@@ -4528,9 +4370,7 @@ sparks.util.getKeys = function (json) {
     */
    p.calculateSum = function(sum){
       sum = p.replaceCircuitVariables(sum);
-
       var calculatedSum = eval(sum);
-
       return calculatedSum;
    };
 
@@ -5380,11 +5220,8 @@ sparks.util.getKeys = function (json) {
             connections:  ["right_positive1", "right_negative1"]}));
 
           var result;
-
           q.qucsate(q.makeNetlist(breadBoard),
                   function (r) { result = r.meter; } );
-
-          console.log('result=' + result);
 
           $.each(tempComponents, function(i, component){
             component.destroy();
@@ -5915,7 +5752,6 @@ sparks.util.getKeys = function (json) {
     sparks.extend(circuit.Multimeter2, circuit.MultimeterBase, {
 
         update: function () {
-
             if (this.redProbeConnection && this.blackProbeConnection) {
                 var measurement = null;
                 if (this.dialPosition.indexOf('dcv_') > -1){
@@ -5959,12 +5795,16 @@ sparks.util.getKeys = function (json) {
 
         makeMeasurement: function(measurementType) {
           var netlist = sparks.circuit.qucsator.makeNetlist(getBreadBoard());
+
           var measurmentKey = "" + netlist.replace(/\n/g, '') + this.redProbeConnection + this.blackProbeConnection + measurementType;
+
           var existingMeasurement = this.measurements[measurmentKey];
+
           if (existingMeasurement !== undefined && existingMeasurement !== null){
             return existingMeasurement;
           } else {
             var measurement = Math.abs(breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection));
+            console.log(measurement);
             this.measurements[measurmentKey] = measurement;
             return measurement;
           }
@@ -6351,7 +6191,6 @@ sparks.util.getKeys = function (json) {
 
       rNominalSeries: function() {
         var resistors = this.getResistors(arguments);
-        console.log("woo")
         var resistance = 0;
         $.each(resistors, function(i, resistor){
           console.log("adding "+resistor.nominalResistance)
@@ -6378,713 +6217,6 @@ sparks.util.getKeys = function (json) {
 
     this.cMath = new sparks.circuitMath();
 
-})();
-
-/* FILE setup-common.js */
-
-(function () {
-
-    this.sparks.activities.sm = {};
-    this.sparks.activities.sm.config = {};
-
-    sparks.config.root_dir = '../../..';
-    sparks.activities.sm.config.root_dir = sparks.config.root_dir + '/activities/module-2';
-
-})();
-
-/* FILE activity-log.js */
-
-(function () {
-
-    var sm = sparks.activities.sm;
-
-    /* Log object structure
-     * - session is the unit of upload to server
-     *
-     *   SESSION
-     *     start_time:
-     *     end_time:
-     *       events:
-     *         - event
-     *             name:
-     *             value:
-     *             time:
-     */
-    sm.Session = function () {
-        this.start_time = null;
-        this.end_time = null;
-    };
-
-
-    sm.ActivityLog = function () {
-        this.session = new sm.Session();
-    };
-
-    sm.ActivityLog.prototype = {
-    };
-
-})();
-
-/* FILE feedback.js */
-
-(function () {
-
-    var util = sparks.util;
-    var sm = sparks.activities.sm;
-
-    sm.Feedback = function (rubric) {
-        this.root = util.cloneSimpleObject(rubric);
-    };
-
-    sm.Feedback.prototype = {
-
-    };
-
-})();
-
-/* FILE grader.js */
-
-(function () {
-
-    var sm = sparks.activities.sm;
-
-    sm.Grader = function (session, rubric) {
-        this.session = session;
-        this.rubric = rubric;
-
-        this.feedback = new sm.Feedback(rubric);
-    };
-
-    sm.Grader.prototype = {
-
-        grade: function () {
-            return this.feedback;
-        }
-
-    };
-
-})();
-
-/* FILE unit.js */
-
-(function () {
-
-    this.sparks.unit = {};
-
-    var u = sparks.unit;
-
-    u.labels = { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' };
-
-    u.toEngineering = function (value, units){
-      value = Number(value);
-
-      if (value >= 1000000){
-        var MUnits = "mega"+units;
-        units = MUnits;
-        value = u.round(value/1000000,2);
-      } else if (value >= 1000){
-        var kUnits = "kilo"+units;
-        units = kUnits;
-        value = u.round(value/1000,2);
-      } else if (value === 0 ) {
-        units = units;
-        value = 0;
-      } else if (value < 0.000001){
-        var nUnits = "nano"+units;
-        units = nUnits;
-        value = u.round(value * 1000000000,2);
-      } else if (value < 0.001){
-        var uUnits = "micro"+units;
-        units = uUnits;
-        value = u.round(value * 1000000,2);
-      } else if (value < 1) {
-        var mUnits = "milli"+units;
-        units = mUnits;
-        value = u.round(value * 1000,2);
-      } else {
-        units = units;
-        value = u.round(value,2);
-      }
-
-      return {"value": value, "units": units};
-    };
-
-    u.round = function(num, dec) {
-    	var result = Math.round( Math.round( num * Math.pow( 10, dec + 2 ) ) / Math.pow( 10, 2 ) ) / Math.pow(10,dec);
-    	return result;
-    };
-
-    u.sigFigs = function(n, sig) {
-        var mult = Math.pow(10,
-            sig - Math.floor(Math.log(n) / Math.LN10) - 1);
-        return Math.round(n * mult) / mult;
-    };
-
-    u.isMeasurement = function(string) {
-      var isMeasurementPattern = /^\s?\d+.?\d*\s?\D+\s?$/
-      var matched = string.match(isMeasurementPattern);
-      return !!matched;
-    };
-
-    /**
-    * assumes this will be in the form ddd uu
-    * i.e. a pure number and a unit, separated by an optional space
-    * '50 ohms' and '50V' are both valid
-    */
-    u.convertMeasurement = function(measurement) {
-      if (!this.isMeasurement(measurement)){
-        return measurement
-      }
-
-      var numPattern = /\d+\.?\d*/g
-      var nmatched = measurement.match(numPattern);
-      if (!nmatched){
-        return measurement;
-      }
-      var value = nmatched[0];
-
-      var unitPattern =  /(?=\d*.?\d*)[^\d\.\s]+/g
-      var umatched = measurement.match(unitPattern);
-      if (!umatched){
-        return measurement;
-      }
-      var unit = umatched[0];
-
-      var eng = u.toEngineering(value, unit)
-      return eng.value + " " + eng.units;
-    };
-
-    u.normalizeToOhms = function (value, unit) {
-        switch (unit) {
-        case u.labels.ohms:
-            return value;
-        case u.labels.kilo_ohms:
-            return value * 1000;
-        case u.labels.mega_ohms:
-            return value * 1e6;
-        }
-        return null;
-    };
-
-    u.ohmCompatible = function (unit) {
-        if (unit == u.labels.ohms || unit == u.labels.kilo_ohms ||
-            unit == u.labels.mega_ohms)
-        {
-            return true;
-        }
-        return false;
-    };
-
-    u.res_str = function (value) {
-        var vstr, unit, val;
-
-        if (typeof value !== 'number' || isNaN(Number(value))) {
-            return 'Invalid Value ' + String(value);
-        }
-
-        if (value < 1000) {
-            val = value;
-            unit = u.labels.ohms;
-        }
-        else if (value < 1e6) {
-            val = value / 1000;
-            unit = u.labels.kilo_ohms;
-        }
-        else {
-            val = value / 1e6;
-            unit = u.labels.mega_ohms;
-        }
-
-        if (val.toFixed) {
-            val = val.toFixed(6);
-        }
-
-        vstr = String(val).replace(/(\.[0-9]*[1-9])0*/, '$1');
-        vstr = vstr.replace(/([0-9])\.0+$/, '$1');
-        return vstr + ' ' + unit;
-    };
-
-    u.res_unit_str = function (value, mult) {
-        var vstr;
-        var unit = u.labels.ohms;
-
-        if (mult === 'k') {
-            vstr = String(value / 1000.0);
-            unit = u.labels.kilo_ohms;
-        }
-        else if (mult === 'M') {
-            vstr = String(value / 1000000.0);
-            unit = u.labels.mega_ohms;
-        }
-        else {
-            vstr = String(value);
-            unit = u.labels.ohms;
-        }
-        return vstr + ' ' + unit;
-    };
-
-    u.pct_str = function (value) {
-        return (value * 100) + ' %';
-    };
-
-
-})();
-
-/* FILE reporter.js */
-
-(function () {
-
-    var unit = sparks.unit;
-    var sm = sparks.activities.sm;
-
-    sm.Reporter = function (reportElem) {
-        this.template = sm.config.root_dir + '/report-template.html';
-        this.reportElem = reportElem;
-    };
-
-    sm.Reporter.prototype = {
-
-        red : '#cc3300',
-        red2 : '#cc9933',
-        orange : '#ff6600',
-        blue : '#0099cc',
-        green :'#339933',
-
-        dialLabels : { r_2000k: '\u2126 - 2000k',
-            r_200k: '\u2126 - 200k',
-            r_20k: '\u2126 - 20k',
-            r_2000: '\u2126 - 2000',
-            r_200: '\u2126 - 200',
-            dcv_1000: 'DCV - 1000',
-            dcv_200: 'DCV - 200',
-            dcv_20: 'DCV - 20',
-            dcv_2000m: 'DCV - 2000m',
-            dcv_200m: 'DCV - 200m',
-            acv_750: 'ACV - 750',
-            acv_200: 'ACV - 200',
-            p_9v: '1.5V 9V',
-            dca_200mc: 'DCA - 200\u03bc',
-            dca_2000mc: 'DCA - 2000\u03bc',
-            dca_20m: 'DCA - 20m',
-            dca_200m: 'DCA - 200m',
-            c_10a: '10A',
-            hfe: 'hFE',
-            diode: 'Diode'
-        },
-
-        report: function (session, feedback) {
-            var reporter = this;
-            this.reportElem.load(this.template, '', function () {
-                reporter.sessionReport(session, feedback);
-            });
-        },
-
-        sessionReport: function (session, feedback) {
-            var studentName = jQuery.cookie('student_name');
-            if (studentName) {
-                $('#student_name').text(studentName.replace('+', ' '));
-            }
-            var activityName = jQuery.cookie('activity_name');
-            if (activityName) {
-                $('#activity_name').text(activityName.replace('+', ' '));
-            }
-            var attemptNum = jQuery.cookie('attempt_num');
-            if (attemptNum) {
-                $('#attempt_num').text(attemptNum);
-            }
-            $('#date').text(new Date().toString().slice(0, 15));
-        },
-
-        setAnswerTextWithColor: function (elemId, text, feedback) {
-            var color;
-            switch (feedback.correct)
-            {
-            case 0: color = this.red; break;
-            case 1: color = this.red2; break;
-            case 2: color = this.orange; break;
-            case 3: color = this.blue; break;
-            case 4: color = this.green; break;
-            }
-            this.setTextWithColor(elemId, text, color);
-        },
-
-        setTextWithColor: function (elemId, text, color) {
-            $(elemId).text(text);
-            $(elemId).attr('style', 'color: ' + color + ';');
-        },
-
-        imageLink: function (container, imageUrl, linkUrl) {
-          var a = $('<a></a>').addClass('no_deco');
-          a.attr({ href: linkUrl, title: 'Click for SPARKS Help!', target: 'feedback' });
-          var img = $('<img></img>').addClass('no_border');
-          img.attr({ src: imageUrl, align: 'ABSMIDDLE' });
-          img.css({ margin: '4px' });
-          a.append(img);
-          container.html(a);
-        }
-    };
-
-})();
-
-/*globals sparks */
-
-/* FILE activity-log.js */
-
-(function () {
-
-    var activity = sparks.Activity;
-
-    activity.Event = function (name, value, time) {
-        this.name = name;
-        this.value = value;
-        this.time = time;
-    };
-
-    /* Log object structure
-     * - session is the unit of upload to server
-     *
-     *   SESSION
-     *     start_time:
-     *     end_time:
-     *     sections:
-     *       - section
-     *           start_time:
-     *           end_time:
-     *           events:
-     *             - event
-     *                 name:
-     *                 value:
-     *                 time:
-     *           questions:
-     *             - question
-     *                 id:
-     *                 correct_answer:
-     *                 answer:
-     *                 unit:
-     *                 correct:
-     *                 start_time:
-     *                 end_time:
-     */
-    activity.Session = function () {
-        this.events = [];
-        this.properties = [];
-        this.start_time = null;
-        this.end_time = null;
-    };
-
-    activity.ActivityLog = function ()
-    {
-
-        this.sessions = [];
-        this.numSessions = 0;
-    };
-
-    activity.ActivityLog.prototype =
-    {
-        eventNames : { start_session: 1,
-                       end_session: 1,
-                       start_section: 1,
-                       end_section: 1,
-                       start_question: 1,
-                       end_question: 1,
-                       connect: 1,
-                       disconnect: 1,
-                       make_circuit: 1,
-                       break_circuit: 1,
-                       multimeter_dial: 1,
-                       multimeter_power: 1,
-                       resistor_nominal_value: 1,
-                       resistor_real_value: 1,
-                       resistor_display_value: 1 },
-
-        beginSession : function() {
-            var session = new activity.Session();
-
-
-            this.sessions.push(session);
-            this.numSessions += 1;
-            this.log('start_session');
-        },
-
-        endSession : function() {
-            this.log('end_session');
-        },
-
-        currentSession : function() {
-            return this.sessions[this.numSessions - 1];
-        },
-
-        setValue : function(name, value) {
-          this.currentSession().properties[name] = value;
-        },
-
-        log : function(name) {
-            var now = new Date().valueOf();
-            var session = this.currentSession();
-
-            if (!this.eventNames[name]) {
-                console.log('ERROR: add: Unknown log event name ' + name);
-                session.events.push(new activity.Event('UNREGISTERED_NAME', name, now));
-                return;
-            }
-
-            switch (name)
-            {
-            case 'connect':
-              if (arguments.length < 3){
-                console.log("ERROR: logging conection needs to have two parameters");
-                return;
-              }
-              console.log('connect ' + arguments[1] + ' to ' + arguments[2]);
-              session.events.push(new activity.Event('connect', arguments[1] + '|' + arguments[2], now));
-              break;
-            case 'make_circuit':
-                session.events.push(new activity.Event('make_circuit', '', now));
-                break;
-            case 'break_circuit':
-                session.events.push(new activity.Event('break_circuit', '', now));
-                break;
-            case 'start_session':
-                session.start_time = now;
-                break;
-            case 'end_session':
-                session.end_time = now;
-                break;
-            default:
-                session.events.push(new activity.Event(name, arguments[1], now));
-            }
-        }
-    };
-
-})();
-/*globals sparks $ */
-
-(function() {
-
-  var activity = sparks.Activity;
-
-  activity.Question = function () {
-  	  this.id = 0;
-      this.prompt = '';
-      this.shortPrompt = '';
-      this.correct_answer = null;
-      this.answer = '';
-      this.correct_units = null;
-      this.units = '';
-      this.answerIsCorrect = false;
-      this.unitsIsCorrect = false;
-      this.start_time = null;
-      this.end_time = null;
-      this.score = 0;
-      this.options = null;
-      this.points_earned = -1;
-      this.feedback = null;
-      this.isSubQuestion = false;
-      this.commonPrompt = '';
-  };
-
-  activity.Assessment = function (activityLog) {
-    this.activityLog = activityLog;
-    this.questions = [];
-    this.forms = [];
-    this.userQuestions = [];
-  };
-
-  activity.Assessment.prototype =
-  {
-    createQuestion: function(jsonQuestion, id){
-      function html_entity_decode(str) {
-        return $("<div>").html(str).text();
-      }
-
-      var question = new activity.Question();
-      question.id = id;
-      question.prompt = jsonQuestion.prompt;
-      question.shortPrompt = (jsonQuestion.shortPrompt || jsonQuestion.prompt);
-      question.commonPrompt = jsonQuestion.commonPrompt;
-      question.isSubQuestion= jsonQuestion.isSubQuestion;
-      if (jsonQuestion.correct_answer != null) {
-        question.correct_answer = "" + jsonQuestion.correct_answer;
-      }
-
-      question.correct_units = jsonQuestion.correct_units;
-      if (!!question.correct_units){
-        question.correct_units = question.correct_units.replace("ohms",html_entity_decode("&#x2126;"));
-      }
-      if (!!jsonQuestion.options) {
-      	question.options = jsonQuestion.options;
-      }
-
-      question.score = (jsonQuestion.score | 0);
-
-      return question;
-    },
-
-    addQuestion: function(jsonQuestion,id) {
-    	var question = this.createQuestion(jsonQuestion,id);
-      this.questions.push(question);
-    },
-
-    serializeQuestions: function(jqForms) {
-      var self = this;
-      var form = $(this);
-      form.questions = [];
-      self.forms.push(form);
-
-      var id = 0;
-      $.each(this.questions, function(i, question) {
-     	if(!question.options){
-     		question.answer = $("#"+id + "_input").val();
-     	} else if(question.options) {
-     		console.log('else if options');
-     		question.answer = $("#"+id + "_options").val();
-     	}
-     	if(question.correct_units){
-     		question.units = $("#"+id + "_units").val();
-     	}
-     	id++;
-
-     	form.questions.push(question);
-        self.userQuestions.push(question);
-      });
-    },
-
-    scoreAnswers: function() {
-      var self = this;
-      $.each(this.questions, function(i, question) {
-        if (!!self.userQuestions[i]){
-          var userQuestion = self.userQuestions[i];
-
-          if(!question.options){
-          	question.answer = parseFloat(question.answer);
-
-          	console.log('question '+ i + ', question.answer, ' +question.answer +' question.correct_answer '+question.correct_answer);
-
-          	var dif = self._sigFigs(question.answer,3) - self._sigFigs(question.correct_answer,3);
-            if(dif <= 15 && dif >= -15){
-          	  question.answerIsCorrect = true;
-          	}
-          } else if(!!question.options) {
-            if (!!question.options[0].option){
-              var optionChosen;
-              var maxPoints = 0;
-              question.feedback = "";
-              $.each(question.options, function(i, option){
-                if (option.option == question.answer){
-                  optionChosen = option;
-                }
-                var points = option.points;
-                if (points > maxPoints){
-                  maxPoints = points;
-                  question.score = points;
-                  question.correct_answer = option.option;
-                }
-              });
-              question.points_earned = optionChosen.points;
-              question.feedback = optionChosen.feedback;
-            }
-          	if(question.answer == question.correct_answer){
-          		question.answerIsCorrect = true;
-          	}
-
-          }
-
-          if (!!question.correct_units){
-            if (question.units == question.correct_units){
-              question.unitsIsCorrect = true;
-            }
-          } else {
-            question.unitsIsCorrect = true;
-          }
-        }
-      });
-    },
-
-    generateReport: function() {
-      var $tbl = $('<table>').attr('id', 'basicTable');
-
-      $tbl.append(
-        $('<tr>').append(
-          $('<th>').text("Question"),
-          $('<th>').text("Your answer"),
-          $('<th>').text("Correct answer"),
-          $('<th>').text("Score"),
-          $('<th>').text("Notes")
-        )
-      );
-
-      var totalScore = 0;
-      var totalPossibleScore = 0;
-
-      $.each(this.questions, function(i, question){
-        var answer = !!question.answer ? question.answer + (!!question.units ? " "+question.units : '') : '';
-        var correctAnswer = question.correct_answer + (!!question.correct_units ? " "+question.correct_units : '');
-        var score;
-        if (question.points_earned > -1){
-          score = question.points_earned;
-        } else {
-          score = question.answerIsCorrect && question.unitsIsCorrect ? question.score : 0;
-        }
-        totalScore += score;
-        totalPossibleScore += question.score;
-        var feedback = "";
-
-
-        if(!question.feedback){
-        	if (answer === '') {
-
-        	} else if (!question.answerIsCorrect){
-        	  feedback += "The value was wrong";
-        	  if (!question.unitsIsCorrect){
-        	    feedback += " and the units were wrong";
-        	  }
-        	} else if (!question.unitsIsCorrect){
-        	  feedback += "The units were wrong";
-        	}
-        } else {
-          feedback = question.feedback;
-        }
-
-
-        $tbl.append(
-          $('<tr>').append(
-            $('<td>').text(question.shortPrompt),
-            $('<td>').html(answer),
-            $('<td>').html(correctAnswer),
-            $('<td>').text(score +"/" + question.score),
-            $('<td>').text(feedback)
-          )
-        );
-      });
-
-      $tbl.append(
-        $('<tr>').append(
-          $('<th>').text("Total Score:"),
-          $('<th>').text(""),
-          $('<th>').text(""),
-          $('<th>').text(totalScore + "/" + totalPossibleScore),
-          $('<th>').text("")
-        )
-      );
-
-      return $tbl;
-    },
-
-    _round: function(num, dec) {
-    	var result = Math.round( Math.round( num * Math.pow( 10, dec + 1 ) ) / Math.pow( 10, 1 ) ) / Math.pow(10,dec);
-    	return result;
-    },
-
-    _sigFigs: function(n, sig) {
-        var mult = Math.pow(10,
-            sig - Math.floor(Math.log(n) / Math.LN10) - 1);
-        return Math.round(n * mult) / mult;
-    },
-
-    readingHintPath: sparks.config.root_dir + '/common/resources/hint1_colorcode.html',
-    measuringHintPath: sparks.config.root_dir + '/common/resources/hint1_dmm.html'
-
-  };
 })();
 /**
  * apMessageBox - apMessageBox is a JavaScript object designed to create quick,
@@ -7358,237 +6490,38 @@ var apMessageBox = apMessageBox || {};
 
 })();
 
-/* FILE activity.js */
+/* FILE init.js */
+
+/*globals console sparks $ document window onDocumentReady*/
 
 (function () {
 
-    var sm = sparks.activities.sm;
-    var flash = sparks.flash;
-    var str = sparks.string;
-    var util = sparks.util;
+  sparks.config.flash_id = 'breadboardActivity1';
+  sparks.activity_base_url = "http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/";
+  sparks.activity_images_base_url = "http://couchdb.cosmos.concord.org/sparks/";
+  sparks.tutorial_base_url = "http://sparks.portal.concord.org/sparks-content/tutorials/";
 
-    sparks.activity_base_url = "http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/";
-    sparks.activity_images_base_url = "http://couchdb.cosmos.concord.org/sparks/";
-    sparks.tutorial_base_url = "http://sparks.portal.concord.org/sparks-content/tutorials/";
+  $(document).ready(function () {
+      onDocumentReady();
+  });
 
-    sparks.config.flash_id = 'breadboardActivity1';
+  this.onDocumentReady = function () {
+    var activityName = window.location.hash;
+    activityName = activityName.substring(1,activityName.length);
+    if (!activityName){
+      activityName = "series-interpretive";
+    }
 
-    sparks.config.debug = jQuery.url.param("debug") !== undefined;
-
-    sm.Activity = function () {
-        sm.Activity.uber.init.apply(this);
-
-        sparks.flash.activity = this;
-    };
-
-    sparks.config.Activity = sparks.activities.sm.Activity;
-
-    sparks.extend(sm.Activity, sparks.Activity, {
-
-      setDataService: function (ds) {
-          this.dataService = ds;
-      },
-
-        onDocumentReady: function () {
-          console.log("document ready")
-            var self = this;
-
-            var jsonSectionName = window.location.hash;
-            jsonSectionName = jsonSectionName.substring(1,jsonSectionName.length);
-            if (!jsonSectionName){
-              jsonSectionName = "series-interpretive";
-            }
-            if (jsonSectionName.indexOf("report") == 0){
-              studentName = jsonSectionName.split("/")[1];
-              sparks.sparksReportController.showReport(studentName);
-              return;
-            }
-            if (jsonSectionName.indexOf("local") == 0){
-              sparks.activity_base_url = "/activities/module-2/activities/";
-              jsonSectionName = jsonSectionName.split("/")[1] + ".js";
-            }
-
-            if (sparks.debug && !!sparks.jsonSection){
-              self.sectionLoaded();
-            } else {
-              console.log("loading script for "+jsonSectionName);
-              var self = this;
-              $.getScript(sparks.activity_base_url+jsonSectionName, function() {
-                if (!sparks.jsonSection){
-                  console.log("Activity failed to load from "+sparks.activity_base_url+jsonSectionName);
-                  return;
-                }
-                sparks.jsonSection.section_url = sparks.activity_base_url+jsonSectionName
-                sparks.jsonSection.images_url = sparks.activity_images_base_url+jsonSectionName
-                self.sectionLoaded();
-              });
-            }
-        },
-
-        sectionLoaded: function() {
-          console.log("ENTER: sectionLoaded")
-          if (!!sparks.jsonSection.circuit && !sparks.jsonSection.hide_circuit && !sparks.debug){
-            this.loadFlash();
-          } else {
-            this.onActivityReady();
-          }
-        },
-
-        loadFlash: function () {
-          $('#breadboard').css("z-index", 0);
-          $('#breadboard').flash({
-              src: 'breadboardActivity1.swf',
-              id: 'breadboardActivity1',
-              name: 'breadboardActivity1',
-              width: 900,
-              height: 600,
-              quality: 'high',
-              allowFullScreen: false,
-              allowScriptAccess: 'sameDomain',
-              wmode: 'transparent'
-          });
-        },
-
-        onActivityReady: function () {
-          console.log("section ready")
-          $('#title').text(sparks.jsonSection.title);
-
-          var ac = new sparks.ActivityConstructor(sparks.jsonSection);
-
-          ac.layoutActivity();
-
-          if (!!sparks.jsonSection.circuit && !sparks.jsonSection.hide_circuit){
-            this.multimeter = new sparks.circuit.Multimeter2();
-
-            if (sparks.jsonSection.show_multimeter === "true"){
-              sparks.flash.sendCommand('set_multimeter_visibility','true');
-              sparks.flash.sendCommand('set_probe_visibility','true');
-
-              if(sparks.jsonSection.disable_multimeter_position){
-                this.multimeter.set_disable_multimeter_position(sparks.jsonSection.disable_multimeter_position);
-              }
-            }
-          }
-
-          $('#popup').hide();
-
-          this.root_dir = sparks.config.root_dir + '/activities/module-2';
-          $('body').scrollTop(0); //scroll to top
-
-          this.forms = $('form');
-          this.questionsArea = $('#questions_area');
-          this.reportArea = $('#report_area').hide();
-
-          var self = this;
-
-          if (!sparks.jsonSection.hide_circuit){
-            breadModel('updateFlash');
-          }
-        },
-
-        onFlashReady: function () {
-        },
-
-        receiveEvent: function (name, value, time) {
-            console.log('ENTER sm.Activity#receiveEvent');
-            console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
-
-            var v;
-            var t = '';
-            var args = value.split('|');
-
-            if (name === 'connect') {
-                if (args[0] === 'probe') {
-                    if (args[1] === 'probe_red') {
-                        this.multimeter.redProbeConnection = args[2];
-                    }
-                    else if (args[1] === 'probe_black') {
-                        this.multimeter.blackProbeConnection = args[2];
-                    }
-                    else {
-                        alert('Activity#receiveEvent: connect: unknonw probe name ' + args[1]);
-                    }
-                }
-                if (args[0] === 'component') {
-                    if (!!args[2]){
-                      breadModel('unmapHole', args[2]);
-                    }
-                    sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
-                      "type": "connect lead",
-                      "location": args[2]});
-                }
-                this.multimeter.update();
-            } else if (name === 'disconnect') {
-                if (args[0] === 'probe') {
-                    if (args[1] === 'probe_red') {
-                        this.multimeter.redProbeConnection = null;
-                    }
-                    else if (args[1] === 'probe_black') {
-                        this.multimeter.blackProbeConnection = null;
-                    }
-                    else {
-                        alert('Activity#receiveEvent: disconnect: Unknonw probe name ' + args[1]);
-                    }
-                } else if (args[0] === 'component') {
-                  var hole = args[2];
-                  var newHole = breadModel('getGhostHole', hole+"ghost");
-
-                  breadModel('mapHole', hole, newHole.nodeName());
-                  sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
-                    "type": "disconnect lead",
-                    "location": hole});
-                }
-                this.multimeter.update();
-            } else if (name === 'probe') {
-                $('#popup').dialog();
-
-                v = breadModel('query', 'voltage', 'a23,a17');
-                t += v.toFixed(3);
-                v = breadModel('query', 'voltage', 'b17,b11');
-                t += ' ' + v.toFixed(3);
-                v = breadModel('query', 'voltage', 'c11,c5');
-                t += ' ' + v.toFixed(3);
-                $('#dbg_voltage').text(t);
-
-                breadModel('move', 'wire1', 'left_positive1,a22');
-
-                v = breadModel('query', 'resistance', 'a23,a17');
-                t = v.toFixed(3);
-                v = breadModel('query', 'resistance', 'b17,b11');
-                t += ' ' + v.toFixed(3);
-                v = breadModel('query', 'resistance', 'c11,c5');
-                t += ' ' + v.toFixed(3);
-
-                $('#dbg_resistance').text(t);
-
-                v = breadModel('query', 'current', 'a22,a23');
-                t = v.toFixed(3);
-
-                breadModel('move', 'wire1', 'left_positive1,a23');
-                breadModel('move', 'resistor1', 'a23,a16');
-                v = breadModel('query', 'current', 'a16,b17');
-                t += ' ' + v.toFixed(3);
-
-                breadModel('move', 'resistor1', 'a23,a17');
-                breadModel('move', 'resistor2', 'b17,b10');
-                v = breadModel('query', 'current', 'b10,c11');
-                t += ' ' + v.toFixed(3);
-
-                breadModel('move', 'resistor2', 'b17,b11');
-
-                $('#dbg_current').text(t);
-
-                $('#popup').dialog('close');
-            } else if (name == 'multimeter_dial') {
-                console.log('changed multimeter dial'+value);
-                this.multimeter.dialPosition = value;
-                this.multimeter.update();
-            } else if (name == 'multimeter_power') {
-                this.multimeter.powerOn = value == 'true' ? true : false;
-                this.multimeter.update();
-            }
-        }
-
+    console.log("Loading "+activityName);
+    sparks.couchDS.loadActivity(activityName, function(activity) {
+      console.log(activity);
+      var ac = new sparks.ActivityConstructor(activity);
     });
 
+    this.initActivity = function () {
+        sparks.flash.init();
+    };
+
+  };
 })();
+

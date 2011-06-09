@@ -15,13 +15,13 @@ sparks.jsonSection = {
        {
            "type": "resistor",
            "UID": "r1",
-           "connections": "b30,b24",
+           "connections": "b30,b20",
            "label": "R1"
        },
        {
            "type": "resistor",
            "UID": "r2",
-           "connections": "c24,c18",
+           "connections": "c24,e18",
            "label": "R2"
        },
        {
@@ -39,7 +39,7 @@ sparks.jsonSection = {
        {
            "type": "resistor",
            "UID": "r5",
-           "connections": "f18,f12",
+           "connections": "a16,f12",
            "label": "R5"
        },
        {

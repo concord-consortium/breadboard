@@ -17,8 +17,7 @@ describe 'Activity Interactions'
   
    it 'should be able to click submit and get to the next question'
    
-     sparks.debug = true;
-     sparks.jsonSection = {
+     jsonSection = {
        "title": "woo",
        "pages": [
           {
@@ -45,9 +44,8 @@ describe 'Activity Interactions'
      $(document.body).append($breadboardDiv);
      $(document.body).append($questionsDiv);
      
-     stub(sparks.util, 'readCookie').and_return(null);
-     
-     init();
+     var ac = new sparks.ActivityConstructor(jsonSection);
+     sparks.sparksActivity.view.layoutCurrentSection();
      
      $forms = $questionsDiv.find('form');
      $forms.length.should.be 3
@@ -77,8 +75,7 @@ describe 'Activity Interactions'
     
     it 'should show the page report after clicking the last submit'
     
-      sparks.debug = true;
-      sparks.jsonSection = {
+      jsonSection = {
        "title": "woo",
        "pages": [
           {
@@ -101,9 +98,8 @@ describe 'Activity Interactions'
      $(document.body).append($breadboardDiv);
      $(document.body).append($questionsDiv);
 
-     stub(sparks.util, 'readCookie').and_return(null);
-
-     init();
+     var ac = new sparks.ActivityConstructor(jsonSection);
+     sparks.sparksActivity.view.layoutCurrentSection();
      
      $questionsDiv.find('.inner-questions').should.be_visible
      $questionsDiv.find('.report').length.should.be 0
@@ -124,8 +120,7 @@ describe 'Activity Interactions'
   
     it 'should allow user to repeat a page'
     
-      sparks.debug = true;
-      sparks.jsonSection = {
+      jsonSection = {
        "title": "woo",
        "pages": [
           {
@@ -164,9 +159,8 @@ describe 'Activity Interactions'
      $(document.body).append($breadboardDiv);
      $(document.body).append($questionsDiv);
 
-     stub(sparks.util, 'readCookie').and_return(null);
-
-     init();
+     var ac = new sparks.ActivityConstructor(jsonSection);
+     sparks.sparksActivity.view.layoutCurrentSection();
      
      $questionsDiv.find('.inner-questions').should.be_visible
      $questionsDiv.find('.report').length.should.be 0
@@ -194,8 +188,7 @@ describe 'Activity Interactions'
     
     it 'should clear question answers when a page is repeated'
     
-      sparks.debug = true;
-      sparks.jsonSection = {
+      jsonSection = {
        "title": "woo",
        "pages": [
           {
@@ -218,9 +211,8 @@ describe 'Activity Interactions'
      $(document.body).append($breadboardDiv);
      $(document.body).append($questionsDiv);
 
-     stub(sparks.util, 'readCookie').and_return(null);
-
-     init();
+     var ac = new sparks.ActivityConstructor(jsonSection);
+     sparks.sparksActivity.view.layoutCurrentSection();
      
      $questionsDiv.find('input').val("test");
      
@@ -240,8 +232,7 @@ describe 'Activity Interactions'
     
     it 'should reset circuit when a page is repeated'
     
-      sparks.debug = true;
-      sparks.jsonSection = {
+      jsonSection = {
        "title": "woo",
        "circuit": [
           {
@@ -276,9 +267,8 @@ describe 'Activity Interactions'
      $(document.body).append($breadboardDiv);
      $(document.body).append($questionsDiv);
 
-     stub(sparks.util, 'readCookie').and_return(null);
-
-     init();
+     var ac = new sparks.ActivityConstructor(jsonSection);
+     sparks.sparksActivity.view.layoutCurrentSection();
      
      var components = getBreadBoard().components;
      console.log("components.r1 = "+components.r1);
