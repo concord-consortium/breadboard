@@ -125,6 +125,13 @@
       this.$reportDiv = $('<div>').addClass('report').css('float', 'left').css('padding-top', '15px').css('padding-left', '40px');
       this.$reportDiv.append($report);
       
+      this.$view.append(this.$reportDiv); 
+      
+      if (sparks.sparksReportController.getTotalScoreForPage(sparks.sparksSectionController.currentPage) < 0) {
+        this.$reportDiv.append($("<div>").html("Thank you. Now you can return to the portal to continue.").css('width', 700).css('padding-top', "20px"));
+        return;
+      }
+      
       // this should be handled by reports classes...
       var allCorrect = true;
       var notCorrectTables = $report.find('.notAllCorrect');
@@ -187,9 +194,7 @@
         $buttonDiv.append($nextActivityButton);
       }
       
-      this.$reportDiv.append($buttonDiv);
-      
-      this.$view.append(this.$reportDiv);            
+      this.$reportDiv.append($buttonDiv);      
     },
     
     submitButtonClicked: function (event) {

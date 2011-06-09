@@ -13,7 +13,9 @@
       
       var page = sparks.sparksSectionController.currentPage;
       var totalScore = sparks.sparksReportController.getTotalScoreForPage(page);
-      $div.append($('<h2>').html("Your total score for this page so far: "+totalScore));
+      if (totalScore > -1){
+        $div.append($('<h2>').html("Your total score for this page so far: "+totalScore));
+      }
       return $div;
     },
     
@@ -120,6 +122,7 @@
     },
     
     _createReportTableForCategories: function() {
+      
       var categories = sparks.sparksReportController.getCategories(sparks.sparksReport);
       
       var $table = $("<table>");
@@ -157,6 +160,19 @@
       );
         
       $.each(sessionReport.questions, function(i, question){
+        console.log(question)
+        if (!!question.not_scored) {
+          $report.append(
+            $('<tr>').append(
+              $('<td>').html(question.shortPrompt),
+              $('<td>').html(question.answer)
+            )
+          );
+          $report.find('th').filter(':contains("Correct answer")').hide();
+          $report.find('th').filter(':contains("Score")').hide();
+          $report.find('th').filter(':contains("Notes")').hide();
+          return;
+        }
         var answer = !!question.answer ? question.answer + (!!question.units ? " "+question.units : '') : '';
         var correctAnswer = question.correct_answer + (!!question.correct_units ? " "+question.correct_units : '');
         var score = question.points_earned;
@@ -219,15 +235,17 @@
         );
       }
       
-      $report.append(
-        $('<tr>').append(
-          $('<th>').text("Total Score:"),
-          $('<th>').text(""),
-          $('<th>').text(""),
-          $('<th>').text(sessionReport.score + "/" + sessionReport.maxScore),
-          $('<th>').text("")
-        )
-      );
+      if (sessionReport.score > -1){
+        $report.append(
+          $('<tr>').append(
+            $('<th>').text("Total Score:"),
+            $('<th>').text(""),
+            $('<th>').text(""),
+            $('<th>').text(sessionReport.score + "/" + sessionReport.maxScore),
+            $('<th>').text("")
+          )
+        );
+      }
       
       return $report;
     }

@@ -36,6 +36,8 @@
     
     this.category = "";
     
+    this.not_scored = false;
+    
     this.view = null;
   };
   
@@ -53,6 +55,7 @@
       json.feedback = this.feedback;
       json.tutorial = this.tutorial;
       json.category = this.category;
+      json.not_scored = this.not_scored;
       return json;
     }
   };

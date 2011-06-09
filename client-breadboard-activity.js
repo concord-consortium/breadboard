@@ -2643,6 +2643,8 @@ sparks.util.getKeys = function (json) {
 
     this.category = "";
 
+    this.not_scored = false;
+
     this.view = null;
   };
 
@@ -2660,6 +2662,7 @@ sparks.util.getKeys = function (json) {
       json.feedback = this.feedback;
       json.tutorial = this.tutorial;
       json.category = this.category;
+      json.not_scored = this.not_scored;
       return json;
     }
   };
@@ -3069,6 +3072,13 @@ sparks.util.getKeys = function (json) {
       this.$reportDiv = $('<div>').addClass('report').css('float', 'left').css('padding-top', '15px').css('padding-left', '40px');
       this.$reportDiv.append($report);
 
+      this.$view.append(this.$reportDiv);
+
+      if (sparks.sparksReportController.getTotalScoreForPage(sparks.sparksSectionController.currentPage) < 0) {
+        this.$reportDiv.append($("<div>").html("Thank you. Now you can return to the portal to continue.").css('width', 700).css('padding-top', "20px"));
+        return;
+      }
+
       var allCorrect = true;
       var notCorrectTables = $report.find('.notAllCorrect');
       if (notCorrectTables.length > 0 || $report.hasClass('notAllCorrect')){
@@ -3131,8 +3141,6 @@ sparks.util.getKeys = function (json) {
       }
 
       this.$reportDiv.append($buttonDiv);
-
-      this.$view.append(this.$reportDiv);
     },
 
     submitButtonClicked: function (event) {
@@ -3272,7 +3280,9 @@ sparks.util.getKeys = function (json) {
 
       var page = sparks.sparksSectionController.currentPage;
       var totalScore = sparks.sparksReportController.getTotalScoreForPage(page);
-      $div.append($('<h2>').html("Your total score for this page so far: "+totalScore));
+      if (totalScore > -1){
+        $div.append($('<h2>').html("Your total score for this page so far: "+totalScore));
+      }
       return $div;
     },
 
@@ -3351,6 +3361,7 @@ sparks.util.getKeys = function (json) {
     },
 
     _createReportTableForCategories: function() {
+
       var categories = sparks.sparksReportController.getCategories(sparks.sparksReport);
 
       var $table = $("<table>");
@@ -3388,6 +3399,19 @@ sparks.util.getKeys = function (json) {
       );
 
       $.each(sessionReport.questions, function(i, question){
+        console.log(question)
+        if (!!question.not_scored) {
+          $report.append(
+            $('<tr>').append(
+              $('<td>').html(question.shortPrompt),
+              $('<td>').html(question.answer)
+            )
+          );
+          $report.find('th').filter(':contains("Correct answer")').hide();
+          $report.find('th').filter(':contains("Score")').hide();
+          $report.find('th').filter(':contains("Notes")').hide();
+          return;
+        }
         var answer = !!question.answer ? question.answer + (!!question.units ? " "+question.units : '') : '';
         var correctAnswer = question.correct_answer + (!!question.correct_units ? " "+question.correct_units : '');
         var score = question.points_earned;
@@ -3450,15 +3474,17 @@ sparks.util.getKeys = function (json) {
         );
       }
 
-      $report.append(
-        $('<tr>').append(
-          $('<th>').text("Total Score:"),
-          $('<th>').text(""),
-          $('<th>').text(""),
-          $('<th>').text(sessionReport.score + "/" + sessionReport.maxScore),
-          $('<th>').text("")
-        )
-      );
+      if (sessionReport.score > -1){
+        $report.append(
+          $('<tr>').append(
+            $('<th>').text("Total Score:"),
+            $('<th>').text(""),
+            $('<th>').text(""),
+            $('<th>').text(sessionReport.score + "/" + sessionReport.maxScore),
+            $('<th>').text("")
+          )
+        );
+      }
 
       return $report;
     }
@@ -3562,9 +3588,8 @@ sparks.util.getKeys = function (json) {
           } else if (jsonQuestion.checkbox){
             question.checkbox = true;
           }
-          if (jsonQuestion.keepOrder){
-            question.keepOrder = true;
-          }
+          question.keepOrder = !!jsonQuestion.keepOrder;
+          question.not_scored = !!jsonQuestion.not_scored;
         }
 
         question.points = (!!jsonQuestion.points ?  jsonQuestion.points : 1);
@@ -3594,6 +3619,9 @@ sparks.util.getKeys = function (json) {
     },
 
     gradeQuestion: function(question) {
+      if (!!question.not_scored){
+        return;
+      }
       if (!!question.scoring){
         this.runQuestionScript(question.scoring, question);
       } else if (!question.options || !question.options[0].option) {

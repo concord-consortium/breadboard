@@ -97,9 +97,8 @@
           } else if (jsonQuestion.checkbox){
             question.checkbox = true;
           }
-          if (jsonQuestion.keepOrder){
-            question.keepOrder = true;
-          }
+          question.keepOrder = !!jsonQuestion.keepOrder;
+          question.not_scored = !!jsonQuestion.not_scored;
         }
         
         question.points = (!!jsonQuestion.points ?  jsonQuestion.points : 1);
@@ -130,6 +129,9 @@
     },
     
     gradeQuestion: function(question) {
+      if (!!question.not_scored){
+        return;
+      }
       if (!!question.scoring){
         this.runQuestionScript(question.scoring, question);
       } else if (!question.options || !question.options[0].option) {
