@@ -43,6 +43,7 @@
           _data.save_time = new Date().valueOf();
           
           if (!!this.saveDocUID){
+            console.log("saving with known id "+this.saveDocUID)
             _data._id = this.saveDocUID;
           }
           if (!!this.saveDocRevision){
@@ -86,8 +87,9 @@
                 console.log("success loading");
                 console.log(response);
                 if (response.rows.length > 0){
-                  self.docUID = response.rows[response.rows.length-1].value.id;
-                  self.revision = response.rows[response.rows.length-1].value.rev;
+                  sparks.couchDS.saveDocUID = response.rows[response.rows.length-1].value._id;
+                  sparks.couchDS.saveDocRevision = response.rows[response.rows.length-1].value._rev;
+                  console.log("setting id to "+sparks.couchDS.saveDocUID)
                   callback(response);
                 }
             }}
