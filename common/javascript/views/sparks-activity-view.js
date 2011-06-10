@@ -36,6 +36,10 @@
         }
         this.loadFlash();
         breadModel('updateFlash');
+        if (section.show_multimeter){
+          sparks.flash.sendCommand('set_multimeter_visibility','true');
+          sparks.flash.sendCommand('set_probe_visibility','true');
+        }
       }
 
       this.layoutPage();

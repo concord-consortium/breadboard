@@ -2868,6 +2868,10 @@ sparks.util.getKeys = function (json) {
         }
         this.loadFlash();
         breadModel('updateFlash');
+        if (section.show_multimeter){
+          sparks.flash.sendCommand('set_multimeter_visibility','true');
+          sparks.flash.sendCommand('set_probe_visibility','true');
+        }
       }
 
       this.layoutPage();
@@ -3886,13 +3890,8 @@ sparks.util.getKeys = function (json) {
         breadModel("createCircuit", section.circuit);
 
         this.multimeter = new sparks.circuit.Multimeter2();
-        if (section.show_multimeter){
-          sparks.flash.sendCommand('set_multimeter_visibility','true');
-          sparks.flash.sendCommand('set_probe_visibility','true');
-
-          if(section.disable_multimeter_position){
-            this.multimeter.set_disable_multimeter_position(section.disable_multimeter_position);
-          }
+        if(section.disable_multimeter_position){
+          this.multimeter.set_disable_multimeter_position(section.disable_multimeter_position);
         }
       }
 
@@ -4502,6 +4501,7 @@ sparks.util.getKeys = function (json) {
       var matches = formula.match(varPattern);
       if(!!matches){
        $.each(matches, function(i, match){
+        console.log("WARN: It is not necessary to use the notation '"+match+"', you can simply use "+match.substring(2,match.length-1))
         var variable = match.substring(2,match.length-1).split('.');
         var component = variable[0];
         var property = variable[1];

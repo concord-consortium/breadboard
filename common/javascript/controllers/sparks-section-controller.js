@@ -65,13 +65,8 @@
         breadModel("createCircuit", section.circuit);
         
         this.multimeter = new sparks.circuit.Multimeter2();
-        if (section.show_multimeter){
-          sparks.flash.sendCommand('set_multimeter_visibility','true');
-          sparks.flash.sendCommand('set_probe_visibility','true');
-        
-          if(section.disable_multimeter_position){
-            this.multimeter.set_disable_multimeter_position(section.disable_multimeter_position);
-          }
+        if(section.disable_multimeter_position){
+          this.multimeter.set_disable_multimeter_position(section.disable_multimeter_position);
         }
       }
       
