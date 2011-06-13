@@ -3396,19 +3396,24 @@ sparks.util.getKeys = function (json) {
 
       var categories = sparks.sparksReportController.getCategories(sparks.sparksReport);
 
-      var $table = $("<table>");
+      var $table = $("<table>").addClass('categoryReport');
       $table.append(
         $('<tr>').append(
           $('<th>').text("Question Categories"),
-          $('<th>').text("% Answered Correctly")
+          $('<th>').text("% Correct")
         )
       );
 
       $.each(categories, function(category, score){
+        var perc = sparks.math.roundToSigDigits((score[0]/score[1])*100, 3);
+        var graphImgUrl = "http://chart.apis.google.com/chart?chbh=20&chs=180x33&cht=bhs&chco=05B405,DDF1D1&chds=-5,100&chd=t:";
+        graphImgUrl = graphImgUrl + perc + "|" + (100-perc);
+        $graph = $('<img>').attr('src', graphImgUrl).attr('width', 180).attr('height', 33);
         $table.append(
           $('<tr>').append(
             $('<td>').html(category),
-            $('<td>').html("<b>"+sparks.math.roundToSigDigits((score[0]/score[1])*100, 2)+"%</b> ("+score[0]+"/"+score[1]+")")
+            $('<td>').html(sparks.math.roundToSigDigits((score[0]/score[1])*100, 2)+"% ("+score[0]+"/"+score[1]+")"),
+            $('<td>').append($graph)
           )
         );
       });

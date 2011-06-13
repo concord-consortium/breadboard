@@ -63,6 +63,16 @@ table.finalReport td {
   padding-top: 3px;
   line-height: 1.3;
 }
+table.categoryReport th {
+  border-width: 0px;
+  font-size: 1.1em;
+  color: #ee864e;
+}
+table.categoryReport td {
+  border-width: 0px;
+  font-size: 1em;
+  line-height: 1.3;
+}
 table.finalReport td button {
   font-size: 0.9em;
 }
