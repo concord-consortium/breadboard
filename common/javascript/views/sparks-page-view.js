@@ -24,7 +24,14 @@
 
       this.$questionDiv = $('<div>').addClass('inner-questions').css('float', 'left').css('padding', '10px');
       this.$view.append(this.$questionDiv);
-
+      
+      if (!!page.notes){
+        this.$notesDiv = $('<span>').addClass('notes').css('float','right');
+        this.$notesDiv.html(page.notes);
+        this.$questionDiv.append(this.$notesDiv);
+      }
+      
+      
       $.each(page.questions, function(i, question){
         
         question.answer = '';
@@ -70,12 +77,6 @@
         
         self.questionViews[question.id] = $form;
       });
-
-      if (!!page.notes){
-        this.$notesDiv = $('<span>').addClass('notes').css('float','right');
-        this.$notesDiv.html(page.notes);
-        this.$questionDiv.append(this.$notesDiv);
-      }
       
       this.enableQuestion(page.currentQuestion);
 
