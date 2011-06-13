@@ -26,59 +26,96 @@
       var totalScore = 0;
       var self = this;
       var currentSection = sparks.sparksActivityController.currentSection;
+      
+      var $table = $("<table>").addClass('finalReport');
+      
+      $table.append(
+        $('<tr>').append(
+          $('<th>'),
+          $('<th>').text("Level"),
+          $('<th>').text("Points"),
+          $('<th>')
+        )
+      );
+      
+      var passedCurrentSection = false;
+      var nextSection = false;
       $.each(sparks.sparksActivity.sections, function(i, section){
+        var isThisSection = (section === currentSection);
+        if (!passedCurrentSection) {
+          var totalSectionScore = 0;
+          $.each(section.pages, function(i, page){
+            var score = sparks.sparksReportController.getTotalScoreForPage(page, section);
+            totalSectionScore += score;
+            totalScore += score;
+          });
+        }
+        var $btn = null;
+        if (isThisSection){
+          $btn = $('<button>').addClass("repeat").text("Try this level again");
+          $btn.click(function(){
+            sparks.sparksSectionController.repeatSection();
+          });
+        } else if (nextSection){
+          $btn = $('<button>').addClass("next").text("Go to the next level");
+          $btn.click(function(){
+            sparks.sparksActivityController.nextSection();
+          });
+        }
+        $table.append(
+          $('<tr>').append(
+            $('<td>').addClass(passedCurrentSection ? "no_check" : "check"),
+            $('<td>').text(section.title),
+            $('<td>').text(passedCurrentSection ? '' : totalSectionScore),
+            $('<td>').append($btn)
+          )
+        );
         
-        $div.append('<h2>Section '+(i+1)+': '+section.title+'</h2>');
-        var pages = section.pages;
-        
-        var $table = $("<table>");
-        $.each(pages, function(i, page){
-          // $div.append('<h3>Page '+(i+1)+"</h3>");
-          // var bestSessionReport = sparks.sparksReportController.getBestSessionReport(page);
-          // $div.append(self._createReportTableForSession(bestSessionReport));
-          var score = sparks.sparksReportController.getTotalScoreForPage(page, section);
-          
-          var $tr = $("<tr>");
-          $tr.append("<td>Page "+(i+1)+": "+ score   +" points</td>");
-          if (section === currentSection){
-            var $td = $("<td>").css("border","0");
-            var returnButton = $("<button>").addClass("return").text("Try Page "+(i+1)+" again");
-            $td.append(returnButton);
-            $tr.append($td);
-            returnButton.click(function(){
-              sparks.sparksSectionController.repeatPage(page, section);
-              });
-
-          }
-          $table.append($tr);
-          
-          totalScore += score;
-          
-        });
-        $div.append($table);
+        if (nextSection){
+          nextSection = false;
+        }
+        if (isThisSection){
+          nextSection = true;
+          passedCurrentSection = true;
+        }
       });
-      // 
-      // 
-      // 
-      // var section = sparks.sparksActivityController.currentSection;
-      // var pages = section.pages;
-      // var self = this;
-      // 
-      // var totalScore = 0;
-      // var totalMaxScore = 0;
-      // $.each(pages, function(i, page){
-      //   // $div.append('<h3>Page '+(i+1)+"</h3>");
-      //   // var bestSessionReport = sparks.sparksReportController.getBestSessionReport(page);
-      //   // $div.append(self._createReportTableForSession(bestSessionReport));
-      //   var score = sparks.sparksReportController.getTotalScoreForPage(page);
-      //   $div.append("Page "+(i+1)+": "+ score   +" points");
-      //   var returnButton = $("<button>").addClass("return").text("Try Page "+(i+1)+" again");
-      //   returnButton.click(function(){
-      //     sparks.sparksSectionController.repeatPage(page);
-      //     });
-      //   $div.append(returnButton);
-      //   totalScore += score;
-      // });
+      
+      $div.append($table);
+           //  
+           // 
+           // $.each(sparks.sparksActivity.sections, function(i, section){
+           //   
+           //   $div.append('<h2>Section '+(i+1)+': '+section.title+'</h2>');
+           //   var pages = section.pages;
+           //   
+           //   var $table = $("<table>");
+           //   $.each(pages, function(i, page){
+           //     // $div.append('<h3>Page '+(i+1)+"</h3>");
+           //     // var bestSessionReport = sparks.sparksReportController.getBestSessionReport(page);
+           //     // $div.append(self._createReportTableForSession(bestSessionReport));
+           //     var score = sparks.sparksReportController.getTotalScoreForPage(page, section);
+           //     
+           //     var $tr = $("<tr>");
+           //     $tr.append("<td>Page "+(i+1)+": "+ score   +" points</td>");
+           //     if (section === currentSection){
+           //       var $td = $("<td>").css("border","0");
+           //       var returnButton = $("<button>").addClass("return").text("Try Page "+(i+1)+" again");
+           //       $td.append(returnButton);
+           //       $tr.append($td);
+           //       returnButton.click(function(){
+           //         sparks.sparksSectionController.repeatPage(page, section);
+           //         });
+           // 
+           //     }
+           //     $table.append($tr);
+           //     
+           //     totalScore += score;
+           //     
+           //   });
+           //   $div.append($table);
+           // });
+           // 
+      
       var $score = $("<span>").css("font-size", "11pt").html("<u>You have scored <b>"+totalScore+"</b> points so far.</u>");
       $div.find('h1').after($score);
       
@@ -160,7 +197,6 @@
       );
         
       $.each(sessionReport.questions, function(i, question){
-        console.log(question)
         if (!!question.not_scored) {
           $report.append(
             $('<tr>').append(

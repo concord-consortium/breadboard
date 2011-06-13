@@ -146,6 +146,10 @@
       // }
     },
     
+    repeatSection: function() {
+      this.repeatPage(sparks.sparksActivityController.currentSection.pages[0]);
+    },
+    
     viewSectionReport: function() {
       sparks.sparksReportController.saveData();
       

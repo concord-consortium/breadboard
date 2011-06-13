@@ -149,7 +149,7 @@
                               (areMorePage ? ", or move on to the next page." : ", or click the Summary button to see your total score.") :
                               "You can repeat any page by clicking the <b>Try again</b> button under the table.");
       } else {
-        comment = "You can repeat any page by clicking the <b>Try again</b> button next to the page.";
+        comment = "You can repeat your last level by clicking the <b>Try again</b> button above.";
         if (sparks.sparksActivityController.areMoreSections()){
           comment += "<p></p>When you are ready to score more points, move on to the next section!";
         }
@@ -184,7 +184,7 @@
           $buttonDiv.append($repeatButton, $viewSectionReportButton);
         }
       } else if (sparks.sparksActivityController.areMoreSections()){
-        var $nextActivityButton = $("<button>").text("Go on to the next section").css('padding-left', "10px")
+        var $nextActivityButton = $("<button>").text("Go on to the next level").css('padding-left', "10px")
                             .css('padding-right', "10px");
                                               
         $nextActivityButton.click(function(evt){

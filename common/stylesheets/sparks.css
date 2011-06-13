@@ -52,6 +52,20 @@ td {
   padding-top: 2px;
   padding-bottom: 2px;
 }
+table.finalReport th {
+  border-width: 0px;
+  font-size: 1.833em;
+  color: #ee864e;
+}
+table.finalReport td {
+  border-width: 0px;
+  font-size: 1.14em;
+  padding-top: 3px;
+  line-height: 1.3;
+}
+table.finalReport td button {
+  font-size: 0.9em;
+}
 .row_a {
   background: #f0f0d0;
 }
@@ -75,6 +89,22 @@ td {
   font-weight: bold;
   content: "Notes:";
   display: block;
+}
+
+.check {
+  background: url("../../common/icons/check.png") no-repeat left top;
+  width: 43px;
+  height: 43px;
+  position: relative;
+  float: left;
+}
+
+.no_check {
+  background: url("../../common/icons/no-check.png") no-repeat;
+  background-position: 0px 8px;
+  width: 43px;
+  height: 43px;
+  position: relative;
 }
 
 #questions_area, .report_area {
