@@ -39,10 +39,18 @@
       );
       
       var passedCurrentSection = false;
-      var nextSection = false;
+      var isNextSection = false;
+      var nextSectionDidPass = false;
       $.each(sparks.sparksActivity.sections, function(i, section){
         var isThisSection = (section === currentSection);
-        if (!passedCurrentSection) {
+        if (!nextSectionDidPass && !section.visited){
+          isNextSection = true;
+          nextSectionDidPass = true;
+        } else {
+          isNextSection = false;
+        }
+        
+        if (section.visited) {
           var totalSectionScore = 0;
           $.each(section.pages, function(i, page){
             var score = sparks.sparksReportController.getTotalScoreForPage(page, section);
@@ -51,12 +59,12 @@
           });
         }
         var $btn = null;
-        if (isThisSection){
+        if (section.visited){
           $btn = $('<button>').addClass("repeat").text("Try this level again");
           $btn.click(function(){
-            sparks.sparksSectionController.repeatSection();
+            sparks.sparksSectionController.repeatSection(section);
           });
-        } else if (nextSection){
+        } else if (isNextSection){
           $btn = $('<button>').addClass("next").text("Go to the next level");
           $btn.click(function(){
             sparks.sparksActivityController.nextSection();
@@ -64,20 +72,12 @@
         }
         $table.append(
           $('<tr>').append(
-            $('<td>').addClass(passedCurrentSection ? "no_check" : "check"),
+            $('<td>').addClass(section.visited ? "check" : "no_check"),
             $('<td>').text(section.title),
-            $('<td>').text(passedCurrentSection ? '' : totalSectionScore),
+            $('<td>').text(section.visited ? totalSectionScore : ''),
             $('<td>').append($btn)
           )
         );
-        
-        if (nextSection){
-          nextSection = false;
-        }
-        if (isThisSection){
-          nextSection = true;
-          passedCurrentSection = true;
-        }
       });
       
       $div.append($table);

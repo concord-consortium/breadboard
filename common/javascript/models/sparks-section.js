@@ -17,6 +17,8 @@
     this.section_url = "";
     this.images_url = "";
     
+    this.visited = false;
+    
     this.nextSection = null;
     
     this.view = null;

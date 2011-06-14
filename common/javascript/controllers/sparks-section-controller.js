@@ -59,6 +59,8 @@
     
     loadCurrentSection: function() {
       var section = sparks.sparksActivityController.currentSection;
+      section.visited = true;
+      
       breadModel("clear");
       
       if (!!section.circuit){
@@ -146,7 +148,10 @@
       // }
     },
     
-    repeatSection: function() {
+    repeatSection: function(section) {
+      if (!!section){
+        sparks.sparksActivityController.currentSection = section;
+      }
       this.repeatPage(sparks.sparksActivityController.currentSection.pages[0]);
     },
     
