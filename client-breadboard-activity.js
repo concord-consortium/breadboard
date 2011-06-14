@@ -3782,8 +3782,8 @@ sparks.util.getKeys = function (json) {
 
     showReport: function(page){
       sparks.sparksLogController.endSession();
-      sparks.sparksReportController.saveData();
       var sessionReport = sparks.sparksReportController.addNewSessionReport(page);
+      sparks.sparksReportController.saveData();
       var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
       page.view.showReport($report);
     }
