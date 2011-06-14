@@ -217,6 +217,9 @@
             $.each(jsonSessionReport, function(key, val){
               sessionReport[key] = val;
             });
+            if (sessionReport.timeTake > 0){
+              section.visited = true;
+            }
             pageReport.sessionReports.push(sessionReport);
           });
         });
