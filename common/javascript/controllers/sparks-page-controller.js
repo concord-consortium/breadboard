@@ -66,6 +66,7 @@
     
     showReport: function(page){
       sparks.sparksLogController.endSession();
+      sparks.sparksReportController.saveData();
       var sessionReport = sparks.sparksReportController.addNewSessionReport(page);
       var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
       page.view.showReport($report);

@@ -41,6 +41,12 @@
       //     index = i;
       //   }
       // });
+      
+      // if we're just making a one-section activity
+      if (!sparks.sparksActivity.id){
+        sparks.sparksActivity.id = jsonSection._id;
+      }
+      
       var section = sparks.sparksSectionController.createSection(jsonSection);
       // this.currentSection = section;
         

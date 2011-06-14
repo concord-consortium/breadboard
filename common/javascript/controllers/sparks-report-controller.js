@@ -186,7 +186,7 @@
 
     saveData: function() {
       if (!!sparks.sparksActivity.id && !!sparks.couchDS.user){
-        
+        console.log("Saving data");
         var score = 0;
         var self = this;
         $.each(sparks.sparksActivity.sections, function(i, section){

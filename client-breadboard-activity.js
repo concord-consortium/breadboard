@@ -3782,6 +3782,7 @@ sparks.util.getKeys = function (json) {
 
     showReport: function(page){
       sparks.sparksLogController.endSession();
+      sparks.sparksReportController.saveData();
       var sessionReport = sparks.sparksReportController.addNewSessionReport(page);
       var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
       page.view.showReport($report);
@@ -4046,6 +4047,11 @@ sparks.util.getKeys = function (json) {
     },
 
     addSection: function (jsonSection, index) {
+
+      if (!sparks.sparksActivity.id){
+        sparks.sparksActivity.id = jsonSection._id;
+      }
+
       var section = sparks.sparksSectionController.createSection(jsonSection);
 
       if (index !== undefined){
@@ -4284,7 +4290,7 @@ sparks.util.getKeys = function (json) {
 
     saveData: function() {
       if (!!sparks.sparksActivity.id && !!sparks.couchDS.user){
-
+        console.log("Saving data");
         var score = 0;
         var self = this;
         $.each(sparks.sparksActivity.sections, function(i, section){
