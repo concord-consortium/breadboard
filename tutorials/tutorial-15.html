@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+<head>
+<title>SPARKS: Calculating V in Series Circuits</title> 
+</head> 
+<body>
+<font face = "verdana, arial, sans-serif"> 
+<img src="sparks_tut_logo.jpg"/> 
+<h3>Calculating Voltage in Series Circuits</h3> 
+<table border=0 cellspacing=0 cellpadding="10px" align=right style:"flow:right">
+ <tr>
+  <td>
+  <p align=center style='text-align:center'><img src="series-schematic-RTOT.gif" width="400" height="133"></p>
+  <p align=center style='text-align:center'><font size="-1"><i><b>Figure 1.</b> Resistors in series.</i></font></p>
+  </td>
+ </tr>
+</table>
+
+<p>When resistors are connected in series, the current through each resistor is the same. This is clear because all the current entering the first resistor in the series must exit from the last. However, Ohm’s Law tells us that the <b>voltage across each resistor</b> will depend on that current value <b><i>I</i></b> and each <b><i>R</i></b>-value.</p>
+
+<p style='margin-left:36.0pt'><img src="Eqn15-1t.gif" width="412" height="40"></p>
+
+<p>Ohm's Law gives the circuit current as</p>
+
+<p style='margin-left:36.0pt'><img src="Eqn15-2t.gif" width="107" height="73"></p>
+
+<p>where the total series resistances is:</p>
+
+<p style='margin-left:36.0pt'><img src="Eqn15-3t.gif" width="278" height="36"></p>
+
+<h3>An Example</h3>
+
+<p>Suppose the circuit in Figure 1 above has <i>R<sub>1</sub>&nbsp;</i>=&nbsp;750&nbsp;&#0937;, <i>R<sub>2</sub></i>&nbsp;=&nbsp;1.33&nbsp;k&#0937;, and <i>R<sub>3</sub></i>&nbsp;=&nbsp;562&nbsp;&#0937;, with <i>E</i>&nbsp;=&nbsp;9&nbsp;V. Then </p>
+
+<p style='margin-left:36.0pt'><img src="Eqn15-4t.gif" width="475" height="37"></p>
+
+<p>and so</p>
+
+<p style='margin-left:36.0pt'><img src="Eqn15-5t.gif" width="289" height="66"></p>
+
+<p>Thus, you can calculate the voltage drop across each
+resistor.</p>
+
+<p style='margin-left:36.0pt'><img src="Eqn15-6t.gif" width="509" height="37"></p>
+
+<p>And similarly for <i>V<sub>2</sub></i> and <i>V<sub>3</sub></i>.</p>
+
+<p><b>Note:</b> It is important to carefully handle units with metric prefixes. Above, we adjusted the decimal point and units so that the formula for current yielded volts/ohms = amperes, and similarly, the formula for voltage yielded amperes &#215; ohms = volts. With <b><i>careful attention</i></b> to the prefixes and decimal points, some folks can use shortcuts like volts/kilohms = milliamperes, milliamperes &#215; kilohms = volts, and so forth.</p>
+
+<h3>Voltage Dividers</h3>
+
+<p>By combining the results of the above calculations of current and voltage we obtain:</p>
+
+<p style='margin-left:36.0pt'><img src="Eqn15-7t.gif" width="623" height="85"></p>
+
+<p>The voltage drop across each series resistor is equal to a simple fraction of the supplied voltage. Thus series circuits are sometimes considered &quot;voltage dividers&quot; since the supply voltage is divided among the series resistances.</p>
+
+</font> 
+</body>
+</html> 
