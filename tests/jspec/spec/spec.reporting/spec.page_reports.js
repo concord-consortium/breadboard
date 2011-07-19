@@ -943,25 +943,25 @@ describe 'Page Reports'
       var $score = $report.find('h1').next();        // this finds the <b>olded score
       $score.html().should.be "<u>You have scored <b>4</b> points so far.</u>"
       
-      // confirm there are two titles 
-      var $titles = $report.find('h2');
-      $titles.length.should.be 1
-      $titles[0].innerHTML.should.be "Section 1: Section title"
+      // // confirm there are two titles 
+      // var $titles = $report.find('h2');
+      // $titles.length.should.be 1
+      // $titles[0].innerHTML.should.be "Section 1: Section title"
       
       // confirm there is two table with two pages
       var $tables = $report.find('table');
       $tables.length.should.be 2
       
-      var $table1 = $($tables[0]);
-      var $trs = $table1.find('tr');
-      
-      $($trs[0]).find('td')[0].innerHTML.should.be "Page 1: 3 points"
-      $($trs[1]).find('td')[0].innerHTML.should.be "Page 2: 1 points"
+      // var $table1 = $($tables[0]);
+      // var $trs = $table1.find('tr');
+      // 
+      // $($trs[0]).find('td')[0].innerHTML.should.be "Page 1: 3 points"
+      // $($trs[1]).find('td')[0].innerHTML.should.be "Page 2: 1 points"
       
       // confirm there are two buttons to go back to previous activities
       var $buttons = $report.find('button');
-      $buttons.length.should.be 2
-      $buttons[0].innerHTML.should.be "Try Page 1 again"
+      $buttons.length.should.be 1
+      $buttons[0].innerHTML.should.be "Try this level again"
     end
     
   end
