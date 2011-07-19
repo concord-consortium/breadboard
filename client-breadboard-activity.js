@@ -3921,6 +3921,7 @@ sparks.util.getKeys = function (json) {
     loadCurrentSection: function() {
       var section = sparks.sparksActivityController.currentSection;
       section.visited = true;
+      sparks.vars = {};          // used for storing authored script variables
 
       breadModel("clear");
 
@@ -3954,8 +3955,6 @@ sparks.util.getKeys = function (json) {
         }
         this.currentPage = section.pages[this.currentPageIndex];
       }
-
-      sparks.vars = {};          // used for storing authored script variables
 
       sparks.sparksLogController.startNewSession();
       sparks.sparksReportController.startNewSection(section);
