@@ -1,5 +1,4 @@
-//= require <string>
-//= require "setup-common"
+//= require <helpers/string>
 
 /*globals console sparks */
 

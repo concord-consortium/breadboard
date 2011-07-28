@@ -1,4 +1,4 @@
-//= require <util>
+//= require <helpers/util>
 //= require "../setup-common"
 
 /* FILE feedback.js */

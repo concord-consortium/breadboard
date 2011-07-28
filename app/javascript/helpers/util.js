@@ -1,5 +1,3 @@
-//= require "setup-common"
-
 /* FILE util.js */
 
 sparks.util.readCookie = function (name) {

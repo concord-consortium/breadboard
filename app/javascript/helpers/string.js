@@ -1,5 +1,3 @@
-//= require "setup-common"
-
 /* FILE string.js */
 
 (function () {

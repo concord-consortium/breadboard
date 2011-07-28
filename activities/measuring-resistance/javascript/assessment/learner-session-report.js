@@ -2,7 +2,7 @@
 //= require <jquery/jquery-ui-1.8.custom.min>
 //= require <jquery/plugins/jquery.cookie>
 //= require <data-service/RestDS-jQuery>
-//= require <util>
+//= require <helpers/util>
 //= require "grader"
 //= require "reporter"
 

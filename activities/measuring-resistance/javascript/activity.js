@@ -1,6 +1,12 @@
-//= require <activity>
-//= require <string>
-//= require <ui>
+//= require <setup-common>
+//= require "setup-common"
+//= require "activity2"
+//= require <jquery/jquery-1.4.2.min>
+//= require <jquery/jquery-ui-1.8.custom.min>
+//= require <jquery/plugins/jquery.url.packed>
+//= require <jquery/plugins/jquery.cookie>
+//= require <helpers/string>
+//= require <helpers/ui>
 //= require <circuit/multimeter>
 //= require <circuit/component>
 //= require <circuit/resistor-4band>

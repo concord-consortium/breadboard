@@ -1,6 +1,6 @@
-//= require <math>
-//= require <string>
-//= require <unit>
+//= require <helpers/math>
+//= require <helpers/string>
+//= require <helpers/unit>
 //= require "../setup-common"
 //= require "feedback"
 //= require "log-parser"

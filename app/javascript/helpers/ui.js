@@ -1,5 +1,3 @@
-//= require "setup-common"
-
 /* FILE ui.js */
 
 (function () {

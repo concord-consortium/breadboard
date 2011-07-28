@@ -7,9 +7,8 @@
 //= require <jquery/plugins/jquery.flash>
 //= require <jquery/plugins/jquery.couch>
 //= require <data-source/couch-ds>
-//= require <flash_comm>
-//= require <util>
-//= require <unit>
+//= require <helpers/util>
+//= require <helpers/unit>
 //= require <models/sparks-activity>
 //= require <models/sparks-section>
 //= require <models/sparks-page>
@@ -28,17 +27,17 @@
 //= require <controllers/sparks-activity-controller>
 //= require <controllers/sparks-report-controller>
 //= require <activity-constructor>
-//= require <math-parser>
-//= require <string>
-//= require <ui>
-//= require <flash_comm>
+//= require <helpers/math-parser>
+//= require <helpers/string>
+//= require <helpers/ui>
+//= require <helpers/flash_comm>
 //= require <circuit/breadboard>
 //= require <circuit/multimeter2>
 //= require <circuit/resistor-4band>
 //= require <circuit/resistor-5band>
 //= require <circuit/circuit-math>
 //= require <apMessageBox>
-//= require <math>
+//= require <helpers/math>
 
 /* FILE init.js */
 

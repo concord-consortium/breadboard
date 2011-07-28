@@ -1,5 +1,3 @@
-//= require "setup-common"
-
 /* FILE flash_comm.js */
 
 /*globals console sparks $ document window alert navigator*/
