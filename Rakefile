@@ -6,7 +6,7 @@ task :default => [:"combine:all"]
 
 namespace :combine do
 
-  @load_path = [ 'lib', 'common/javascript' ]
+  @load_path = [ 'lib', 'app/javascript' ]
     
   desc "Do all combine tasks"
   task :all => [
@@ -37,7 +37,7 @@ namespace :combine do
     desc "Concatenate all JavaScript for breadboard activity (client)"
     task :breadboard_activity do
       sprocket([
-          'common/javascript/init.js'
+          'app/javascript/init.js'
         ],
         'client-breadboard-activity.js')
     end

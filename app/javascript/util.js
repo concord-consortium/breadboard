@@ -202,3 +202,75 @@ sparks.util.getKeys = function (json) {
   })
   return keys;
 };
+
+////// data work
+
+sparks.data;
+
+sparks.getDataArray = function(){
+  sparks.data = [];
+  $.couch.urlPrefix = "/couchdb/learnerdata";
+  $.couch.db('').view(
+    "session_scores/Scores%20per%20activity", 
+    {
+      success: function(response) { 
+        $.each(response.rows, function(i, obj) {
+            // if (sparks.util.contains(obj.key, activityName)) {
+              sparks.data.push(obj);
+            // }
+          }
+        );
+        console.log("done");
+      }
+    }
+  );
+  
+};
+
+sparks.createPointsCSV = function(data) {
+  var csv = "";
+  csv += "Activity|Student|Level|Page|Try|Score\n"
+  $.each(sparks.data, function(i, obj){ 
+    var sections = obj.value.sectionReports;
+    $.each(sections, function(j, sec){
+      $.each(sec.pageReports, function(k, page){
+        $.each(page.sessionReports, function(l, sess){
+          csv += obj.key[1] + "|";
+          csv += obj.key[0] + "|";
+          csv += (j+1) + ": " + sec.sectionTitle + "|";
+          csv += (k+1) + "|";
+          csv += (l+1) + "|";
+          csv += sess.score + "\n";
+        });
+      });
+    });
+  });
+  return csv;
+};
+
+sparks.createQuestionsCSV = function(data) {
+  var csv = "";
+  csv += "Activity|Student|Level|Page|Try|Question|Answer|Correct Answer|Feedback|Score\n"
+  $.each(sparks.data, function(i, obj){ 
+    var sections = obj.value.sectionReports;
+    $.each(sections, function(j, sec){
+      $.each(sec.pageReports, function(k, page){
+        $.each(page.sessionReports, function(l, sess){
+          $.each(sess.questions, function(m, ques){
+            csv += obj.key[1] + "|";
+            csv += obj.key[0] + "|";
+            csv += (j+1) + ": " + sec.sectionTitle + "|";
+            csv += (k+1) + "|";
+            csv += (l+1) + "|";
+            csv += (m+1) + ": " + ques.shortPrompt + "|";
+            csv += ques.answer + "|";
+            csv += ques.correct_answer + "|";
+            csv += ques.feedback + "|";
+            csv += ques.points_earned + "\n";
+          });
+        });
+      });
+    });
+  });
+  return csv;
+};
