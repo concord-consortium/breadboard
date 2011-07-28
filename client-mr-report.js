@@ -721,6 +721,530 @@ jQuery.cookie = function(name, value, options) {
         }
     };
 })();
+/* FILE util.js */
+
+sparks.util.readCookie = function (name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) === 0) {
+            return c.substring(nameEQ.length,c.length);
+        }
+    }
+    return null;
+};
+
+/**
+ * Naive deep-cloning of an object.
+ * Doesn't check against infinite recursion.
+ */
+sparks.util.cloneSimpleObject = function (obj) {
+    var ret, key;
+    if (obj instanceof Array) {
+        ret = [];
+        for (key in obj) {
+            ret.push(sparks.util.cloneSimpleObject(obj[key]));
+        }
+        return ret;
+    }
+    else if (typeof obj === 'object') {
+        ret = {};
+        for (key in obj) {
+            ret[key] = sparks.util.cloneSimpleObject(obj[key]);
+        }
+        return ret;
+    }
+    else {
+        return obj;
+    }
+};
+
+/*
+sparks.util.checkFlashVersion = function () {
+    var major = 10;
+    var minor = 0;
+    var revision = 31;
+
+    if (!DetectFlashVer(10, 0, 33)) {
+        var msg = 'This activity requires Flash version ';
+        msg += major + '.' + minor + '.' + revision + '. ';
+
+        $('body').html('<p>' + msg + '</p>');
+    }
+    document.write('<p>Flash version: ' + GetSwfVer() + '</p>');
+};
+*/
+
+sparks.util.Alternator = function (x, y)
+{
+    this.x = x;
+    this.y = y;
+    this.cnt = 0;
+};
+sparks.util.Alternator.prototype =
+{
+    next : function () {
+        ++this.cnt;
+        return this.cnt % 2 == 1 ? this.x : this.y;
+    }
+};
+
+sparks.util.timeLapseStr = function (start, end) {
+    var seconds = Math.floor((end - start) / 1000);
+    var minutes = Math.floor(seconds / 60);
+    seconds = seconds % 60;
+    var str = seconds + (seconds == 1 ? ' second' : ' seconds');
+    if (minutes > 0) {
+        str = minutes + (minutes == 1 ? ' minute ' : ' minutes ') + str;
+    }
+    return str;
+};
+
+/**
+The initial version of this was copied from the serializeArray method of jQuery
+this version returns a result object and uses the names of the input elements
+as the actual keys in the result object.  This requires more careful naming but it
+makes using the returned object easier.  It could be improved to handle dates and
+numbers perhaps using style classes to tag them as such.
+*/
+sparks.util.serializeForm = function (form) {
+    var result = {};
+    form.map(function () {
+        return this.elements ? jQuery.makeArray(this.elements) : this;
+    }).filter(function () {
+        return this.name &&
+        (this.checked || (/select|textarea/i).test(this.nodeName) ||
+        (/text|hidden|password|search/i).test(this.type));
+    }).each(function (i) {
+        var val = jQuery(this).val();
+        if(val === null){
+            return;
+        }
+
+        if (jQuery.isArray(val)) {
+            result[this.name] = jQuery.makeArray(val);
+        }
+        else {
+            result[this.name] = val;
+        }
+    });
+    return result;
+};
+
+sparks.util.formatDate = function (date) {
+    function fillZero(val) {
+        return val < 10 ? '0' + val : String(val);
+    }
+    if (typeof date === 'number') {
+        date = new Date(date);
+    }
+    var s = fillZero(date.getMonth() + 1) + '/';
+
+    s += fillZero(date.getDate()) + '/';
+    s += String(date.getFullYear()) + ' ';
+    s += fillZero(date.getHours()) + ':';
+    s += fillZero(date.getMinutes()) + ':';
+    s += fillZero(date.getSeconds()) + ' ';
+    return s;
+};
+
+sparks.util.prettyPrint = function (obj, indent) {
+    var t = '';
+    if (typeof obj === 'object') {
+        for (var key in obj) {
+            if (typeof obj[key] !== 'function') {
+                for (var i = 0; i < indent; ++i) {
+                    t += ' ';
+                }
+                t += key + ': ';
+                if (typeof obj[key] === 'object') {
+                    t += '\n';
+                }
+                t += sparks.util.prettyPrint(obj[key], indent + 4);
+            }
+        }
+        return t;
+    }
+    else {
+        return obj + '\n';
+    }
+};
+
+sparks.util.getRubric = function (id, callback, local) {
+    var self = this;
+    var url;
+
+    if (local) {
+        url = 'rubric.json';
+    }
+    else {
+        url = unescape(sparks.util.readCookie('rubric_path') + '/' + id + '.json');
+    }
+    console.log('url=' + url);
+    $.ajax({
+        url: url,
+        dataType: 'json',
+        success: function (rubric) {
+            callback(rubric);
+        },
+        error: function (request, status, error) {
+            console.log('Activity#getRubric ERROR:\nstatus: ' + status + '\nerror: ' + error + '\nurl=' + url);
+        }
+    });
+};
+
+sparks.util.shuffle = function (o) {
+  for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+  return o;
+};
+
+sparks.util.contains = function (array, obj) {
+  for (i in array){
+    if (array[i] == obj){
+      return true;
+    }
+  }
+  return false;
+};
+
+sparks.util.getKeys = function (json) {
+  var keys = [];
+  $.each(json, function(key){
+    keys.push(key);
+  })
+  return keys;
+};
+
+
+sparks.data;
+
+sparks.getDataArray = function(){
+  sparks.data = [];
+  $.couch.urlPrefix = "/couchdb/learnerdata";
+  $.couch.db('').view(
+    "session_scores/Scores%20per%20activity",
+    {
+      success: function(response) {
+        $.each(response.rows, function(i, obj) {
+              sparks.data.push(obj);
+          }
+        );
+        console.log("done");
+      }
+    }
+  );
+
+};
+
+sparks.createPointsCSV = function(data) {
+  var csv = "";
+  csv += "Activity|Student|Level|Page|Try|Score\n"
+  $.each(sparks.data, function(i, obj){
+    var sections = obj.value.sectionReports;
+    $.each(sections, function(j, sec){
+      $.each(sec.pageReports, function(k, page){
+        $.each(page.sessionReports, function(l, sess){
+          csv += obj.key[1] + "|";
+          csv += obj.key[0] + "|";
+          csv += (j+1) + ": " + sec.sectionTitle + "|";
+          csv += (k+1) + "|";
+          csv += (l+1) + "|";
+          csv += sess.score + "\n";
+        });
+      });
+    });
+  });
+  return csv;
+};
+
+sparks.createQuestionsCSV = function(data) {
+  var csv = "";
+  csv += "Activity|Student|Level|Page|Try|Question|Answer|Correct Answer|Feedback|Score\n"
+  $.each(sparks.data, function(i, obj){
+    var sections = obj.value.sectionReports;
+    $.each(sections, function(j, sec){
+      $.each(sec.pageReports, function(k, page){
+        $.each(page.sessionReports, function(l, sess){
+          $.each(sess.questions, function(m, ques){
+            csv += obj.key[1] + "|";
+            csv += obj.key[0] + "|";
+            csv += (j+1) + ": " + sec.sectionTitle + "|";
+            csv += (k+1) + "|";
+            csv += (l+1) + "|";
+            csv += (m+1) + ": " + ques.shortPrompt + "|";
+            csv += ques.answer + "|";
+            csv += ques.correct_answer + "|";
+            csv += ques.feedback + "|";
+            csv += ques.points_earned + "\n";
+          });
+        });
+      });
+    });
+  });
+  return csv;
+};
+/* FILE string.js */
+
+(function () {
+
+    this.sparks.string = {};
+
+    var str = sparks.string;
+
+    str.strip = function (s) {
+        s = s.replace(/\s*([^\s]*)\s*/, '$1');
+        return s;
+    };
+
+    str.stripZerosAndDots = function (s) {
+        s = s.replace('.', '');
+        s = s.replace(/0*([^0].*)/, '$1');
+        s = s.replace(/(.*[^0])0*/, '$1');
+        return s;
+    };
+
+    str.stripZeros = function (s) {
+        s = s.replace(/0*([^0].*)/, '$1');
+        s = s.replace(/(.*[^0])0*/, '$1');
+        return s;
+    };
+
+
+})();
+
+/*globals console sparks */
+
+/* FILE math.js */
+
+(function () {
+    this.sparks.math = {};
+
+    var math = sparks.math;
+
+    math.equalExceptPowerOfTen = function(x, y) {
+        var sx = sparks.string.stripZerosAndDots(x.toString());
+        var sy = sparks.string.stripZerosAndDots(y.toString());
+
+        return sx === sy;
+    };
+
+     math.leftMostPos = function (x) {
+         x = Number(x);
+         if (isNaN(x) || x < 0) {
+             console.log('ERROR: math.leftMostPos: Invalid input ' + x);
+             return 0;
+         }
+         if (x === 0) {
+             return 0;
+         }
+         var n = 0;
+         var y = x;
+         if (x < 1) {
+             while (y < 1) {
+                 y *= 10;
+                 n -= 1;
+             }
+         }
+         else {
+             while (y >= 10) {
+                 y /= 10;
+                 n += 1;
+             }
+         }
+         return n;
+     };
+
+     math.roundToSigDigits = function(x, n) {
+         var k = Math.pow(10, n - math.leftMostPos(x) - 1);
+         return Math.round(x * k) / k;
+     };
+
+     math.getRoundedSigDigits = function (x, n) {
+         return Math.round(x * Math.pow(10, n - math.leftMostPos(x) - 1));
+     };
+
+
+
+     Math.log10 = function(x){
+       return Math.log(x)/Math.LN10;
+     };
+
+     Math.powNdigits = function(x,n){
+       return Math.pow(10,Math.floor(Math.log(x)/Math.LN10-n+1));
+     };
+
+     Math.toSigFigs = function(num, sigFigs) {
+       num = num.toPrecision(sigFigs);
+       return sigFigs > Math.log(num) * Math.LOG10E ? num : ""+parseFloat(num);
+     };
+
+})();
+/* FILE unit.js */
+
+(function () {
+
+    this.sparks.unit = {};
+
+    var u = sparks.unit;
+
+    u.labels = { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' };
+
+    u.toEngineering = function (value, units){
+      value = Number(value);
+
+      if (value >= 1000000){
+        var MUnits = "mega"+units;
+        units = MUnits;
+        value = u.round(value/1000000,2);
+      } else if (value >= 1000){
+        var kUnits = "kilo"+units;
+        units = kUnits;
+        value = u.round(value/1000,2);
+      } else if (value === 0 ) {
+        units = units;
+        value = 0;
+      } else if (value < 0.000001){
+        var nUnits = "nano"+units;
+        units = nUnits;
+        value = u.round(value * 1000000000,2);
+      } else if (value < 0.001){
+        var uUnits = "micro"+units;
+        units = uUnits;
+        value = u.round(value * 1000000,2);
+      } else if (value < 1) {
+        var mUnits = "milli"+units;
+        units = mUnits;
+        value = u.round(value * 1000,2);
+      } else {
+        units = units;
+        value = u.round(value,2);
+      }
+
+      return {"value": value, "units": units};
+    };
+
+    u.round = function(num, dec) {
+    	var result = Math.round( Math.round( num * Math.pow( 10, dec + 2 ) ) / Math.pow( 10, 2 ) ) / Math.pow(10,dec);
+    	return result;
+    };
+
+    u.sigFigs = function(n, sig) {
+        var mult = Math.pow(10,
+            sig - Math.floor(Math.log(n) / Math.LN10) - 1);
+        return Math.round(n * mult) / mult;
+    };
+
+    u.isMeasurement = function(string) {
+      var isMeasurementPattern = /^\s?\d+.?\d*\s?\D+\s?$/
+      var matched = string.match(isMeasurementPattern);
+      return !!matched;
+    };
+
+    /**
+    * assumes this will be in the form ddd uu
+    * i.e. a pure number and a unit, separated by an optional space
+    * '50 ohms' and '50V' are both valid
+    */
+    u.convertMeasurement = function(measurement) {
+      if (!this.isMeasurement(measurement)){
+        return measurement
+      }
+
+      var numPattern = /\d+\.?\d*/g
+      var nmatched = measurement.match(numPattern);
+      if (!nmatched){
+        return measurement;
+      }
+      var value = nmatched[0];
+
+      var unitPattern =  /(?=\d*.?\d*)[^\d\.\s]+/g
+      var umatched = measurement.match(unitPattern);
+      if (!umatched){
+        return measurement;
+      }
+      var unit = umatched[0];
+
+      var eng = u.toEngineering(value, unit)
+      return eng.value + " " + eng.units;
+    };
+
+    u.normalizeToOhms = function (value, unit) {
+        switch (unit) {
+        case u.labels.ohms:
+            return value;
+        case u.labels.kilo_ohms:
+            return value * 1000;
+        case u.labels.mega_ohms:
+            return value * 1e6;
+        }
+        return null;
+    };
+
+    u.ohmCompatible = function (unit) {
+        if (unit == u.labels.ohms || unit == u.labels.kilo_ohms ||
+            unit == u.labels.mega_ohms)
+        {
+            return true;
+        }
+        return false;
+    };
+
+    u.res_str = function (value) {
+        var vstr, unit, val;
+
+        if (typeof value !== 'number' || isNaN(Number(value))) {
+            return 'Invalid Value ' + String(value);
+        }
+
+        if (value < 1000) {
+            val = value;
+            unit = u.labels.ohms;
+        }
+        else if (value < 1e6) {
+            val = value / 1000;
+            unit = u.labels.kilo_ohms;
+        }
+        else {
+            val = value / 1e6;
+            unit = u.labels.mega_ohms;
+        }
+
+        if (val.toFixed) {
+            val = val.toFixed(6);
+        }
+
+        vstr = String(val).replace(/(\.[0-9]*[1-9])0*/, '$1');
+        vstr = vstr.replace(/([0-9])\.0+$/, '$1');
+        return vstr + ' ' + unit;
+    };
+
+    u.res_unit_str = function (value, mult) {
+        var vstr;
+        var unit = u.labels.ohms;
+
+        if (mult === 'k') {
+            vstr = String(value / 1000.0);
+            unit = u.labels.kilo_ohms;
+        }
+        else if (mult === 'M') {
+            vstr = String(value / 1000000.0);
+            unit = u.labels.mega_ohms;
+        }
+        else {
+            vstr = String(value);
+            unit = u.labels.ohms;
+        }
+        return vstr + ' ' + unit;
+    };
+
+    u.pct_str = function (value) {
+        return (value * 100) + ' %';
+    };
+
+
+})();
 /*
     http://www.JSON.org/json2.js
     2009-09-29
@@ -1184,464 +1708,6 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
       Child.parentConstructor = Parent;
       Child.uber = Parent.prototype;
     };
-
-})();
-
-/* FILE util.js */
-
-sparks.util.readCookie = function (name) {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0;i < ca.length;i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) === 0) {
-            return c.substring(nameEQ.length,c.length);
-        }
-    }
-    return null;
-};
-
-/**
- * Naive deep-cloning of an object.
- * Doesn't check against infinite recursion.
- */
-sparks.util.cloneSimpleObject = function (obj) {
-    var ret, key;
-    if (obj instanceof Array) {
-        ret = [];
-        for (key in obj) {
-            ret.push(sparks.util.cloneSimpleObject(obj[key]));
-        }
-        return ret;
-    }
-    else if (typeof obj === 'object') {
-        ret = {};
-        for (key in obj) {
-            ret[key] = sparks.util.cloneSimpleObject(obj[key]);
-        }
-        return ret;
-    }
-    else {
-        return obj;
-    }
-};
-
-/*
-sparks.util.checkFlashVersion = function () {
-    var major = 10;
-    var minor = 0;
-    var revision = 31;
-
-    if (!DetectFlashVer(10, 0, 33)) {
-        var msg = 'This activity requires Flash version ';
-        msg += major + '.' + minor + '.' + revision + '. ';
-
-        $('body').html('<p>' + msg + '</p>');
-    }
-    document.write('<p>Flash version: ' + GetSwfVer() + '</p>');
-};
-*/
-
-sparks.util.Alternator = function (x, y)
-{
-    this.x = x;
-    this.y = y;
-    this.cnt = 0;
-};
-sparks.util.Alternator.prototype =
-{
-    next : function () {
-        ++this.cnt;
-        return this.cnt % 2 == 1 ? this.x : this.y;
-    }
-};
-
-sparks.util.timeLapseStr = function (start, end) {
-    var seconds = Math.floor((end - start) / 1000);
-    var minutes = Math.floor(seconds / 60);
-    seconds = seconds % 60;
-    var str = seconds + (seconds == 1 ? ' second' : ' seconds');
-    if (minutes > 0) {
-        str = minutes + (minutes == 1 ? ' minute ' : ' minutes ') + str;
-    }
-    return str;
-};
-
-/**
-The initial version of this was copied from the serializeArray method of jQuery
-this version returns a result object and uses the names of the input elements
-as the actual keys in the result object.  This requires more careful naming but it
-makes using the returned object easier.  It could be improved to handle dates and
-numbers perhaps using style classes to tag them as such.
-*/
-sparks.util.serializeForm = function (form) {
-    var result = {};
-    form.map(function () {
-        return this.elements ? jQuery.makeArray(this.elements) : this;
-    }).filter(function () {
-        return this.name &&
-        (this.checked || (/select|textarea/i).test(this.nodeName) ||
-        (/text|hidden|password|search/i).test(this.type));
-    }).each(function (i) {
-        var val = jQuery(this).val();
-        if(val === null){
-            return;
-        }
-
-        if (jQuery.isArray(val)) {
-            result[this.name] = jQuery.makeArray(val);
-        }
-        else {
-            result[this.name] = val;
-        }
-    });
-    return result;
-};
-
-sparks.util.formatDate = function (date) {
-    function fillZero(val) {
-        return val < 10 ? '0' + val : String(val);
-    }
-    if (typeof date === 'number') {
-        date = new Date(date);
-    }
-    var s = fillZero(date.getMonth() + 1) + '/';
-
-    s += fillZero(date.getDate()) + '/';
-    s += String(date.getFullYear()) + ' ';
-    s += fillZero(date.getHours()) + ':';
-    s += fillZero(date.getMinutes()) + ':';
-    s += fillZero(date.getSeconds()) + ' ';
-    return s;
-};
-
-sparks.util.prettyPrint = function (obj, indent) {
-    var t = '';
-    if (typeof obj === 'object') {
-        for (var key in obj) {
-            if (typeof obj[key] !== 'function') {
-                for (var i = 0; i < indent; ++i) {
-                    t += ' ';
-                }
-                t += key + ': ';
-                if (typeof obj[key] === 'object') {
-                    t += '\n';
-                }
-                t += sparks.util.prettyPrint(obj[key], indent + 4);
-            }
-        }
-        return t;
-    }
-    else {
-        return obj + '\n';
-    }
-};
-
-sparks.util.getRubric = function (id, callback, local) {
-    var self = this;
-    var url;
-
-    if (local) {
-        url = 'rubric.json';
-    }
-    else {
-        url = unescape(sparks.util.readCookie('rubric_path') + '/' + id + '.json');
-    }
-    console.log('url=' + url);
-    $.ajax({
-        url: url,
-        dataType: 'json',
-        success: function (rubric) {
-            callback(rubric);
-        },
-        error: function (request, status, error) {
-            console.log('Activity#getRubric ERROR:\nstatus: ' + status + '\nerror: ' + error + '\nurl=' + url);
-        }
-    });
-};
-
-sparks.util.shuffle = function (o) {
-  for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
-  return o;
-};
-
-sparks.util.contains = function (array, obj) {
-  for (i in array){
-    if (array[i] == obj){
-      return true;
-    }
-  }
-  return false;
-};
-
-sparks.util.getKeys = function (json) {
-  var keys = [];
-  $.each(json, function(key){
-    keys.push(key);
-  })
-  return keys;
-};
-
-/* FILE string.js */
-
-(function () {
-
-    this.sparks.string = {};
-
-    var str = sparks.string;
-
-    str.strip = function (s) {
-        s = s.replace(/\s*([^\s]*)\s*/, '$1');
-        return s;
-    };
-
-    str.stripZerosAndDots = function (s) {
-        s = s.replace('.', '');
-        s = s.replace(/0*([^0].*)/, '$1');
-        s = s.replace(/(.*[^0])0*/, '$1');
-        return s;
-    };
-
-    str.stripZeros = function (s) {
-        s = s.replace(/0*([^0].*)/, '$1');
-        s = s.replace(/(.*[^0])0*/, '$1');
-        return s;
-    };
-
-
-})();
-
-/*globals console sparks */
-
-/* FILE math.js */
-
-(function () {
-    this.sparks.math = {};
-
-    var math = sparks.math;
-
-    math.equalExceptPowerOfTen = function(x, y) {
-        var sx = sparks.string.stripZerosAndDots(x.toString());
-        var sy = sparks.string.stripZerosAndDots(y.toString());
-
-        return sx === sy;
-    };
-
-     math.leftMostPos = function (x) {
-         x = Number(x);
-         if (isNaN(x) || x < 0) {
-             console.log('ERROR: math.leftMostPos: Invalid input ' + x);
-             return 0;
-         }
-         if (x === 0) {
-             return 0;
-         }
-         var n = 0;
-         var y = x;
-         if (x < 1) {
-             while (y < 1) {
-                 y *= 10;
-                 n -= 1;
-             }
-         }
-         else {
-             while (y >= 10) {
-                 y /= 10;
-                 n += 1;
-             }
-         }
-         return n;
-     };
-
-     math.roundToSigDigits = function(x, n) {
-         var k = Math.pow(10, n - math.leftMostPos(x) - 1);
-         return Math.round(x * k) / k;
-     };
-
-     math.getRoundedSigDigits = function (x, n) {
-         return Math.round(x * Math.pow(10, n - math.leftMostPos(x) - 1));
-     };
-
-
-
-     Math.log10 = function(x){
-       return Math.log(x)/Math.LN10;
-     };
-
-     Math.powNdigits = function(x,n){
-       return Math.pow(10,Math.floor(Math.log(x)/Math.LN10-n+1));
-     };
-
-     Math.toSigFigs = function(num, sigFigs) {
-       num = num.toPrecision(sigFigs);
-       return sigFigs > Math.log(num) * Math.LOG10E ? num : ""+parseFloat(num);
-     };
-
-})();
-
-/* FILE unit.js */
-
-(function () {
-
-    this.sparks.unit = {};
-
-    var u = sparks.unit;
-
-    u.labels = { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' };
-
-    u.toEngineering = function (value, units){
-      value = Number(value);
-
-      if (value >= 1000000){
-        var MUnits = "mega"+units;
-        units = MUnits;
-        value = u.round(value/1000000,2);
-      } else if (value >= 1000){
-        var kUnits = "kilo"+units;
-        units = kUnits;
-        value = u.round(value/1000,2);
-      } else if (value === 0 ) {
-        units = units;
-        value = 0;
-      } else if (value < 0.000001){
-        var nUnits = "nano"+units;
-        units = nUnits;
-        value = u.round(value * 1000000000,2);
-      } else if (value < 0.001){
-        var uUnits = "micro"+units;
-        units = uUnits;
-        value = u.round(value * 1000000,2);
-      } else if (value < 1) {
-        var mUnits = "milli"+units;
-        units = mUnits;
-        value = u.round(value * 1000,2);
-      } else {
-        units = units;
-        value = u.round(value,2);
-      }
-
-      return {"value": value, "units": units};
-    };
-
-    u.round = function(num, dec) {
-    	var result = Math.round( Math.round( num * Math.pow( 10, dec + 2 ) ) / Math.pow( 10, 2 ) ) / Math.pow(10,dec);
-    	return result;
-    };
-
-    u.sigFigs = function(n, sig) {
-        var mult = Math.pow(10,
-            sig - Math.floor(Math.log(n) / Math.LN10) - 1);
-        return Math.round(n * mult) / mult;
-    };
-
-    u.isMeasurement = function(string) {
-      var isMeasurementPattern = /^\s?\d+.?\d*\s?\D+\s?$/
-      var matched = string.match(isMeasurementPattern);
-      return !!matched;
-    };
-
-    /**
-    * assumes this will be in the form ddd uu
-    * i.e. a pure number and a unit, separated by an optional space
-    * '50 ohms' and '50V' are both valid
-    */
-    u.convertMeasurement = function(measurement) {
-      if (!this.isMeasurement(measurement)){
-        return measurement
-      }
-
-      var numPattern = /\d+\.?\d*/g
-      var nmatched = measurement.match(numPattern);
-      if (!nmatched){
-        return measurement;
-      }
-      var value = nmatched[0];
-
-      var unitPattern =  /(?=\d*.?\d*)[^\d\.\s]+/g
-      var umatched = measurement.match(unitPattern);
-      if (!umatched){
-        return measurement;
-      }
-      var unit = umatched[0];
-
-      var eng = u.toEngineering(value, unit)
-      return eng.value + " " + eng.units;
-    };
-
-    u.normalizeToOhms = function (value, unit) {
-        switch (unit) {
-        case u.labels.ohms:
-            return value;
-        case u.labels.kilo_ohms:
-            return value * 1000;
-        case u.labels.mega_ohms:
-            return value * 1e6;
-        }
-        return null;
-    };
-
-    u.ohmCompatible = function (unit) {
-        if (unit == u.labels.ohms || unit == u.labels.kilo_ohms ||
-            unit == u.labels.mega_ohms)
-        {
-            return true;
-        }
-        return false;
-    };
-
-    u.res_str = function (value) {
-        var vstr, unit, val;
-
-        if (typeof value !== 'number' || isNaN(Number(value))) {
-            return 'Invalid Value ' + String(value);
-        }
-
-        if (value < 1000) {
-            val = value;
-            unit = u.labels.ohms;
-        }
-        else if (value < 1e6) {
-            val = value / 1000;
-            unit = u.labels.kilo_ohms;
-        }
-        else {
-            val = value / 1e6;
-            unit = u.labels.mega_ohms;
-        }
-
-        if (val.toFixed) {
-            val = val.toFixed(6);
-        }
-
-        vstr = String(val).replace(/(\.[0-9]*[1-9])0*/, '$1');
-        vstr = vstr.replace(/([0-9])\.0+$/, '$1');
-        return vstr + ' ' + unit;
-    };
-
-    u.res_unit_str = function (value, mult) {
-        var vstr;
-        var unit = u.labels.ohms;
-
-        if (mult === 'k') {
-            vstr = String(value / 1000.0);
-            unit = u.labels.kilo_ohms;
-        }
-        else if (mult === 'M') {
-            vstr = String(value / 1000000.0);
-            unit = u.labels.mega_ohms;
-        }
-        else {
-            vstr = String(value);
-            unit = u.labels.ohms;
-        }
-        return vstr + ' ' + unit;
-    };
-
-    u.pct_str = function (value) {
-        return (value * 100) + ' %';
-    };
-
 
 })();
 

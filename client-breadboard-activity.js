@@ -1988,157 +1988,6 @@ if (window.attachEvent) {
 
     sparks.couchDS = new sparks.CouchDS();
 })();
-
-/* FILE flash_comm.js */
-
-/*globals console sparks $ document window alert navigator*/
-
-(function () {
-
-    sparks.flash = {};
-
-    sparks.flash.loaded = false;
-
-    sparks.flash.queuedMessages = [];
-
-    sparks.flash.init = function() {
-      sparks.flash.loaded = true;
-      var length = sparks.flash.queuedMessages.length;
-      for (var i = 0; i < length; i++){
-        sparks.flash.sendCommand.apply(this, sparks.flash.queuedMessages.pop());
-      }
-    };
-
-    sparks.flash.getFlashMovie = function (movieName) {
-      var isIE = navigator.appName.indexOf("Microsoft") != -1;
-      return (isIE) ? window[movieName] : document[movieName];
-    };
-
-    sparks.flash.sendCommand = function () {
-      if (!sparks.flash.loaded){
-        sparks.flash.queuedMessages.push(arguments);
-        return;
-      }
-
-      try {
-        var params = [];
-        for (var i = 0; i < arguments.length; ++i) {
-          params[i] = arguments[i];
-        }
-        var flash = sparks.flash.getFlashMovie(sparks.config.flash_id);
-
-        var retVal = flash.sendMessageToFlash.apply(flash, params).split('|');
-        if (retVal[0] == 'flash_error') {
-          alert('Flash error:\n' + retVal[1]);
-        }
-      }
-      catch (e) {
-        alert('Error sending command to Flash:\n' + e.toString());
-      }
-    };
-
-    this.receiveEvent = function (name, value, time) {
-      console.log('ENTER sm.Activity#receiveEvent');
-      console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
-
-      var v;
-      var t = '';
-      var args = value.split('|');
-
-      if (name === 'connect') {
-          if (args[0] === 'probe') {
-              if (args[1] === 'probe_red') {
-                  sparks.sparksSectionController.multimeter.redProbeConnection = args[2];
-              }
-              else if (args[1] === 'probe_black') {
-                  sparks.sparksSectionController.multimeter.blackProbeConnection = args[2];
-              }
-              else {
-                  alert('Activity#receiveEvent: connect: unknonw probe name ' + args[1]);
-              }
-          }
-          if (args[0] === 'component') {
-              if (!!args[2]){
-                breadModel('unmapHole', args[2]);
-              }
-              sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
-                "type": "connect lead",
-                "location": args[2]});
-          }
-          sparks.sparksSectionController.multimeter.update();
-      } else if (name === 'disconnect') {
-          if (args[0] === 'probe') {
-              if (args[1] === 'probe_red') {
-                  sparks.sparksSectionController.multimeter.redProbeConnection = null;
-              }
-              else if (args[1] === 'probe_black') {
-                  sparks.sparksSectionController.multimeter.blackProbeConnection = null;
-              }
-              else {
-                  alert('Activity#receiveEvent: disconnect: Unknonw probe name ' + args[1]);
-              }
-          } else if (args[0] === 'component') {
-            var hole = args[2];
-            var newHole = breadModel('getGhostHole', hole+"ghost");
-
-            breadModel('mapHole', hole, newHole.nodeName());
-            sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
-              "type": "disconnect lead",
-              "location": hole});
-          }
-          sparks.sparksSectionController.multimeter.update();
-      } else if (name === 'probe') {
-          $('#popup').dialog();
-
-          v = breadModel('query', 'voltage', 'a23,a17');
-          t += v.toFixed(3);
-          v = breadModel('query', 'voltage', 'b17,b11');
-          t += ' ' + v.toFixed(3);
-          v = breadModel('query', 'voltage', 'c11,c5');
-          t += ' ' + v.toFixed(3);
-          $('#dbg_voltage').text(t);
-
-          breadModel('move', 'wire1', 'left_positive1,a22');
-
-          v = breadModel('query', 'resistance', 'a23,a17');
-          t = v.toFixed(3);
-          v = breadModel('query', 'resistance', 'b17,b11');
-          t += ' ' + v.toFixed(3);
-          v = breadModel('query', 'resistance', 'c11,c5');
-          t += ' ' + v.toFixed(3);
-
-          $('#dbg_resistance').text(t);
-
-          v = breadModel('query', 'current', 'a22,a23');
-          t = v.toFixed(3);
-
-          breadModel('move', 'wire1', 'left_positive1,a23');
-          breadModel('move', 'resistor1', 'a23,a16');
-          v = breadModel('query', 'current', 'a16,b17');
-          t += ' ' + v.toFixed(3);
-
-          breadModel('move', 'resistor1', 'a23,a17');
-          breadModel('move', 'resistor2', 'b17,b10');
-          v = breadModel('query', 'current', 'b10,c11');
-          t += ' ' + v.toFixed(3);
-
-          breadModel('move', 'resistor2', 'b17,b11');
-
-          $('#dbg_current').text(t);
-
-          $('#popup').dialog('close');
-      } else if (name == 'multimeter_dial') {
-          console.log('changed multimeter dial'+value);
-          sparks.sparksSectionController.multimeter.dialPosition = value;
-          sparks.sparksSectionController.multimeter.update();
-      } else if (name == 'multimeter_power') {
-          sparks.sparksSectionController.multimeter.powerOn = value == 'true' ? true : false;
-          sparks.sparksSectionController.multimeter.update();
-      }
-  }
-
-})();
-
 /* FILE util.js */
 
 sparks.util.readCookie = function (name) {
@@ -2335,6 +2184,74 @@ sparks.util.getKeys = function (json) {
   return keys;
 };
 
+
+sparks.data;
+
+sparks.getDataArray = function(){
+  sparks.data = [];
+  $.couch.urlPrefix = "/couchdb/learnerdata";
+  $.couch.db('').view(
+    "session_scores/Scores%20per%20activity",
+    {
+      success: function(response) {
+        $.each(response.rows, function(i, obj) {
+              sparks.data.push(obj);
+          }
+        );
+        console.log("done");
+      }
+    }
+  );
+
+};
+
+sparks.createPointsCSV = function(data) {
+  var csv = "";
+  csv += "Activity|Student|Level|Page|Try|Score\n"
+  $.each(sparks.data, function(i, obj){
+    var sections = obj.value.sectionReports;
+    $.each(sections, function(j, sec){
+      $.each(sec.pageReports, function(k, page){
+        $.each(page.sessionReports, function(l, sess){
+          csv += obj.key[1] + "|";
+          csv += obj.key[0] + "|";
+          csv += (j+1) + ": " + sec.sectionTitle + "|";
+          csv += (k+1) + "|";
+          csv += (l+1) + "|";
+          csv += sess.score + "\n";
+        });
+      });
+    });
+  });
+  return csv;
+};
+
+sparks.createQuestionsCSV = function(data) {
+  var csv = "";
+  csv += "Activity|Student|Level|Page|Try|Question|Answer|Correct Answer|Feedback|Score\n"
+  $.each(sparks.data, function(i, obj){
+    var sections = obj.value.sectionReports;
+    $.each(sections, function(j, sec){
+      $.each(sec.pageReports, function(k, page){
+        $.each(page.sessionReports, function(l, sess){
+          $.each(sess.questions, function(m, ques){
+            csv += obj.key[1] + "|";
+            csv += obj.key[0] + "|";
+            csv += (j+1) + ": " + sec.sectionTitle + "|";
+            csv += (k+1) + "|";
+            csv += (l+1) + "|";
+            csv += (m+1) + ": " + ques.shortPrompt + "|";
+            csv += ques.answer + "|";
+            csv += ques.correct_answer + "|";
+            csv += ques.feedback + "|";
+            csv += ques.points_earned + "\n";
+          });
+        });
+      });
+    });
+  });
+  return csv;
+};
 /* FILE unit.js */
 
 (function () {
@@ -2891,7 +2808,7 @@ sparks.util.getKeys = function (json) {
     loadFlash: function () {
        this.divs.$breadboardDiv.css("z-index", 0);
        this.divs.$breadboardDiv.flash({
-           src: 'breadboardActivity1.swf',
+           src: 'activities/module-2/breadboardActivity1.swf',
            id: 'breadboardActivity1',
            name: 'breadboardActivity1',
            width: 900,
@@ -4582,7 +4499,6 @@ sparks.util.getKeys = function (json) {
 
 
 })();
-
 /* FILE string.js */
 
 (function () {
@@ -4611,7 +4527,6 @@ sparks.util.getKeys = function (json) {
 
 
 })();
-
 /* FILE ui.js */
 
 (function () {
@@ -4627,6 +4542,155 @@ sparks.util.getKeys = function (json) {
         div.append($('<p />')).append(okButton);
         div.dialog({ dialogClass: 'alert', modal: true });
     };
+
+})();
+/* FILE flash_comm.js */
+
+/*globals console sparks $ document window alert navigator*/
+
+(function () {
+
+    sparks.flash = {};
+
+    sparks.flash.loaded = false;
+
+    sparks.flash.queuedMessages = [];
+
+    sparks.flash.init = function() {
+      sparks.flash.loaded = true;
+      var length = sparks.flash.queuedMessages.length;
+      for (var i = 0; i < length; i++){
+        sparks.flash.sendCommand.apply(this, sparks.flash.queuedMessages.pop());
+      }
+    };
+
+    sparks.flash.getFlashMovie = function (movieName) {
+      var isIE = navigator.appName.indexOf("Microsoft") != -1;
+      return (isIE) ? window[movieName] : document[movieName];
+    };
+
+    sparks.flash.sendCommand = function () {
+      if (!sparks.flash.loaded){
+        sparks.flash.queuedMessages.push(arguments);
+        return;
+      }
+
+      try {
+        var params = [];
+        for (var i = 0; i < arguments.length; ++i) {
+          params[i] = arguments[i];
+        }
+        var flash = sparks.flash.getFlashMovie(sparks.config.flash_id);
+
+        var retVal = flash.sendMessageToFlash.apply(flash, params).split('|');
+        if (retVal[0] == 'flash_error') {
+          alert('Flash error:\n' + retVal[1]);
+        }
+      }
+      catch (e) {
+        alert('Error sending command to Flash:\n' + e.toString());
+      }
+    };
+
+    this.receiveEvent = function (name, value, time) {
+      console.log('ENTER sm.Activity#receiveEvent');
+      console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
+
+      var v;
+      var t = '';
+      var args = value.split('|');
+
+      if (name === 'connect') {
+          if (args[0] === 'probe') {
+              if (args[1] === 'probe_red') {
+                  sparks.sparksSectionController.multimeter.redProbeConnection = args[2];
+              }
+              else if (args[1] === 'probe_black') {
+                  sparks.sparksSectionController.multimeter.blackProbeConnection = args[2];
+              }
+              else {
+                  alert('Activity#receiveEvent: connect: unknonw probe name ' + args[1]);
+              }
+          }
+          if (args[0] === 'component') {
+              if (!!args[2]){
+                breadModel('unmapHole', args[2]);
+              }
+              sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+                "type": "connect lead",
+                "location": args[2]});
+          }
+          sparks.sparksSectionController.multimeter.update();
+      } else if (name === 'disconnect') {
+          if (args[0] === 'probe') {
+              if (args[1] === 'probe_red') {
+                  sparks.sparksSectionController.multimeter.redProbeConnection = null;
+              }
+              else if (args[1] === 'probe_black') {
+                  sparks.sparksSectionController.multimeter.blackProbeConnection = null;
+              }
+              else {
+                  alert('Activity#receiveEvent: disconnect: Unknonw probe name ' + args[1]);
+              }
+          } else if (args[0] === 'component') {
+            var hole = args[2];
+            var newHole = breadModel('getGhostHole', hole+"ghost");
+
+            breadModel('mapHole', hole, newHole.nodeName());
+            sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+              "type": "disconnect lead",
+              "location": hole});
+          }
+          sparks.sparksSectionController.multimeter.update();
+      } else if (name === 'probe') {
+          $('#popup').dialog();
+
+          v = breadModel('query', 'voltage', 'a23,a17');
+          t += v.toFixed(3);
+          v = breadModel('query', 'voltage', 'b17,b11');
+          t += ' ' + v.toFixed(3);
+          v = breadModel('query', 'voltage', 'c11,c5');
+          t += ' ' + v.toFixed(3);
+          $('#dbg_voltage').text(t);
+
+          breadModel('move', 'wire1', 'left_positive1,a22');
+
+          v = breadModel('query', 'resistance', 'a23,a17');
+          t = v.toFixed(3);
+          v = breadModel('query', 'resistance', 'b17,b11');
+          t += ' ' + v.toFixed(3);
+          v = breadModel('query', 'resistance', 'c11,c5');
+          t += ' ' + v.toFixed(3);
+
+          $('#dbg_resistance').text(t);
+
+          v = breadModel('query', 'current', 'a22,a23');
+          t = v.toFixed(3);
+
+          breadModel('move', 'wire1', 'left_positive1,a23');
+          breadModel('move', 'resistor1', 'a23,a16');
+          v = breadModel('query', 'current', 'a16,b17');
+          t += ' ' + v.toFixed(3);
+
+          breadModel('move', 'resistor1', 'a23,a17');
+          breadModel('move', 'resistor2', 'b17,b10');
+          v = breadModel('query', 'current', 'b10,c11');
+          t += ' ' + v.toFixed(3);
+
+          breadModel('move', 'resistor2', 'b17,b11');
+
+          $('#dbg_current').text(t);
+
+          $('#popup').dialog('close');
+      } else if (name == 'multimeter_dial') {
+          console.log('changed multimeter dial'+value);
+          sparks.sparksSectionController.multimeter.dialPosition = value;
+          sparks.sparksSectionController.multimeter.update();
+      } else if (name == 'multimeter_power') {
+          sparks.sparksSectionController.multimeter.powerOn = value == 'true' ? true : false;
+          sparks.sparksSectionController.multimeter.update();
+      }
+  }
 
 })();
 /* FILE qucsator.js */
@@ -5970,7 +6034,7 @@ sparks.util.getKeys = function (json) {
           if (existingMeasurement !== undefined && existingMeasurement !== null){
             return existingMeasurement;
           } else {
-            var measurement = Math.abs(breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection));
+            var measurement = breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection);
             this.measurements[measurmentKey] = measurement;
             return measurement;
           }

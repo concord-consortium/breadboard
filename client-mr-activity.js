@@ -463,6 +463,18 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
     };
 
 })();
+
+/* FILE setup-common.js */
+
+(function () {
+
+    this.sparks.activities.mr = {};
+    this.sparks.activities.mr.config = {};
+    this.sparks.activities.mr.assessment = {};
+
+    sparks.activities.mr.config.root_dir = sparks.config.root_dir + '/activities/measuring-resistance';
+
+})();
 /*!
  * jQuery JavaScript Library v1.4.2
  * http://jquery.com/
@@ -1988,7 +2000,6 @@ if (window.attachEvent) {
 
     sparks.couchDS = new sparks.CouchDS();
 })();
-
 /* FILE flash_version_dectection.js */
 
 
@@ -2240,7 +2251,6 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
   if (mimeType) ret.embedAttrs["type"] = mimeType;
   return ret;
 }
-
 /* FILE flash_comm.js */
 
 /*globals console sparks $ document window alert navigator*/
@@ -2390,7 +2400,6 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
   }
 
 })();
-
 /* FILE util.js */
 
 sparks.util.readCookie = function (name) {
@@ -2587,6 +2596,75 @@ sparks.util.getKeys = function (json) {
   return keys;
 };
 
+
+sparks.data;
+
+sparks.getDataArray = function(){
+  sparks.data = [];
+  $.couch.urlPrefix = "/couchdb/learnerdata";
+  $.couch.db('').view(
+    "session_scores/Scores%20per%20activity",
+    {
+      success: function(response) {
+        $.each(response.rows, function(i, obj) {
+              sparks.data.push(obj);
+          }
+        );
+        console.log("done");
+      }
+    }
+  );
+
+};
+
+sparks.createPointsCSV = function(data) {
+  var csv = "";
+  csv += "Activity|Student|Level|Page|Try|Score\n"
+  $.each(sparks.data, function(i, obj){
+    var sections = obj.value.sectionReports;
+    $.each(sections, function(j, sec){
+      $.each(sec.pageReports, function(k, page){
+        $.each(page.sessionReports, function(l, sess){
+          csv += obj.key[1] + "|";
+          csv += obj.key[0] + "|";
+          csv += (j+1) + ": " + sec.sectionTitle + "|";
+          csv += (k+1) + "|";
+          csv += (l+1) + "|";
+          csv += sess.score + "\n";
+        });
+      });
+    });
+  });
+  return csv;
+};
+
+sparks.createQuestionsCSV = function(data) {
+  var csv = "";
+  csv += "Activity|Student|Level|Page|Try|Question|Answer|Correct Answer|Feedback|Score\n"
+  $.each(sparks.data, function(i, obj){
+    var sections = obj.value.sectionReports;
+    $.each(sections, function(j, sec){
+      $.each(sec.pageReports, function(k, page){
+        $.each(page.sessionReports, function(l, sess){
+          $.each(sess.questions, function(m, ques){
+            csv += obj.key[1] + "|";
+            csv += obj.key[0] + "|";
+            csv += (j+1) + ": " + sec.sectionTitle + "|";
+            csv += (k+1) + "|";
+            csv += (l+1) + "|";
+            csv += (m+1) + ": " + ques.shortPrompt + "|";
+            csv += ques.answer + "|";
+            csv += ques.correct_answer + "|";
+            csv += ques.feedback + "|";
+            csv += ques.points_earned + "\n";
+          });
+        });
+      });
+    });
+  });
+  return csv;
+};
+
 /* FILE activity.js */
 
 
@@ -2664,7 +2742,6 @@ sparks.util.getKeys = function (json) {
     };
 
 })();
-
 /* FILE string.js */
 
 (function () {
@@ -2693,7 +2770,6 @@ sparks.util.getKeys = function (json) {
 
 
 })();
-
 /* FILE ui.js */
 
 (function () {
@@ -3764,19 +3840,6 @@ sparks.util.getKeys = function (json) {
         }
     });
 })();
-
-/* FILE setup-common.js */
-
-(function () {
-
-    this.sparks.activities.mr = {};
-    this.sparks.activities.mr.config = {};
-    this.sparks.activities.mr.assessment = {};
-
-    sparks.activities.mr.config.root_dir = sparks.config.root_dir + '/activities/measuring-resistance';
-
-})();
-
 /* FILE activity-dom-helper.js */
 
 (function () {
@@ -4072,7 +4135,6 @@ sparks.util.getKeys = function (json) {
      };
 
 })();
-
 /* FILE unit.js */
 
 (function () {

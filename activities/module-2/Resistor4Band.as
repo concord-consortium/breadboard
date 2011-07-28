@@ -6,7 +6,7 @@ package
 	{
 		public function Resistor4Band()
 		{
-			super(4, "images_resistor_colors_med");
+			super(4, "activities/module-2/images_resistor_colors_med");
 		}
 	}
 }

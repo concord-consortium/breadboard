@@ -57,7 +57,7 @@
     loadFlash: function () {
        this.divs.$breadboardDiv.css("z-index", 0);
        this.divs.$breadboardDiv.flash({
-           src: 'breadboardActivity1.swf',
+           src: 'activities/module-2/breadboardActivity1.swf',
            id: 'breadboardActivity1',
            name: 'breadboardActivity1',
            width: 900,

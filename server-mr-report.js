@@ -1,3 +1,263 @@
+/* FILE string.js */
+
+(function () {
+
+    this.sparks.string = {};
+
+    var str = sparks.string;
+
+    str.strip = function (s) {
+        s = s.replace(/\s*([^\s]*)\s*/, '$1');
+        return s;
+    };
+
+    str.stripZerosAndDots = function (s) {
+        s = s.replace('.', '');
+        s = s.replace(/0*([^0].*)/, '$1');
+        s = s.replace(/(.*[^0])0*/, '$1');
+        return s;
+    };
+
+    str.stripZeros = function (s) {
+        s = s.replace(/0*([^0].*)/, '$1');
+        s = s.replace(/(.*[^0])0*/, '$1');
+        return s;
+    };
+
+
+})();
+
+/*globals console sparks */
+
+/* FILE math.js */
+
+(function () {
+    this.sparks.math = {};
+
+    var math = sparks.math;
+
+    math.equalExceptPowerOfTen = function(x, y) {
+        var sx = sparks.string.stripZerosAndDots(x.toString());
+        var sy = sparks.string.stripZerosAndDots(y.toString());
+
+        return sx === sy;
+    };
+
+     math.leftMostPos = function (x) {
+         x = Number(x);
+         if (isNaN(x) || x < 0) {
+             console.log('ERROR: math.leftMostPos: Invalid input ' + x);
+             return 0;
+         }
+         if (x === 0) {
+             return 0;
+         }
+         var n = 0;
+         var y = x;
+         if (x < 1) {
+             while (y < 1) {
+                 y *= 10;
+                 n -= 1;
+             }
+         }
+         else {
+             while (y >= 10) {
+                 y /= 10;
+                 n += 1;
+             }
+         }
+         return n;
+     };
+
+     math.roundToSigDigits = function(x, n) {
+         var k = Math.pow(10, n - math.leftMostPos(x) - 1);
+         return Math.round(x * k) / k;
+     };
+
+     math.getRoundedSigDigits = function (x, n) {
+         return Math.round(x * Math.pow(10, n - math.leftMostPos(x) - 1));
+     };
+
+
+
+     Math.log10 = function(x){
+       return Math.log(x)/Math.LN10;
+     };
+
+     Math.powNdigits = function(x,n){
+       return Math.pow(10,Math.floor(Math.log(x)/Math.LN10-n+1));
+     };
+
+     Math.toSigFigs = function(num, sigFigs) {
+       num = num.toPrecision(sigFigs);
+       return sigFigs > Math.log(num) * Math.LOG10E ? num : ""+parseFloat(num);
+     };
+
+})();
+/* FILE unit.js */
+
+(function () {
+
+    this.sparks.unit = {};
+
+    var u = sparks.unit;
+
+    u.labels = { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' };
+
+    u.toEngineering = function (value, units){
+      value = Number(value);
+
+      if (value >= 1000000){
+        var MUnits = "mega"+units;
+        units = MUnits;
+        value = u.round(value/1000000,2);
+      } else if (value >= 1000){
+        var kUnits = "kilo"+units;
+        units = kUnits;
+        value = u.round(value/1000,2);
+      } else if (value === 0 ) {
+        units = units;
+        value = 0;
+      } else if (value < 0.000001){
+        var nUnits = "nano"+units;
+        units = nUnits;
+        value = u.round(value * 1000000000,2);
+      } else if (value < 0.001){
+        var uUnits = "micro"+units;
+        units = uUnits;
+        value = u.round(value * 1000000,2);
+      } else if (value < 1) {
+        var mUnits = "milli"+units;
+        units = mUnits;
+        value = u.round(value * 1000,2);
+      } else {
+        units = units;
+        value = u.round(value,2);
+      }
+
+      return {"value": value, "units": units};
+    };
+
+    u.round = function(num, dec) {
+    	var result = Math.round( Math.round( num * Math.pow( 10, dec + 2 ) ) / Math.pow( 10, 2 ) ) / Math.pow(10,dec);
+    	return result;
+    };
+
+    u.sigFigs = function(n, sig) {
+        var mult = Math.pow(10,
+            sig - Math.floor(Math.log(n) / Math.LN10) - 1);
+        return Math.round(n * mult) / mult;
+    };
+
+    u.isMeasurement = function(string) {
+      var isMeasurementPattern = /^\s?\d+.?\d*\s?\D+\s?$/
+      var matched = string.match(isMeasurementPattern);
+      return !!matched;
+    };
+
+    /**
+    * assumes this will be in the form ddd uu
+    * i.e. a pure number and a unit, separated by an optional space
+    * '50 ohms' and '50V' are both valid
+    */
+    u.convertMeasurement = function(measurement) {
+      if (!this.isMeasurement(measurement)){
+        return measurement
+      }
+
+      var numPattern = /\d+\.?\d*/g
+      var nmatched = measurement.match(numPattern);
+      if (!nmatched){
+        return measurement;
+      }
+      var value = nmatched[0];
+
+      var unitPattern =  /(?=\d*.?\d*)[^\d\.\s]+/g
+      var umatched = measurement.match(unitPattern);
+      if (!umatched){
+        return measurement;
+      }
+      var unit = umatched[0];
+
+      var eng = u.toEngineering(value, unit)
+      return eng.value + " " + eng.units;
+    };
+
+    u.normalizeToOhms = function (value, unit) {
+        switch (unit) {
+        case u.labels.ohms:
+            return value;
+        case u.labels.kilo_ohms:
+            return value * 1000;
+        case u.labels.mega_ohms:
+            return value * 1e6;
+        }
+        return null;
+    };
+
+    u.ohmCompatible = function (unit) {
+        if (unit == u.labels.ohms || unit == u.labels.kilo_ohms ||
+            unit == u.labels.mega_ohms)
+        {
+            return true;
+        }
+        return false;
+    };
+
+    u.res_str = function (value) {
+        var vstr, unit, val;
+
+        if (typeof value !== 'number' || isNaN(Number(value))) {
+            return 'Invalid Value ' + String(value);
+        }
+
+        if (value < 1000) {
+            val = value;
+            unit = u.labels.ohms;
+        }
+        else if (value < 1e6) {
+            val = value / 1000;
+            unit = u.labels.kilo_ohms;
+        }
+        else {
+            val = value / 1e6;
+            unit = u.labels.mega_ohms;
+        }
+
+        if (val.toFixed) {
+            val = val.toFixed(6);
+        }
+
+        vstr = String(val).replace(/(\.[0-9]*[1-9])0*/, '$1');
+        vstr = vstr.replace(/([0-9])\.0+$/, '$1');
+        return vstr + ' ' + unit;
+    };
+
+    u.res_unit_str = function (value, mult) {
+        var vstr;
+        var unit = u.labels.ohms;
+
+        if (mult === 'k') {
+            vstr = String(value / 1000.0);
+            unit = u.labels.kilo_ohms;
+        }
+        else if (mult === 'M') {
+            vstr = String(value / 1000000.0);
+            unit = u.labels.mega_ohms;
+        }
+        else {
+            vstr = String(value);
+            unit = u.labels.ohms;
+        }
+        return vstr + ' ' + unit;
+    };
+
+    u.pct_str = function (value) {
+        return (value * 100) + ' %';
+    };
+
+
+})();
 /*
     http://www.JSON.org/json2.js
     2009-09-29
@@ -464,268 +724,6 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 
 })();
 
-/* FILE string.js */
-
-(function () {
-
-    this.sparks.string = {};
-
-    var str = sparks.string;
-
-    str.strip = function (s) {
-        s = s.replace(/\s*([^\s]*)\s*/, '$1');
-        return s;
-    };
-
-    str.stripZerosAndDots = function (s) {
-        s = s.replace('.', '');
-        s = s.replace(/0*([^0].*)/, '$1');
-        s = s.replace(/(.*[^0])0*/, '$1');
-        return s;
-    };
-
-    str.stripZeros = function (s) {
-        s = s.replace(/0*([^0].*)/, '$1');
-        s = s.replace(/(.*[^0])0*/, '$1');
-        return s;
-    };
-
-
-})();
-
-/*globals console sparks */
-
-/* FILE math.js */
-
-(function () {
-    this.sparks.math = {};
-
-    var math = sparks.math;
-
-    math.equalExceptPowerOfTen = function(x, y) {
-        var sx = sparks.string.stripZerosAndDots(x.toString());
-        var sy = sparks.string.stripZerosAndDots(y.toString());
-
-        return sx === sy;
-    };
-
-     math.leftMostPos = function (x) {
-         x = Number(x);
-         if (isNaN(x) || x < 0) {
-             console.log('ERROR: math.leftMostPos: Invalid input ' + x);
-             return 0;
-         }
-         if (x === 0) {
-             return 0;
-         }
-         var n = 0;
-         var y = x;
-         if (x < 1) {
-             while (y < 1) {
-                 y *= 10;
-                 n -= 1;
-             }
-         }
-         else {
-             while (y >= 10) {
-                 y /= 10;
-                 n += 1;
-             }
-         }
-         return n;
-     };
-
-     math.roundToSigDigits = function(x, n) {
-         var k = Math.pow(10, n - math.leftMostPos(x) - 1);
-         return Math.round(x * k) / k;
-     };
-
-     math.getRoundedSigDigits = function (x, n) {
-         return Math.round(x * Math.pow(10, n - math.leftMostPos(x) - 1));
-     };
-
-
-
-     Math.log10 = function(x){
-       return Math.log(x)/Math.LN10;
-     };
-
-     Math.powNdigits = function(x,n){
-       return Math.pow(10,Math.floor(Math.log(x)/Math.LN10-n+1));
-     };
-
-     Math.toSigFigs = function(num, sigFigs) {
-       num = num.toPrecision(sigFigs);
-       return sigFigs > Math.log(num) * Math.LOG10E ? num : ""+parseFloat(num);
-     };
-
-})();
-
-/* FILE unit.js */
-
-(function () {
-
-    this.sparks.unit = {};
-
-    var u = sparks.unit;
-
-    u.labels = { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' };
-
-    u.toEngineering = function (value, units){
-      value = Number(value);
-
-      if (value >= 1000000){
-        var MUnits = "mega"+units;
-        units = MUnits;
-        value = u.round(value/1000000,2);
-      } else if (value >= 1000){
-        var kUnits = "kilo"+units;
-        units = kUnits;
-        value = u.round(value/1000,2);
-      } else if (value === 0 ) {
-        units = units;
-        value = 0;
-      } else if (value < 0.000001){
-        var nUnits = "nano"+units;
-        units = nUnits;
-        value = u.round(value * 1000000000,2);
-      } else if (value < 0.001){
-        var uUnits = "micro"+units;
-        units = uUnits;
-        value = u.round(value * 1000000,2);
-      } else if (value < 1) {
-        var mUnits = "milli"+units;
-        units = mUnits;
-        value = u.round(value * 1000,2);
-      } else {
-        units = units;
-        value = u.round(value,2);
-      }
-
-      return {"value": value, "units": units};
-    };
-
-    u.round = function(num, dec) {
-    	var result = Math.round( Math.round( num * Math.pow( 10, dec + 2 ) ) / Math.pow( 10, 2 ) ) / Math.pow(10,dec);
-    	return result;
-    };
-
-    u.sigFigs = function(n, sig) {
-        var mult = Math.pow(10,
-            sig - Math.floor(Math.log(n) / Math.LN10) - 1);
-        return Math.round(n * mult) / mult;
-    };
-
-    u.isMeasurement = function(string) {
-      var isMeasurementPattern = /^\s?\d+.?\d*\s?\D+\s?$/
-      var matched = string.match(isMeasurementPattern);
-      return !!matched;
-    };
-
-    /**
-    * assumes this will be in the form ddd uu
-    * i.e. a pure number and a unit, separated by an optional space
-    * '50 ohms' and '50V' are both valid
-    */
-    u.convertMeasurement = function(measurement) {
-      if (!this.isMeasurement(measurement)){
-        return measurement
-      }
-
-      var numPattern = /\d+\.?\d*/g
-      var nmatched = measurement.match(numPattern);
-      if (!nmatched){
-        return measurement;
-      }
-      var value = nmatched[0];
-
-      var unitPattern =  /(?=\d*.?\d*)[^\d\.\s]+/g
-      var umatched = measurement.match(unitPattern);
-      if (!umatched){
-        return measurement;
-      }
-      var unit = umatched[0];
-
-      var eng = u.toEngineering(value, unit)
-      return eng.value + " " + eng.units;
-    };
-
-    u.normalizeToOhms = function (value, unit) {
-        switch (unit) {
-        case u.labels.ohms:
-            return value;
-        case u.labels.kilo_ohms:
-            return value * 1000;
-        case u.labels.mega_ohms:
-            return value * 1e6;
-        }
-        return null;
-    };
-
-    u.ohmCompatible = function (unit) {
-        if (unit == u.labels.ohms || unit == u.labels.kilo_ohms ||
-            unit == u.labels.mega_ohms)
-        {
-            return true;
-        }
-        return false;
-    };
-
-    u.res_str = function (value) {
-        var vstr, unit, val;
-
-        if (typeof value !== 'number' || isNaN(Number(value))) {
-            return 'Invalid Value ' + String(value);
-        }
-
-        if (value < 1000) {
-            val = value;
-            unit = u.labels.ohms;
-        }
-        else if (value < 1e6) {
-            val = value / 1000;
-            unit = u.labels.kilo_ohms;
-        }
-        else {
-            val = value / 1e6;
-            unit = u.labels.mega_ohms;
-        }
-
-        if (val.toFixed) {
-            val = val.toFixed(6);
-        }
-
-        vstr = String(val).replace(/(\.[0-9]*[1-9])0*/, '$1');
-        vstr = vstr.replace(/([0-9])\.0+$/, '$1');
-        return vstr + ' ' + unit;
-    };
-
-    u.res_unit_str = function (value, mult) {
-        var vstr;
-        var unit = u.labels.ohms;
-
-        if (mult === 'k') {
-            vstr = String(value / 1000.0);
-            unit = u.labels.kilo_ohms;
-        }
-        else if (mult === 'M') {
-            vstr = String(value / 1000000.0);
-            unit = u.labels.mega_ohms;
-        }
-        else {
-            vstr = String(value);
-            unit = u.labels.ohms;
-        }
-        return vstr + ' ' + unit;
-    };
-
-    u.pct_str = function (value) {
-        return (value * 100) + ' %';
-    };
-
-
-})();
-
 /* FILE setup-common.js */
 
 (function () {
@@ -737,7 +735,6 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
     sparks.activities.mr.config.root_dir = sparks.config.root_dir + '/activities/measuring-resistance';
 
 })();
-
 /* FILE util.js */
 
 sparks.util.readCookie = function (name) {
@@ -932,6 +929,75 @@ sparks.util.getKeys = function (json) {
     keys.push(key);
   })
   return keys;
+};
+
+
+sparks.data;
+
+sparks.getDataArray = function(){
+  sparks.data = [];
+  $.couch.urlPrefix = "/couchdb/learnerdata";
+  $.couch.db('').view(
+    "session_scores/Scores%20per%20activity",
+    {
+      success: function(response) {
+        $.each(response.rows, function(i, obj) {
+              sparks.data.push(obj);
+          }
+        );
+        console.log("done");
+      }
+    }
+  );
+
+};
+
+sparks.createPointsCSV = function(data) {
+  var csv = "";
+  csv += "Activity|Student|Level|Page|Try|Score\n"
+  $.each(sparks.data, function(i, obj){
+    var sections = obj.value.sectionReports;
+    $.each(sections, function(j, sec){
+      $.each(sec.pageReports, function(k, page){
+        $.each(page.sessionReports, function(l, sess){
+          csv += obj.key[1] + "|";
+          csv += obj.key[0] + "|";
+          csv += (j+1) + ": " + sec.sectionTitle + "|";
+          csv += (k+1) + "|";
+          csv += (l+1) + "|";
+          csv += sess.score + "\n";
+        });
+      });
+    });
+  });
+  return csv;
+};
+
+sparks.createQuestionsCSV = function(data) {
+  var csv = "";
+  csv += "Activity|Student|Level|Page|Try|Question|Answer|Correct Answer|Feedback|Score\n"
+  $.each(sparks.data, function(i, obj){
+    var sections = obj.value.sectionReports;
+    $.each(sections, function(j, sec){
+      $.each(sec.pageReports, function(k, page){
+        $.each(page.sessionReports, function(l, sess){
+          $.each(sess.questions, function(m, ques){
+            csv += obj.key[1] + "|";
+            csv += obj.key[0] + "|";
+            csv += (j+1) + ": " + sec.sectionTitle + "|";
+            csv += (k+1) + "|";
+            csv += (l+1) + "|";
+            csv += (m+1) + ": " + ques.shortPrompt + "|";
+            csv += ques.answer + "|";
+            csv += ques.correct_answer + "|";
+            csv += ques.feedback + "|";
+            csv += ques.points_earned + "\n";
+          });
+        });
+      });
+    });
+  });
+  return csv;
 };
 
 /* FILE feedback.js */
