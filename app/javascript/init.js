@@ -9,23 +9,23 @@
 //= require <data-source/couch-ds>
 //= require <helpers/util>
 //= require <helpers/unit>
-//= require <models/sparks-activity>
-//= require <models/sparks-section>
-//= require <models/sparks-page>
-//= require <models/sparks-question>
-//= require <models/sparks-log>
-//= require <models/sparks-report>
-//= require <views/sparks-activity-view>
-//= require <views/sparks-section-view>
-//= require <views/sparks-page-view>
-//= require <views/sparks-question-view>
-//= require <views/sparks-report-view>
-//= require <controllers/sparks-question-controller>
-//= require <controllers/sparks-page-controller>
-//= require <controllers/sparks-log-controller>
-//= require <controllers/sparks-section-controller>
-//= require <controllers/sparks-activity-controller>
-//= require <controllers/sparks-report-controller>
+//= require <models/activity>
+//= require <models/section>
+//= require <models/page>
+//= require <models/question>
+//= require <models/log>
+//= require <models/report>
+//= require <views/activity-view>
+//= require <views/section-view>
+//= require <views/page-view>
+//= require <views/question-view>
+//= require <views/report-view>
+//= require <controllers/question-controller>
+//= require <controllers/page-controller>
+//= require <controllers/log-controller>
+//= require <controllers/section-controller>
+//= require <controllers/activity-controller>
+//= require <controllers/report-controller>
 //= require <activity-constructor>
 //= require <helpers/math-parser>
 //= require <helpers/string>
@@ -48,7 +48,7 @@
   sparks.config.flash_id = 'breadboardActivity1';
   sparks.activity_base_url = "http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/";
   sparks.activity_images_base_url = "http://couchdb.cosmos.concord.org/sparks/";
-  sparks.tutorial_base_url = "http://sparks.portal.concord.org/sparks-content/tutorials/";
+  sparks.tutorial_base_url = "http://sparks.portal.concord.org/content/tutorials/";
   
   $(document).ready(function () {
       onDocumentReady();
