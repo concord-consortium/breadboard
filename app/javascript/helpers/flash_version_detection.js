@@ -1,5 +1,3 @@
-//= require "setup-common"
-
 /* FILE flash_version_dectection.js */
 
 //v1.7

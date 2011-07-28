@@ -7,10 +7,10 @@
 //= require <jquery/plugins/jquery.flash>
 //= require <jquery/plugins/jquery.couch>
 //= require <data-source/couch-ds>
-//= require <flash_version_detection>
-//= require <flash_version_detection>
-//= require <flash_comm>
-//= require <util>
+//= require <helpers/flash_version_detection>
+//= require <helpers/flash_version_detection>
+//= require <helpers/flash_comm>
+//= require <helpers/util>
 
 /* FILE activity.js */
 
