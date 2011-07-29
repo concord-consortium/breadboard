@@ -1176,6 +1176,14 @@ describe 'Page Reports'
       };
       sparks.sparksTutorialController.showTutorial("example.html");
       openCalled.should.be true
+      
+      openCalled = false;
+      window.open = function(url){
+        url.should.be sparks.tutorial_base_url + "example.html"
+        openCalled = true;
+      };
+      sparks.sparksTutorialController.showTutorial("example");
+      openCalled.should.be true
   
       window.open = oldOpen;
     end

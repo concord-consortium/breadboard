@@ -20,6 +20,9 @@
     _getURL: function(filename) {
       var url;
       if (filename.indexOf("http:") < 0 && filename.indexOf("/") !== 0){
+        if (filename.indexOf("htm") < 0){
+          filename += '.html';
+        }
         return sparks.tutorial_base_url + filename;
       } else {
         return filename;
