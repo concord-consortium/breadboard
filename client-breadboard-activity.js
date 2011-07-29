@@ -3389,7 +3389,6 @@ sparks.createQuestionsCSV = function(data) {
           $tutorialButton = $("<button>").text("Tutorial").css('padding-left', "10px")
                               .css('padding-right', "10px").css('margin-left', "20px");
           $tutorialButton.click(function(){
-            console.log("CLICK!!!!!!!!!!!!!!")
             sparks.sparksTutorialController.showTutorial(question.tutorial);
           });
         } else {
@@ -3553,7 +3552,7 @@ sparks.createQuestionsCSV = function(data) {
         question.image = jsonQuestion.image;
         question.top_tutorial = jsonQuestion.tutorial;
 
-        question.category = jsonQuestion.category;
+        question.category = sparks.sparksTutorialController.setQuestionCategoryName(question);
 
         question.scoring = jsonQuestion.scoring;
 
@@ -4177,7 +4176,6 @@ sparks.createQuestionsCSV = function(data) {
       return bestSessionReport;
     },
 
-
     getCategories: function(report) {
       var categories = {};
       var self = this;
@@ -4342,8 +4340,12 @@ sparks.createQuestionsCSV = function(data) {
 (function() {
 
   /*
-   * Sparks Activity Controller can be accessed by the
-   * singleton variable sparks.sparksActivityController
+   * Sparks Tutorial Controller can be accessed by the
+   * singleton variable sparks.sparksTutorialController
+   *
+   * Unlike most controllers, SparksTutorialController is not an
+   * object controller. It merely contains functions for dealing with
+   * showing tutorials, logging, and other such stuff.
    */
   sparks.SparksTutorialController = function(){
   };
@@ -4351,16 +4353,39 @@ sparks.createQuestionsCSV = function(data) {
   sparks.SparksTutorialController.prototype = {
 
     showTutorial: function(filename) {
-      console.log("************ show!")
+      console.log("show tutorial "+filename)
       var url = this._getURL(filename);
-      console.log(url)
+      console.log(url);
       window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
       sparks.sparksLogController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
+    },
+
+    setQuestionCategoryName: function(question) {
+      var tutorialFilename = question.top_tutorial;
+      if (!!tutorialFilename){
+        this.getTutorialTitle(tutorialFilename, function(title){
+          question.category = title;
+        });
+      }
+    },
+
+    getTutorialTitle: function(filename, callback) {
+      $.get(this._getURL(filename), function(data) {
+        var title = filename;
+        var $title = $(data).find('#tutorial_title');
+        if ($title.length > 0){
+          title = $title[0].innerHTML
+        }
+        callback(title);
+      });
     },
 
     _getURL: function(filename) {
       var url;
       if (filename.indexOf("http:") < 0 && filename.indexOf("/") !== 0){
+        if (filename.indexOf("htm") < 0){
+          filename += '.html';
+        }
         return sparks.tutorial_base_url + filename;
       } else {
         return filename;
@@ -6755,7 +6780,7 @@ var apMessageBox = apMessageBox || {};
   sparks.config.flash_id = 'breadboardActivity1';
   sparks.activity_base_url = "http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/";
   sparks.activity_images_base_url = "http://couchdb.cosmos.concord.org/sparks/";
-  sparks.tutorial_base_url = "http://sparks.portal.concord.org/content/tutorials/";
+  sparks.tutorial_base_url = "tutorials/";
 
   $(document).ready(function () {
       onDocumentReady();
