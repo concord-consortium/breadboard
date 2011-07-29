@@ -105,7 +105,7 @@
         question.image = jsonQuestion.image;
         question.top_tutorial = jsonQuestion.tutorial;
         
-        question.category = sparks.sparksTutorialController.setQuestionCategoryName(question);
+        question.category = sparks.sparksTutorialController.setQuestionCategory(question);
         
         question.scoring = jsonQuestion.scoring;
         

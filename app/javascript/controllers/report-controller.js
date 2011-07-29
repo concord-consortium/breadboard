@@ -112,7 +112,6 @@
     },
     
     getTotalScoreForSection: function(section) {
-      console.log("getting score for "+section.id)
       var totalScore = 0;
       var self = this;
       $.each(section.pages, function(i, page){
@@ -149,6 +148,11 @@
       return bestSessionReport;
     },
     
+    //
+    // categories = {
+    //   'breadboards': [0, 1, 'tutorial-1'].
+    //   'voltage': [1,1, 'tutorial-2']  
+    // }
     getCategories: function(report) {
       var categories = {};
       var self = this;
@@ -158,13 +162,13 @@
             $.each(sessionReport.questions, function(l, question){
               if (!!question.category){
                 var category = question.category;
-                if (!categories[category]){
-                  categories[category] = [0,0];
+                if (!categories[category.categoryTitle]){
+                  categories[category.categoryTitle] = [0,0,category.tutorial];
                 }
-                var right = categories[category][0];
-                var total = categories[category][1];
-                categories[category][0] = question.answerIsCorrect ? right + 1 : right;
-                categories[category][1] = total + 1;
+                var right = categories[category.categoryTitle][0];
+                var total = categories[category.categoryTitle][1];
+                categories[category.categoryTitle][0] = question.answerIsCorrect ? right + 1 : right;
+                categories[category.categoryTitle][1] = total + 1;
               }
             });
           });
@@ -189,7 +193,6 @@
     },
     
     loadReport: function(jsonReport) {
-      console.log("loading report")
       sparks.sparksReport.score = jsonReport.score;
       $.each(jsonReport.sectionReports, function(i, jsonSectionReport){
         var sectionReport = new sparks.SparksSectionReport();
@@ -247,7 +250,6 @@
                             "Troubleshooting a series circuit"];               
       
       sectionAttempt = 0;
-      trySection(sectionAttempt);
       
       function trySection(sectionNo){
         if (sectionNo > sections.length-1){
@@ -260,6 +262,8 @@
           }}
         );
       }
+      
+      trySection(sectionAttempt);
       
       function arraysAreEquivalent(ar1, ar2){
         var equiv = true;

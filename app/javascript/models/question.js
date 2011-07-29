@@ -34,7 +34,7 @@
     
     this.keepOrder = false;
     
-    this.category = "";
+    this.category = {categoryTitle: "", tutorial: ""};
     
     this.not_scored = false;
     

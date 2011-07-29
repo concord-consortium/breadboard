@@ -171,15 +171,16 @@
       );
       
       $.each(categories, function(category, score){
-        var perc = sparks.math.roundToSigDigits((score[0]/score[1])*100, 3);
-        var graphImgUrl = "http://chart.apis.google.com/chart?chbh=20&chs=180x33&cht=bhs&chco=05B405,DDF1D1&chds=-5,100&chd=t:";
-        graphImgUrl = graphImgUrl + perc + "|" + (100-perc);
-        $graph = $('<img>').attr('src', graphImgUrl).attr('width', 180).attr('height', 33);
+        var $btn = $('<button>').addClass("tutorial").text("View tutorial");
+        $btn.click(function(){
+          sparks.sparksTutorialController.showTutorial(score[2]);
+        });
+        
         $table.append(
           $('<tr>').append(
             $('<td>').html(category),
             $('<td>').html(sparks.math.roundToSigDigits((score[0]/score[1])*100, 2)+"% ("+score[0]+"/"+score[1]+")"),
-            $('<td>').append($graph)
+            $('<td>').append($btn)
           )
         );
       });

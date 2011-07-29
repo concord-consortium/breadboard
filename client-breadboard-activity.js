@@ -2560,7 +2560,7 @@ sparks.createQuestionsCSV = function(data) {
 
     this.keepOrder = false;
 
-    this.category = "";
+    this.category = {categoryTitle: "", tutorial: ""};
 
     this.not_scored = false;
 
@@ -3325,15 +3325,17 @@ sparks.createQuestionsCSV = function(data) {
       );
 
       $.each(categories, function(category, score){
-        var perc = sparks.math.roundToSigDigits((score[0]/score[1])*100, 3);
-        var graphImgUrl = "http://chart.apis.google.com/chart?chbh=20&chs=180x33&cht=bhs&chco=05B405,DDF1D1&chds=-5,100&chd=t:";
-        graphImgUrl = graphImgUrl + perc + "|" + (100-perc);
-        $graph = $('<img>').attr('src', graphImgUrl).attr('width', 180).attr('height', 33);
+        debugger
+        var $btn = $('<button>').addClass("tutorial").text("View tutorial");
+        $btn.click(function(){
+          sparks.sparksTutorialController.showTutorial(score[2]);
+        });
+
         $table.append(
           $('<tr>').append(
             $('<td>').html(category),
             $('<td>').html(sparks.math.roundToSigDigits((score[0]/score[1])*100, 2)+"% ("+score[0]+"/"+score[1]+")"),
-            $('<td>').append($graph)
+            $('<td>').append($btn)
           )
         );
       });
@@ -3552,7 +3554,7 @@ sparks.createQuestionsCSV = function(data) {
         question.image = jsonQuestion.image;
         question.top_tutorial = jsonQuestion.tutorial;
 
-        question.category = sparks.sparksTutorialController.setQuestionCategoryName(question);
+        question.category = sparks.sparksTutorialController.setQuestionCategory(question);
 
         question.scoring = jsonQuestion.scoring;
 
@@ -4139,7 +4141,6 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     getTotalScoreForSection: function(section) {
-      console.log("getting score for "+section.id)
       var totalScore = 0;
       var self = this;
       $.each(section.pages, function(i, page){
@@ -4185,13 +4186,13 @@ sparks.createQuestionsCSV = function(data) {
             $.each(sessionReport.questions, function(l, question){
               if (!!question.category){
                 var category = question.category;
-                if (!categories[category]){
-                  categories[category] = [0,0];
+                if (!categories[category.categoryTitle]){
+                  categories[category.categoryTitle] = [0,0,category.tutorial];
                 }
-                var right = categories[category][0];
-                var total = categories[category][1];
-                categories[category][0] = question.answerIsCorrect ? right + 1 : right;
-                categories[category][1] = total + 1;
+                var right = categories[category.categoryTitle][0];
+                var total = categories[category.categoryTitle][1];
+                categories[category.categoryTitle][0] = question.answerIsCorrect ? right + 1 : right;
+                categories[category.categoryTitle][1] = total + 1;
               }
             });
           });
@@ -4216,7 +4217,6 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     loadReport: function(jsonReport) {
-      console.log("loading report")
       sparks.sparksReport.score = jsonReport.score;
       $.each(jsonReport.sectionReports, function(i, jsonSectionReport){
         var sectionReport = new sparks.SparksSectionReport();
@@ -4274,7 +4274,6 @@ sparks.createQuestionsCSV = function(data) {
                             "Troubleshooting a series circuit"];
 
       sectionAttempt = 0;
-      trySection(sectionAttempt);
 
       function trySection(sectionNo){
         if (sectionNo > sections.length-1){
@@ -4287,6 +4286,8 @@ sparks.createQuestionsCSV = function(data) {
           }}
         );
       }
+
+      trySection(sectionAttempt);
 
       function arraysAreEquivalent(ar1, ar2){
         var equiv = true;
@@ -4353,18 +4354,16 @@ sparks.createQuestionsCSV = function(data) {
   sparks.SparksTutorialController.prototype = {
 
     showTutorial: function(filename) {
-      console.log("show tutorial "+filename)
       var url = this._getURL(filename);
-      console.log(url);
       window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
       sparks.sparksLogController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
     },
 
-    setQuestionCategoryName: function(question) {
+    setQuestionCategory: function(question) {
       var tutorialFilename = question.top_tutorial;
       if (!!tutorialFilename){
         this.getTutorialTitle(tutorialFilename, function(title){
-          question.category = title;
+          question.category = {categoryTitle: title, tutorial: tutorialFilename};
         });
       }
     },
@@ -4374,7 +4373,7 @@ sparks.createQuestionsCSV = function(data) {
         var title = filename;
         var $title = $(data).find('#tutorial_title');
         if ($title.length > 0){
-          title = $title[0].innerHTML
+          title = $title[0].innerHTML;
         }
         callback(title);
       });

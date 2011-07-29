@@ -21,11 +21,11 @@
       sparks.sparksLogController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
     },
     
-    setQuestionCategoryName: function(question) {
+    setQuestionCategory: function(question) {
       var tutorialFilename = question.top_tutorial;
       if (!!tutorialFilename){
         this.getTutorialTitle(tutorialFilename, function(title){
-          question.category = title;
+          question.category = {categoryTitle: title, tutorial: tutorialFilename};
         });
       }
     },
@@ -35,7 +35,7 @@
         var title = filename;
         var $title = $(data).find('#tutorial_title');
         if ($title.length > 0){
-          title = $title[0].innerHTML
+          title = $title[0].innerHTML;
         }
         callback(title);
       });
