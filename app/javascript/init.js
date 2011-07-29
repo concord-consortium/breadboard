@@ -26,6 +26,7 @@
 //= require <controllers/section-controller>
 //= require <controllers/activity-controller>
 //= require <controllers/report-controller>
+//= require <controllers/tutorial-controller>
 //= require <activity-constructor>
 //= require <helpers/math-parser>
 //= require <helpers/string>

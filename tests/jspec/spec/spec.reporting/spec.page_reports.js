@@ -1158,7 +1158,7 @@ describe 'Page Reports'
         url.should.be "http://example.com"
         openCalled = true;
       };
-      sparks.sparksReportController.showTutorial("http://example.com");
+      sparks.sparksTutorialController.showTutorial("http://example.com");
       openCalled.should.be true
     
       openCalled = false;
@@ -1166,7 +1166,7 @@ describe 'Page Reports'
         url.should.be "/example.html"
         openCalled = true;
       };
-      sparks.sparksReportController.showTutorial("/example.html");
+      sparks.sparksTutorialController.showTutorial("/example.html");
       openCalled.should.be true
     
       openCalled = false;
@@ -1174,7 +1174,7 @@ describe 'Page Reports'
         url.should.be sparks.tutorial_base_url + "example.html"
         openCalled = true;
       };
-      sparks.sparksReportController.showTutorial("example.html");
+      sparks.sparksTutorialController.showTutorial("example.html");
       openCalled.should.be true
   
       window.open = oldOpen;

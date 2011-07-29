@@ -3389,7 +3389,8 @@ sparks.createQuestionsCSV = function(data) {
           $tutorialButton = $("<button>").text("Tutorial").css('padding-left', "10px")
                               .css('padding-right', "10px").css('margin-left', "20px");
           $tutorialButton.click(function(){
-            sparks.sparksReportController.showTutorial(question.tutorial);
+            console.log("CLICK!!!!!!!!!!!!!!")
+            sparks.sparksTutorialController.showTutorial(question.tutorial);
           });
         } else {
         }
@@ -4176,16 +4177,6 @@ sparks.createQuestionsCSV = function(data) {
       return bestSessionReport;
     },
 
-    showTutorial: function (_url) {
-      var url;
-      if (_url.indexOf("http:") < 0 && _url.indexOf("/") !== 0){
-        url = sparks.tutorial_base_url + _url;
-      } else {
-        url = _url;
-      }
-      window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
-      sparks.sparksLogController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
-    },
 
     getCategories: function(report) {
       var categories = {};
@@ -4345,6 +4336,41 @@ sparks.createQuestionsCSV = function(data) {
   };
 
   sparks.sparksReportController = new sparks.SparksReportController();
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+
+  /*
+   * Sparks Activity Controller can be accessed by the
+   * singleton variable sparks.sparksActivityController
+   */
+  sparks.SparksTutorialController = function(){
+  };
+
+  sparks.SparksTutorialController.prototype = {
+
+    showTutorial: function(filename) {
+      console.log("************ show!")
+      var url = this._getURL(filename);
+      console.log(url)
+      window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
+      sparks.sparksLogController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
+    },
+
+    _getURL: function(filename) {
+      var url;
+      if (filename.indexOf("http:") < 0 && filename.indexOf("/") !== 0){
+        return sparks.tutorial_base_url + filename;
+      } else {
+        return filename;
+      }
+    }
+
+
+  };
+
+  sparks.sparksTutorialController = new sparks.SparksTutorialController();
 })();
 /*globals console sparks $ breadModel getBreadBoard */
 
@@ -6729,7 +6755,7 @@ var apMessageBox = apMessageBox || {};
   sparks.config.flash_id = 'breadboardActivity1';
   sparks.activity_base_url = "http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/";
   sparks.activity_images_base_url = "http://couchdb.cosmos.concord.org/sparks/";
-  sparks.tutorial_base_url = "http://sparks.portal.concord.org/sparks-content/tutorials/";
+  sparks.tutorial_base_url = "http://sparks.portal.concord.org/content/tutorials/";
 
   $(document).ready(function () {
       onDocumentReady();

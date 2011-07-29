@@ -235,7 +235,7 @@
           $tutorialButton = $("<button>").text("Tutorial").css('padding-left', "10px")
                               .css('padding-right', "10px").css('margin-left', "20px");
           $tutorialButton.click(function(){
-            sparks.sparksReportController.showTutorial(question.tutorial);
+            sparks.sparksTutorialController.showTutorial(question.tutorial);
           });
         } else {
         }
