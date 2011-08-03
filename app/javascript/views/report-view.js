@@ -41,6 +41,7 @@
       var passedCurrentSection = false;
       var isNextSection = false;
       var nextSectionDidPass = false;
+      
       $.each(sparks.sparksActivity.sections, function(i, section){
         var isThisSection = (section === currentSection);
         if (!nextSectionDidPass && !section.visited){
@@ -51,12 +52,9 @@
         }
         
         if (section.visited) {
-          var totalSectionScore = 0;
-          $.each(section.pages, function(i, page){
-            var score = sparks.sparksReportController.getTotalScoreForPage(page, section);
-            totalSectionScore += score;
-            totalScore += score;
-          });
+          var totalSectionScore = sparks.sparksReportController.getTotalScoreForSection(section);
+          var lastThreeSectionScore = sparks.sparksReportController.getLastThreeScoreForSection(section);
+          totalScore += totalSectionScore;
         }
         var $btn = null;
         if (section.visited){
@@ -81,40 +79,6 @@
       });
       
       $div.append($table);
-           //  
-           // 
-           // $.each(sparks.sparksActivity.sections, function(i, section){
-           //   
-           //   $div.append('<h2>Section '+(i+1)+': '+section.title+'</h2>');
-           //   var pages = section.pages;
-           //   
-           //   var $table = $("<table>");
-           //   $.each(pages, function(i, page){
-           //     // $div.append('<h3>Page '+(i+1)+"</h3>");
-           //     // var bestSessionReport = sparks.sparksReportController.getBestSessionReport(page);
-           //     // $div.append(self._createReportTableForSession(bestSessionReport));
-           //     var score = sparks.sparksReportController.getTotalScoreForPage(page, section);
-           //     
-           //     var $tr = $("<tr>");
-           //     $tr.append("<td>Page "+(i+1)+": "+ score   +" points</td>");
-           //     if (section === currentSection){
-           //       var $td = $("<td>").css("border","0");
-           //       var returnButton = $("<button>").addClass("return").text("Try Page "+(i+1)+" again");
-           //       $td.append(returnButton);
-           //       $tr.append($td);
-           //       returnButton.click(function(){
-           //         sparks.sparksSectionController.repeatPage(page, section);
-           //         });
-           // 
-           //     }
-           //     $table.append($tr);
-           //     
-           //     totalScore += score;
-           //     
-           //   });
-           //   $div.append($table);
-           // });
-           // 
       
       var $score = $("<span>").css("font-size", "11pt").html("<u>You have scored <b>"+totalScore+"</b> points so far.</u>");
       $div.find('h1').after($score);
@@ -165,21 +129,37 @@
       var $table = $("<table>").addClass('categoryReport');
       $table.append(
         $('<tr>').append(
-          $('<th>').text("Question Categories"),
-          $('<th>').text("% Correct")
+          $('<th>').text("Question Categories")
         )
       );
       
       $.each(categories, function(category, score){
         var $btn = $('<button>').addClass("tutorial").text("View tutorial");
         $btn.click(function(){
-          sparks.sparksTutorialController.showTutorial(score[2]);
+          sparks.sparksTutorialController.showTutorial(score[3]);
+        });
+        
+        var light;
+        switch (score[2]) {
+          case 0:
+            light = "common/icons/light-red.png";
+            break;
+          case 1:
+          case 2:
+           light = "common/icons/light-off.png";
+           break;
+          case 3:
+           light = "common/icons/light-on.png";
+        }
+        var $img = $('<img>').attr('src', light).attr('width', 35);
+        $img.easyTooltip({
+           content: "You got "+score[2]+" out of the last "+(Math.min(score[1],3))+" questions of this type correct"
         });
         
         $table.append(
           $('<tr>').append(
             $('<td>').html(category),
-            $('<td>').html(sparks.math.roundToSigDigits((score[0]/score[1])*100, 2)+"% ("+score[0]+"/"+score[1]+")"),
+            $('<td>').append($img),
             $('<td>').append($btn)
           )
         );

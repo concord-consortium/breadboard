@@ -189,3 +189,10 @@ background-color: #f9eec1;
 color: #c71a1f;
 border-bottom-style:solid;
 }
+
+#easyTooltip{
+	padding:5px 10px;
+	border:1px solid #195fa4;
+	background:#195fa4 url(../../common/icons/bg.gif) repeat-x;
+	color:#fff;
+}

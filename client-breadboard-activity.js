@@ -1879,6 +1879,72 @@ if (window.attachEvent) {
   }
 
 })(jQuery);
+/*
+ * 	Easy Tooltip 1.0 - jQuery plugin
+ *	written by Alen Grakalic
+ *	http://cssglobe.com/post/4380/easy-tooltip--jquery-plugin
+ *
+ *	Copyright (c) 2009 Alen Grakalic (http://cssglobe.com)
+ *	Dual licensed under the MIT (MIT-LICENSE.txt)
+ *	and GPL (GPL-LICENSE.txt) licenses.
+ *
+ *	Built for jQuery library
+ *	http://jquery.com
+ *
+ */
+
+(function($) {
+
+	$.fn.easyTooltip = function(options){
+
+		var defaults = {
+			xOffset: 10,
+			yOffset: 25,
+			tooltipId: "easyTooltip",
+			clickRemove: false,
+			content: "",
+			useElement: ""
+		};
+
+		var options = $.extend(defaults, options);
+		var content;
+
+		this.each(function() {
+			var title = $(this).attr("title");
+			$(this).hover(function(e){
+				content = (options.content != "") ? options.content : title;
+				content = (options.useElement != "") ? $("#" + options.useElement).html() : content;
+				$(this).attr("title","");
+				if (content != "" && content != undefined){
+					$("body").append("<div id='"+ options.tooltipId +"'>"+ content +"</div>");
+					$("#" + options.tooltipId)
+						.css("position","absolute")
+						.css("top",(e.pageY - options.yOffset) + "px")
+						.css("left",(e.pageX + options.xOffset) + "px")
+						.css("display","none")
+						.fadeIn("fast")
+				}
+			},
+			function(){
+				$("#" + options.tooltipId).remove();
+				$(this).attr("title",title);
+			});
+			$(this).mousemove(function(e){
+				$("#" + options.tooltipId)
+					.css("top",(e.pageY - options.yOffset) + "px")
+					.css("left",(e.pageX + options.xOffset) + "px")
+			});
+			if(options.clickRemove){
+				$(this).mousedown(function(e){
+					$("#" + options.tooltipId).remove();
+					$(this).attr("title",title);
+				});
+			}
+		});
+
+	};
+
+})(jQuery);
 /*globals console sparks $*/
 
 (function (){
@@ -3319,22 +3385,37 @@ sparks.createQuestionsCSV = function(data) {
       var $table = $("<table>").addClass('categoryReport');
       $table.append(
         $('<tr>').append(
-          $('<th>').text("Question Categories"),
-          $('<th>').text("% Correct")
+          $('<th>').text("Question Categories")
         )
       );
 
       $.each(categories, function(category, score){
-        debugger
         var $btn = $('<button>').addClass("tutorial").text("View tutorial");
         $btn.click(function(){
-          sparks.sparksTutorialController.showTutorial(score[2]);
+          sparks.sparksTutorialController.showTutorial(score[3]);
+        });
+
+        var light;
+        switch (score[2]) {
+          case 0:
+            light = "common/icons/light-red.png";
+            break;
+          case 1:
+          case 2:
+           light = "common/icons/light-off.png";
+           break;
+          case 3:
+           light = "common/icons/light-on.png";
+        }
+        var $img = $('<img>').attr('src', light).attr('width', 35);
+        $img.easyTooltip({
+           content: "You got "+score[2]+" out of the last "+(Math.min(score[1],3))+" questions of this type correct"
         });
 
         $table.append(
           $('<tr>').append(
             $('<td>').html(category),
-            $('<td>').html(sparks.math.roundToSigDigits((score[0]/score[1])*100, 2)+"% ("+score[0]+"/"+score[1]+")"),
+            $('<td>').append($img),
             $('<td>').append($btn)
           )
         );
@@ -4180,25 +4261,64 @@ sparks.createQuestionsCSV = function(data) {
     getCategories: function(report) {
       var categories = {};
       var self = this;
+      var sessions = this._sortSessionsByTime(report);
+
+      $.each(sessions, function(k, sessionReport){
+        $.each(sessionReport.questions, function(l, question){
+          if (!!question.category){
+            var category = question.category;
+            if (!categories[category.categoryTitle]){
+              categories[category.categoryTitle] = [0,0,0,category.tutorial,[]];
+            }
+            var right = categories[category.categoryTitle][0];
+            var total = categories[category.categoryTitle][1];
+            categories[category.categoryTitle][0] = question.answerIsCorrect ? right + 1 : right;
+            categories[category.categoryTitle][1] = total + 1;
+
+            categories[category.categoryTitle][4].push( question.answerIsCorrect ? 1 : 0 );
+            if (categories[category.categoryTitle][4].length > 3) {
+              categories[category.categoryTitle][4].shift();
+            }
+            categories[category.categoryTitle][2] = 0;
+            $.each(categories[category.categoryTitle][4], function(m, val){
+              categories[category.categoryTitle][2] += val;
+            });
+          }
+        });
+      });
+
+      return categories;
+    },
+
+    _sortSessionsByTime: function(report) {
+      var sessions = [];
+      var length = 0;
+
       $.each(report.sectionReports, function(i, sectionReport){
         $.each(sectionReport.pageReports, function(j, pageReport){
           $.each(pageReport.sessionReports, function(k, sessionReport){
-            $.each(sessionReport.questions, function(l, question){
-              if (!!question.category){
-                var category = question.category;
-                if (!categories[category.categoryTitle]){
-                  categories[category.categoryTitle] = [0,0,category.tutorial];
+            if (length === 0) {
+              sessions.push(sessionReport);
+            } else {
+              var time = sessionReport.log.startTime;
+              var inserted = false;
+              for (var x = 0; x < length; x++){
+                if (time < sessions[x].log.startTime) {
+                  sessions.splice(x, 0, sessionReport);
+                  inserted = true;
+                  break;
                 }
-                var right = categories[category.categoryTitle][0];
-                var total = categories[category.categoryTitle][1];
-                categories[category.categoryTitle][0] = question.answerIsCorrect ? right + 1 : right;
-                categories[category.categoryTitle][1] = total + 1;
               }
-            });
+              if (!inserted){
+                sessions.push(sessionReport);
+              }
+            }
+            length++;
           });
         });
       });
-      return categories;
+
+      return sessions;
     },
 
     saveData: function() {

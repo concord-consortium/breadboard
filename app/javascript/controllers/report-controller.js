@@ -148,33 +148,74 @@
       return bestSessionReport;
     },
     
-    //
+    // each category is stored as an array:
+    // [total answered correctly, total, total of previous 3 answered correctly, tutorial url]
     // categories = {
-    //   'breadboards': [0, 1, 'tutorial-1'].
-    //   'voltage': [1,1, 'tutorial-2']  
+    //   'breadboards': [0, 1, 0, 'tutorial-1'].
+    //   'voltage': [4, 5, 2, 'tutorial-2']  
     // }
     getCategories: function(report) {
       var categories = {};
       var self = this;
+      var sessions = this._sortSessionsByTime(report);
+      
+      $.each(sessions, function(k, sessionReport){
+        $.each(sessionReport.questions, function(l, question){
+          if (!!question.category){
+            var category = question.category;
+            if (!categories[category.categoryTitle]){
+              categories[category.categoryTitle] = [0,0,0,category.tutorial,[]];
+            }
+            var right = categories[category.categoryTitle][0];
+            var total = categories[category.categoryTitle][1];
+            categories[category.categoryTitle][0] = question.answerIsCorrect ? right + 1 : right;
+            categories[category.categoryTitle][1] = total + 1;
+            
+            // this is ugly. There is a more efficient way to do this
+            categories[category.categoryTitle][4].push( question.answerIsCorrect ? 1 : 0 );
+            if (categories[category.categoryTitle][4].length > 3) {
+              categories[category.categoryTitle][4].shift();
+            }
+            categories[category.categoryTitle][2] = 0;
+            $.each(categories[category.categoryTitle][4], function(m, val){
+              categories[category.categoryTitle][2] += val;
+            });
+          }
+        });
+      });
+      
+      return categories;
+    },
+    
+    _sortSessionsByTime: function(report) {
+      var sessions = [];
+      var length = 0;
+      
       $.each(report.sectionReports, function(i, sectionReport){
         $.each(sectionReport.pageReports, function(j, pageReport){
           $.each(pageReport.sessionReports, function(k, sessionReport){
-            $.each(sessionReport.questions, function(l, question){
-              if (!!question.category){
-                var category = question.category;
-                if (!categories[category.categoryTitle]){
-                  categories[category.categoryTitle] = [0,0,category.tutorial];
+            if (length === 0) {
+              sessions.push(sessionReport);
+            } else {
+              var time = sessionReport.log.startTime;
+              var inserted = false;
+              for (var x = 0; x < length; x++){
+                if (time < sessions[x].log.startTime) {
+                  sessions.splice(x, 0, sessionReport);
+                  inserted = true;
+                  break;
                 }
-                var right = categories[category.categoryTitle][0];
-                var total = categories[category.categoryTitle][1];
-                categories[category.categoryTitle][0] = question.answerIsCorrect ? right + 1 : right;
-                categories[category.categoryTitle][1] = total + 1;
               }
-            });
+              if (!inserted){
+                sessions.push(sessionReport);
+              }
+            }
+            length++;
           });
         });
       });
-      return categories;
+      
+      return sessions;
     },
 
     saveData: function() {
