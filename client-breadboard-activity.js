@@ -6204,7 +6204,7 @@ sparks.createQuestionsCSV = function(data) {
           if (existingMeasurement !== undefined && existingMeasurement !== null){
             return existingMeasurement;
           } else {
-            var measurement = breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection);
+            var measurement = Math.abs(breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection));
             this.measurements[measurmentKey] = measurement;
             return measurement;
           }
