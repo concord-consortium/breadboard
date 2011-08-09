@@ -111,7 +111,7 @@ table.finalReport td button {
 
 .no_check {
   background: url("../../common/icons/no-check.png") no-repeat;
-  background-position: 0px 8px;
+  background-position: 5px 8px;
   width: 43px;
   height: 43px;
   position: relative;

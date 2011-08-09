@@ -3298,6 +3298,7 @@ sparks.createQuestionsCSV = function(data) {
       var passedCurrentSection = false;
       var isNextSection = false;
       var nextSectionDidPass = false;
+
       $.each(sparks.sparksActivity.sections, function(i, section){
         var isThisSection = (section === currentSection);
         if (!nextSectionDidPass && !section.visited){
@@ -3308,11 +3309,23 @@ sparks.createQuestionsCSV = function(data) {
         }
 
         if (section.visited) {
-          var totalSectionScore = 0;
-          $.each(section.pages, function(i, page){
-            var score = sparks.sparksReportController.getTotalScoreForPage(page, section);
-            totalSectionScore += score;
-            totalScore += score;
+          var totalSectionScore = sparks.sparksReportController.getTotalScoreForSection(section);
+          var lastThreeSectionScore = sparks.sparksReportController.getLastThreeScoreForSection(section);
+          var timesRun = lastThreeSectionScore[1];
+          lastThreeSectionScore = lastThreeSectionScore[0];
+          totalScore += totalSectionScore;
+
+          var light;
+          if (lastThreeSectionScore < 0.30){
+            light = "common/icons/light-red.png";
+          } else if (lastThreeSectionScore < 0.90) {
+            light = "common/icons/light-off.png";
+          } else {
+            light = "common/icons/light-on.png";
+          }
+          var $img = $('<img>').attr('src', light).attr('width', 35);
+          $img.easyTooltip({
+             content: "You scored "+sparks.math.roundToSigDigits(lastThreeSectionScore*100,3)+"% of the possible points from the last "+timesRun+" times you ran this level"
           });
         }
         var $btn = null;
@@ -3327,9 +3340,10 @@ sparks.createQuestionsCSV = function(data) {
             sparks.sparksActivityController.nextSection();
           });
         }
+
         $table.append(
           $('<tr>').append(
-            $('<td>').addClass(section.visited ? "check" : "no_check"),
+            $('<td>').addClass(section.visited ? "" : "no_check").css('padding-left', '0px').append($img),
             $('<td>').text(section.title),
             $('<td>').text(section.visited ? totalSectionScore : ''),
             $('<td>').append($btn)
@@ -3385,6 +3399,7 @@ sparks.createQuestionsCSV = function(data) {
       var $table = $("<table>").addClass('categoryReport');
       $table.append(
         $('<tr>').append(
+          $('<th>'),
           $('<th>').text("Question Categories")
         )
       );
@@ -3414,8 +3429,8 @@ sparks.createQuestionsCSV = function(data) {
 
         $table.append(
           $('<tr>').append(
-            $('<td>').html(category),
             $('<td>').append($img),
+            $('<td>').html(category),
             $('<td>').append($btn)
           )
         );
@@ -4228,6 +4243,48 @@ sparks.createQuestionsCSV = function(data) {
         totalScore += self.getTotalScoreForPage(page, section);
       });
       return totalScore;
+    },
+
+    getLastThreeScoreForSection: function(section) {
+      var totalScore = 0;
+      var maxScore = 0;
+      var timesRun = 0;
+      var self = this;
+      $.each(section.pages, function(i, page){
+        var scores = self.getLastThreeScoreForPage(page, section);
+        totalScore += scores[0];
+        maxScore += scores[1];
+        timesRun = Math.max(timesRun, scores[2]);
+      });
+
+      return [totalScore / maxScore, timesRun];
+    },
+
+    getLastThreeScoreForPage: function(page, section) {
+      var sectionReport;
+      if (!!section){
+        sectionReport = sparks.sparksReport.sectionReports[section];
+      } else {
+        sectionReport = this.currentSectionReport;
+      }
+      if (!sectionReport || !sectionReport.pageReports[page]){
+        console.log("ERROR: No session reports for page");
+        return 0;
+      }
+      return this.getLastThreeScoreForPageReport(sectionReport.pageReports[page]);
+    },
+
+    getLastThreeScoreForPageReport: function(pageReport) {
+      var sessionReports = pageReport.sessionReports;
+      var totalScore = 0;
+      var maxScore = 0;
+      for (var i = sessionReports.length-1; i >= (sessionReports.length - 3) && i > -1; i--){
+        var report = sessionReports[i];
+        totalScore += report.score;
+        maxScore += report.maxScore;
+      }
+      numRuns = Math.min(sessionReports.length, 3);
+      return [totalScore,maxScore, numRuns];
     },
 
     getLastSessionReport: function(page) {

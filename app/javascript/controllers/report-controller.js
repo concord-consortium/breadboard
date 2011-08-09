@@ -120,6 +120,49 @@
       return totalScore;
     },
     
+    // this is not very DRY. To be refactored
+    getLastThreeScoreForSection: function(section) {
+      var totalScore = 0;
+      var maxScore = 0;
+      var timesRun = 0;
+      var self = this;
+      $.each(section.pages, function(i, page){
+        var scores = self.getLastThreeScoreForPage(page, section);
+        totalScore += scores[0];
+        maxScore += scores[1];
+        timesRun = Math.max(timesRun, scores[2]);
+      });
+      
+      return [totalScore / maxScore, timesRun];
+    },
+    
+    getLastThreeScoreForPage: function(page, section) {
+      var sectionReport;
+      if (!!section){
+        sectionReport = sparks.sparksReport.sectionReports[section];
+      } else {
+        sectionReport = this.currentSectionReport;
+      }
+      if (!sectionReport || !sectionReport.pageReports[page]){
+        console.log("ERROR: No session reports for page");
+        return 0;
+      }
+      return this.getLastThreeScoreForPageReport(sectionReport.pageReports[page]);
+    },
+    
+    getLastThreeScoreForPageReport: function(pageReport) {
+      var sessionReports = pageReport.sessionReports;
+      var totalScore = 0;
+      var maxScore = 0;
+      for (var i = sessionReports.length-1; i >= (sessionReports.length - 3) && i > -1; i--){
+        var report = sessionReports[i];
+        totalScore += report.score;
+        maxScore += report.maxScore;
+      }
+      numRuns = Math.min(sessionReports.length, 3);
+      return [totalScore,maxScore, numRuns];
+    },
+    
     getLastSessionReport: function(page) {
       if (!this.currentSectionReport.pageReports[page]){
         console.log("ERROR: No session reports for page");

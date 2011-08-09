@@ -54,7 +54,22 @@
         if (section.visited) {
           var totalSectionScore = sparks.sparksReportController.getTotalScoreForSection(section);
           var lastThreeSectionScore = sparks.sparksReportController.getLastThreeScoreForSection(section);
+          var timesRun = lastThreeSectionScore[1];
+          lastThreeSectionScore = lastThreeSectionScore[0];
           totalScore += totalSectionScore;
+          
+          var light;
+          if (lastThreeSectionScore < 0.30){
+            light = "common/icons/light-red.png";
+          } else if (lastThreeSectionScore < 0.90) {  
+            light = "common/icons/light-off.png";
+          } else {  
+            light = "common/icons/light-on.png";
+          }
+          var $img = $('<img>').attr('src', light).attr('width', 35);
+          $img.easyTooltip({
+             content: "You scored "+sparks.math.roundToSigDigits(lastThreeSectionScore*100,3)+"% of the possible points from the last "+timesRun+" times you ran this level"
+          });
         }
         var $btn = null;
         if (section.visited){
@@ -68,9 +83,10 @@
             sparks.sparksActivityController.nextSection();
           });
         }
+        
         $table.append(
           $('<tr>').append(
-            $('<td>').addClass(section.visited ? "check" : "no_check"),
+            $('<td>').addClass(section.visited ? "" : "no_check").css('padding-left', '0px').append($img),
             $('<td>').text(section.title),
             $('<td>').text(section.visited ? totalSectionScore : ''),
             $('<td>').append($btn)
@@ -129,6 +145,7 @@
       var $table = $("<table>").addClass('categoryReport');
       $table.append(
         $('<tr>').append(
+          $('<th>'),
           $('<th>').text("Question Categories")
         )
       );
@@ -158,8 +175,8 @@
         
         $table.append(
           $('<tr>').append(
-            $('<td>').html(category),
             $('<td>').append($img),
+            $('<td>').html(category),
             $('<td>').append($btn)
           )
         );

@@ -6,6 +6,7 @@
 //= require <jquery/plugins/jquery.bgiframe.min>
 //= require <jquery/plugins/jquery.flash>
 //= require <jquery/plugins/jquery.couch>
+//= require <jquery/plugins/jquery.easyTooltip>
 //= require <data-source/couch-ds>
 //= require <helpers/util>
 //= require <helpers/unit>
