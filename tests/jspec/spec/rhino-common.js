@@ -36,4 +36,5 @@ specResults = JSpec
 
 .exec('spec/spec.reporting/spec.questions.js')
 .exec('spec/spec.reporting/spec.page_reports.js')
+.exec('spec/spec.reporting/spec.activity_reports.js')
 .exec('spec/spec.reporting/spec.logging.js')

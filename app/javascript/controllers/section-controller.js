@@ -14,6 +14,7 @@
     this.multimeter = null; // this is a kind of strange place for this, yes
     
     this.jsonSection = null;
+    this.id = -1;
   };
   
   sparks.SparksSectionController.prototype = {
@@ -28,7 +29,7 @@
     createSection: function(jsonSection) {
       var section = new sparks.SparksSection();
       
-      section.id = jsonSection._id;
+      section.id = jsonSection._id || this.nextId();
       section.title = jsonSection.title;
       
       section.section_url = sparks.activity_base_url + section.id;
@@ -159,6 +160,11 @@
       
       var $report = sparks.sparksReport.view.getActivityReportView();
       this.currentPage.view.showReport($report, true);
+    },
+    
+    nextId: function() {
+      this.id = this.id + 1;
+      return this.id;
     }
     
   };

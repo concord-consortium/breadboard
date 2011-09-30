@@ -20,14 +20,22 @@
       sparks.sparksActivity.id = activity._id;
       var self = this;
       var totalCreated = 0;
-      $.each(activity.sections, function(i, jsonSectionName){
-        sparks.couchDS.loadActivity(jsonSectionName, function(jsonSection) {
+      $.each(activity.sections, function(i, jsonSection){
+        if (!!jsonSection.pages){
           self.addSection(jsonSection, i);
           totalCreated++;
           if (totalCreated == activity.sections.length){
             callback();
           }
-        });
+        } else {
+          sparks.couchDS.loadActivity(jsonSectionName, function(jsonSection) {
+            self.addSection(jsonSection, i);
+            totalCreated++;
+            if (totalCreated == activity.sections.length){
+              callback();
+            }
+          }); 
+        }
       });
     },
     
@@ -73,7 +81,6 @@
     
     nextSection: function () {
       if (this.currentSectionIndex > sparks.sparksActivity.sections.length -1) {
-        console.log("No next section");
         return;
       }
       this.setCurrentSection(this.currentSectionIndex + 1);
