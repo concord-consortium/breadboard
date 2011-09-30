@@ -8,12 +8,19 @@
 Sparks uses Sprockets (http://getsprockets.org) to manage the javascript code.  Sprockets combines the individual JS files into a single file per activity. To avoid duplication, these files aren't managed by git.
 
 To build the combined JS files:
-
- // install sprockets if necessary
- gem install sprockets
+ 
+ // Setup rvm to use Ruby 1.8.7 and a gemset named sparks
+ rvm use 1.8.7
+ rvm gemset create sparks
+ echo "rvm use 1.8.7@sparks" > .rvmrc
+ cd .
+ 
+ // install bundler and the necessary gems
+ gem install bundler
+ bundle install --binstubs
  
  // build using sprockets, from top folder
- rake
+ bin/rake
  
 "rake" will need to be called each time a Javascript file is changed.
 
