@@ -1,0 +1,50 @@
+<html>
+  <head>
+    <title>SPARKS Class Report</title>
+
+    <meta content='text/html; charset=utf-8' http-equiv='Content-Type' />
+
+    <link href='lib/jquery/css/ui-lightness/jquery-ui-1.8.custom.css' rel='stylesheet' type='text/css' />
+    <link href='common/stylesheets/app.css' rel='stylesheet' type='text/css' />
+    <link href='common/stylesheets/sparks.css' rel='stylesheet' type='text/css' />
+    
+    <style>
+      #HTMLLog{display:none;background:#000;color:#c00;height:100px;padding:10px;margin:10px;}
+    </style>
+    
+    <script src="client-breadboard-activity.js" type="text/javascript"></script>
+  </head>
+  <body>
+    
+    <div class="wrapper" id="wrapper" style="width: 950px;">
+      <div class="wrapper-title" style="height: 100px; padding-left: 25px; background-color: eeeeee; border-bottom: solid #999999">
+        <a href="http://sparks.portal.concord.org/">
+          <img class='no_border' src='common/icons/sparks-left-logo.png' style="float:left; height: 90px; margin: 5px"/>
+        </a>
+        <h1 style="padding: 25px; margin-left: 90px">
+          <span id="title"></span>
+        </h1>
+      </div>
+      <div id="primary">
+        
+        <div id="loading">
+          <img src="common/icons/ajax-loader.gif" style="float: left; padding: 10px"/>
+          <div id="loading-text" style="padding-top: 17px">
+            Loading reports
+          </div>
+        </div>
+        
+        <div id="report">
+        </div>
+        
+        
+      </div>
+      <div id="footer">
+        <div class="footer-inner">
+          <p id="footer_right"></p>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>

@@ -60,10 +60,18 @@
   
   this.onDocumentReady = function () {
     // first set student data if necessary, then load activity
+    if (location.pathname.indexOf("class-report") > -1){
+      this.loadClassReport();
+    } else {
+      this.loadActivity();
+    }
+  };
+  
+  this.loadActivity = function () {
     var learner_id = sparks.util.readCookie('learner_id');
        
     if (learner_id) {
-       console.log("setting user "+learner_id)
+       console.log("setting user "+learner_id);
        var user = {"learner_id": learner_id, "name": sparks.util.readCookie('student_name'),
          "student_id": sparks.util.readCookie('student_id'), "class_id": sparks.util.readCookie('class_id')};
        sparks.couchDS.setUser(user);
@@ -91,7 +99,21 @@
     this.initActivity = function () {
         sparks.flash.init();
     };
-
+  };
+  
+  this.loadClassReport = function () {
+    // try with e.g. "Sam+Student, Taylor+Olpin, Raymond+Gills, Spencer+Newman"
+    var names = prompt("Enter a list of student names", ""),
+        namesArr = names.split(/ *, */);
+    sparks.sparksClassReportController.getStudentData(
+      "series-resistances", 
+      namesArr, 
+      function(reports) {
+        $('#loading').hide();
+        var view = new sparks.SparksClassReportView(),
+            $report = view.getClassReportView(reports);
+        $('#report').append($report);
+      });
   };
 })();
  

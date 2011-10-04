@@ -33,7 +33,7 @@
     
     _createStudentRow: function(report, numLevels, even) {
       var $tr = $("<tr class='" + (even ? "evenrow'>" : "oddrow'>")),
-          name = report.user.name,
+          name = this._cleanStudentName(report.user.name),
           totalScore = 0;
       $tr.append("<td class='firstcol'>" + name + "</td>");
       for (var i = 0, ii = report.sectionReports.length; i < ii; i++){
@@ -61,6 +61,13 @@
       
       $tr.append("<td class='lastcol'>"+totalScore+"</td>");
       return $tr;
+    },
+    
+    _cleanStudentName: function (name) {
+      if (name.indexOf('+') > -1){
+        return name.split("+").join(" ");
+      }
+      return name;
     }
     // ,
     //     

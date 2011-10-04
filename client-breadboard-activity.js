@@ -3565,7 +3565,7 @@ sparks.createQuestionsCSV = function(data) {
       for (var i = 0, ii = levels.length; i < ii; i++){
         headerRow += "<th>" + levels[i] + "</th>";
       }
-      headerRow += "<th class='lastcol'>Points</th></tr>";
+      headerRow += "<th class='lastcol'>Cumulative Points</th></tr>";
       $table.append(headerRow);
 
       for (i = 0, ii = reports.length; i < ii; i++){
@@ -3580,7 +3580,7 @@ sparks.createQuestionsCSV = function(data) {
 
     _createStudentRow: function(report, numLevels, even) {
       var $tr = $("<tr class='" + (even ? "evenrow'>" : "oddrow'>")),
-          name = report.user.name,
+          name = this._cleanStudentName(report.user.name),
           totalScore = 0;
       $tr.append("<td class='firstcol'>" + name + "</td>");
       for (var i = 0, ii = report.sectionReports.length; i < ii; i++){
@@ -3608,6 +3608,13 @@ sparks.createQuestionsCSV = function(data) {
 
       $tr.append("<td class='lastcol'>"+totalScore+"</td>");
       return $tr;
+    },
+
+    _cleanStudentName: function (name) {
+      if (name.indexOf('+') > -1){
+        return name.split("+").join(" ");
+      }
+      return name;
     }
   };
 })();
@@ -4666,12 +4673,10 @@ sparks.createQuestionsCSV = function(data) {
             mostSections = 0;
         for (var i = 0, ii = this.reports.length; i < ii; i++){
           var numSections = this.reports[i].sectionReports.length;
-          console.log("numSections = "+numSections)
           if (numSections > mostSections){
             mostSections = numSections;
             reportWithMostSections = i;
           }
-          console.log("reportWithMostSections = "+reportWithMostSections)
         }
         var sectionReports = this.reports[reportWithMostSections].sectionReports;
         return $.map(sectionReports, function(report, i) {
@@ -7135,10 +7140,18 @@ var apMessageBox = apMessageBox || {};
   });
 
   this.onDocumentReady = function () {
+    if (location.pathname.indexOf("class-report") > -1){
+      this.loadClassReport();
+    } else {
+      this.loadActivity();
+    }
+  };
+
+  this.loadActivity = function () {
     var learner_id = sparks.util.readCookie('learner_id');
 
     if (learner_id) {
-       console.log("setting user "+learner_id)
+       console.log("setting user "+learner_id);
        var user = {"learner_id": learner_id, "name": sparks.util.readCookie('student_name'),
          "student_id": sparks.util.readCookie('student_id'), "class_id": sparks.util.readCookie('class_id')};
        sparks.couchDS.setUser(user);
@@ -7164,7 +7177,20 @@ var apMessageBox = apMessageBox || {};
     this.initActivity = function () {
         sparks.flash.init();
     };
+  };
 
+  this.loadClassReport = function () {
+    var names = prompt("Enter a list of student names", ""),
+        namesArr = names.split(/ *, */);
+    sparks.sparksClassReportController.getStudentData(
+      "series-resistances",
+      namesArr,
+      function(reports) {
+        $('#loading').hide();
+        var view = new sparks.SparksClassReportView(),
+            $report = view.getClassReportView(reports);
+        $('#report').append($report);
+      });
   };
 })();
 
