@@ -21,12 +21,14 @@
 //= require <views/page-view>
 //= require <views/question-view>
 //= require <views/report-view>
+//= require <views/class-report-view>
 //= require <controllers/question-controller>
 //= require <controllers/page-controller>
 //= require <controllers/log-controller>
 //= require <controllers/section-controller>
 //= require <controllers/activity-controller>
 //= require <controllers/report-controller>
+//= require <controllers/class-report-controller>
 //= require <controllers/tutorial-controller>
 //= require <activity-constructor>
 //= require <helpers/math-parser>

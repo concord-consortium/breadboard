@@ -63,6 +63,39 @@ table.finalReport td {
   padding-top: 3px;
   line-height: 1.3;
 }
+
+table.classReport {
+  border: 1px black solid;
+}
+table.classReport th {
+  border-width: 0px;
+  border-bottom: 1px black solid;
+  font-size: 0.9em;
+  background: #DDD;
+}
+table.classReport td {
+  border-width: 0px;
+  font-size: 0.9em;
+}
+table th.firstcol {
+  border-right: 1px black solid;
+}
+table td.firstcol {
+  border-right: 1px black solid;
+}
+table th.lastcol {
+  border-left: 1px black solid;
+}
+table td.lastcol {
+  border-left: 1px black solid;
+}
+table.classReport tr.evenrow {
+  background: #F6F6F6;
+}
+table.classReport tr.oddrow {
+  background: #E9E9E9;
+}
+
 table.categoryReport th {
   border-width: 0px;
   font-size: 1.1em;
@@ -196,3 +229,5 @@ border-bottom-style:solid;
 	background:#195fa4 url(../../common/icons/bg.gif) repeat-x;
 	color:#fff;
 }
+
+.

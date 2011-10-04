@@ -3549,6 +3549,72 @@ sparks.createQuestionsCSV = function(data) {
 
 (function() {
 
+  sparks.SparksClassReportView = function(){
+  };
+
+  sparks.SparksClassReportView.prototype = {
+
+    getClassReportView: function(reports){
+      var $div = $('<div>');
+      $div.append('<h1>Class results</h1>');
+
+      var $table = $("<table>").addClass('classReport');
+      var levels = sparks.sparksClassReportController.getLevels();
+
+      var headerRow = "<tr><th class='firstcol'>Student Name</th>";
+      for (var i = 0, ii = levels.length; i < ii; i++){
+        headerRow += "<th>" + levels[i] + "</th>";
+      }
+      headerRow += "<th class='lastcol'>Points</th></tr>";
+      $table.append(headerRow);
+
+      for (i = 0, ii = reports.length; i < ii; i++){
+        var $studentRow = this._createStudentRow(reports[i], levels.length, i%2 === 0);
+        $table.append($studentRow);
+      }
+
+      $div.append($table);
+
+      return $div;
+    },
+
+    _createStudentRow: function(report, numLevels, even) {
+      var $tr = $("<tr class='" + (even ? "evenrow'>" : "oddrow'>")),
+          name = report.user.name,
+          totalScore = 0;
+      $tr.append("<td class='firstcol'>" + name + "</td>");
+      for (var i = 0, ii = report.sectionReports.length; i < ii; i++){
+        var summary = sparks.sparksReportController.getSummaryForSectionReport(report.sectionReports[i]),
+            light;
+        totalScore += summary[1];
+
+        if (summary[0] < 0.30){
+          light = "common/icons/light-red.png";
+        } else if (summary[0] < 0.90) {
+          light = "common/icons/light-off.png";
+        } else {
+          light = "common/icons/light-on.png";
+        }
+        var $img = $('<img>').attr('src', light).attr('width', 35);
+        $img.easyTooltip({
+           content: name + " scored "+sparks.math.roundToSigDigits(summary[0]*100,3)+"% of the possible points from the last "+summary[2]+" times they ran this level"
+        });
+        $tr.append($('<td>').append($img));
+      }
+
+      for (i = 0, ii = numLevels - report.sectionReports.length; i < ii; i++){
+        $tr.append("<td/>");
+      }
+
+      $tr.append("<td class='lastcol'>"+totalScore+"</td>");
+      return $tr;
+    }
+  };
+})();
+/*globals console sparks $ breadModel getBreadBoard */
+
+(function() {
+
   /*
    * Sparks Page Controller can be accessed by the
    * singleton variable sparks.sparksQuestionController
@@ -3893,6 +3959,7 @@ sparks.createQuestionsCSV = function(data) {
     this.multimeter = null; // this is a kind of strange place for this, yes
 
     this.jsonSection = null;
+    this.id = -1;
   };
 
   sparks.SparksSectionController.prototype = {
@@ -3905,7 +3972,7 @@ sparks.createQuestionsCSV = function(data) {
     createSection: function(jsonSection) {
       var section = new sparks.SparksSection();
 
-      section.id = jsonSection._id;
+      section.id = jsonSection._id || this.nextId();
       section.title = jsonSection.title;
 
       section.section_url = sparks.activity_base_url + section.id;
@@ -4028,6 +4095,11 @@ sparks.createQuestionsCSV = function(data) {
 
       var $report = sparks.sparksReport.view.getActivityReportView();
       this.currentPage.view.showReport($report, true);
+    },
+
+    nextId: function() {
+      this.id = this.id + 1;
+      return this.id;
     }
 
   };
@@ -4056,14 +4128,22 @@ sparks.createQuestionsCSV = function(data) {
       sparks.sparksActivity.id = activity._id;
       var self = this;
       var totalCreated = 0;
-      $.each(activity.sections, function(i, jsonSectionName){
-        sparks.couchDS.loadActivity(jsonSectionName, function(jsonSection) {
+      $.each(activity.sections, function(i, jsonSection){
+        if (!!jsonSection.pages){
           self.addSection(jsonSection, i);
           totalCreated++;
           if (totalCreated == activity.sections.length){
             callback();
           }
-        });
+        } else {
+          sparks.couchDS.loadActivity(jsonSection, function(jsonSection) {
+            self.addSection(jsonSection, i);
+            totalCreated++;
+            if (totalCreated == activity.sections.length){
+              callback();
+            }
+          });
+        }
       });
     },
 
@@ -4097,7 +4177,6 @@ sparks.createQuestionsCSV = function(data) {
 
     nextSection: function () {
       if (this.currentSectionIndex > sparks.sparksActivity.sections.length -1) {
-        console.log("No next section");
         return;
       }
       this.setCurrentSection(this.currentSectionIndex + 1);
@@ -4236,11 +4315,28 @@ sparks.createQuestionsCSV = function(data) {
       return totalScore;
     },
 
+    getSummaryForSectionReport: function(sectionReport) {
+      var lastThree = this.getLastThreeScoreForSectionReport(sectionReport),
+          lastThreePerc = lastThree[0],
+          totalRuns = lastThree[1],
+          totalScore = this.getTotalScoreForSectionReport(sectionReport);
+      return [lastThreePerc, totalScore, totalRuns];
+    },
+
     getTotalScoreForSection: function(section) {
       var totalScore = 0;
       var self = this;
       $.each(section.pages, function(i, page){
         totalScore += self.getTotalScoreForPage(page, section);
+      });
+      return totalScore;
+    },
+
+    getTotalScoreForSectionReport: function(sectionReport) {
+      var totalScore = 0;
+      var self = this;
+      $.each(sectionReport.pageReports, function(i, pageReport){
+        totalScore += self.getTotalScoreForPageReport(pageReport);
       });
       return totalScore;
     },
@@ -4252,6 +4348,21 @@ sparks.createQuestionsCSV = function(data) {
       var self = this;
       $.each(section.pages, function(i, page){
         var scores = self.getLastThreeScoreForPage(page, section);
+        totalScore += scores[0];
+        maxScore += scores[1];
+        timesRun = Math.max(timesRun, scores[2]);
+      });
+
+      return [totalScore / maxScore, timesRun];
+    },
+
+    getLastThreeScoreForSectionReport: function(sectionReport) {
+      var totalScore = 0;
+      var maxScore = 0;
+      var timesRun = 0;
+      var self = this;
+      $.each(sectionReport.pageReports, function(i, pageReport){
+        var scores = self.getLastThreeScoreForPageReport(pageReport);
         totalScore += scores[0];
         maxScore += scores[1];
         timesRun = Math.max(timesRun, scores[2]);
@@ -4512,6 +4623,67 @@ sparks.createQuestionsCSV = function(data) {
   };
 
   sparks.sparksReportController = new sparks.SparksReportController();
+})();
+/*globals console sparks $ breadModel getBreadBoard window */
+
+(function() {
+
+  /*
+   * Sparks Class Report Controller can be accessed by the
+   * singleton variable sparks.sparksClassReportController
+   *
+   * There is only one singlton sparks.sparksClassReport object. This
+   * controller creates it when the controller is created.
+   */
+  sparks.SparksClassReportController = function(){
+    this.reports = [];
+  };
+
+  sparks.SparksClassReportController.prototype = {
+
+    getStudentData: function(activityId, studentIds, callback) {
+      var totalStudents = studentIds.length,
+          responsesReceived = 0,
+          reports = this.reports;
+
+      function receivedData(response){
+        var jsonReport = response.rows[response.rows.length-1].value;
+        reports.push(jsonReport);
+        responsesReceived++;
+        if (responsesReceived === totalStudents){
+          callback(reports);
+        }
+      }
+
+      for (var i = 0; i < totalStudents; i++){
+        sparks.couchDS.loadStudentData(activityId, studentIds[i], receivedData, receivedData);
+      }
+    },
+
+    getLevels: function() {
+      if (this.reports.length > 0){
+        var reportWithMostSections = 0,
+            mostSections = 0;
+        for (var i = 0, ii = this.reports.length; i < ii; i++){
+          var numSections = this.reports[i].sectionReports.length;
+          console.log("numSections = "+numSections)
+          if (numSections > mostSections){
+            mostSections = numSections;
+            reportWithMostSections = i;
+          }
+          console.log("reportWithMostSections = "+reportWithMostSections)
+        }
+        var sectionReports = this.reports[reportWithMostSections].sectionReports;
+        return $.map(sectionReports, function(report, i) {
+          return (report.sectionTitle);
+        });
+      }
+      return [];
+    }
+
+  };
+
+  sparks.sparksClassReportController = new sparks.SparksClassReportController();
 })();
 /*globals console sparks $ breadModel getBreadBoard */
 
