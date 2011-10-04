@@ -102,12 +102,14 @@
   
   this.loadClassReport = function () {
     var namesArr,
-        activity = "series-resistances";  //FIXME
+        activity;
     if (!!sparks.util.readCookie('class_students')){
-      var learnersRaw = unescape(sparks.util.readCookie('class_students')).replace(/\+/g, ' '),
+      var activity = unescape(sparks.util.readCookie('activity_name')).split('#')[1],
+          learnersRaw = unescape(sparks.util.readCookie('class_students')).replace(/\+/g, ' '),
           learners = eval(learnersRaw);
       namesArr = $.map(learners, function(learner){return learner.name.replace(/ /g, "+");});
-    } else {
+    } else {  
+      activity = prompt("Enter the activity id");
       var names = prompt("Enter a list of student names", "");
       namesArr = names.split(/ *, */);
     }
