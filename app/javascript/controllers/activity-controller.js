@@ -28,7 +28,7 @@
             callback();
           }
         } else {
-          sparks.couchDS.loadActivity(jsonSectionName, function(jsonSection) {
+          sparks.couchDS.loadActivity(jsonSection, function(jsonSection) {
             self.addSection(jsonSection, i);
             totalCreated++;
             if (totalCreated == activity.sections.length){
