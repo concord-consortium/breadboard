@@ -23,8 +23,10 @@
           reports = this.reports;
           
       function receivedData(response){
-        var jsonReport = response.rows[response.rows.length-1].value;
-        reports.push(jsonReport);
+        if (!!response && !!response.rows){
+          var jsonReport = response.rows[response.rows.length-1].value;
+          reports.push(jsonReport);
+        }
         responsesReceived++;
         if (responsesReceived === totalStudents){
           callback(reports);

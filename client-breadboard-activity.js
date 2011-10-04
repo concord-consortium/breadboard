@@ -4654,8 +4654,10 @@ sparks.createQuestionsCSV = function(data) {
           reports = this.reports;
 
       function receivedData(response){
-        var jsonReport = response.rows[response.rows.length-1].value;
-        reports.push(jsonReport);
+        if (!!response && !!response.rows){
+          var jsonReport = response.rows[response.rows.length-1].value;
+          reports.push(jsonReport);
+        }
         responsesReceived++;
         if (responsesReceived === totalStudents){
           callback(reports);
@@ -7126,7 +7128,7 @@ var apMessageBox = apMessageBox || {};
 
 /* FILE init.js */
 
-/*globals console sparks $ document window onDocumentReady*/
+/*globals console sparks $ document window onDocumentReady unescape*/
 
 (function () {
 
@@ -7140,7 +7142,7 @@ var apMessageBox = apMessageBox || {};
   });
 
   this.onDocumentReady = function () {
-    if (location.pathname.indexOf("class-report") > -1){
+    if (window.location.pathname.indexOf("class-report") > -1){
       this.loadClassReport();
     } else {
       this.loadActivity();
@@ -7180,10 +7182,20 @@ var apMessageBox = apMessageBox || {};
   };
 
   this.loadClassReport = function () {
-    var names = prompt("Enter a list of student names", ""),
-        namesArr = names.split(/ *, */);
+    var namesArr,
+        activity = "series-resistances";  //FIXME
+    if (!!sparks.util.readCookie('class_students')){
+      var activity = unescape(sparks.util.readCookie('class_students'))
+          learnersRaw = unescape(sparks.util.readCookie('class_students')).replace(/\+/g, ' '),
+          learners = eval(learnersRaw);
+      namesArr = $.map(learners, function(learner){return learner.name.replace(/ /g, "+");});
+    } else {
+      var names = prompt("Enter a list of student names", "");
+      namesArr = names.split(/ *, */);
+    }
+
     sparks.sparksClassReportController.getStudentData(
-      "series-resistances",
+      activity,
       namesArr,
       function(reports) {
         $('#loading').hide();

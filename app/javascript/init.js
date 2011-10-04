@@ -101,7 +101,8 @@
   };
   
   this.loadClassReport = function () {
-    var namesArr;
+    var namesArr,
+        activity = "series-resistances";  //FIXME
     if (!!sparks.util.readCookie('class_students')){
       var learnersRaw = unescape(sparks.util.readCookie('class_students')).replace(/\+/g, ' '),
           learners = eval(learnersRaw);
@@ -112,7 +113,7 @@
     }
     
     sparks.sparksClassReportController.getStudentData(
-      "series-resistances", 
+      activity,
       namesArr, 
       function(reports) {
         $('#loading').hide();
