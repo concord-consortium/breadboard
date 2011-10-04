@@ -104,6 +104,7 @@
       return $div;
     },
     
+    // *** It looks like this is not used anymore
     getFinalActivityReportView: function(report) {
       var $div = $('<div>');
       $div.append('<h1>Activity results</h1>');

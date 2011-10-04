@@ -111,11 +111,30 @@
       return totalScore;
     },
     
+    getSummaryForSectionReport: function(sectionReport) {
+      var lastThree = this.getLastThreeScoreForSectionReport(sectionReport),
+          lastThreePerc = lastThree[0],
+          totalRuns = lastThree[1],
+          totalScore = this.getTotalScoreForSectionReport(sectionReport);
+      return [lastThreePerc, totalScore, totalRuns];
+    },
+    
+    // To be refactored
     getTotalScoreForSection: function(section) {
       var totalScore = 0;
       var self = this;
       $.each(section.pages, function(i, page){
         totalScore += self.getTotalScoreForPage(page, section);
+      });
+      return totalScore;
+    },
+    
+   // To be refactored
+    getTotalScoreForSectionReport: function(sectionReport) {
+      var totalScore = 0;
+      var self = this;
+      $.each(sectionReport.pageReports, function(i, pageReport){
+        totalScore += self.getTotalScoreForPageReport(pageReport);
       });
       return totalScore;
     },
@@ -128,6 +147,22 @@
       var self = this;
       $.each(section.pages, function(i, page){
         var scores = self.getLastThreeScoreForPage(page, section);
+        totalScore += scores[0];
+        maxScore += scores[1];
+        timesRun = Math.max(timesRun, scores[2]);
+      });
+      
+      return [totalScore / maxScore, timesRun];
+    },
+    
+    // this is not very DRY. To be refactored
+    getLastThreeScoreForSectionReport: function(sectionReport) {
+      var totalScore = 0;
+      var maxScore = 0;
+      var timesRun = 0;
+      var self = this;
+      $.each(sectionReport.pageReports, function(i, pageReport){
+        var scores = self.getLastThreeScoreForPageReport(pageReport);
         totalScore += scores[0];
         maxScore += scores[1];
         timesRun = Math.max(timesRun, scores[2]);
