@@ -59,7 +59,7 @@
   });
   
   this.onDocumentReady = function () {
-    if (window.location.pathname.indexOf("class-report-beta") > -1){
+    if (window.location.pathname.indexOf("class-report") > -1){
       this.loadClassReport();
     } else {
       this.loadActivity();
