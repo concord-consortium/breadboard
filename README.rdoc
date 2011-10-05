@@ -31,6 +31,9 @@ SPARKS needs to be running from a server even when running locally, so it can ac
 The simplest way to do this is to modify the file proxy/apache.conf.sample with your information (modify the paths at the bottom of the file to point to the location of your local sparks directory), and then save the file as apache.conf (i.e. remove the .sample from the file name). You can then start a local Apache server by running
 
  apachectl -f "`pwd`/proxy/apache.conf" -k start
+ 
+ // or simply
+ ./start.sh
 
 from your Sparks directory. Now you will be able to navigate to the html files in the project by pointing your browser to 
 
@@ -55,8 +58,13 @@ This application is mostly tested using JSPEC. You can install JSPEC with
  
 To run the tests on the command line with Rhino:
 
+ // optinally run bin/rake to rebuild the files
  cd tests/jspec
  java -jar spec/support/js.jar -opt -1 spec/rhino-terminal.js
+ 
+ // or just run
+ cd tests/jspec
+ ./test.sh
  
 To run the tests in the browser, visit
 
