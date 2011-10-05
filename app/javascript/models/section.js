@@ -1,8 +1,8 @@
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
-  sparks.SparksSection = function(){
-    // sparks.sparksActivity = this;
+  sparks.Section = function(){
+    // sparks.activity = this;
     
     this.title = "";
     this.id = null;
@@ -24,7 +24,7 @@
     this.view = null;
   };
   
-  sparks.SparksSection.prototype = {
+  sparks.Section.prototype = {
     
     toJSON: function () {
       var json = {};
@@ -42,7 +42,7 @@
     getIndex: function() {
       var self = this;
       var index = -1;
-      $.each(sparks.sparksActivity.sections, function(i, section){
+      $.each(sparks.activity.sections, function(i, section){
         if (section === self){
           index = i;
         }

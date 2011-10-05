@@ -2,12 +2,12 @@
 
 (function() {
   
-  sparks.SparksQuestionView = function(question){
+  sparks.QuestionView = function(question){
     this.question = question;
     this.$view = null;
   };
   
-  sparks.SparksQuestionView.prototype = {
+  sparks.QuestionView.prototype = {
     
     getView: function() {
       var question = this.question;

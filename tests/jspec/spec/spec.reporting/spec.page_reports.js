@@ -2,14 +2,14 @@ describe 'Page Reports'
 
   before_each
     breadModel('clear');
-    sparks.sparksActivityController.reset();
-    sparks.sparksReportController = new sparks.SparksReportController();
-    sparks.sparksSectionController.reset();
+    sparks.activityController.reset();
+    sparks.reportController = new sparks.ReportController();
+    sparks.sectionController.reset();
   end
   
   after_each
-    sparks.sparksSectionController.reset();
-    sparks.sparksActivityController.reset();
+    sparks.sectionController.reset();
+    sparks.activityController.reset();
   end
   
   describe 'Question grading'
@@ -43,10 +43,10 @@ describe 'Page Reports'
         var $questionsDiv = $("<div>");
 
         var ac = new sparks.ActivityConstructor(jsonSection);
-        sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-        sparks.sparksActivity.view.layoutCurrentSection();
+        sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+        sparks.activity.view.layoutCurrentSection();
         
-        var section = sparks.sparksActivityController.currentSection;
+        var section = sparks.activityController.currentSection;
         
         section.pages[0].questions.length.should.be 2
         section.pages[0].questions[0].answer.should.be ""
@@ -117,8 +117,8 @@ describe 'Page Reports'
         var $questionsDiv = $("<div>");
 
         var ac = new sparks.ActivityConstructor(jsonSection);
-        sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-        sparks.sparksActivity.view.layoutCurrentSection();
+        sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+        sparks.activity.view.layoutCurrentSection();
 
         var $input = $questionsDiv.find('input');
         $input.val("100");                          // sets val of both open-response q's
@@ -128,9 +128,9 @@ describe 'Page Reports'
         $select.val("200");                         // sets val of both selects
         $select.change();
         
-        var section = sparks.sparksActivityController.currentSection;
+        var section = sparks.activityController.currentSection;
         $.each(section.pages[0].questions, function(i, question){
-          sparks.sparksQuestionController.gradeQuestion(question);
+          sparks.questionController.gradeQuestion(question);
         });
         
         section.pages[0].questions[0].answerIsCorrect.should.be true
@@ -183,8 +183,8 @@ describe 'Page Reports'
         var $questionsDiv = $("<div>");
 
         var ac = new sparks.ActivityConstructor(jsonSection);
-        sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-        sparks.sparksActivity.view.layoutCurrentSection();
+        sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+        sparks.activity.view.layoutCurrentSection();
 
         var $input = $questionsDiv.find('input');
         $input.each(function(i, choice){
@@ -195,8 +195,8 @@ describe 'Page Reports'
           }
         });
         
-        var section = sparks.sparksActivityController.currentSection;
-        var qc = sparks.sparksQuestionController;
+        var section = sparks.activityController.currentSection;
+        var qc = sparks.questionController;
         qc.gradeQuestion(section.pages[0].questions[0]);
         qc.gradeQuestion(section.pages[0].questions[1]);
         
@@ -259,8 +259,8 @@ describe 'Page Reports'
         var $questionsDiv = $("<div>");
 
         var ac = new sparks.ActivityConstructor(jsonSection);
-        sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-        sparks.sparksActivity.view.layoutCurrentSection();
+        sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+        sparks.activity.view.layoutCurrentSection();
 
         var $input = $questionsDiv.find('input');
         $input.val("100");                          // sets val of both open-response q's
@@ -270,8 +270,8 @@ describe 'Page Reports'
         $select.val("100");                         // sets val of both selects
         $select.change();
         
-        var section = sparks.sparksActivityController.currentSection;
-        var qc = sparks.sparksQuestionController;
+        var section = sparks.activityController.currentSection;
+        var qc = sparks.questionController;
         qc.gradeQuestion(section.pages[0].questions[0]);
         qc.gradeQuestion(section.pages[0].questions[1]);
         qc.gradeQuestion(section.pages[0].questions[2]);
@@ -344,8 +344,8 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $input.val("100");                          // sets val of both open-response q's
@@ -355,8 +355,8 @@ describe 'Page Reports'
       $select.val("200");                         // sets value of both selects
       $select.change();
       
-      var section = sparks.sparksActivityController.currentSection;
-      sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      var section = sparks.activityController.currentSection;
+      sparks.reportController.addNewSessionReport(section.pages[0]);
       
       section.pages[0].questions[0].answerIsCorrect.should.be true
       section.pages[0].questions[0].points_earned.should.be 1
@@ -381,15 +381,15 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $($input[0]).val("100");                          // sets q0 to correct answer
       $($input[0]).change();
       
-      var section = sparks.sparksActivityController.currentSection;
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      var section = sparks.activityController.currentSection;
+      var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
       
       sessionReport.score.should.be 1
       sessionReport.maxScore.should.be 6
@@ -408,25 +408,25 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $($input[0]).val("100");                          // sets q0 to correct answer
       $($input[0]).change();
       
-      var section = sparks.sparksActivityController.currentSection;
+      var section = sparks.activityController.currentSection;
       
       var page = section.pages[0];
       
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(page);
+      var sessionReport = sparks.reportController.addNewSessionReport(page);
       
       sessionReport.score.should.be 1
       
       $($input[1]).val("100");                          // sets q1 to correct answer
       $($input[1]).change();
     
-      var sessionReport2 = sparks.sparksReportController.addNewSessionReport(page);
+      var sessionReport2 = sparks.reportController.addNewSessionReport(page);
       
       sessionReport2.score.should.be 2
       
@@ -435,16 +435,16 @@ describe 'Page Reports'
       $($input[1]).val("0");
       $($input[1]).change();
     
-      var sessionReport3 = sparks.sparksReportController.addNewSessionReport(page);
+      var sessionReport3 = sparks.reportController.addNewSessionReport(page);
       
       sessionReport3.score.should.be 0
       
-      sparks.sparksReportController.currentSectionReport.pageReports[page].sessionReports.length.should.be 3
+      sparks.reportController.currentSectionReport.pageReports[page].sessionReports.length.should.be 3
       
-      var bestReport = sparks.sparksReportController.getBestSessionReport(page);
+      var bestReport = sparks.reportController.getBestSessionReport(page);
       bestReport.score.should.be 2
       
-      var totalScore = sparks.sparksReportController.getTotalScoreForPage(page);
+      var totalScore = sparks.reportController.getTotalScoreForPage(page);
       totalScore.should.be 3
       
     end
@@ -463,10 +463,10 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
       
-      var section = sparks.sparksActivityController.currentSection;
+      var section = sparks.activityController.currentSection;
       var page = section.pages[0];
       
       var $input = $questionsDiv.find('input');
@@ -475,21 +475,21 @@ describe 'Page Reports'
       $($input[1]).val("100");                          // sets q1 to correct answer
       $($input[1]).change();
       
-      sparks.sparksReportController.addNewSessionReport(page);
+      sparks.reportController.addNewSessionReport(page);
       
       $($input[1]).val("0");                          // sets q1 to incorrect answer (second try is worse)
       $($input[1]).change();
-      sparks.sparksReportController.addNewSessionReport(page);
+      sparks.reportController.addNewSessionReport(page);
       
-      sparks.sparksSectionController.nextPage();
+      sparks.sectionController.nextPage();
       var page = section.pages[1];
       
       var $input = $questionsDiv.find('input');
       $($input[2]).val("100");                          // sets q2 of page 2 to correct answer
       $($input[2]).change();
-      sparks.sparksReportController.addNewSessionReport(page);
+      sparks.reportController.addNewSessionReport(page);
       
-      var totalScore = sparks.sparksReportController.getTotalScoreForSection(sparks.sparksActivityController.currentSection);
+      var totalScore = sparks.reportController.getTotalScoreForSection(sparks.activityController.currentSection);
       totalScore.should.be 4
     end
     
@@ -522,24 +522,24 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $input.val("100");                          // sets val of both open-response q's
       $input.change();
       
-      var section = sparks.sparksActivityController.currentSection;
-      var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      var section = sparks.activityController.currentSection;
+      var report = sparks.reportController.addNewSessionReport(section.pages[0]);
       
       report.timeTaken.should.be_greater_than -1
       report.score.should.be 12
       
       // pretend it took 60 seconds
-      sparks.sparksLogController.startNewSession();
-      sparks.sparksLogController.endSession();
-      sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 60000
-      var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      sparks.logController.startNewSession();
+      sparks.logController.endSession();
+      sparks.logController.currentLog.endTime = sparks.logController.currentLog.startTime + 60000
+      var report = sparks.reportController.addNewSessionReport(section.pages[0]);
       
       report.timeTaken.should.be 60
       report.score.should.be 12
@@ -548,26 +548,26 @@ describe 'Page Reports'
       report.maxTimeScore.should.be 10
       
       // pretend it took 90 seconds
-      sparks.sparksLogController.startNewSession();
-      sparks.sparksLogController.endSession();
-      sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 90000
-      var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      sparks.logController.startNewSession();
+      sparks.logController.endSession();
+      sparks.logController.currentLog.endTime = sparks.logController.currentLog.startTime + 90000
+      var report = sparks.reportController.addNewSessionReport(section.pages[0]);
       
       report.score.should.be 7
       
       // pretend it took 120 seconds
-      sparks.sparksLogController.startNewSession();
-      sparks.sparksLogController.endSession();
-      sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 120000
-      var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      sparks.logController.startNewSession();
+      sparks.logController.endSession();
+      sparks.logController.currentLog.endTime = sparks.logController.currentLog.startTime + 120000
+      var report = sparks.reportController.addNewSessionReport(section.pages[0]);
       
       report.score.should.be 2
       
       // pretend it took 200 seconds
-      sparks.sparksLogController.startNewSession();
-      sparks.sparksLogController.endSession();
-      sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 200000
-      var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      sparks.logController.startNewSession();
+      sparks.logController.endSession();
+      sparks.logController.currentLog.endTime = sparks.logController.currentLog.startTime + 200000
+      var report = sparks.reportController.addNewSessionReport(section.pages[0]);
       
       report.score.should.be 2
     end
@@ -601,15 +601,15 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $input.val("100");                          // get one question correct
       $input.change();
       
-      var section = sparks.sparksActivityController.currentSection;
-      var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      var section = sparks.activityController.currentSection;
+      var report = sparks.reportController.addNewSessionReport(section.pages[0]);
       
       report.timeTaken.should.be_greater_than -1
       report.score.should.be 1
@@ -617,12 +617,12 @@ describe 'Page Reports'
       report.timeScore.should.be 0
       
       // get both q's correct
-      sparks.sparksLogController.startNewSession();
+      sparks.logController.startNewSession();
       $($input[1]).val("200");
       $($input[1]).change();
       
-      sparks.sparksLogController.endSession();
-      var report = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      sparks.logController.endSession();
+      var report = sparks.reportController.addNewSessionReport(section.pages[0]);
       
       report.timeTaken.should.be_greater_than -1
       report.score.should.be 12
@@ -690,8 +690,8 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $input.val("100");                          // sets val of both open-response q's
@@ -701,10 +701,10 @@ describe 'Page Reports'
       $select.val("200");                         // sets val of both selects
       $select.change();
       
-      var section = sparks.sparksActivityController.currentSection;
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      var section = sparks.activityController.currentSection;
+      var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
 
-      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      var $report = sparks.report.view.getSessionReportView(sessionReport);
 
       var $headers = $report.find('th');
       $headers[0].innerHTML.should.be("Item");
@@ -774,28 +774,28 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $input.val("100");                          // sets val of both open-response q's
       $input.change();
       
-      var section = sparks.sparksActivityController.currentSection;
+      var section = sparks.activityController.currentSection;
       
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
       // and do it again
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
       // get answer wrong
       $input.val("0");                          // sets val of both open-response q's
       $input.change();
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
       // and do it right once more
       $input.val("100");                          // sets val of both open-response q's
       $input.change();
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
 
-      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      var $report = sparks.report.view.getSessionReportView(sessionReport);
 
       var $trs = $report.find('tr');
       var $ths2 = $($trs[2]).find('th');
@@ -829,16 +829,16 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
 
       var $input = $questionsDiv.find('input');
       $input.val("100");
       $input.change();
       
-      var section = sparks.sparksActivityController.currentSection;
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
-      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      var section = sparks.activityController.currentSection;
+      var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
+      var $report = sparks.report.view.getSessionReportView(sessionReport);
       
       var $trs = $report.find('tr');
       
@@ -856,11 +856,11 @@ describe 'Page Reports'
       
       
       // pretend it took 200 seconds
-      sparks.sparksLogController.startNewSession();
-      sparks.sparksLogController.endSession();
-      sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 200000
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
-      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      sparks.logController.startNewSession();
+      sparks.logController.endSession();
+      sparks.logController.currentLog.endTime = sparks.logController.currentLog.startTime + 200000
+      var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
+      var $report = sparks.report.view.getSessionReportView(sessionReport);
       
       var $trs = $report.find('tr');
       
@@ -876,11 +876,11 @@ describe 'Page Reports'
       // pretend we got below threshold
       $input.val("0");
       $input.change();
-      sparks.sparksLogController.startNewSession();
-      sparks.sparksLogController.endSession();
-      sparks.sparksLogController.currentLog.endTime = sparks.sparksLogController.currentLog.startTime + 20000
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
-      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      sparks.logController.startNewSession();
+      sparks.logController.endSession();
+      sparks.logController.currentLog.endTime = sparks.logController.currentLog.startTime + 20000
+      var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
+      var $report = sparks.report.view.getSessionReportView(sessionReport);
       
       var $trs = $report.find('tr');
       
@@ -910,10 +910,10 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
       
-      var section = sparks.sparksActivityController.currentSection;
+      var section = sparks.activityController.currentSection;
       var page = section.pages[0];
 
       var $input = $questionsDiv.find('input');
@@ -922,21 +922,21 @@ describe 'Page Reports'
       $($input[1]).val("100");                          // sets q1 to correct answer
       $($input[1]).change();
       
-      sparks.sparksReportController.addNewSessionReport(page);
+      sparks.reportController.addNewSessionReport(page);
       
       $($input[1]).val("0");                          // sets q1 to incorrect answer (second try is worse)
       $($input[1]).change();
-      sparks.sparksReportController.addNewSessionReport(page);
+      sparks.reportController.addNewSessionReport(page);
       
-      sparks.sparksSectionController.nextPage();
+      sparks.sectionController.nextPage();
       var page = section.pages[1];
       
       var $input = $questionsDiv.find('input');
       $($input[2]).val("100");                          // sets q2 of page 2 to correct answer
       $($input[2]).change();
-      sparks.sparksReportController.addNewSessionReport(page);
+      sparks.reportController.addNewSessionReport(page);
       
-      var $report = sparks.sparksReport.view.getActivityReportView();
+      var $report = sparks.report.view.getActivityReportView();
       $report.should.not.be undefined
       
       // confirm total score is calculated correctly
@@ -1012,16 +1012,16 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
 
       var $select = $questionsDiv.find('select');
       $select.val("200");
       $select.change();
     
-      var section = sparks.sparksActivityController.currentSection;
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
-      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      var section = sparks.activityController.currentSection;
+      var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
+      var $report = sparks.report.view.getSessionReportView(sessionReport);
     
       var $trs = $report.find('tr');
     
@@ -1071,16 +1071,16 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
 
       var $select = $questionsDiv.find('select');
       $select.val("200");
       $select.change();
     
-      var section = sparks.sparksActivityController.currentSection;
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
-      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      var section = sparks.activityController.currentSection;
+      var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
+      var $report = sparks.report.view.getSessionReportView(sessionReport);
     
       var $trs = $report.find('tr');
     
@@ -1127,12 +1127,12 @@ describe 'Page Reports'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
     
-      var section = sparks.sparksActivityController.currentSection;
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
-      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      var section = sparks.activityController.currentSection;
+      var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
+      var $report = sparks.report.view.getSessionReportView(sessionReport);
     
       var $trs = $report.find('tr');
     
@@ -1158,7 +1158,7 @@ describe 'Page Reports'
         url.should.be "http://example.com"
         openCalled = true;
       };
-      sparks.sparksTutorialController.showTutorial("http://example.com");
+      sparks.tutorialController.showTutorial("http://example.com");
       openCalled.should.be true
     
       openCalled = false;
@@ -1166,7 +1166,7 @@ describe 'Page Reports'
         url.should.be "/example.html"
         openCalled = true;
       };
-      sparks.sparksTutorialController.showTutorial("/example.html");
+      sparks.tutorialController.showTutorial("/example.html");
       openCalled.should.be true
     
       openCalled = false;
@@ -1174,7 +1174,7 @@ describe 'Page Reports'
         url.should.be sparks.tutorial_base_url + "example.html"
         openCalled = true;
       };
-      sparks.sparksTutorialController.showTutorial("example.html");
+      sparks.tutorialController.showTutorial("example.html");
       openCalled.should.be true
       
       openCalled = false;
@@ -1182,7 +1182,7 @@ describe 'Page Reports'
         url.should.be sparks.tutorial_base_url + "example.html"
         openCalled = true;
       };
-      sparks.sparksTutorialController.showTutorial("example");
+      sparks.tutorialController.showTutorial("example");
       openCalled.should.be true
   
       window.open = oldOpen;

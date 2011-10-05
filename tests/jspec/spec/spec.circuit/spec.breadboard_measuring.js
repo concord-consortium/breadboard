@@ -5,7 +5,7 @@ describe 'Measuring breadboard components'
     end
     
     before_each
-      stub(sparks.sparksLogController, 'addEvent').and_return(null);
+      stub(sparks.logController, 'addEvent').and_return(null);
       breadModel('clear');
     end
     

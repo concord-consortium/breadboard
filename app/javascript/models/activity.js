@@ -1,14 +1,14 @@
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
-  sparks.SparksActivity = function(){
-    sparks.sparksActivity = this;
+  sparks.Activity = function(){
+    sparks.activity = this;
     
     this.sections = [];
     this.view = null;
   };
   
-  sparks.SparksActivity.prototype = {
+  sparks.Activity.prototype = {
     
     toJSON: function () {
       var json = {};

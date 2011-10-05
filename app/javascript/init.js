@@ -114,12 +114,12 @@
       namesArr = names.split(/ *, */);
     }
     
-    sparks.sparksClassReportController.getStudentData(
+    sparks.classReportController.getStudentData(
       activity,
       namesArr, 
       function(reports) {
         $('#loading').hide();
-        var view = new sparks.SparksClassReportView(),
+        var view = new sparks.ClassReportView(),
             $report = view.getClassReportView(reports);
         $('#report').append($report);
       });

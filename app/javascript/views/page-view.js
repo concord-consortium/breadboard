@@ -2,7 +2,7 @@
 
 (function() {
   
-  sparks.SparksPageView = function(page){
+  sparks.PageView = function(page){
     this.page = page;
     
     this.$view = null;
@@ -13,7 +13,7 @@
     this.questionViews = {};
   };
   
-  sparks.SparksPageView.prototype = {
+  sparks.PageView.prototype = {
     
     getView: function() {
       var page = this.page;
@@ -128,7 +128,7 @@
       
       this.$view.append(this.$reportDiv); 
       
-      if (sparks.sparksReportController.getTotalScoreForPage(sparks.sparksSectionController.currentPage) < 0) {
+      if (sparks.reportController.getTotalScoreForPage(sparks.sectionController.currentPage) < 0) {
         this.$reportDiv.append($("<div>").html("Thank you. Now you can return to the portal to continue.").css('width', 700).css('padding-top', "20px"));
         return;
       }
@@ -140,7 +140,7 @@
         allCorrect = false;
       }
       
-      var areMorePage = !!sparks.sparksSectionController.areMorePage();
+      var areMorePage = !!sparks.sectionController.areMorePage();
       
       var comment;
       if (!finalReport){
@@ -151,7 +151,7 @@
                               "You can repeat any page by clicking the <b>Try again</b> button under the table.");
       } else {
         comment = "You can repeat your last level by clicking the <b>Try again</b> button above.";
-        if (sparks.sparksActivityController.areMoreSections()){
+        if (sparks.activityController.areMoreSections()){
           comment += "<p></p>When you are ready to score more points, move on to the next section!";
         }
       }
@@ -168,28 +168,28 @@
                             .css('padding-right', "10px").css('margin-left', "10px");
                                               
         $repeatButton.click(function(evt){
-          sparks.sparksSectionController.repeatPage();
+          sparks.sectionController.repeatPage();
         });
 
         $nextPageButton.click(function(evt){
-          sparks.sparksSectionController.nextPage();
+          sparks.sectionController.nextPage();
         });
       
         $viewSectionReportButton.click(function(evt){
-          sparks.sparksSectionController.viewSectionReport();
+          sparks.sectionController.viewSectionReport();
         });
       
-        if (!!sparks.sparksSectionController.areMorePage()){
+        if (!!sparks.sectionController.areMorePage()){
           $buttonDiv.append($repeatButton, $nextPageButton);
         } else {
           $buttonDiv.append($repeatButton, $viewSectionReportButton);
         }
-      } else if (sparks.sparksActivityController.areMoreSections()){
+      } else if (sparks.activityController.areMoreSections()){
         var $nextActivityButton = $("<button>").text("Go on to the next level").css('padding-left', "10px")
                             .css('padding-right', "10px");
                                               
         $nextActivityButton.click(function(evt){
-          sparks.sparksActivityController.nextSection();
+          sparks.activityController.nextSection();
         });
         
         $buttonDiv.append($nextActivityButton);
@@ -199,7 +199,7 @@
     },
     
     submitButtonClicked: function (event) {
-      sparks.sparksPageController.completedQuestion(this.page);
+      sparks.pageController.completedQuestion(this.page);
     }
     
   };

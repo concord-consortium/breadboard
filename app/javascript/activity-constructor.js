@@ -2,17 +2,17 @@
 
 (function() {
   sparks.ActivityConstructor = function(jsonActivity){
-    // sparks.sparksSectionController.reset();
-    // this.section = sparks.sparksSectionController.createSection(jsonSection);
+    // sparks.sectionController.reset();
+    // this.section = sparks.sectionController.createSection(jsonSection);
     
-    sparks.sparksActivity.view = new sparks.SparksActivityView();
+    sparks.activity.view = new sparks.ActivityView();
     
     if (!jsonActivity.type || jsonActivity.type !== "activity"){
       var jsonSection = jsonActivity;
-      var section = sparks.sparksActivityController.addSection(jsonSection);
+      var section = sparks.activityController.addSection(jsonSection);
       this.loadFirstSection();
     } else {
-      sparks.sparksActivityController.createActivity(jsonActivity, this.loadFirstSection);
+      sparks.activityController.createActivity(jsonActivity, this.loadFirstSection);
     }
     
     sparks.activityConstructor = this;
@@ -21,33 +21,33 @@
   
   sparks.ActivityConstructor.prototype = {
     loadFirstSection: function() {
-      if (!!sparks.sparksActivity.id && sparks.couchDS.user){
+      if (!!sparks.activity.id && sparks.couchDS.user){
         $('#loading-text').text('Loading previous work');
-        sparks.couchDS.loadStudentData(sparks.sparksActivity.id, sparks.couchDS.user.name,
+        sparks.couchDS.loadStudentData(sparks.activity.id, sparks.couchDS.user.name,
           function(response){
             var jsonReport = response.rows[response.rows.length-1].value;
-            sparks.sparksReportController.loadReport(jsonReport);
+            sparks.reportController.loadReport(jsonReport);
             var lastSectionId;
-            $.each(sparks.sparksActivity.sections, function(i, section){
-              if (!!sparks.sparksReport.sectionReports[section]){
+            $.each(sparks.activity.sections, function(i, section){
+              if (!!sparks.report.sectionReports[section]){
                 lastSectionId = i;
               }
             });
-            sparks.sparksActivityController.setCurrentSection(lastSectionId);
-            sparks.sparksSectionController.loadCurrentSection();
-            sparks.sparksActivity.view.layoutCurrentSection();
-            sparks.sparksSectionController.viewSectionReport();
+            sparks.activityController.setCurrentSection(lastSectionId);
+            sparks.sectionController.loadCurrentSection();
+            sparks.activity.view.layoutCurrentSection();
+            sparks.sectionController.viewSectionReport();
           },
           function(){
-            sparks.sparksActivityController.setCurrentSection(0);
-            sparks.sparksSectionController.loadCurrentSection();
-            sparks.sparksActivity.view.layoutCurrentSection();
+            sparks.activityController.setCurrentSection(0);
+            sparks.sectionController.loadCurrentSection();
+            sparks.activity.view.layoutCurrentSection();
           }
         );
       } else {
-        sparks.sparksActivityController.setCurrentSection(0);
-        sparks.sparksSectionController.loadCurrentSection();
-        sparks.sparksActivity.view.layoutCurrentSection();
+        sparks.activityController.setCurrentSection(0);
+        sparks.sectionController.loadCurrentSection();
+        sparks.activity.view.layoutCurrentSection();
       }
     }
     

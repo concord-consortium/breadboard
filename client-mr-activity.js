@@ -1992,7 +1992,7 @@ if (window.attachEvent) {
         handleData: function (id) {
           $.couch.db(this.db).openDoc(id,
             { success: function(response) {
-              sparks.sparksReportController.loadReport(response);
+              sparks.reportController.loadReport(response);
              }}
           );
         }
@@ -2310,10 +2310,10 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
       if (name === 'connect') {
           if (args[0] === 'probe') {
               if (args[1] === 'probe_red') {
-                  sparks.sparksSectionController.multimeter.redProbeConnection = args[2];
+                  sparks.sectionController.multimeter.redProbeConnection = args[2];
               }
               else if (args[1] === 'probe_black') {
-                  sparks.sparksSectionController.multimeter.blackProbeConnection = args[2];
+                  sparks.sectionController.multimeter.blackProbeConnection = args[2];
               }
               else {
                   alert('Activity#receiveEvent: connect: unknonw probe name ' + args[1]);
@@ -2323,18 +2323,18 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
               if (!!args[2]){
                 breadModel('unmapHole', args[2]);
               }
-              sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+              sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
                 "type": "connect lead",
                 "location": args[2]});
           }
-          sparks.sparksSectionController.multimeter.update();
+          sparks.sectionController.multimeter.update();
       } else if (name === 'disconnect') {
           if (args[0] === 'probe') {
               if (args[1] === 'probe_red') {
-                  sparks.sparksSectionController.multimeter.redProbeConnection = null;
+                  sparks.sectionController.multimeter.redProbeConnection = null;
               }
               else if (args[1] === 'probe_black') {
-                  sparks.sparksSectionController.multimeter.blackProbeConnection = null;
+                  sparks.sectionController.multimeter.blackProbeConnection = null;
               }
               else {
                   alert('Activity#receiveEvent: disconnect: Unknonw probe name ' + args[1]);
@@ -2344,11 +2344,11 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
             var newHole = breadModel('getGhostHole', hole+"ghost");
 
             breadModel('mapHole', hole, newHole.nodeName());
-            sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+            sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
               "type": "disconnect lead",
               "location": hole});
           }
-          sparks.sparksSectionController.multimeter.update();
+          sparks.sectionController.multimeter.update();
       } else if (name === 'probe') {
           $('#popup').dialog();
 
@@ -2391,11 +2391,11 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
           $('#popup').dialog('close');
       } else if (name == 'multimeter_dial') {
           console.log('changed multimeter dial'+value);
-          sparks.sparksSectionController.multimeter.dialPosition = value;
-          sparks.sparksSectionController.multimeter.update();
+          sparks.sectionController.multimeter.dialPosition = value;
+          sparks.sectionController.multimeter.update();
       } else if (name == 'multimeter_power') {
-          sparks.sparksSectionController.multimeter.powerOn = value == 'true' ? true : false;
-          sparks.sparksSectionController.multimeter.update();
+          sparks.sectionController.multimeter.powerOn = value == 'true' ? true : false;
+          sparks.sectionController.multimeter.update();
       }
   }
 

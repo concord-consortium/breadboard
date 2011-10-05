@@ -4,16 +4,16 @@
   
   /*
    * Sparks Log Controller can be accessed by the
-   * singleton variable sparks.sparksLogController
+   * singleton variable sparks.logController
    */
-  sparks.SparksLogController = function(){
+  sparks.LogController = function(){
     this.currentLog = null;
   };
   
-  sparks.SparksLogController.prototype = {
+  sparks.LogController.prototype = {
     
     startNewSession: function() {
-      this.currentLog = new sparks.SparksLog(new Date().valueOf());
+      this.currentLog = new sparks.Log(new Date().valueOf());
     },
     
     endSession: function() {
@@ -64,5 +64,5 @@
     
   };
   
-  sparks.sparksLogController = new sparks.SparksLogController();
+  sparks.logController = new sparks.LogController();
 })();

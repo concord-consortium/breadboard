@@ -2,17 +2,17 @@
 
 (function() {
   
-  sparks.SparksReportView = function(){
+  sparks.ReportView = function(){
   };
   
-  sparks.SparksReportView.prototype = {
+  sparks.ReportView.prototype = {
     
     getSessionReportView: function(sessionReport){
       var $div = $('<div>');
       $div.append(this._createReportTableForSession(sessionReport));
       
-      var page = sparks.sparksSectionController.currentPage;
-      var totalScore = sparks.sparksReportController.getTotalScoreForPage(page);
+      var page = sparks.sectionController.currentPage;
+      var totalScore = sparks.reportController.getTotalScoreForPage(page);
       if (totalScore > -1){
         $div.append($('<h2>').html("Your total score for this page so far: "+totalScore));
       }
@@ -25,7 +25,7 @@
       
       var totalScore = 0;
       var self = this;
-      var currentSection = sparks.sparksActivityController.currentSection;
+      var currentSection = sparks.activityController.currentSection;
       
       var $table = $("<table>").addClass('finalReport');
       
@@ -42,7 +42,7 @@
       var isNextSection = false;
       var nextSectionDidPass = false;
       
-      $.each(sparks.sparksActivity.sections, function(i, section){
+      $.each(sparks.activity.sections, function(i, section){
         var isThisSection = (section === currentSection);
         if (!nextSectionDidPass && !section.visited){
           isNextSection = true;
@@ -52,8 +52,8 @@
         }
         
         if (section.visited) {
-          var totalSectionScore = sparks.sparksReportController.getTotalScoreForSection(section);
-          var lastThreeSectionScore = sparks.sparksReportController.getLastThreeScoreForSection(section);
+          var totalSectionScore = sparks.reportController.getTotalScoreForSection(section);
+          var lastThreeSectionScore = sparks.reportController.getLastThreeScoreForSection(section);
           var timesRun = lastThreeSectionScore[1];
           lastThreeSectionScore = lastThreeSectionScore[0];
           totalScore += totalSectionScore;
@@ -75,12 +75,12 @@
         if (section.visited){
           $btn = $('<button>').addClass("repeat").text("Try this level again");
           $btn.click(function(){
-            sparks.sparksSectionController.repeatSection(section);
+            sparks.sectionController.repeatSection(section);
           });
         } else if (isNextSection){
           $btn = $('<button>').addClass("next").text("Go to the next level");
           $btn.click(function(){
-            sparks.sparksActivityController.nextSection();
+            sparks.activityController.nextSection();
           });
         }
         
@@ -120,9 +120,9 @@
         var $table = $("<table>");
         $.each(pageReports, function(i, pageReport){
           // $div.append('<h3>Page '+(i+1)+"</h3>");
-          // var bestSessionReport = sparks.sparksReportController.getBestSessionReport(page);
+          // var bestSessionReport = sparks.reportController.getBestSessionReport(page);
           // $div.append(self._createReportTableForSession(bestSessionReport));
-          var score = sparks.sparksReportController.getTotalScoreForPageReport(pageReport);
+          var score = sparks.reportController.getTotalScoreForPageReport(pageReport);
           
           var $tr = $("<tr>");
           $tr.append("<td>Page "+(i+1)+": "+ score   +" points</td>");
@@ -141,7 +141,7 @@
     
     _createReportTableForCategories: function() {
       
-      var categories = sparks.sparksReportController.getCategories(sparks.sparksReport);
+      var categories = sparks.reportController.getCategories(sparks.report);
       
       var $table = $("<table>").addClass('categoryReport');
       $table.append(
@@ -154,7 +154,7 @@
       $.each(categories, function(category, score){
         var $btn = $('<button>').addClass("tutorial").text("View tutorial");
         $btn.click(function(){
-          sparks.sparksTutorialController.showTutorial(score[3]);
+          sparks.tutorialController.showTutorial(score[3]);
         });
         
         var light;
@@ -234,7 +234,7 @@
           $tutorialButton = $("<button>").text("Tutorial").css('padding-left', "10px")
                               .css('padding-right', "10px").css('margin-left', "20px");
           $tutorialButton.click(function(){
-            sparks.sparksTutorialController.showTutorial(question.tutorial);
+            sparks.tutorialController.showTutorial(question.tutorial);
           });
         } else {
         }

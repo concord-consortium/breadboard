@@ -2,8 +2,8 @@ describe 'Authored Scripts'
 
   before_each
     breadModel('clear');
-    sparks.sparksSectionController.reset();
-    sparks.sparksActivityController.reset();
+    sparks.sectionController.reset();
+    sparks.activityController.reset();
   end
   
   describe 'Question Answers'
@@ -39,7 +39,7 @@ describe 'Authored Scripts'
           };
           
           var ac = new sparks.ActivityConstructor(jsonSection);
-          var section = sparks.sparksActivityController.currentSection;
+          var section = sparks.activityController.currentSection;
           
           section.pages[0].questions.length.should.be 2
           section.pages[0].questions[0].correct_answer.should.be "R1 is small"
@@ -77,7 +77,7 @@ describe 'Authored Scripts'
           };
           
           var ac = new sparks.ActivityConstructor(jsonSection);
-          var section = sparks.sparksActivityController.currentSection;
+          var section = sparks.activityController.currentSection;
           
           section.pages[0].questions[0].correct_answer.should.be 5
           section.pages[0].questions[1].correct_answer.should.be 5
@@ -108,13 +108,13 @@ describe 'Authored Scripts'
          };
          
        var ac = new sparks.ActivityConstructor(jsonSection);
-       var section = sparks.sparksActivityController.currentSection;
+       var section = sparks.activityController.currentSection;
        
        section.pages[0].questions[0].answer = "10"
        section.pages[0].questions[1].answer = "500"
        
        $.each(section.pages[0].questions, function(i, question){
-         sparks.sparksQuestionController.gradeQuestion(question);
+         sparks.questionController.gradeQuestion(question);
        });
        
        section.pages[0].questions[0].answerIsCorrect.should.be true
@@ -162,14 +162,14 @@ describe 'Authored Scripts'
          };
          
        var ac = new sparks.ActivityConstructor(jsonSection);
-       var section = sparks.sparksActivityController.currentSection;
-       sparks.sparksSectionController.loadCurrentSection();
+       var section = sparks.activityController.currentSection;
+       sparks.sectionController.loadCurrentSection();
        
        section.pages[0].questions[0].answer = "100"
        section.pages[0].questions[1].answer = "500"
        
        $.each(section.pages[0].questions, function(i, question){
-         sparks.sparksQuestionController.gradeQuestion(question);
+         sparks.questionController.gradeQuestion(question);
        });
        
        section.pages[0].questions[0].answerIsCorrect.should.be true
@@ -218,13 +218,13 @@ describe 'Authored Scripts'
          };
          
        var ac = new sparks.ActivityConstructor(jsonSection);
-       var section = sparks.sparksActivityController.currentSection;
-       sparks.sparksSectionController.loadCurrentSection();
+       var section = sparks.activityController.currentSection;
+       sparks.sectionController.loadCurrentSection();
        
        section.pages[0].questions[0].answer = "r2"
        
        $.each(section.pages[0].questions, function(i, question){
-         sparks.sparksQuestionController.gradeQuestion(question);
+         sparks.questionController.gradeQuestion(question);
        });
        
        section.pages[0].questions[0].answerIsCorrect.should.be true

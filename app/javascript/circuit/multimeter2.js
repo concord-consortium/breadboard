@@ -59,7 +59,7 @@
             this.updateDisplay();
             
             if (this.redProbeConnection && this.blackProbeConnection) {
-              sparks.sparksLogController.addEvent(sparks.LogEvent.DMM_MEASUREMENT, {
+              sparks.logController.addEvent(sparks.LogEvent.DMM_MEASUREMENT, {
                 "measurement": measurement, 
                 "dial_position": this.dialPosition,
                 "red_probe": this.redProbeConnection,
@@ -91,7 +91,7 @@
           	width: 400,
           	height: 300
           });
-          sparks.sparksLogController.addEvent(sparks.LogEvent.BLEW_FUSE);
+          sparks.logController.addEvent(sparks.LogEvent.BLEW_FUSE);
         },
 
         allConnected: function () {

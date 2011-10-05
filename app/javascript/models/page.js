@@ -2,7 +2,7 @@
 
 (function() {
   
-  sparks.SparksPage = function(id){
+  sparks.Page = function(id){
     this.id = id;
     this.questions = [];
     this.notes = null;
@@ -11,7 +11,7 @@
     this.currentQuestion = null;
   };
   
-  sparks.SparksPage.prototype = {
+  sparks.Page.prototype = {
     
     toJSON: function () {
       var json = {};

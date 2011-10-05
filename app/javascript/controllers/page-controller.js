@@ -4,20 +4,20 @@
   
   /*
    * Sparks Page Controller can be accessed by the
-   * singleton variable sparks.sparksPageController
+   * singleton variable sparks.pageController
    */
-  sparks.SparksPageController = function(){
+  sparks.PageController = function(){
   };
   
-  sparks.SparksPageController.prototype = {
+  sparks.PageController.prototype = {
     
     reset: function(){
     },
     
     createPage: function(id, jsonPage) {
-      var page = new sparks.SparksPage(id);
+      var page = new sparks.Page(id);
       
-      page.questions = sparks.sparksQuestionController.createQuestionsArray(jsonPage.questions);
+      page.questions = sparks.questionController.createQuestionsArray(jsonPage.questions);
       page.currentQuestion = page.questions[0];
       
       if (!!jsonPage.notes){
@@ -27,7 +27,7 @@
       
       page.time = jsonPage.time;
       
-      page.view = new sparks.SparksPageView(page);
+      page.view = new sparks.PageView(page);
       
       return page;
     },
@@ -65,14 +65,14 @@
     },
     
     showReport: function(page){
-      sparks.sparksLogController.endSession();
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(page);
-      sparks.sparksReportController.saveData();
-      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      sparks.logController.endSession();
+      var sessionReport = sparks.reportController.addNewSessionReport(page);
+      sparks.reportController.saveData();
+      var $report = sparks.report.view.getSessionReportView(sessionReport);
       page.view.showReport($report);
     }
     
   };
   
-  sparks.sparksPageController = new sparks.SparksPageController();
+  sparks.pageController = new sparks.PageController();
 })();

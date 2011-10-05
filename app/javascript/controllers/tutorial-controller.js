@@ -4,21 +4,21 @@
   
   /*
    * Sparks Tutorial Controller can be accessed by the
-   * singleton variable sparks.sparksTutorialController
+   * singleton variable sparks.tutorialController
    *
    * Unlike most controllers, SparksTutorialController is not an
    * object controller. It merely contains functions for dealing with
    * showing tutorials, logging, and other such stuff.
    */
-  sparks.SparksTutorialController = function(){
+  sparks.TutorialController = function(){
   };
   
-  sparks.SparksTutorialController.prototype = {
+  sparks.TutorialController.prototype = {
     
     showTutorial: function(filename) {
       var url = this._getURL(filename);
       window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
-      sparks.sparksLogController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
+      sparks.logController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
     },
     
     setQuestionCategory: function(question) {
@@ -56,5 +56,5 @@
     
   };
 
-  sparks.sparksTutorialController = new sparks.SparksTutorialController();
+  sparks.tutorialController = new sparks.TutorialController();
 })();

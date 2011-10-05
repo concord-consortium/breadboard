@@ -2,16 +2,16 @@
 
 (function() {
   
-  sparks.SparksSectionView = function(section){
+  sparks.SectionView = function(section){
     this.section = section;
   };
   
-  sparks.SparksSectionView.prototype = {
+  sparks.SectionView.prototype = {
     
     clear: function() {
       $('#breadboard').html('');
       $('#image').html('');
-      sparks.sparksSectionController.currentPage.view.clear();
+      sparks.sectionController.currentPage.view.clear();
     },
     
     getImageView: function() {

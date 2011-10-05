@@ -2,14 +2,14 @@ describe 'Activity Reports'
 
   before_each
     breadModel('clear');
-    sparks.sparksActivityController.reset();
-    sparks.sparksReportController = new sparks.SparksReportController();
-    sparks.sparksSectionController.reset();
+    sparks.activityController.reset();
+    sparks.reportController = new sparks.ReportController();
+    sparks.sectionController.reset();
   end
   
   after_each
-    sparks.sparksSectionController.reset();
-    sparks.sparksActivityController.reset();
+    sparks.sectionController.reset();
+    sparks.activityController.reset();
   end
   
   describe "Creating reports"
@@ -60,17 +60,17 @@ describe 'Activity Reports'
         
       var ac = new sparks.ActivityConstructor(jsonActivity);
       // answer "100" for every question and create reports
-      var sections = sparks.sparksActivity.sections;
+      var sections = sparks.activity.sections;
       for (var i = 0, ii = sections.length; i < ii; i++){
         var section = sections[i];
-        sparks.sparksActivityController.currentSection = section;
-        sparks.sparksSectionController.loadCurrentSection();
+        sparks.activityController.currentSection = section;
+        sparks.sectionController.loadCurrentSection();
         for (var j = 0, jj = section.pages.length; j < jj; j++){
           var page = section.pages[j];
           for (var k = 0, kk = page.questions.length; k < kk; k++) {
             page.questions[k].answer = 100;
           }
-          sparks.sparksReportController.addNewSessionReport(section.pages[j]);
+          sparks.reportController.addNewSessionReport(section.pages[j]);
         }
       }
       

@@ -2046,7 +2046,7 @@ if (window.attachEvent) {
         handleData: function (id) {
           $.couch.db(this.db).openDoc(id,
             { success: function(response) {
-              sparks.sparksReportController.loadReport(response);
+              sparks.reportController.loadReport(response);
              }}
           );
         }
@@ -2485,14 +2485,14 @@ sparks.createQuestionsCSV = function(data) {
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
-  sparks.SparksActivity = function(){
-    sparks.sparksActivity = this;
+  sparks.Activity = function(){
+    sparks.activity = this;
 
     this.sections = [];
     this.view = null;
   };
 
-  sparks.SparksActivity.prototype = {
+  sparks.Activity.prototype = {
 
     toJSON: function () {
       var json = {};
@@ -2509,7 +2509,7 @@ sparks.createQuestionsCSV = function(data) {
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
-  sparks.SparksSection = function(){
+  sparks.Section = function(){
 
     this.title = "";
     this.id = null;
@@ -2531,7 +2531,7 @@ sparks.createQuestionsCSV = function(data) {
     this.view = null;
   };
 
-  sparks.SparksSection.prototype = {
+  sparks.Section.prototype = {
 
     toJSON: function () {
       var json = {};
@@ -2549,7 +2549,7 @@ sparks.createQuestionsCSV = function(data) {
     getIndex: function() {
       var self = this;
       var index = -1;
-      $.each(sparks.sparksActivity.sections, function(i, section){
+      $.each(sparks.activity.sections, function(i, section){
         if (section === self){
           index = i;
         }
@@ -2564,7 +2564,7 @@ sparks.createQuestionsCSV = function(data) {
 
 (function() {
 
-  sparks.SparksPage = function(id){
+  sparks.Page = function(id){
     this.id = id;
     this.questions = [];
     this.notes = null;
@@ -2573,7 +2573,7 @@ sparks.createQuestionsCSV = function(data) {
     this.currentQuestion = null;
   };
 
-  sparks.SparksPage.prototype = {
+  sparks.Page.prototype = {
 
     toJSON: function () {
       var json = {};
@@ -2593,7 +2593,7 @@ sparks.createQuestionsCSV = function(data) {
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
-  sparks.SparksQuestion = function(){
+  sparks.Question = function(){
     this.id = 0;
     this.shownId = 0;
 
@@ -2633,7 +2633,7 @@ sparks.createQuestionsCSV = function(data) {
     this.view = null;
   };
 
-  sparks.SparksQuestion.prototype = {
+  sparks.Question.prototype = {
     toJSON: function() {
       var json = {};
       json.id = this.id;
@@ -2672,7 +2672,7 @@ sparks.createQuestionsCSV = function(data) {
  *              maxScore: y       ?
  */
 (function() {
-  sparks.SparksLog = function(startTime){
+  sparks.Log = function(startTime){
     this.events = [];
     this.startTime = startTime;
     this.endTime = -1;
@@ -2689,34 +2689,34 @@ sparks.createQuestionsCSV = function(data) {
   sparks.LogEvent.DMM_MEASUREMENT = "DMM measurement";
   sparks.LogEvent.CHANGED_CIRCUIT = "Changed circuit";
 
-  sparks.SparksLog.prototype = {
+  sparks.Log.prototype = {
 
     measurements: function () {
-      return sparks.sparksLogController.numEvents(this, sparks.LogEvent.DMM_MEASUREMENT);
+      return sparks.logController.numEvents(this, sparks.LogEvent.DMM_MEASUREMENT);
     },
 
     uniqueVMeasurements: function () {
-      return sparks.sparksLogController.numUniqueMeasurements(this, "voltage");
+      return sparks.logController.numUniqueMeasurements(this, "voltage");
     },
 
     uniqueIMeasurements: function () {
-      return sparks.sparksLogController.numUniqueMeasurements(this, "current");
+      return sparks.logController.numUniqueMeasurements(this, "current");
     },
 
     uniqueRMeasurements: function () {
-      return sparks.sparksLogController.numUniqueMeasurements(this, "resistance");
+      return sparks.logController.numUniqueMeasurements(this, "resistance");
     },
 
     connectionBreaks: function() {
-      return sparks.sparksLogController.numConnectionChanges(this, "disconnect lead");
+      return sparks.logController.numConnectionChanges(this, "disconnect lead");
     },
 
     connectionMakes: function() {
-      return sparks.sparksLogController.numConnectionChanges(this, "connect lead");
+      return sparks.logController.numConnectionChanges(this, "connect lead");
     },
 
     blownFuses: function () {
-      return sparks.sparksLogController.numEvents(this, sparks.LogEvent.BLEW_FUSE);
+      return sparks.logController.numEvents(this, sparks.LogEvent.BLEW_FUSE);
     }
   };
 
@@ -2740,7 +2740,7 @@ sparks.createQuestionsCSV = function(data) {
  *              maxScore: y       ?
  */
 (function() {
-  sparks.SparksReport = function(){
+  sparks.Report = function(){
     this.reportVersion = 1.0;
     this.sectionReports = {};
     this.score = 0;
@@ -2748,18 +2748,18 @@ sparks.createQuestionsCSV = function(data) {
     this.activity = null;
   };
 
-  sparks.SparksSectionReport = function(){
+  sparks.SectionReport = function(){
     this.pageReports = {};
     this.view = null;
     this.sectionId = null;
     this.sectionTitle = null;
   };
 
-  sparks.SparksPageReport = function(){
+  sparks.PageReport = function(){
     this.sessionReports = [];
   };
 
-  sparks.SparksSessionReport = function(){
+  sparks.SessionReport = function(){
     this.questions = [];
     this.log = null;
     this.timeTaken = -1;
@@ -2770,11 +2770,11 @@ sparks.createQuestionsCSV = function(data) {
     this.maxScore = -1;
   };
 
-  sparks.SparksReport.prototype = {
+  sparks.Report.prototype = {
 
     toJSON: function () {
       var json = {};
-      json.activity = sparks.sparksActivity.id;
+      json.activity = sparks.activity.id;
       json.sectionReports = [];
       $.each(this.sectionReports, function(i, sectionReport){
         json.sectionReports.push(sectionReport.toJSON());
@@ -2786,7 +2786,7 @@ sparks.createQuestionsCSV = function(data) {
 
   };
 
-  sparks.SparksSectionReport.prototype = {
+  sparks.SectionReport.prototype = {
 
     toJSON: function () {
       var json = {};
@@ -2801,7 +2801,7 @@ sparks.createQuestionsCSV = function(data) {
 
   };
 
-  sparks.SparksPageReport.prototype = {
+  sparks.PageReport.prototype = {
 
     toJSON: function () {
       var json = {};
@@ -2819,7 +2819,7 @@ sparks.createQuestionsCSV = function(data) {
 
 (function() {
 
-  sparks.SparksActivityView = function(activity){
+  sparks.ActivityView = function(activity){
     this.activity = activity;
 
     this.divs = {
@@ -2830,10 +2830,10 @@ sparks.createQuestionsCSV = function(data) {
     };
   };
 
-  sparks.SparksActivityView.prototype = {
+  sparks.ActivityView.prototype = {
 
     layoutCurrentSection: function() {
-      var section = sparks.sparksActivityController.currentSection;
+      var section = sparks.activityController.currentSection;
 
       $('#loading').hide();
 
@@ -2842,7 +2842,7 @@ sparks.createQuestionsCSV = function(data) {
       this.divs.$imageDiv.html('');
 
       if (!!section.image){
-        var $image = sparks.sparksActivityController.currentSection.view.getImageView();
+        var $image = sparks.activityController.currentSection.view.getImageView();
         this.divs.$imageDiv.append($image);
       }
 
@@ -2863,9 +2863,9 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     layoutPage: function() {
-      if (!!sparks.sparksSectionController.currentPage){
+      if (!!sparks.sectionController.currentPage){
         this.divs.$questionsDiv.html('');
-        var $page = sparks.sparksSectionController.currentPage.view.getView();
+        var $page = sparks.sectionController.currentPage.view.getView();
         this.divs.$questionsDiv.append($page);
       }
       $('body').scrollTop(0);
@@ -2903,16 +2903,16 @@ sparks.createQuestionsCSV = function(data) {
 
 (function() {
 
-  sparks.SparksSectionView = function(section){
+  sparks.SectionView = function(section){
     this.section = section;
   };
 
-  sparks.SparksSectionView.prototype = {
+  sparks.SectionView.prototype = {
 
     clear: function() {
       $('#breadboard').html('');
       $('#image').html('');
-      sparks.sparksSectionController.currentPage.view.clear();
+      sparks.sectionController.currentPage.view.clear();
     },
 
     getImageView: function() {
@@ -2939,7 +2939,7 @@ sparks.createQuestionsCSV = function(data) {
 
 (function() {
 
-  sparks.SparksPageView = function(page){
+  sparks.PageView = function(page){
     this.page = page;
 
     this.$view = null;
@@ -2950,7 +2950,7 @@ sparks.createQuestionsCSV = function(data) {
     this.questionViews = {};
   };
 
-  sparks.SparksPageView.prototype = {
+  sparks.PageView.prototype = {
 
     getView: function() {
       var page = this.page;
@@ -3064,7 +3064,7 @@ sparks.createQuestionsCSV = function(data) {
 
       this.$view.append(this.$reportDiv);
 
-      if (sparks.sparksReportController.getTotalScoreForPage(sparks.sparksSectionController.currentPage) < 0) {
+      if (sparks.reportController.getTotalScoreForPage(sparks.sectionController.currentPage) < 0) {
         this.$reportDiv.append($("<div>").html("Thank you. Now you can return to the portal to continue.").css('width', 700).css('padding-top', "20px"));
         return;
       }
@@ -3075,7 +3075,7 @@ sparks.createQuestionsCSV = function(data) {
         allCorrect = false;
       }
 
-      var areMorePage = !!sparks.sparksSectionController.areMorePage();
+      var areMorePage = !!sparks.sectionController.areMorePage();
 
       var comment;
       if (!finalReport){
@@ -3086,7 +3086,7 @@ sparks.createQuestionsCSV = function(data) {
                               "You can repeat any page by clicking the <b>Try again</b> button under the table.");
       } else {
         comment = "You can repeat your last level by clicking the <b>Try again</b> button above.";
-        if (sparks.sparksActivityController.areMoreSections()){
+        if (sparks.activityController.areMoreSections()){
           comment += "<p></p>When you are ready to score more points, move on to the next section!";
         }
       }
@@ -3103,28 +3103,28 @@ sparks.createQuestionsCSV = function(data) {
                             .css('padding-right', "10px").css('margin-left', "10px");
 
         $repeatButton.click(function(evt){
-          sparks.sparksSectionController.repeatPage();
+          sparks.sectionController.repeatPage();
         });
 
         $nextPageButton.click(function(evt){
-          sparks.sparksSectionController.nextPage();
+          sparks.sectionController.nextPage();
         });
 
         $viewSectionReportButton.click(function(evt){
-          sparks.sparksSectionController.viewSectionReport();
+          sparks.sectionController.viewSectionReport();
         });
 
-        if (!!sparks.sparksSectionController.areMorePage()){
+        if (!!sparks.sectionController.areMorePage()){
           $buttonDiv.append($repeatButton, $nextPageButton);
         } else {
           $buttonDiv.append($repeatButton, $viewSectionReportButton);
         }
-      } else if (sparks.sparksActivityController.areMoreSections()){
+      } else if (sparks.activityController.areMoreSections()){
         var $nextActivityButton = $("<button>").text("Go on to the next level").css('padding-left', "10px")
                             .css('padding-right', "10px");
 
         $nextActivityButton.click(function(evt){
-          sparks.sparksActivityController.nextSection();
+          sparks.activityController.nextSection();
         });
 
         $buttonDiv.append($nextActivityButton);
@@ -3134,7 +3134,7 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     submitButtonClicked: function (event) {
-      sparks.sparksPageController.completedQuestion(this.page);
+      sparks.pageController.completedQuestion(this.page);
     }
 
   };
@@ -3143,12 +3143,12 @@ sparks.createQuestionsCSV = function(data) {
 
 (function() {
 
-  sparks.SparksQuestionView = function(question){
+  sparks.QuestionView = function(question){
     this.question = question;
     this.$view = null;
   };
 
-  sparks.SparksQuestionView.prototype = {
+  sparks.QuestionView.prototype = {
 
     getView: function() {
       var question = this.question;
@@ -3259,17 +3259,17 @@ sparks.createQuestionsCSV = function(data) {
 
 (function() {
 
-  sparks.SparksReportView = function(){
+  sparks.ReportView = function(){
   };
 
-  sparks.SparksReportView.prototype = {
+  sparks.ReportView.prototype = {
 
     getSessionReportView: function(sessionReport){
       var $div = $('<div>');
       $div.append(this._createReportTableForSession(sessionReport));
 
-      var page = sparks.sparksSectionController.currentPage;
-      var totalScore = sparks.sparksReportController.getTotalScoreForPage(page);
+      var page = sparks.sectionController.currentPage;
+      var totalScore = sparks.reportController.getTotalScoreForPage(page);
       if (totalScore > -1){
         $div.append($('<h2>').html("Your total score for this page so far: "+totalScore));
       }
@@ -3282,7 +3282,7 @@ sparks.createQuestionsCSV = function(data) {
 
       var totalScore = 0;
       var self = this;
-      var currentSection = sparks.sparksActivityController.currentSection;
+      var currentSection = sparks.activityController.currentSection;
 
       var $table = $("<table>").addClass('finalReport');
 
@@ -3299,7 +3299,7 @@ sparks.createQuestionsCSV = function(data) {
       var isNextSection = false;
       var nextSectionDidPass = false;
 
-      $.each(sparks.sparksActivity.sections, function(i, section){
+      $.each(sparks.activity.sections, function(i, section){
         var isThisSection = (section === currentSection);
         if (!nextSectionDidPass && !section.visited){
           isNextSection = true;
@@ -3309,8 +3309,8 @@ sparks.createQuestionsCSV = function(data) {
         }
 
         if (section.visited) {
-          var totalSectionScore = sparks.sparksReportController.getTotalScoreForSection(section);
-          var lastThreeSectionScore = sparks.sparksReportController.getLastThreeScoreForSection(section);
+          var totalSectionScore = sparks.reportController.getTotalScoreForSection(section);
+          var lastThreeSectionScore = sparks.reportController.getLastThreeScoreForSection(section);
           var timesRun = lastThreeSectionScore[1];
           lastThreeSectionScore = lastThreeSectionScore[0];
           totalScore += totalSectionScore;
@@ -3332,12 +3332,12 @@ sparks.createQuestionsCSV = function(data) {
         if (section.visited){
           $btn = $('<button>').addClass("repeat").text("Try this level again");
           $btn.click(function(){
-            sparks.sparksSectionController.repeatSection(section);
+            sparks.sectionController.repeatSection(section);
           });
         } else if (isNextSection){
           $btn = $('<button>').addClass("next").text("Go to the next level");
           $btn.click(function(){
-            sparks.sparksActivityController.nextSection();
+            sparks.activityController.nextSection();
           });
         }
 
@@ -3375,7 +3375,7 @@ sparks.createQuestionsCSV = function(data) {
 
         var $table = $("<table>");
         $.each(pageReports, function(i, pageReport){
-          var score = sparks.sparksReportController.getTotalScoreForPageReport(pageReport);
+          var score = sparks.reportController.getTotalScoreForPageReport(pageReport);
 
           var $tr = $("<tr>");
           $tr.append("<td>Page "+(i+1)+": "+ score   +" points</td>");
@@ -3394,7 +3394,7 @@ sparks.createQuestionsCSV = function(data) {
 
     _createReportTableForCategories: function() {
 
-      var categories = sparks.sparksReportController.getCategories(sparks.sparksReport);
+      var categories = sparks.reportController.getCategories(sparks.report);
 
       var $table = $("<table>").addClass('categoryReport');
       $table.append(
@@ -3407,7 +3407,7 @@ sparks.createQuestionsCSV = function(data) {
       $.each(categories, function(category, score){
         var $btn = $('<button>').addClass("tutorial").text("View tutorial");
         $btn.click(function(){
-          sparks.sparksTutorialController.showTutorial(score[3]);
+          sparks.tutorialController.showTutorial(score[3]);
         });
 
         var light;
@@ -3487,7 +3487,7 @@ sparks.createQuestionsCSV = function(data) {
           $tutorialButton = $("<button>").text("Tutorial").css('padding-left', "10px")
                               .css('padding-right', "10px").css('margin-left', "20px");
           $tutorialButton.click(function(){
-            sparks.sparksTutorialController.showTutorial(question.tutorial);
+            sparks.tutorialController.showTutorial(question.tutorial);
           });
         } else {
         }
@@ -3549,17 +3549,17 @@ sparks.createQuestionsCSV = function(data) {
 
 (function() {
 
-  sparks.SparksClassReportView = function(){
+  sparks.ClassReportView = function(){
   };
 
-  sparks.SparksClassReportView.prototype = {
+  sparks.ClassReportView.prototype = {
 
     getClassReportView: function(reports){
       var $div = $('<div>');
       $div.append('<h1>Class results</h1>');
 
       var $table = $("<table>").addClass('classReport');
-      var levels = sparks.sparksClassReportController.getLevels();
+      var levels = sparks.classReportController.getLevels();
 
       var headerRow = "<tr><th class='firstcol'>Student Name</th>";
       for (var i = 0, ii = levels.length; i < ii; i++){
@@ -3584,7 +3584,7 @@ sparks.createQuestionsCSV = function(data) {
           totalScore = 0;
       $tr.append("<td class='firstcol'>" + name + "</td>");
       for (var i = 0, ii = report.sectionReports.length; i < ii; i++){
-        var summary = sparks.sparksReportController.getSummaryForSectionReport(report.sectionReports[i]),
+        var summary = sparks.reportController.getSummaryForSectionReport(report.sectionReports[i]),
             light;
         totalScore += summary[1];
 
@@ -3624,12 +3624,12 @@ sparks.createQuestionsCSV = function(data) {
 
   /*
    * Sparks Page Controller can be accessed by the
-   * singleton variable sparks.sparksQuestionController
+   * singleton variable sparks.questionController
    */
-  sparks.SparksQuestionController = function(){
+  sparks.QuestionController = function(){
   };
 
-  sparks.SparksQuestionController.prototype = {
+  sparks.QuestionController.prototype = {
 
     reset: function() {
       this._id = 0;
@@ -3658,7 +3658,7 @@ sparks.createQuestionsCSV = function(data) {
 
 
       function addSingleQuestion(jsonQuestion, preprompt){
-        var question = new sparks.SparksQuestion();
+        var question = new sparks.Question();
 
         question.id = self._id;
         question.answer = '';
@@ -3723,7 +3723,7 @@ sparks.createQuestionsCSV = function(data) {
         question.image = jsonQuestion.image;
         question.top_tutorial = jsonQuestion.tutorial;
 
-        question.category = sparks.sparksTutorialController.setQuestionCategory(question);
+        question.category = sparks.tutorialController.setQuestionCategory(question);
 
         question.scoring = jsonQuestion.scoring;
 
@@ -3731,7 +3731,7 @@ sparks.createQuestionsCSV = function(data) {
 
         question.prompt = oldPrompt;
 
-        question.view = new sparks.SparksQuestionView(question);
+        question.view = new sparks.QuestionView(question);
       }
 
       if (!jsonQuestion.subquestions){
@@ -3798,12 +3798,12 @@ sparks.createQuestionsCSV = function(data) {
       var parsedScript = sparks.mathParser.replaceCircuitVariables(script);
       var functionScript;
       eval("var functionScript = function(question, log){" + parsedScript + "}");
-      functionScript(question, sparks.sparksLogController.currentLog);
+      functionScript(question, sparks.logController.currentLog);
     }
 
   };
 
-  sparks.sparksQuestionController = new sparks.SparksQuestionController();
+  sparks.questionController = new sparks.QuestionController();
 })();
 /*globals console sparks $ breadModel getBreadBoard */
 
@@ -3811,20 +3811,20 @@ sparks.createQuestionsCSV = function(data) {
 
   /*
    * Sparks Page Controller can be accessed by the
-   * singleton variable sparks.sparksPageController
+   * singleton variable sparks.pageController
    */
-  sparks.SparksPageController = function(){
+  sparks.PageController = function(){
   };
 
-  sparks.SparksPageController.prototype = {
+  sparks.PageController.prototype = {
 
     reset: function(){
     },
 
     createPage: function(id, jsonPage) {
-      var page = new sparks.SparksPage(id);
+      var page = new sparks.Page(id);
 
-      page.questions = sparks.sparksQuestionController.createQuestionsArray(jsonPage.questions);
+      page.questions = sparks.questionController.createQuestionsArray(jsonPage.questions);
       page.currentQuestion = page.questions[0];
 
       if (!!jsonPage.notes){
@@ -3834,7 +3834,7 @@ sparks.createQuestionsCSV = function(data) {
 
       page.time = jsonPage.time;
 
-      page.view = new sparks.SparksPageView(page);
+      page.view = new sparks.PageView(page);
 
       return page;
     },
@@ -3871,16 +3871,16 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     showReport: function(page){
-      sparks.sparksLogController.endSession();
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(page);
-      sparks.sparksReportController.saveData();
-      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      sparks.logController.endSession();
+      var sessionReport = sparks.reportController.addNewSessionReport(page);
+      sparks.reportController.saveData();
+      var $report = sparks.report.view.getSessionReportView(sessionReport);
       page.view.showReport($report);
     }
 
   };
 
-  sparks.sparksPageController = new sparks.SparksPageController();
+  sparks.pageController = new sparks.PageController();
 })();
 /*globals console sparks $ breadModel getBreadBoard */
 
@@ -3888,16 +3888,16 @@ sparks.createQuestionsCSV = function(data) {
 
   /*
    * Sparks Log Controller can be accessed by the
-   * singleton variable sparks.sparksLogController
+   * singleton variable sparks.logController
    */
-  sparks.SparksLogController = function(){
+  sparks.LogController = function(){
     this.currentLog = null;
   };
 
-  sparks.SparksLogController.prototype = {
+  sparks.LogController.prototype = {
 
     startNewSession: function() {
-      this.currentLog = new sparks.SparksLog(new Date().valueOf());
+      this.currentLog = new sparks.Log(new Date().valueOf());
     },
 
     endSession: function() {
@@ -3948,7 +3948,7 @@ sparks.createQuestionsCSV = function(data) {
 
   };
 
-  sparks.sparksLogController = new sparks.SparksLogController();
+  sparks.logController = new sparks.LogController();
 })();
 /*globals console sparks $ breadModel getBreadBoard */
 
@@ -3956,9 +3956,9 @@ sparks.createQuestionsCSV = function(data) {
 
   /*
    * Sparks Activity Controller can be accessed by the
-   * singleton variable sparks.sparksSectionController
+   * singleton variable sparks.sectionController
    */
-  sparks.SparksSectionController = function(){
+  sparks.SectionController = function(){
     this.currentPage = null;
     this.currentPageIndex = -1;
     this.pageIndexMap = {};
@@ -3969,15 +3969,15 @@ sparks.createQuestionsCSV = function(data) {
     this.id = -1;
   };
 
-  sparks.SparksSectionController.prototype = {
+  sparks.SectionController.prototype = {
 
     reset: function(){
-      sparks.sparksPageController.reset();
-      sparks.sparksQuestionController.reset();
+      sparks.pageController.reset();
+      sparks.questionController.reset();
     },
 
     createSection: function(jsonSection) {
-      var section = new sparks.SparksSection();
+      var section = new sparks.Section();
 
       section.id = jsonSection._id || this.nextId();
       section.title = jsonSection.title;
@@ -3997,18 +3997,18 @@ sparks.createQuestionsCSV = function(data) {
 
       if (!!jsonSection.pages){
         $.each(jsonSection.pages, function(id, jsonPage){
-          var page = new sparks.SparksPage(id);
+          var page = new sparks.Page(id);
           section.pages.push(page);
         });
       }
 
-      section.view = new sparks.SparksSectionView(section);
+      section.view = new sparks.SectionView(section);
 
       return section;
     },
 
     loadCurrentSection: function() {
-      var section = sparks.sparksActivityController.currentSection;
+      var section = sparks.activityController.currentSection;
       section.visited = true;
       sparks.vars = {};          // used for storing authored script variables
 
@@ -4028,13 +4028,13 @@ sparks.createQuestionsCSV = function(data) {
       }
 
       section.pages = [];
-      sparks.sparksQuestionController.reset();
+      sparks.questionController.reset();
 
       var jsonSection = section.jsonSection;
       var self = this;
       if (!!jsonSection.pages){
         $.each(jsonSection.pages, function(i, jsonPage){
-          var page = sparks.sparksPageController.createPage(i, jsonPage);
+          var page = sparks.pageController.createPage(i, jsonPage);
           section.pages.push(page);
           self.pageIndexMap[page] = i;
         });
@@ -4045,13 +4045,13 @@ sparks.createQuestionsCSV = function(data) {
         this.currentPage = section.pages[this.currentPageIndex];
       }
 
-      sparks.sparksLogController.startNewSession();
-      sparks.sparksReportController.startNewSection(section);
+      sparks.logController.startNewSession();
+      sparks.reportController.startNewSection(section);
     },
 
     areMorePage: function() {
       var nextPage;
-      var section = sparks.sparksActivityController.currentSection;
+      var section = sparks.activityController.currentSection;
       if (this.currentPageIndex < section.pages.length - 1){
         return section.pages[this.currentPageIndex+1];
       } else {
@@ -4060,7 +4060,7 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     nextPage: function() {
-      sparks.sparksReportController.saveData();
+      sparks.reportController.saveData();
 
       var nextPage = this.areMorePage();
       if (!nextPage){
@@ -4070,37 +4070,37 @@ sparks.createQuestionsCSV = function(data) {
       this.currentPageIndex = this.currentPageIndex+1;
       this.currentPage = nextPage;
 
-      sparks.sparksActivity.view.layoutPage();
+      sparks.activity.view.layoutPage();
 
-      sparks.sparksLogController.startNewSession();
+      sparks.logController.startNewSession();
     },
 
     repeatPage: function(page) {
-      sparks.sparksReportController.saveData();
+      sparks.reportController.saveData();
 
       if (!!page){
         this.currentPage = page;
         this.currentPageIndex = this.pageIndexMap[page];
       }
 
-      var section = sparks.sparksActivityController.currentSection;
+      var section = sparks.activityController.currentSection;
 
       this.loadCurrentSection();
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.layoutCurrentSection();
 
     },
 
     repeatSection: function(section) {
       if (!!section){
-        sparks.sparksActivityController.currentSection = section;
+        sparks.activityController.currentSection = section;
       }
-      this.repeatPage(sparks.sparksActivityController.currentSection.pages[0]);
+      this.repeatPage(sparks.activityController.currentSection.pages[0]);
     },
 
     viewSectionReport: function() {
-      sparks.sparksReportController.saveData();
+      sparks.reportController.saveData();
 
-      var $report = sparks.sparksReport.view.getActivityReportView();
+      var $report = sparks.report.view.getActivityReportView();
       this.currentPage.view.showReport($report, true);
     },
 
@@ -4111,7 +4111,7 @@ sparks.createQuestionsCSV = function(data) {
 
   };
 
-  sparks.sparksSectionController = new sparks.SparksSectionController();
+  sparks.sectionController = new sparks.SectionController();
 })();
 /*globals console sparks $ breadModel getBreadBoard */
 
@@ -4119,20 +4119,20 @@ sparks.createQuestionsCSV = function(data) {
 
   /*
    * Sparks Activity Controller can be accessed by the
-   * singleton variable sparks.sparksActivityController
+   * singleton variable sparks.activityController
    */
-  sparks.SparksActivityController = function(){
-    sparks.sparksActivity = new sparks.SparksActivity();
+  sparks.ActivityController = function(){
+    sparks.activity = new sparks.Activity();
 
     this.currentSection = null;
     this.currentSectionIndex = 0;
     this.sectionMap = {};
   };
 
-  sparks.SparksActivityController.prototype = {
+  sparks.ActivityController.prototype = {
 
     createActivity: function(activity, callback) {
-      sparks.sparksActivity.id = activity._id;
+      sparks.activity.id = activity._id;
       var self = this;
       var totalCreated = 0;
       $.each(activity.sections, function(i, jsonSection){
@@ -4156,16 +4156,16 @@ sparks.createQuestionsCSV = function(data) {
 
     addSection: function (jsonSection, index) {
 
-      if (!sparks.sparksActivity.id){
-        sparks.sparksActivity.id = jsonSection._id;
+      if (!sparks.activity.id){
+        sparks.activity.id = jsonSection._id;
       }
 
-      var section = sparks.sparksSectionController.createSection(jsonSection);
+      var section = sparks.sectionController.createSection(jsonSection);
 
       if (index !== undefined){
-        sparks.sparksActivity.sections[index] = section;
+        sparks.activity.sections[index] = section;
       } else {
-        sparks.sparksActivity.sections.push(section);
+        sparks.activity.sections.push(section);
       }
       this.sectionMap[section.id] = section;
 
@@ -4174,22 +4174,22 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     setCurrentSection: function(i) {
-      this.currentSection = sparks.sparksActivity.sections[i];
+      this.currentSection = sparks.activity.sections[i];
       this.currentSectionIndex = i;
     },
 
     areMoreSections: function () {
-      return !(this.currentSectionIndex >= sparks.sparksActivity.sections.length -1);
+      return !(this.currentSectionIndex >= sparks.activity.sections.length -1);
     },
 
     nextSection: function () {
-      if (this.currentSectionIndex > sparks.sparksActivity.sections.length -1) {
+      if (this.currentSectionIndex > sparks.activity.sections.length -1) {
         return;
       }
       this.setCurrentSection(this.currentSectionIndex + 1);
-      sparks.sparksSectionController.currentPageIndex = 0;
-      sparks.sparksSectionController.loadCurrentSection();
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.sectionController.currentPageIndex = 0;
+      sparks.sectionController.loadCurrentSection();
+      sparks.activity.view.layoutCurrentSection();
     },
 
     findSection: function(id){
@@ -4197,17 +4197,17 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     reset: function () {
-      sparks.sparksActivity.sections = [];
+      sparks.activity.sections = [];
 
-      sparks.sparksSectionController.currentPage = null;
-      sparks.sparksSectionController.currentPageIndex = -1;
-      sparks.sparksSectionController.pageIndexMap = {};
+      sparks.sectionController.currentPage = null;
+      sparks.sectionController.currentPageIndex = -1;
+      sparks.sectionController.pageIndexMap = {};
     }
 
 
   };
 
-  sparks.sparksActivityController = new sparks.SparksActivityController();
+  sparks.activityController = new sparks.ActivityController();
 })();
 /*globals console sparks $ breadModel getBreadBoard window */
 
@@ -4215,39 +4215,39 @@ sparks.createQuestionsCSV = function(data) {
 
   /*
    * Sparks Report Controller can be accessed by the
-   * singleton variable sparks.sparksReportController
+   * singleton variable sparks.reportController
    *
-   * There is only one singlton sparks.sparksReport object. This
+   * There is only one singlton sparks.report object. This
    * controller creates it when the controller is created.
    */
-  sparks.SparksReportController = function(){
-    sparks.sparksReport = new sparks.SparksReport();
-    sparks.sparksReport.view = new sparks.SparksReportView();
+  sparks.ReportController = function(){
+    sparks.report = new sparks.Report();
+    sparks.report.view = new sparks.ReportView();
     this.currentSectionReport = null;
   };
 
-  sparks.SparksReportController.prototype = {
+  sparks.ReportController.prototype = {
 
     startNewSection: function(section) {
-      if (!!sparks.sparksReport.sectionReports[section]){
-        this.currentSectionReport = sparks.sparksReport.sectionReports[section];
+      if (!!sparks.report.sectionReports[section]){
+        this.currentSectionReport = sparks.report.sectionReports[section];
         return;
       }
-      this.currentSectionReport = new sparks.SparksSectionReport();
+      this.currentSectionReport = new sparks.SectionReport();
       this.currentSectionReport.sectionId = section.id;
       this.currentSectionReport.sectionTitle = section.title;
-      sparks.sparksReport.sectionReports[section] = this.currentSectionReport;
+      sparks.report.sectionReports[section] = this.currentSectionReport;
     },
 
     addNewSessionReport: function(page){
-      var sessionReport = new sparks.SparksSessionReport();
+      var sessionReport = new sparks.SessionReport();
 
       var jsonQuestions = [];
       var score = 0;
       var maxScore = 0;
       $.each(page.questions, function(i, question){
 
-        sparks.sparksQuestionController.gradeQuestion(question);
+        sparks.questionController.gradeQuestion(question);
 
         score += question.points_earned;
         maxScore += question.points;
@@ -4256,10 +4256,10 @@ sparks.createQuestionsCSV = function(data) {
       });
       sessionReport.questions = jsonQuestions;
 
-      if (sparks.sparksLogController.currentLog.endTime < 0){
-        sparks.sparksLogController.endSession();
+      if (sparks.logController.currentLog.endTime < 0){
+        sparks.logController.endSession();
       }
-      sessionReport.log = sparks.sparksLogController.currentLog;
+      sessionReport.log = sparks.logController.currentLog;
       sessionReport.timeTaken = (sessionReport.log.endTime - sessionReport.log.startTime) / 1000;
       if (!!page.time){
         var t = page.time;
@@ -4291,7 +4291,7 @@ sparks.createQuestionsCSV = function(data) {
 
     _addSessionReport: function(page, sessionReport) {
       if (!this.currentSectionReport.pageReports[page]){
-        var pageReport = new sparks.SparksPageReport();
+        var pageReport = new sparks.PageReport();
         this.currentSectionReport.pageReports[page] = pageReport;
         this.currentSectionReport.pageReports[page].sessionReports = [];
       }
@@ -4301,7 +4301,7 @@ sparks.createQuestionsCSV = function(data) {
     getTotalScoreForPage: function(page, section) {
       var sectionReport;
       if (!!section){
-        sectionReport = sparks.sparksReport.sectionReports[section];
+        sectionReport = sparks.report.sectionReports[section];
       } else {
         sectionReport = this.currentSectionReport;
       }
@@ -4381,7 +4381,7 @@ sparks.createQuestionsCSV = function(data) {
     getLastThreeScoreForPage: function(page, section) {
       var sectionReport;
       if (!!section){
-        sectionReport = sparks.sparksReport.sectionReports[section];
+        sectionReport = sparks.report.sectionReports[section];
       } else {
         sectionReport = this.currentSectionReport;
       }
@@ -4497,34 +4497,34 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     saveData: function() {
-      if (!!sparks.sparksActivity.id && !!sparks.couchDS.user){
+      if (!!sparks.activity.id && !!sparks.couchDS.user){
         console.log("Saving data");
         var score = 0;
         var self = this;
-        $.each(sparks.sparksActivity.sections, function(i, section){
+        $.each(sparks.activity.sections, function(i, section){
           score += self.getTotalScoreForSection(section);
         });
-        sparks.sparksReport.score = score;
+        sparks.report.score = score;
 
-        var data = sparks.sparksReport.toJSON();
+        var data = sparks.report.toJSON();
         sparks.couchDS.save(data);
       }
     },
 
     loadReport: function(jsonReport) {
-      sparks.sparksReport.score = jsonReport.score;
+      sparks.report.score = jsonReport.score;
       $.each(jsonReport.sectionReports, function(i, jsonSectionReport){
-        var sectionReport = new sparks.SparksSectionReport();
-        var section = sparks.sparksActivityController.findSection(jsonSectionReport.sectionId);
-        sparks.sparksReport.sectionReports[section] = sectionReport;
+        var sectionReport = new sparks.SectionReport();
+        var section = sparks.activityController.findSection(jsonSectionReport.sectionId);
+        sparks.report.sectionReports[section] = sectionReport;
         sectionReport.sectionId = jsonSectionReport.sectionId;
         sectionReport.sectionTitle = jsonSectionReport.sectionTitle;
         $.each(jsonSectionReport.pageReports, function(j, jsonPageReport){
-          var pageReport = new sparks.SparksPageReport();
+          var pageReport = new sparks.PageReport();
           var page = section.pages[j];
           sectionReport.pageReports[page] = pageReport;
           $.each(jsonPageReport.sessionReports, function(k, jsonSessionReport){
-            var sessionReport = new sparks.SparksSessionReport();
+            var sessionReport = new sparks.SessionReport();
             $.each(jsonSessionReport, function(key, val){
               sessionReport[key] = val;
             });
@@ -4629,7 +4629,7 @@ sparks.createQuestionsCSV = function(data) {
 
   };
 
-  sparks.sparksReportController = new sparks.SparksReportController();
+  sparks.reportController = new sparks.ReportController();
 })();
 /*globals console sparks $ breadModel getBreadBoard window */
 
@@ -4637,16 +4637,16 @@ sparks.createQuestionsCSV = function(data) {
 
   /*
    * Sparks Class Report Controller can be accessed by the
-   * singleton variable sparks.sparksClassReportController
+   * singleton variable sparks.classReportController
    *
-   * There is only one singlton sparks.sparksClassReport object. This
+   * There is only one singlton sparks.classReport object. This
    * controller creates it when the controller is created.
    */
-  sparks.SparksClassReportController = function(){
+  sparks.ClassReportController = function(){
     this.reports = [];
   };
 
-  sparks.SparksClassReportController.prototype = {
+  sparks.ClassReportController.prototype = {
 
     getStudentData: function(activityId, studentIds, callback) {
       var totalStudents = studentIds.length,
@@ -4690,7 +4690,7 @@ sparks.createQuestionsCSV = function(data) {
 
   };
 
-  sparks.sparksClassReportController = new sparks.SparksClassReportController();
+  sparks.classReportController = new sparks.ClassReportController();
 })();
 /*globals console sparks $ breadModel getBreadBoard */
 
@@ -4698,21 +4698,21 @@ sparks.createQuestionsCSV = function(data) {
 
   /*
    * Sparks Tutorial Controller can be accessed by the
-   * singleton variable sparks.sparksTutorialController
+   * singleton variable sparks.tutorialController
    *
    * Unlike most controllers, SparksTutorialController is not an
    * object controller. It merely contains functions for dealing with
    * showing tutorials, logging, and other such stuff.
    */
-  sparks.SparksTutorialController = function(){
+  sparks.TutorialController = function(){
   };
 
-  sparks.SparksTutorialController.prototype = {
+  sparks.TutorialController.prototype = {
 
     showTutorial: function(filename) {
       var url = this._getURL(filename);
       window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
-      sparks.sparksLogController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
+      sparks.logController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
     },
 
     setQuestionCategory: function(question) {
@@ -4750,21 +4750,21 @@ sparks.createQuestionsCSV = function(data) {
 
   };
 
-  sparks.sparksTutorialController = new sparks.SparksTutorialController();
+  sparks.tutorialController = new sparks.TutorialController();
 })();
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
   sparks.ActivityConstructor = function(jsonActivity){
 
-    sparks.sparksActivity.view = new sparks.SparksActivityView();
+    sparks.activity.view = new sparks.ActivityView();
 
     if (!jsonActivity.type || jsonActivity.type !== "activity"){
       var jsonSection = jsonActivity;
-      var section = sparks.sparksActivityController.addSection(jsonSection);
+      var section = sparks.activityController.addSection(jsonSection);
       this.loadFirstSection();
     } else {
-      sparks.sparksActivityController.createActivity(jsonActivity, this.loadFirstSection);
+      sparks.activityController.createActivity(jsonActivity, this.loadFirstSection);
     }
 
     sparks.activityConstructor = this;
@@ -4773,33 +4773,33 @@ sparks.createQuestionsCSV = function(data) {
 
   sparks.ActivityConstructor.prototype = {
     loadFirstSection: function() {
-      if (!!sparks.sparksActivity.id && sparks.couchDS.user){
+      if (!!sparks.activity.id && sparks.couchDS.user){
         $('#loading-text').text('Loading previous work');
-        sparks.couchDS.loadStudentData(sparks.sparksActivity.id, sparks.couchDS.user.name,
+        sparks.couchDS.loadStudentData(sparks.activity.id, sparks.couchDS.user.name,
           function(response){
             var jsonReport = response.rows[response.rows.length-1].value;
-            sparks.sparksReportController.loadReport(jsonReport);
+            sparks.reportController.loadReport(jsonReport);
             var lastSectionId;
-            $.each(sparks.sparksActivity.sections, function(i, section){
-              if (!!sparks.sparksReport.sectionReports[section]){
+            $.each(sparks.activity.sections, function(i, section){
+              if (!!sparks.report.sectionReports[section]){
                 lastSectionId = i;
               }
             });
-            sparks.sparksActivityController.setCurrentSection(lastSectionId);
-            sparks.sparksSectionController.loadCurrentSection();
-            sparks.sparksActivity.view.layoutCurrentSection();
-            sparks.sparksSectionController.viewSectionReport();
+            sparks.activityController.setCurrentSection(lastSectionId);
+            sparks.sectionController.loadCurrentSection();
+            sparks.activity.view.layoutCurrentSection();
+            sparks.sectionController.viewSectionReport();
           },
           function(){
-            sparks.sparksActivityController.setCurrentSection(0);
-            sparks.sparksSectionController.loadCurrentSection();
-            sparks.sparksActivity.view.layoutCurrentSection();
+            sparks.activityController.setCurrentSection(0);
+            sparks.sectionController.loadCurrentSection();
+            sparks.activity.view.layoutCurrentSection();
           }
         );
       } else {
-        sparks.sparksActivityController.setCurrentSection(0);
-        sparks.sparksSectionController.loadCurrentSection();
-        sparks.sparksActivity.view.layoutCurrentSection();
+        sparks.activityController.setCurrentSection(0);
+        sparks.sectionController.loadCurrentSection();
+        sparks.activity.view.layoutCurrentSection();
       }
     }
 
@@ -5009,10 +5009,10 @@ sparks.createQuestionsCSV = function(data) {
       if (name === 'connect') {
           if (args[0] === 'probe') {
               if (args[1] === 'probe_red') {
-                  sparks.sparksSectionController.multimeter.redProbeConnection = args[2];
+                  sparks.sectionController.multimeter.redProbeConnection = args[2];
               }
               else if (args[1] === 'probe_black') {
-                  sparks.sparksSectionController.multimeter.blackProbeConnection = args[2];
+                  sparks.sectionController.multimeter.blackProbeConnection = args[2];
               }
               else {
                   alert('Activity#receiveEvent: connect: unknonw probe name ' + args[1]);
@@ -5022,18 +5022,18 @@ sparks.createQuestionsCSV = function(data) {
               if (!!args[2]){
                 breadModel('unmapHole', args[2]);
               }
-              sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+              sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
                 "type": "connect lead",
                 "location": args[2]});
           }
-          sparks.sparksSectionController.multimeter.update();
+          sparks.sectionController.multimeter.update();
       } else if (name === 'disconnect') {
           if (args[0] === 'probe') {
               if (args[1] === 'probe_red') {
-                  sparks.sparksSectionController.multimeter.redProbeConnection = null;
+                  sparks.sectionController.multimeter.redProbeConnection = null;
               }
               else if (args[1] === 'probe_black') {
-                  sparks.sparksSectionController.multimeter.blackProbeConnection = null;
+                  sparks.sectionController.multimeter.blackProbeConnection = null;
               }
               else {
                   alert('Activity#receiveEvent: disconnect: Unknonw probe name ' + args[1]);
@@ -5043,11 +5043,11 @@ sparks.createQuestionsCSV = function(data) {
             var newHole = breadModel('getGhostHole', hole+"ghost");
 
             breadModel('mapHole', hole, newHole.nodeName());
-            sparks.sparksLogController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+            sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
               "type": "disconnect lead",
               "location": hole});
           }
-          sparks.sparksSectionController.multimeter.update();
+          sparks.sectionController.multimeter.update();
       } else if (name === 'probe') {
           $('#popup').dialog();
 
@@ -5090,11 +5090,11 @@ sparks.createQuestionsCSV = function(data) {
           $('#popup').dialog('close');
       } else if (name == 'multimeter_dial') {
           console.log('changed multimeter dial'+value);
-          sparks.sparksSectionController.multimeter.dialPosition = value;
-          sparks.sparksSectionController.multimeter.update();
+          sparks.sectionController.multimeter.dialPosition = value;
+          sparks.sectionController.multimeter.update();
       } else if (name == 'multimeter_power') {
-          sparks.sparksSectionController.multimeter.powerOn = value == 'true' ? true : false;
-          sparks.sparksSectionController.multimeter.update();
+          sparks.sectionController.multimeter.powerOn = value == 'true' ? true : false;
+          sparks.sectionController.multimeter.update();
       }
   }
 
@@ -6424,7 +6424,7 @@ sparks.createQuestionsCSV = function(data) {
             this.updateDisplay();
 
             if (this.redProbeConnection && this.blackProbeConnection) {
-              sparks.sparksLogController.addEvent(sparks.LogEvent.DMM_MEASUREMENT, {
+              sparks.logController.addEvent(sparks.LogEvent.DMM_MEASUREMENT, {
                 "measurement": measurement,
                 "dial_position": this.dialPosition,
                 "red_probe": this.redProbeConnection,
@@ -6456,7 +6456,7 @@ sparks.createQuestionsCSV = function(data) {
           	width: 400,
           	height: 300
           });
-          sparks.sparksLogController.addEvent(sparks.LogEvent.BLEW_FUSE);
+          sparks.logController.addEvent(sparks.LogEvent.BLEW_FUSE);
         },
 
         allConnected: function () {
@@ -7183,23 +7183,24 @@ var apMessageBox = apMessageBox || {};
 
   this.loadClassReport = function () {
     var namesArr,
-        activity = "series-resistances";  //FIXME
+        activity;
     if (!!sparks.util.readCookie('class_students')){
-      var activity = unescape(sparks.util.readCookie('class_students'))
+      var activity = unescape(sparks.util.readCookie('activity_name')).split('#')[1],
           learnersRaw = unescape(sparks.util.readCookie('class_students')).replace(/\+/g, ' '),
           learners = eval(learnersRaw);
       namesArr = $.map(learners, function(learner){return learner.name.replace(/ /g, "+");});
     } else {
+      activity = prompt("Enter the activity id");
       var names = prompt("Enter a list of student names", "");
       namesArr = names.split(/ *, */);
     }
 
-    sparks.sparksClassReportController.getStudentData(
+    sparks.classReportController.getStudentData(
       activity,
       namesArr,
       function(reports) {
         $('#loading').hide();
-        var view = new sparks.SparksClassReportView(),
+        var view = new sparks.ClassReportView(),
             $report = view.getClassReportView(reports);
         $('#report').append($report);
       });

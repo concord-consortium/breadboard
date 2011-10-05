@@ -1,7 +1,7 @@
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
-  sparks.SparksQuestion = function(){
+  sparks.Question = function(){
     this.id = 0;
     this.shownId = 0;
     
@@ -41,7 +41,7 @@
     this.view = null;
   };
   
-  sparks.SparksQuestion.prototype = {
+  sparks.Question.prototype = {
     toJSON: function() {
       var json = {};
       json.id = this.id;

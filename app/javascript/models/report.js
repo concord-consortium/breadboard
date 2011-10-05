@@ -17,7 +17,7 @@
  *              maxScore: y       ?
  */
 (function() {
-  sparks.SparksReport = function(){
+  sparks.Report = function(){
     this.reportVersion = 1.0;
     this.sectionReports = {};
     this.score = 0;
@@ -25,18 +25,18 @@
     this.activity = null;
   };
   
-  sparks.SparksSectionReport = function(){
+  sparks.SectionReport = function(){
     this.pageReports = {};
     this.view = null;
     this.sectionId = null;
     this.sectionTitle = null;
   };
   
-  sparks.SparksPageReport = function(){
+  sparks.PageReport = function(){
     this.sessionReports = [];
   };
   
-  sparks.SparksSessionReport = function(){
+  sparks.SessionReport = function(){
     this.questions = [];
     this.log = null;
     this.timeTaken = -1;
@@ -47,11 +47,11 @@
     this.maxScore = -1;
   };
   
-  sparks.SparksReport.prototype = {
+  sparks.Report.prototype = {
     
     toJSON: function () {
       var json = {};
-      json.activity = sparks.sparksActivity.id;
+      json.activity = sparks.activity.id;
       json.sectionReports = [];
       $.each(this.sectionReports, function(i, sectionReport){
         json.sectionReports.push(sectionReport.toJSON());
@@ -63,7 +63,7 @@
     
   };
   
-  sparks.SparksSectionReport.prototype = {
+  sparks.SectionReport.prototype = {
     
     toJSON: function () {
       var json = {};
@@ -78,7 +78,7 @@
     
   };
   
-  sparks.SparksPageReport.prototype = {
+  sparks.PageReport.prototype = {
     
     toJSON: function () {
       var json = {};
@@ -91,7 +91,7 @@
     
   };
   // 
-  // sparks.SparksSessionReport.prototype = {
+  // sparks.SessionReport.prototype = {
   //   
   //   toJSON: function () {
   //     var json = {};

@@ -2,8 +2,8 @@ describe 'Logging'
 
   before_each
     breadModel('clear');
-    sparks.sparksSectionController = new sparks.SparksSectionController();
-    sparks.sparksReportController = new sparks.SparksReportController();
+    sparks.sectionController = new sparks.SectionController();
+    sparks.reportController = new sparks.ReportController();
   end
   
   describe 'Simple Logging'
@@ -37,16 +37,16 @@ describe 'Logging'
       var $questionsDiv = $("<div>");
 
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
 
       var $select = $questionsDiv.find('select');
       $select.val("200");
       $select.change();
       
-      var section = sparks.sparksActivityController.currentSection;
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
-      var $report = sparks.sparksReport.view.getSessionReportView(sessionReport);
+      var section = sparks.activityController.currentSection;
+      var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
+      var $report = sparks.report.view.getSessionReportView(sessionReport);
       var $trs = $report.find('tr');
 
       var $tds1 = $($trs[1]).find('td');
@@ -65,7 +65,7 @@ describe 'Logging'
   describe "Circuit logging"
   
     before_each
-      sparks.sparksActivity.sections = [];
+      sparks.activity.sections = [];
       stub(sparks.util, 'readCookie').and_return(null);
       mock_request().and_return(sparks.jsonSection, 'application/javascript', 200)
       sparks.config.qucsate_server_url = "http://localhost:1234/sparks/qucsator/solve";
@@ -79,8 +79,8 @@ describe 'Logging'
     
     it "should log when a student makes a DMM measurement"
       
-      var section = sparks.sparksActivityController.currentSection;
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      var section = sparks.activityController.currentSection;
+      var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
 
       receiveEvent('connect', 'probe|probe_red|b23', 0);
       receiveEvent('connect', 'probe|probe_black|b17', 0);
@@ -93,8 +93,8 @@ describe 'Logging'
     
     it "should log when a student makes or breaks a connection"
       
-      var section = sparks.sparksActivityController.currentSection;
-      var sessionReport = sparks.sparksReportController.addNewSessionReport(section.pages[0]);
+      var section = sparks.activityController.currentSection;
+      var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
       console.log("DISCONNECT")
       receiveEvent('disconnect', 'component|r1|b23', 0);
       

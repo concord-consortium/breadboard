@@ -2,15 +2,15 @@ describe 'Activity Interactions'
 
   before_each
     breadModel('clear');
-    sparks.sparksSectionController.reset();
-    sparks.sparksActivityController.reset();
+    sparks.sectionController.reset();
+    sparks.activityController.reset();
   end
   
   after_each
     $('#questions_area').remove();
     $('#breadboard').remove();
     sparks.debug = false;
-    sparks.sparksActivityController.reset();
+    sparks.activityController.reset();
   end
   
   describe 'Submit buttons'
@@ -45,7 +45,7 @@ describe 'Activity Interactions'
      $(document.body).append($questionsDiv);
      
      var ac = new sparks.ActivityConstructor(jsonSection);
-     sparks.sparksActivity.view.layoutCurrentSection();
+     sparks.activity.view.layoutCurrentSection();
      
      $forms = $questionsDiv.find('form');
      $forms.length.should.be 3
@@ -99,7 +99,7 @@ describe 'Activity Interactions'
      $(document.body).append($questionsDiv);
 
      var ac = new sparks.ActivityConstructor(jsonSection);
-     sparks.sparksActivity.view.layoutCurrentSection();
+     sparks.activity.view.layoutCurrentSection();
      
      $questionsDiv.find('.inner-questions').should.be_visible
      $questionsDiv.find('.report').length.should.be 0
@@ -160,7 +160,7 @@ describe 'Activity Interactions'
      $(document.body).append($questionsDiv);
 
      var ac = new sparks.ActivityConstructor(jsonSection);
-     sparks.sparksActivity.view.layoutCurrentSection();
+     sparks.activity.view.layoutCurrentSection();
      
      $questionsDiv.find('.inner-questions').should.be_visible
      $questionsDiv.find('.report').length.should.be 0
@@ -212,7 +212,7 @@ describe 'Activity Interactions'
      $(document.body).append($questionsDiv);
 
      var ac = new sparks.ActivityConstructor(jsonSection);
-     sparks.sparksActivity.view.layoutCurrentSection();
+     sparks.activity.view.layoutCurrentSection();
      
      $questionsDiv.find('input').val("test");
      
@@ -268,7 +268,7 @@ describe 'Activity Interactions'
      $(document.body).append($questionsDiv);
 
      var ac = new sparks.ActivityConstructor(jsonSection);
-     sparks.sparksActivity.view.layoutCurrentSection();
+     sparks.activity.view.layoutCurrentSection();
      
      var components = getBreadBoard().components;
      console.log("components.r1 = "+components.r1);

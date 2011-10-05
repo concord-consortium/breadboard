@@ -4,12 +4,12 @@
   
   /*
    * Sparks Page Controller can be accessed by the
-   * singleton variable sparks.sparksQuestionController
+   * singleton variable sparks.questionController
    */
-  sparks.SparksQuestionController = function(){
+  sparks.QuestionController = function(){
   };
   
-  sparks.SparksQuestionController.prototype = {
+  sparks.QuestionController.prototype = {
     
     reset: function() {
       this._id = 0;
@@ -38,7 +38,7 @@
       
       
       function addSingleQuestion(jsonQuestion, preprompt){
-        var question = new sparks.SparksQuestion();
+        var question = new sparks.Question();
         
         question.id = self._id;
         question.answer = '';
@@ -105,7 +105,7 @@
         question.image = jsonQuestion.image;
         question.top_tutorial = jsonQuestion.tutorial;
         
-        question.category = sparks.sparksTutorialController.setQuestionCategory(question);
+        question.category = sparks.tutorialController.setQuestionCategory(question);
         
         question.scoring = jsonQuestion.scoring;
         
@@ -114,7 +114,7 @@
         
         question.prompt = oldPrompt;
         
-        question.view = new sparks.SparksQuestionView(question);
+        question.view = new sparks.QuestionView(question);
       }
       
       if (!jsonQuestion.subquestions){
@@ -181,10 +181,10 @@
       var parsedScript = sparks.mathParser.replaceCircuitVariables(script);
       var functionScript;
       eval("var functionScript = function(question, log){" + parsedScript + "}");
-      functionScript(question, sparks.sparksLogController.currentLog);
+      functionScript(question, sparks.logController.currentLog);
     }
     
   };
   
-  sparks.sparksQuestionController = new sparks.SparksQuestionController();
+  sparks.questionController = new sparks.QuestionController();
 })();

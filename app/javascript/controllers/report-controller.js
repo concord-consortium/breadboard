@@ -4,39 +4,39 @@
   
   /*
    * Sparks Report Controller can be accessed by the
-   * singleton variable sparks.sparksReportController
+   * singleton variable sparks.reportController
    *
-   * There is only one singlton sparks.sparksReport object. This
+   * There is only one singlton sparks.report object. This
    * controller creates it when the controller is created.
    */
-  sparks.SparksReportController = function(){
-    sparks.sparksReport = new sparks.SparksReport();
-    sparks.sparksReport.view = new sparks.SparksReportView();
+  sparks.ReportController = function(){
+    sparks.report = new sparks.Report();
+    sparks.report.view = new sparks.ReportView();
     this.currentSectionReport = null;
   };
   
-  sparks.SparksReportController.prototype = {
+  sparks.ReportController.prototype = {
     
     startNewSection: function(section) {
-      if (!!sparks.sparksReport.sectionReports[section]){
-        this.currentSectionReport = sparks.sparksReport.sectionReports[section];
+      if (!!sparks.report.sectionReports[section]){
+        this.currentSectionReport = sparks.report.sectionReports[section];
         return;
       }
-      this.currentSectionReport = new sparks.SparksSectionReport();
+      this.currentSectionReport = new sparks.SectionReport();
       this.currentSectionReport.sectionId = section.id;
       this.currentSectionReport.sectionTitle = section.title;
-      sparks.sparksReport.sectionReports[section] = this.currentSectionReport;
+      sparks.report.sectionReports[section] = this.currentSectionReport;
     },
     
     addNewSessionReport: function(page){
-      var sessionReport = new sparks.SparksSessionReport();
+      var sessionReport = new sparks.SessionReport();
       
       var jsonQuestions = [];
       var score = 0;
       var maxScore = 0;
       $.each(page.questions, function(i, question){
         
-        sparks.sparksQuestionController.gradeQuestion(question);
+        sparks.questionController.gradeQuestion(question);
         
         score += question.points_earned;
         maxScore += question.points;
@@ -45,10 +45,10 @@
       });
       sessionReport.questions = jsonQuestions;
       
-      if (sparks.sparksLogController.currentLog.endTime < 0){
-        sparks.sparksLogController.endSession();
+      if (sparks.logController.currentLog.endTime < 0){
+        sparks.logController.endSession();
       }
-      sessionReport.log = sparks.sparksLogController.currentLog;
+      sessionReport.log = sparks.logController.currentLog;
       sessionReport.timeTaken = (sessionReport.log.endTime - sessionReport.log.startTime) / 1000;
       if (!!page.time){
         var t = page.time;
@@ -80,7 +80,7 @@
     
     _addSessionReport: function(page, sessionReport) {
       if (!this.currentSectionReport.pageReports[page]){
-        var pageReport = new sparks.SparksPageReport();
+        var pageReport = new sparks.PageReport();
         this.currentSectionReport.pageReports[page] = pageReport;
         this.currentSectionReport.pageReports[page].sessionReports = [];
       }
@@ -90,7 +90,7 @@
     getTotalScoreForPage: function(page, section) {
       var sectionReport;
       if (!!section){
-        sectionReport = sparks.sparksReport.sectionReports[section];
+        sectionReport = sparks.report.sectionReports[section];
       } else {
         sectionReport = this.currentSectionReport;
       }
@@ -174,7 +174,7 @@
     getLastThreeScoreForPage: function(page, section) {
       var sectionReport;
       if (!!section){
-        sectionReport = sparks.sparksReport.sectionReports[section];
+        sectionReport = sparks.report.sectionReports[section];
       } else {
         sectionReport = this.currentSectionReport;
       }
@@ -297,34 +297,34 @@
     },
 
     saveData: function() {
-      if (!!sparks.sparksActivity.id && !!sparks.couchDS.user){
+      if (!!sparks.activity.id && !!sparks.couchDS.user){
         console.log("Saving data");
         var score = 0;
         var self = this;
-        $.each(sparks.sparksActivity.sections, function(i, section){
+        $.each(sparks.activity.sections, function(i, section){
           score += self.getTotalScoreForSection(section);
         });
-        sparks.sparksReport.score = score;
+        sparks.report.score = score;
         
-        var data = sparks.sparksReport.toJSON();
+        var data = sparks.report.toJSON();
         sparks.couchDS.save(data);
       }
     },
     
     loadReport: function(jsonReport) {
-      sparks.sparksReport.score = jsonReport.score;
+      sparks.report.score = jsonReport.score;
       $.each(jsonReport.sectionReports, function(i, jsonSectionReport){
-        var sectionReport = new sparks.SparksSectionReport();
-        var section = sparks.sparksActivityController.findSection(jsonSectionReport.sectionId);
-        sparks.sparksReport.sectionReports[section] = sectionReport;
+        var sectionReport = new sparks.SectionReport();
+        var section = sparks.activityController.findSection(jsonSectionReport.sectionId);
+        sparks.report.sectionReports[section] = sectionReport;
         sectionReport.sectionId = jsonSectionReport.sectionId;
         sectionReport.sectionTitle = jsonSectionReport.sectionTitle;
         $.each(jsonSectionReport.pageReports, function(j, jsonPageReport){
-          var pageReport = new sparks.SparksPageReport();
+          var pageReport = new sparks.PageReport();
           var page = section.pages[j];
           sectionReport.pageReports[page] = pageReport;
           $.each(jsonPageReport.sessionReports, function(k, jsonSessionReport){
-            var sessionReport = new sparks.SparksSessionReport();
+            var sessionReport = new sparks.SessionReport();
             $.each(jsonSessionReport, function(key, val){
               sessionReport[key] = val;
             });
@@ -430,5 +430,5 @@
     
   };
   
-  sparks.sparksReportController = new sparks.SparksReportController();
+  sparks.reportController = new sparks.ReportController();
 })();

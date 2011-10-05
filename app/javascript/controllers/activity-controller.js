@@ -4,20 +4,20 @@
   
   /*
    * Sparks Activity Controller can be accessed by the
-   * singleton variable sparks.sparksActivityController
+   * singleton variable sparks.activityController
    */
-  sparks.SparksActivityController = function(){
-    sparks.sparksActivity = new sparks.SparksActivity();
+  sparks.ActivityController = function(){
+    sparks.activity = new sparks.Activity();
     
     this.currentSection = null;
     this.currentSectionIndex = 0;
     this.sectionMap = {};
   };
   
-  sparks.SparksActivityController.prototype = {
+  sparks.ActivityController.prototype = {
     
     createActivity: function(activity, callback) {
-      sparks.sparksActivity.id = activity._id;
+      sparks.activity.id = activity._id;
       var self = this;
       var totalCreated = 0;
       $.each(activity.sections, function(i, jsonSection){
@@ -43,7 +43,7 @@
       // var _id = jsonSection._id;
       // var sectionExists = false;
       // var index = -1;
-      // $.each(sparks.sparksActivity.sections, function(i, section){
+      // $.each(sparks.activity.sections, function(i, section){
       //   if (section.id === _id){
       //     sectionExists = true;
       //     index = i;
@@ -51,17 +51,17 @@
       // });
       
       // if we're just making a one-section activity
-      if (!sparks.sparksActivity.id){
-        sparks.sparksActivity.id = jsonSection._id;
+      if (!sparks.activity.id){
+        sparks.activity.id = jsonSection._id;
       }
       
-      var section = sparks.sparksSectionController.createSection(jsonSection);
+      var section = sparks.sectionController.createSection(jsonSection);
       // this.currentSection = section;
         
       if (index !== undefined){
-        sparks.sparksActivity.sections[index] = section;
+        sparks.activity.sections[index] = section;
       } else {
-        sparks.sparksActivity.sections.push(section);
+        sparks.activity.sections.push(section);
       }
       this.sectionMap[section.id] = section;
       
@@ -71,22 +71,22 @@
     },
     
     setCurrentSection: function(i) {
-      this.currentSection = sparks.sparksActivity.sections[i];
+      this.currentSection = sparks.activity.sections[i];
       this.currentSectionIndex = i;
     },
     
     areMoreSections: function () {
-      return !(this.currentSectionIndex >= sparks.sparksActivity.sections.length -1);
+      return !(this.currentSectionIndex >= sparks.activity.sections.length -1);
     },
     
     nextSection: function () {
-      if (this.currentSectionIndex > sparks.sparksActivity.sections.length -1) {
+      if (this.currentSectionIndex > sparks.activity.sections.length -1) {
         return;
       }
       this.setCurrentSection(this.currentSectionIndex + 1);
-      sparks.sparksSectionController.currentPageIndex = 0;
-      sparks.sparksSectionController.loadCurrentSection();
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.sectionController.currentPageIndex = 0;
+      sparks.sectionController.loadCurrentSection();
+      sparks.activity.view.layoutCurrentSection();
       // this.currentSection.view.clear();
       //       breadModel('clear');
       //       window.location.hash = this.currentSection.nextSection;
@@ -98,15 +98,15 @@
     },
     
     reset: function () {
-      sparks.sparksActivity.sections = [];
+      sparks.activity.sections = [];
       
-      sparks.sparksSectionController.currentPage = null;
-      sparks.sparksSectionController.currentPageIndex = -1;
-      sparks.sparksSectionController.pageIndexMap = {};
+      sparks.sectionController.currentPage = null;
+      sparks.sectionController.currentPageIndex = -1;
+      sparks.sectionController.pageIndexMap = {};
     }
     
     
   };
 
-  sparks.sparksActivityController = new sparks.SparksActivityController();
+  sparks.activityController = new sparks.ActivityController();
 })();

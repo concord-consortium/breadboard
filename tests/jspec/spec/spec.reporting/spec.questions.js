@@ -2,8 +2,8 @@ describe 'Questions'
 
   before_each
     breadModel('clear');
-    sparks.sparksSectionController.reset();
-    sparks.sparksActivityController.reset();
+    sparks.sectionController.reset();
+    sparks.activityController.reset();
   end
   
   describe 'Creation'
@@ -31,7 +31,7 @@ describe 'Questions'
       
           var ac = new sparks.ActivityConstructor(jsonSection);
           
-          var section = sparks.sparksActivityController.currentSection;
+          var section = sparks.activityController.currentSection;
           section.should.not.be undefined
           section.pages.length.should.be 1
       
@@ -77,7 +77,7 @@ describe 'Questions'
       
           var ac = new sparks.ActivityConstructor(jsonSection);
           
-          var section = sparks.sparksActivityController.currentSection;
+          var section = sparks.activityController.currentSection;
           section.pages[0].questions.length.should.be 3
           section.pages[0].questions[0].prompt.should.be "R<sub>1</sub>:"
           section.pages[0].questions[1].prompt.should.be "R<sub>2</sub>:"
@@ -109,7 +109,7 @@ describe 'Questions'
       
           var ac = new sparks.ActivityConstructor(jsonSection);
       
-          var section = sparks.sparksActivityController.currentSection;
+          var section = sparks.activityController.currentSection;
           
           section.pages[0].questions.length.should.be 2
           
@@ -147,7 +147,7 @@ describe 'Questions'
           };
           
           var ac = new sparks.ActivityConstructor(jsonSection);
-          var section = sparks.sparksActivityController.currentSection;
+          var section = sparks.activityController.currentSection;
           
           section.pages[0].questions.length.should.be 1
           
@@ -186,7 +186,7 @@ describe 'Questions'
         };
     
         var ac = new sparks.ActivityConstructor(jsonSection);
-        var section = sparks.sparksActivityController.currentSection;
+        var section = sparks.activityController.currentSection;
         
         section.pages[0].questions.length.should.be 1
         section.pages[0].questions[0].correct_answer.should.be 300
@@ -228,7 +228,7 @@ describe 'Questions'
     
         var ac = new sparks.ActivityConstructor(jsonSection);
       
-        var section = sparks.sparksActivityController.currentSection;
+        var section = sparks.activityController.currentSection;
       
         section.pages[0].questions.length.should.be 1
         section.pages[0].questions[0].correct_answer.should.be 150
@@ -267,7 +267,7 @@ describe 'Questions'
     
         var ac = new sparks.ActivityConstructor(jsonSection);
       
-        var section = sparks.sparksActivityController.currentSection;
+        var section = sparks.activityController.currentSection;
       
         section.pages[0].questions.length.should.be 1
         section.pages[0].questions[0].correct_answer.should.be 150
@@ -298,7 +298,7 @@ describe 'Questions'
         };
     
         var ac = new sparks.ActivityConstructor(jsonSection);
-        var section = sparks.sparksActivityController.currentSection;
+        var section = sparks.activityController.currentSection;
         
         section.pages[0].questions.length.should.be 1
         section.pages[0].questions[0].correct_answer.should.be "300 and 150"
@@ -334,7 +334,7 @@ describe 'Questions'
         };
     
         var ac = new sparks.ActivityConstructor(jsonSection);
-        var section = sparks.sparksActivityController.currentSection;
+        var section = sparks.activityController.currentSection;
         
         section.pages[0].questions.length.should.be 2
         section.pages[0].questions[0].correct_answer.should.be 3
@@ -380,7 +380,7 @@ describe 'Questions'
         };
     
         var ac = new sparks.ActivityConstructor(jsonSection);
-        var section = sparks.sparksActivityController.currentSection;
+        var section = sparks.activityController.currentSection;
         
         section.pages[0].questions.length.should.be 1
         section.pages[0].questions[0].options.length.should.be 2
@@ -414,13 +414,13 @@ describe 'Questions'
         };
         
       var ac = new sparks.ActivityConstructor(jsonSection);
-      var section = sparks.sparksActivityController.currentSection;
+      var section = sparks.activityController.currentSection;
       
       section.pages[0].questions[0].answer = "100"
       section.pages[0].questions[1].answer = "500"
       
       $.each(section.pages[0].questions, function(i, question){
-        sparks.sparksQuestionController.gradeQuestion(question);
+        sparks.questionController.gradeQuestion(question);
       });
       
       section.pages[0].questions[0].answerIsCorrect.should.be true
@@ -470,13 +470,13 @@ describe 'Questions'
         };
         
       var ac = new sparks.ActivityConstructor(jsonSection);
-      var section = sparks.sparksActivityController.currentSection;
+      var section = sparks.activityController.currentSection;
       
       section.pages[0].questions[0].answer = "200"
       section.pages[0].questions[1].answer = "200"
       
       $.each(section.pages[0].questions, function(i, question){
-        sparks.sparksQuestionController.gradeQuestion(question);
+        sparks.questionController.gradeQuestion(question);
       });
       
       section.pages[0].questions[0].answerIsCorrect.should.be true
@@ -511,8 +511,8 @@ describe 'Questions'
       var $questionsDiv = $("<div>");
       
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
     
       var $forms = $questionsDiv.find('form');
       $forms.length.should.be 2
@@ -540,8 +540,8 @@ describe 'Questions'
       var $questionsDiv = $("<div>");
       
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
     
       var $forms = $questionsDiv.find('form');
       var $question = $($forms[0]);
@@ -576,8 +576,8 @@ describe 'Questions'
       var $questionsDiv = $("<div>");
         
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
       
       var $forms = $questionsDiv.find('form');
       var $question = $($forms[0]);
@@ -647,8 +647,8 @@ describe 'Questions'
       var $questionsDiv = $("<div>");
         
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
       
       var $forms = $questionsDiv.find('form');
       var $question = $($forms[0]);
@@ -752,8 +752,8 @@ describe 'Questions'
       var $questionsDiv = $("<div>");
         
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
       
       var $forms = $questionsDiv.find('form');
       var $question1 = $($forms[0]);
@@ -819,8 +819,8 @@ describe 'Questions'
       var $questionsDiv = $("<div>");
         
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
       
       var $forms = $questionsDiv.find('form');
 

@@ -2,7 +2,7 @@
 
 (function() {
   
-  sparks.SparksActivityView = function(activity){
+  sparks.ActivityView = function(activity){
     this.activity = activity;
     
     this.divs = {
@@ -13,10 +13,10 @@
     };
   };
   
-  sparks.SparksActivityView.prototype = {
+  sparks.ActivityView.prototype = {
     
     layoutCurrentSection: function() {
-      var section = sparks.sparksActivityController.currentSection;
+      var section = sparks.activityController.currentSection;
       
       $('#loading').hide();
 
@@ -25,7 +25,7 @@
       this.divs.$imageDiv.html('');
       
       if (!!section.image){
-        var $image = sparks.sparksActivityController.currentSection.view.getImageView();
+        var $image = sparks.activityController.currentSection.view.getImageView();
         this.divs.$imageDiv.append($image);
       }
 
@@ -46,9 +46,9 @@
     },
     
     layoutPage: function() {
-      if (!!sparks.sparksSectionController.currentPage){
+      if (!!sparks.sectionController.currentPage){
         this.divs.$questionsDiv.html('');
-        var $page = sparks.sparksSectionController.currentPage.view.getView();
+        var $page = sparks.sectionController.currentPage.view.getView();
         this.divs.$questionsDiv.append($page);
       }
       $('body').scrollTop(0);

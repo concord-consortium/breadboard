@@ -4,18 +4,18 @@
   
   /*
    * Sparks Class Report Controller can be accessed by the
-   * singleton variable sparks.sparksClassReportController
+   * singleton variable sparks.classReportController
    *
-   * There is only one singlton sparks.sparksClassReport object. This
+   * There is only one singlton sparks.classReport object. This
    * controller creates it when the controller is created.
    */
-  sparks.SparksClassReportController = function(){
-    // sparks.sparksClassReport = new sparks.SparksClassReport();
+  sparks.ClassReportController = function(){
+    // sparks.classReport = new sparks.ClassReport();
     this.reports = [];
-    // this.view = new sparks.SparksClassReportView();
+    // this.view = new sparks.ClassReportView();
   };
   
-  sparks.SparksClassReportController.prototype = {
+  sparks.ClassReportController.prototype = {
     
     getStudentData: function(activityId, studentIds, callback) {
       var totalStudents = studentIds.length,
@@ -59,5 +59,5 @@
     
   };
   
-  sparks.sparksClassReportController = new sparks.SparksClassReportController();
+  sparks.classReportController = new sparks.ClassReportController();
 })();

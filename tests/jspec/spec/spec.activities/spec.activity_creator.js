@@ -2,14 +2,14 @@ describe 'Activity Creator'
 
   before_each
     breadModel('clear');
-    sparks.sparksSectionController.reset();
-    sparks.sparksActivityController.reset();
+    sparks.sectionController.reset();
+    sparks.activityController.reset();
   end
   
   after_each
     $('#questions_area').remove();
     $('#breadboard').remove();
-    sparks.sparksActivityController.reset();
+    sparks.activityController.reset();
   end
   
   describe 'Circuit creation'
@@ -82,8 +82,8 @@ describe 'Activity Creator'
       
           var ac = new sparks.ActivityConstructor(jsonSection);
           
-          sparks.sparksActivity.should.not.be undefined
-          var section = sparks.sparksActivityController.currentSection;
+          sparks.activity.should.not.be undefined
+          var section = sparks.activityController.currentSection;
           section.pages.length.should.be 1
           
           section.pages[0].questions.length.should.be 1
@@ -123,8 +123,8 @@ describe 'Activity Creator'
   //     
   //         var ac = new sparks.ActivityConstructor(jsonSection);
   //     
-  //         sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be "5"
-  //         sparks.sparksActivity.pages[0].questions[1].correct_answer.should.be Math.log(10)
+  //         sparks.activity.pages[0].questions[0].correct_answer.should.be "5"
+  //         sparks.activity.pages[0].questions[1].correct_answer.should.be Math.log(10)
   //     end
   //     
   //     it 'should be able to create a simple formula with circuit variables'
@@ -156,7 +156,7 @@ describe 'Activity Creator'
   //     
   //         var ac = new sparks.ActivityConstructor(jsonSection);
   //     
-  //         sparks.sparksActivity.pages[0].questions[0].correct_answer.should.be "50"
+  //         sparks.activity.pages[0].questions[0].correct_answer.should.be "50"
   //     end
   //     
   // end
@@ -173,8 +173,8 @@ describe 'Activity Creator'
       var $imageDiv = $("<div>");
       
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$imageDiv: $imageDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$imageDiv: $imageDiv});
+      sparks.activity.view.layoutCurrentSection();
       var $img = $imageDiv.find('img');
       $img.length.should.be 1
       $($imageDiv.find('img')[0]).attr('src').should.be "http://couchdb.cosmos.concord.org/sparks/test/test.jpg"

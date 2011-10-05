@@ -4,9 +4,9 @@
   
   /*
    * Sparks Activity Controller can be accessed by the
-   * singleton variable sparks.sparksSectionController
+   * singleton variable sparks.sectionController
    */
-  sparks.SparksSectionController = function(){
+  sparks.SectionController = function(){
     this.currentPage = null;
     this.currentPageIndex = -1;
     this.pageIndexMap = {};
@@ -17,17 +17,17 @@
     this.id = -1;
   };
   
-  sparks.SparksSectionController.prototype = {
+  sparks.SectionController.prototype = {
     
     reset: function(){
       // this.currentPage = null;
       // this.currentPageIndex = -1;
-      sparks.sparksPageController.reset();
-      sparks.sparksQuestionController.reset();
+      sparks.pageController.reset();
+      sparks.questionController.reset();
     },
     
     createSection: function(jsonSection) {
-      var section = new sparks.SparksSection();
+      var section = new sparks.Section();
       
       section.id = jsonSection._id || this.nextId();
       section.title = jsonSection.title;
@@ -48,18 +48,18 @@
       // cheat and create dummy pages for report
       if (!!jsonSection.pages){
         $.each(jsonSection.pages, function(id, jsonPage){
-          var page = new sparks.SparksPage(id);
+          var page = new sparks.Page(id);
           section.pages.push(page);
         });
       }
       
-      section.view = new sparks.SparksSectionView(section);
+      section.view = new sparks.SectionView(section);
       
       return section;
     },
     
     loadCurrentSection: function() {
-      var section = sparks.sparksActivityController.currentSection;
+      var section = sparks.activityController.currentSection;
       section.visited = true;
       sparks.vars = {};          // used for storing authored script variables
       
@@ -79,13 +79,13 @@
       }
       
       section.pages = [];
-      sparks.sparksQuestionController.reset();
+      sparks.questionController.reset();
       
       var jsonSection = section.jsonSection;
       var self = this;
       if (!!jsonSection.pages){
         $.each(jsonSection.pages, function(i, jsonPage){
-          var page = sparks.sparksPageController.createPage(i, jsonPage);
+          var page = sparks.pageController.createPage(i, jsonPage);
           section.pages.push(page);
           self.pageIndexMap[page] = i;
         });
@@ -96,13 +96,13 @@
         this.currentPage = section.pages[this.currentPageIndex];
       }
       
-      sparks.sparksLogController.startNewSession();
-      sparks.sparksReportController.startNewSection(section);
+      sparks.logController.startNewSession();
+      sparks.reportController.startNewSection(section);
     },
     
     areMorePage: function() {
       var nextPage;
-      var section = sparks.sparksActivityController.currentSection;
+      var section = sparks.activityController.currentSection;
       if (this.currentPageIndex < section.pages.length - 1){
         return section.pages[this.currentPageIndex+1];
       } else {
@@ -111,7 +111,7 @@
     },
     
     nextPage: function() {
-      sparks.sparksReportController.saveData();
+      sparks.reportController.saveData();
       
       var nextPage = this.areMorePage();
       if (!nextPage){
@@ -121,25 +121,25 @@
       this.currentPageIndex = this.currentPageIndex+1;
       this.currentPage = nextPage;
       
-      sparks.sparksActivity.view.layoutPage();
+      sparks.activity.view.layoutPage();
       
-      sparks.sparksLogController.startNewSession();
+      sparks.logController.startNewSession();
     },
     
     // if page is null, currentPage will be used
     repeatPage: function(page) {
-      sparks.sparksReportController.saveData();
+      sparks.reportController.saveData();
       
       if (!!page){
         this.currentPage = page;
         this.currentPageIndex = this.pageIndexMap[page];
       }
       
-      var section = sparks.sparksActivityController.currentSection;
+      var section = sparks.activityController.currentSection;
       // section.view.clear();
       
       this.loadCurrentSection();
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.layoutCurrentSection();
       
       // if (!sparks.jsonSection.hide_circuit && !sparks.debug){
       //   sparks.flash.activity.loadFlash();
@@ -150,15 +150,15 @@
     
     repeatSection: function(section) {
       if (!!section){
-        sparks.sparksActivityController.currentSection = section;
+        sparks.activityController.currentSection = section;
       }
-      this.repeatPage(sparks.sparksActivityController.currentSection.pages[0]);
+      this.repeatPage(sparks.activityController.currentSection.pages[0]);
     },
     
     viewSectionReport: function() {
-      sparks.sparksReportController.saveData();
+      sparks.reportController.saveData();
       
-      var $report = sparks.sparksReport.view.getActivityReportView();
+      var $report = sparks.report.view.getActivityReportView();
       this.currentPage.view.showReport($report, true);
     },
     
@@ -169,5 +169,5 @@
     
   };
 
-  sparks.sparksSectionController = new sparks.SparksSectionController();
+  sparks.sectionController = new sparks.SectionController();
 })();

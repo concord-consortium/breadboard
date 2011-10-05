@@ -2,8 +2,8 @@ describe 'Activity Pages'
 
   before_each
     breadModel('clear');
-    sparks.sparksSectionController.reset();
-    sparks.sparksActivityController.reset();
+    sparks.sectionController.reset();
+    sparks.activityController.reset();
   end
   
   after_each
@@ -32,9 +32,9 @@ describe 'Activity Pages'
         
         var ac = new sparks.ActivityConstructor(jsonSection);
         
-        sparks.sparksActivity.should.not.be undefined
+        sparks.activity.should.not.be undefined
         
-        var section = sparks.sparksActivityController.currentSection;
+        var section = sparks.activityController.currentSection;
         
         section.pages.length.should.be 1
         section.pages[0].questions.length.should.be 1
@@ -74,8 +74,8 @@ describe 'Activity Pages'
   
         var ac = new sparks.ActivityConstructor(jsonSection);
         
-        sparks.sparksActivity.should.not.be undefined
-        var section = sparks.sparksActivityController.currentSection;
+        sparks.activity.should.not.be undefined
+        var section = sparks.activityController.currentSection;
         
         section.pages.length.should.be 2
         section.pages[0].questions.length.should.be 2
@@ -121,8 +121,8 @@ describe 'Activity Pages'
       var $questionsDiv = $("<div>");
       
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
     
       var $forms = $questionsDiv.find('form');
       $forms.length.should.be 2
@@ -169,8 +169,8 @@ describe 'Activity Pages'
       var $questionsDiv = $("<div>");
     
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.sparksActivity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
-      sparks.sparksActivity.view.layoutCurrentSection();
+      sparks.activity.view.setEmbeddingTargets({$questionsDiv: $questionsDiv});
+      sparks.activity.view.layoutCurrentSection();
     
       var $notes = $questionsDiv.find('.notes');
     
