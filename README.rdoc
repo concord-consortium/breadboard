@@ -38,7 +38,8 @@ The simplest way to do this is to modify the file proxy/apache.conf.sample with 
 from your Sparks directory. Now you will be able to navigate to the html files in the project by pointing your browser to 
 
  http://localhost:1234
- http://localhost:1234/activities/module-2/series-measuring/index.html
+ http://localhost:1234/activities.html
+ http://localhost:1234/activities.html#series-a
  etc
 
 ==== Using a local version of QUCS
