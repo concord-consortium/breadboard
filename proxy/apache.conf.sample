@@ -18,8 +18,11 @@ ProxyPass        /sparks/ http://sparks.portal.concord.org/sparks/
 ProxyPassReverse /sparks/ http://sparks.portal.concord.org/sparks/
 
 # replace this with the location of couchDB, if desired
-ProxyPass        /couchdb/ http://couchdb.cosmos.concord.org/
-ProxyPassReverse /couchdb/ http://couchdb.cosmos.concord.org/
+ProxyPass       /couchdb/learnerdata/ http://couchdb.cosmos.concord.org/sparks_data/ nocanon
+ProxyPassReverse /couchdb/learnerdata/ http://couchdb.cosmos.concord.org/sparks_data/
+
+ProxyPass        /couchdb/activities/ http://couchdb.cosmos.concord.org/sparks/ nocanon
+ProxyPassReverse /couchdb/activities/ http://couchdb.cosmos.concord.org/sparks/
 
 # replace these paths with the location of your sparks environment
 DocumentRoot /Users/scytacki/Development/sparks
