@@ -42,7 +42,7 @@
         if (evt.name == sparks.LogEvent.DMM_MEASUREMENT){
           if (evt.value.measurement == type) {
             var position = evt.value.red_probe + "" + evt.value.black_probe;
-            if (!sparks.util.contains(positions, position)) {
+            if (sparks.util.contains(positions, position) === -1) {
               count++;
               positions.push(position);
             }

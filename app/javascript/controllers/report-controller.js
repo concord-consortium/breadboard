@@ -387,7 +387,7 @@
       function arraysAreEquivalent(ar1, ar2){
         var equiv = true;
         $.each(ar1, function(i, val){
-          if (!sparks.util.contains(ar2, val)){
+          if (sparks.util.contains(ar2, val) === -1){
             equiv = false;
           }
         });

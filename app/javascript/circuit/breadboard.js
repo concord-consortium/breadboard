@@ -221,7 +221,7 @@
             while (randomComponent === null) {
               var rand = Math.floor(Math.random() * componentKeys.length);
               var component = this.components[componentKeys[rand]];
-              if (!!component.resistance && !sparks.util.contains(this.faultyComponents, component)){
+              if (!!component.resistance && (sparks.util.contains(this.faultyComponents, component) === -1)){
                 randomComponent = component;
               }
             }

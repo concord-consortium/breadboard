@@ -185,12 +185,13 @@ sparks.util.shuffle = function (o) {
 };
 
 sparks.util.contains = function (array, obj) {
-  for (i in array){
-    if (array[i] == obj){
-      return true;
+  var i = array.length;
+    while (i--) {
+       if (array[i] === obj) {
+           return i;
+       }
     }
-  }
-  return false;
+    return -1;
 };
 
 sparks.util.getKeys = function (json) {
