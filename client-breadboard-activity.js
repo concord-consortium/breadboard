@@ -2234,12 +2234,13 @@ sparks.util.shuffle = function (o) {
 };
 
 sparks.util.contains = function (array, obj) {
-  for (i in array){
-    if (array[i] == obj){
-      return true;
+  var i = array.length;
+    while (i--) {
+       if (array[i] === obj) {
+           return i;
+       }
     }
-  }
-  return false;
+    return -1;
 };
 
 sparks.util.getKeys = function (json) {
@@ -3556,8 +3557,18 @@ sparks.createQuestionsCSV = function(data) {
 
     getClassReportView: function(reports){
       var $div = $('<div>');
-      $div.append('<h1>Class results</h1>');
 
+      $div.append('<h1>Class results</h1>');
+      $div.append(this.createLevelsTable(reports));
+      $div.append('<p>');
+
+      $div.append('<h2>Question categories</h2>');
+      $div.append(this.createCategoryTable(reports));
+
+      return $div;
+    },
+
+    createLevelsTable: function(reports) {
       var $table = $("<table>").addClass('classReport');
       var levels = sparks.classReportController.getLevels();
 
@@ -3572,10 +3583,7 @@ sparks.createQuestionsCSV = function(data) {
         var $studentRow = this._createStudentRow(reports[i], levels.length, i%2 === 0);
         $table.append($studentRow);
       }
-
-      $div.append($table);
-
-      return $div;
+      return $table;
     },
 
     _createStudentRow: function(report, numLevels, even) {
@@ -3615,6 +3623,73 @@ sparks.createQuestionsCSV = function(data) {
         return name.split("+").join(" ");
       }
       return name;
+    },
+
+    createCategoryTable: function(reports) {
+      var $table = $("<table>").addClass('classReport'),
+          categories = [],
+          i, ii;
+      for (i = 0, ii = reports.length; i < ii; i++){
+        var row = [],
+            report = reports[i],
+            name = this._cleanStudentName(report.user.name),
+            catReport = sparks.reportController.getCategories(report);
+
+        for (var category in catReport){
+          if (!!category && category !== "undefined" && catReport.hasOwnProperty(category)){
+            var catIndex = sparks.util.contains(categories, category);
+            if (catIndex < 0){
+              categories.push(category);
+              catIndex = categories.length - 1;
+            }
+            row[catIndex] = catReport[category];
+          }
+        }
+
+        var $tr = $('<tr>').addClass(i%2===0 ? "evenrow" : "oddrow");
+        $tr.append('<td class="firstcol">'+name+'</td>');
+        for (var j = 0, jj = categories.length; j < jj; j++){
+          var score = row[j],
+              $td = $('<td>');
+          if (!!score){
+            var light;
+            switch (score[2]) {
+              case 0:
+                light = "common/icons/light-red.png";
+                break;
+              case 1:
+              case 2:
+               light = "common/icons/light-off.png";
+               break;
+              case 3:
+               light = "common/icons/light-on.png";
+            }
+            var $img = $('<img>').attr('src', light).attr('width', 35);
+            $img.easyTooltip({
+               content: name+" got "+score[2]+" out of the last "+(Math.min(score[1],3))+" questions of this type correct"
+            });
+            $td.append($img);
+          }
+          $tr.append($td);
+        }
+        $table.append($tr);
+      }
+
+      var header = "<tr><th>Students</th>";
+      for (i = 0, ii = categories.length; i < ii; i++){
+        header += "<th>" + categories[i] + "</th>";
+      }
+      header += "</tr>";
+      $table.prepend(header);
+
+      $table.find('tr').each(function(i, tr){
+        for (j = categories.length, jj = tr.childNodes.length; j >= jj; j--){
+          console.log("adding a td to row "+i);
+          $(tr).append('<td>');
+        }
+      });
+
+      return $table;
     }
   };
 })();
@@ -3926,7 +4001,7 @@ sparks.createQuestionsCSV = function(data) {
         if (evt.name == sparks.LogEvent.DMM_MEASUREMENT){
           if (evt.value.measurement == type) {
             var position = evt.value.red_probe + "" + evt.value.black_probe;
-            if (!sparks.util.contains(positions, position)) {
+            if (sparks.util.contains(positions, position) === -1) {
               count++;
               positions.push(position);
             }
@@ -4587,7 +4662,7 @@ sparks.createQuestionsCSV = function(data) {
       function arraysAreEquivalent(ar1, ar2){
         var equiv = true;
         $.each(ar1, function(i, val){
-          if (!sparks.util.contains(ar2, val)){
+          if (sparks.util.contains(ar2, val) === -1){
             equiv = false;
           }
         });
@@ -5666,7 +5741,7 @@ sparks.createQuestionsCSV = function(data) {
             while (randomComponent === null) {
               var rand = Math.floor(Math.random() * componentKeys.length);
               var component = this.components[componentKeys[rand]];
-              if (!!component.resistance && !sparks.util.contains(this.faultyComponents, component)){
+              if (!!component.resistance && (sparks.util.contains(this.faultyComponents, component) === -1)){
                 randomComponent = component;
               }
             }
