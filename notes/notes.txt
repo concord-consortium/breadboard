@@ -1,0 +1,224 @@
+ActivityView:
+  layoutCurrentSection:
+    ...
+    this.loadFlash()
+    ...
+    
+  loadFlash:
+    ... puts the <embed> in #breadboard, jquery object is at sparks.activity.view.divs.$breadboardDiv
+
+--
+
+How the 'breadboard' model gets created and updated from the circuit in the activity:
+
+
+init.js line 57:
+
+  $(document).ready(function () {
+      onDocumentReady();
+  });
+
+
+init.js line 61:
+
+  this.onDocumentReady = function () {
+    if (window.location.pathname.indexOf("class-report") > -1){
+      this.loadClassReport();
+    } else {
+      this.loadActivity();
+    }
+  };
+
+
+init.js line 92: in loadActivity: 
+  
+  sparks.couchDS.loadActivity(activityName, function(activity) {
+    console.log(activity);
+    var ac = new sparks.ActivityConstructor(activity);
+  });
+
+
+activity-constructor.js line 13 in (constructor):
+
+  this.loadFirstSection();
+ 
+  
+activity-constructor.js line 49 in loadFirstSection:
+
+  sparks.sectionController.loadCurrentSection();
+
+  
+section-controller.js line 69 in loadCurrentSection:
+
+  breadModel("createCircuit", section.circuit);
+
+             
+breadboard.js line 506 in this.breadModel:
+
+  return interfaces[func].apply(window, newArgs);
+
+  
+breadboard.js liine 289 in definition of 'interfaces':
+
+  createCircuit: function(jsonCircuit){
+    $.each(jsonCircuit, function(i, spec){
+      interfaces.insertComponent(spec.type, spec);
+    });
+  },
+
+  
+breadboard.js line 286 in insertComponent:
+
+  newComponent = breadBoard.component(props);
+
+  
+breadboard.js line 136:
+
+  Breadboard.prototype.component = function (props) {
+    if(typeof props=='string'){
+      return this.components[props];
+    }else {
+      if (props.kind === "resistor"){
+        return new sparks.circuit.Resistor(props, breadBoard);
+      }
+      return new sparks.circuit.Component(props, breadBoard);
+    }
+  };
+  
+---
+
+component and resistor models:
+
+sparks.circuit.Component = function(props, breadBoard)
+  
+  * copies props to 'this'
+  * saves a reference to the breadBoard as this.breadBoard
+  * adds its UID to breadBoard.components[]
+  * sets its label
+  * for each connection, pushes 'this' onto this.breadBoard.holes[(connection)].connections[]
+  
+  + defines move, destroy methods
+  
+
+sparks.circuit.Resistor "extends" sparks.circuit.Component
+  
+  * calculates resistance 
+  * sets its 
+
+---
+
+fault-adding code:
+
+breadModel("addFaults", ...) comes after breadModel("createCircuit" , ...) in sparks.SectionController''s loadCurrentSection() method
+
+this results in calls to Breadborard.prototype.addFault
+
+  * addFault switches on fault.type, and directly sets the component's "shorted", "open", and "resistance" properteis
+
+(Note that the Resistor constructor also appears to be able to set its resistance if its 'shorted' or 'open' properties are truthy.)
+
+
+breadboard.js line 215 in Breadboard.prototype.addFault:
+
+  // apply fault to valid components 'count' times, with no repitition. No checking is
+  // done to see if there are sufficient valid components for this to be possible, so
+  // application will hang if authored badly.
+  var componentKeys = sparks.util.getKeys(this.components);
+  for (var i = 0; i < count; i++){
+    var randomComponent = null;
+    while (randomComponent === null) {
+      var rand = Math.floor(Math.random() * componentKeys.length);
+      var component = this.components[componentKeys[rand]];
+      if (!!component.resistance && !sparks.util.contains(this.faultyComponents, component)){
+        randomComponent = component;
+      }
+    }
+    this.addFaultToComponent(fault, randomComponent);
+
+NOTES:
+
+  1. currently the types of faults are built in ("shorted" and "open")
+  2. as noted in the comment, this will go into an infinite loop if the author requests more faults than components
+  3. those faults can be added to any component which has a property called 'resistance' whose value is truthy
+
+---
+
+to make a qucs netlist from the breadboard model:
+
+q = sparks.circuit.qucsator; b = getBreadBoard()
+q.makeNetlist(b)
+
+---
+
+of course, to add inductors and capacitors to the Flash breadboard:
+
+sparks.flash.sendCommand('insert_component', 'resistor', 'r1', 'a1,e6', '4band', 'R1', ['red','red','red','silver']);
+sparks.flash.sendCommand('insert_component', 'inductor', 'l1', 'b19,b25', 'L1');
+sparks.flash.sendCommand('insert_component', 'capacitor', 'c1', 'g19,g25', 'C1');
+
+---
+
+How the Flash breadboard is updated to match the javascript breadBoard model:
+
+(see above for how line 49 of activity-constructor.js is reached starting with $(document).ready() in init.js)
+
+activity-constructor.js line 50 in loadFirstSection:
+
+  sparks.activity.view.layoutCurrentSection();
+  
+
+activity-view.js line 37 in sparks.ActivityView.prototype.layoutCurrentSection:
+
+  this.loadFlash();
+  breadModel('updateFlash');
+  
+...
+
+breadboard.js line 452 in definition of 'interfaces'
+
+  updateFlash: function() {
+    $.each(breadBoard.components, function(name, component) {
+    
+      if (!!component.connections[0] && !!component.connections[1]){
+        var location = component.connections[0].getName() + "," + component.connections[1].getName();
+    
+        switch (component.kind) {
+          case "resistor":
+            if (component.resistance > 0){
+              sparks.flash.sendCommand('insert_component', 'resistor', name, location, '4band', component.label, component.colors);
+            } else {
+              sparks.flash.sendCommand('insert_component', 'resistor', name, location, 'wire', component.label, null);
+            }
+            break;
+          case "wire":
+            var color;
+            if (location.indexOf("positive") > -1){
+              color = "0xaa0000";
+            } else if (location.indexOf("negative") > -1){
+              color = "0x000000";
+            } else {
+              if (Math.random() < 0.5){
+                color = "0x008800";
+              } else {
+                color = "0x000088";
+              }
+            }
+            sparks.flash.sendCommand('insert_component', 'wire', component.UID, location, color);
+            break;
+        }
+      }
+    });
+  }
+  };
+
+---
+
+(1) how to model inductor, capacitor in the first place (nominal values? internal resistance? etc.
+(2) how to test the models
+(3) how to create an activity which demonstrates inductors and capacitors
+(4) loose ends: how to make sure that the new components don't screw  up, e.g., fault-adding
+(5) how to create a netlist for the models
+(6) how to get ac simulation back from qucsator
+(7) how to demo the ac simulation w/o oscilloscope
+(8) how to make oscilloscope
+

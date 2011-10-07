@@ -1,0 +1,44 @@
+input:
+
+Vac:V1 Vin gnd U="1 V" f="1 GHz" Phase="0" Theta="0"
+C:C1 Vout Vin C="2 uF" V=""
+R:R1 gnd Vout R="500 Ohm" Temp="26.85" Tc1="0.0" Tc2="0.0" Tnom="26.85"
+.AC:AC1 Type="lin" Start="0.1 kHz" Stop="0.2 kHz" Points="2" Noise="no"
+
+
+actual output:
+
+<Qucs Dataset 0.0.15>
+<indep acfrequency 2>
+  +1.00000000000e+02
+  +2.00000000000e+02
+</indep>
+<dep V1.i acfrequency>
+  -5.66086399350e-04-j9.00954486737e-04
+  -1.22454672652e-03-j9.74463322865e-04
+</dep>
+<dep Vout.v acfrequency>
+  +2.83043199675e-01+j4.50477243368e-01
+  +6.12273363261e-01+j4.87231661432e-01
+</dep>
+<dep Vin.v acfrequency>
+  +1.00000000000e+00
+  +1.00000000000e+00
+</dep>
+
+
+filtered output:
+
+<Qucs Dataset 0.0.15>
+<indep acfrequency 2>
+  +1.00000000000e+02
+</indep>
+<dep V1.i acfrequency>
+  -5.66086399350e-04-j9.00954486737e-04
+</dep>
+<dep Vout.v acfrequency>
+  +2.83043199675e-01+j4.50477243368e-01
+</dep>
+<dep Vin.v acfrequency>
+  +1.00000000000e+00
+</dep>
