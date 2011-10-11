@@ -96,14 +96,6 @@
                 }
             }}
           );
-        },
-        
-        handleData: function (id) {
-          $.couch.db(this.db).openDoc(id,
-            { success: function(response) { 
-              sparks.reportController.loadReport(response);
-             }}
-          );
         }
     };
     
