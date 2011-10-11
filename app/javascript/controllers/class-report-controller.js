@@ -17,25 +17,23 @@
   
   sparks.ClassReportController.prototype = {
     
-    getStudentData: function(activityId, studentIds, callback) {
-      var totalStudents = studentIds.length,
-          responsesReceived = 0,
-          reports = this.reports;
+    getClassData: function(activityId, classId, callback) {
+      var reports = this.reports;
           
-      function receivedData(response){
-        if (!!response && !!response.rows){
-          var jsonReport = response.rows[response.rows.length-1].value;
-          reports.push(jsonReport);
-        }
-        responsesReceived++;
-        if (responsesReceived === totalStudents){
+      var receivedData = function(response){
+        if (!!response && !!response.rows && response.rows.length > 0){
+          for (var i = 0, ii = response.rows.length; i < ii; i++){
+            reports.push(response.rows[i].value);
+          }
           callback(reports);
         }
-      }
+      };
       
-      for (var i = 0; i < totalStudents; i++){
-        sparks.couchDS.loadStudentData(activityId, studentIds[i], receivedData, receivedData);
-      }
+      var fail = function() {
+        alert("Failed to load class report");
+      };
+      
+      sparks.couchDS.loadClassData(activityId, classId, receivedData, fail);
     },
     
     getLevels: function() {

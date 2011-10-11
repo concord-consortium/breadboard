@@ -96,6 +96,22 @@
                 }
             }}
           );
+        },
+        
+        loadClassData: function (activity, classId, success, failure) {
+          $.couch.urlPrefix = this.saveDataPath;
+          $.couch.db('').view(
+            "class_scores/Scores%20per%20class", 
+            {
+              key:[classId, activity],
+              success: function(response) { 
+                if (response.rows.length > 0){
+                  success(response);
+                } else {
+                  failure();
+                }
+            }}
+          );
         }
     };
     

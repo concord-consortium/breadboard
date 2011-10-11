@@ -45,7 +45,7 @@
 
 /* FILE init.js */
 
-/*globals console sparks $ document window onDocumentReady unescape*/
+/*globals console sparks $ document window onDocumentReady unescape prompt*/
 
 (function () {
   
@@ -76,9 +76,9 @@
        sparks.couchDS.setUser(user);
        
        // if there's a logged-in user, we want to stop them before they leave
-       function askConfirm(){
+       var askConfirm = function(){
          return "Are you sure you want to leave this page?";
-       }
+       };
        window.onbeforeunload = askConfirm;
     }
     
@@ -101,22 +101,19 @@
   };
   
   this.loadClassReport = function () {
-    var namesArr,
+    var classId,
         activity;
-    if (!!sparks.util.readCookie('class_students')){
-      var activity = unescape(sparks.util.readCookie('activity_name')).split('#')[1],
-          learnersRaw = unescape(sparks.util.readCookie('class_students')).replace(/\+/g, ' '),
-          learners = eval(learnersRaw);
-      namesArr = $.map(learners, function(learner){return learner.name.replace(/ /g, "+");});
+    if (!!sparks.util.readCookie('class')){
+      activity = unescape(sparks.util.readCookie('activity_name')).split('#')[1];
+      classId = sparks.util.readCookie('class');
     } else {  
       activity = prompt("Enter the activity id");
-      var names = prompt("Enter a list of student names", "");
-      namesArr = names.split(/ *, */);
+      classId = prompt("Enter a class id", "");
     }
     
-    sparks.classReportController.getStudentData(
+    sparks.classReportController.getClassData(
       activity,
-      namesArr, 
+      classId, 
       function(reports) {
         $('#loading').hide();
         var view = new sparks.ClassReportView(),

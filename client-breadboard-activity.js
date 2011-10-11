@@ -2043,11 +2043,19 @@ if (window.attachEvent) {
           );
         },
 
-        handleData: function (id) {
-          $.couch.db(this.db).openDoc(id,
-            { success: function(response) {
-              sparks.reportController.loadReport(response);
-             }}
+        loadClassData: function (activity, classId, success, failure) {
+          $.couch.urlPrefix = this.saveDataPath;
+          $.couch.db('').view(
+            "class_scores/Scores%20per%20class",
+            {
+              key:[classId, activity],
+              success: function(response) {
+                if (response.rows.length > 0){
+                  success(response);
+                } else {
+                  failure();
+                }
+            }}
           );
         }
     };
@@ -3691,6 +3699,7 @@ sparks.createQuestionsCSV = function(data) {
 
       return $table;
     }
+
   };
 })();
 /*globals console sparks $ breadModel getBreadBoard */
@@ -4723,25 +4732,23 @@ sparks.createQuestionsCSV = function(data) {
 
   sparks.ClassReportController.prototype = {
 
-    getStudentData: function(activityId, studentIds, callback) {
-      var totalStudents = studentIds.length,
-          responsesReceived = 0,
-          reports = this.reports;
+    getClassData: function(activityId, classId, callback) {
+      var reports = this.reports;
 
-      function receivedData(response){
-        if (!!response && !!response.rows){
-          var jsonReport = response.rows[response.rows.length-1].value;
-          reports.push(jsonReport);
-        }
-        responsesReceived++;
-        if (responsesReceived === totalStudents){
+      var receivedData = function(response){
+        if (!!response && !!response.rows && response.rows.length > 0){
+          for (var i = 0, ii = response.rows.length; i < ii; i++){
+            reports.push(response.rows[i].value);
+          }
           callback(reports);
         }
-      }
+      };
 
-      for (var i = 0; i < totalStudents; i++){
-        sparks.couchDS.loadStudentData(activityId, studentIds[i], receivedData, receivedData);
-      }
+      var fail = function() {
+        alert("Failed to load class report");
+      };
+
+      sparks.couchDS.loadClassData(activityId, classId, receivedData, fail);
     },
 
     getLevels: function() {
@@ -7203,7 +7210,7 @@ var apMessageBox = apMessageBox || {};
 
 /* FILE init.js */
 
-/*globals console sparks $ document window onDocumentReady unescape*/
+/*globals console sparks $ document window onDocumentReady unescape prompt*/
 
 (function () {
 
@@ -7233,9 +7240,9 @@ var apMessageBox = apMessageBox || {};
          "student_id": sparks.util.readCookie('student_id'), "class_id": sparks.util.readCookie('class_id')};
        sparks.couchDS.setUser(user);
 
-       function askConfirm(){
+       var askConfirm = function(){
          return "Are you sure you want to leave this page?";
-       }
+       };
        window.onbeforeunload = askConfirm;
     }
 
@@ -7257,22 +7264,19 @@ var apMessageBox = apMessageBox || {};
   };
 
   this.loadClassReport = function () {
-    var namesArr,
+    var classId,
         activity;
-    if (!!sparks.util.readCookie('class_students')){
-      var activity = unescape(sparks.util.readCookie('activity_name')).split('#')[1],
-          learnersRaw = unescape(sparks.util.readCookie('class_students')).replace(/\+/g, ' '),
-          learners = eval(learnersRaw);
-      namesArr = $.map(learners, function(learner){return learner.name.replace(/ /g, "+");});
+    if (!!sparks.util.readCookie('class')){
+      activity = unescape(sparks.util.readCookie('activity_name')).split('#')[1];
+      classId = sparks.util.readCookie('class');
     } else {
       activity = prompt("Enter the activity id");
-      var names = prompt("Enter a list of student names", "");
-      namesArr = names.split(/ *, */);
+      classId = prompt("Enter a class id", "");
     }
 
-    sparks.classReportController.getStudentData(
+    sparks.classReportController.getClassData(
       activity,
-      namesArr,
+      classId,
       function(reports) {
         $('#loading').hide();
         var view = new sparks.ClassReportView(),
