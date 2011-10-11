@@ -27,6 +27,7 @@ specResults = JSpec
 .exec('spec/spec.circuit/spec.flash_multimeter.js')
 .exec('spec/spec.circuit/spec.flash_breadboard.js') 
 .exec('spec/spec.circuit/spec.circuit_constructor.js')
+.exec('spec/spec.circuit/spec.circuit_component_creation.js')
 .exec('spec/spec.circuit/spec.circuit-math.js')
 
 .exec('spec/spec.activities/spec.pages.js')

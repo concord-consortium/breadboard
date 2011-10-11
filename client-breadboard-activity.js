@@ -5677,9 +5677,15 @@ sparks.createQuestionsCSV = function(data) {
       Breadboard.prototype.component = function (props) {
         if(typeof props=='string'){
           return this.components[props];
-        }else {
+        } else {
           if (props.kind === "resistor"){
             return new sparks.circuit.Resistor(props, breadBoard);
+          }
+          if (props.kind === 'inductor') {
+            return new sparks.circuit.Inductor(props, breadBoard);
+          }
+          if (props.kind === 'capacitor') {
+            return new sparks.circuit.Capacitor(props, breadBoard);
           }
           return new sparks.circuit.Component(props, breadBoard);
         }
@@ -6934,6 +6940,46 @@ sparks.createQuestionsCSV = function(data) {
     };
 
     this.cMath = new sparks.circuitMath();
+
+})();
+/* FILE inductor.js */
+/*globals console sparks */
+
+(function () {
+
+  sparks.circuit.Inductor = function (props, breadBoard) {
+    sparks.circuit.Inductor.parentConstructor.call(this, props, breadBoard);
+  };
+
+  sparks.extend(sparks.circuit.Inductor, sparks.circuit.Component, {
+    init: function (id) {
+      this.id = id;
+    },
+
+    getInductance: function () {
+      return this.inductance;
+    }
+  });
+
+})();
+/* FILE capacitor.js */
+/*globals console sparks */
+
+(function () {
+
+  sparks.circuit.Capacitor = function (props, breadBoard) {
+    sparks.circuit.Capacitor.parentConstructor.call(this, props, breadBoard);
+  };
+
+  sparks.extend(sparks.circuit.Capacitor, sparks.circuit.Component, {
+    init: function (id) {
+      this.id = id;
+    },
+
+    getCapacitance: function () {
+      return this.capacitance;
+    }
+  });
 
 })();
 /**

@@ -40,6 +40,8 @@
 //= require <circuit/resistor-4band>
 //= require <circuit/resistor-5band>
 //= require <circuit/circuit-math>
+//= require <circuit/inductor>
+//= require <circuit/capacitor>
 //= require <apMessageBox>
 //= require <helpers/math>
 

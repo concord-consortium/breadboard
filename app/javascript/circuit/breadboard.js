@@ -136,9 +136,15 @@
       Breadboard.prototype.component = function (props) {
         if(typeof props=='string'){
           return this.components[props];
-        }else {
+        } else {
           if (props.kind === "resistor"){
             return new sparks.circuit.Resistor(props, breadBoard);
+          }
+          if (props.kind === 'inductor') {
+            return new sparks.circuit.Inductor(props, breadBoard);
+          }
+          if (props.kind === 'capacitor') {
+            return new sparks.circuit.Capacitor(props, breadBoard);
           }
           return new sparks.circuit.Component(props, breadBoard);
         }
