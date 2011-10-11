@@ -21,21 +21,30 @@
     <script>
       function runSuites() {
         JSpec
-        .exec('spec.common/spec.util.js')
-        .exec('spec.common/spec.circuit.js')
+        
         .exec('spec.common/spec.string.js')
-        .exec('spec.activities/spec.resistor_colors.js')
-        .exec('spec.activities/spec.breadboard.js')
-        .exec('spec.activities/spec.breadboard_measuring.js')
-        .exec('spec.activities/spec.breadboard.js')
-        .exec('spec.activities/spec.breadboard_measuring.js')
-        .exec('spec.activities/spec.flash_multimeter.js')
-        .exec('spec.activities/spec.flash_breadboard.js')
-        // .exec('spec.common/spec.logging_and_reporting.js')
-        // .exec('spec.common/spec.circuit_constructor.js')
-        .exec('spec.common/spec.questions.js')
-        .exec('spec.common/spec.activity_creator.js')
-        .exec('spec/spec.common/spec.activity_interactions.js')
+        .exec('spec.common/spec.util.js')
+        .exec('spec.common/spec.units.js')
+        .exec('spec.common/spec.math.js')
+               
+        .exec('spec.circuit/spec.resistor_colors.js')
+        .exec('spec.circuit/spec.breadboard.js')
+        .exec('spec.circuit/spec.breadboard_measuring.js')
+        // .exec('spec.circuit/spec.flash_multimeter.js')
+        // .exec('spec.circuit/spec.flash_breadboard.js') 
+        .exec('spec.circuit/spec.circuit_constructor.js')   // FIXME has trouble finding 'size' function defined in spec
+        .exec('spec.circuit/spec.circuit-math.js')
+               
+        .exec('spec.activities/spec.pages.js')
+        .exec('spec.activities/spec.activity_creator.js')
+        .exec('spec.activities/spec.activity_interactions.js')
+        .exec('spec.activities/spec.scripts.js')
+               
+        .exec('spec.reporting/spec.questions.js')
+        .exec('spec.reporting/spec.page_reports.js')
+        .exec('spec.reporting/spec.activity_reports.js')
+        .exec('spec.reporting/spec.logging.js')
+        
         .run({ fixturePath: 'fixtures' })
         .report()
       }
