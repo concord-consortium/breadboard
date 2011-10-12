@@ -76,6 +76,10 @@
         });
       },
       
+      canInsertIntoNetlist: function () {
+        return true;
+      },
+      
       /**
         hasValidConnections: check that this component has connections that are valid for generating a QUCS netlist.
         

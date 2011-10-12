@@ -5373,8 +5373,13 @@ sparks.createQuestionsCSV = function(data) {
     $.each(board.components, function(name, component) {
       var line;
 
-      if ( !component.hasValidConnections() ) {
+      if ( !component.canInsertIntoNetlist() ) {
         return;
+      }
+
+      if ( !component.hasValidConnections() ) {
+        console.log(component);
+        throw new Error("Component " + name + " has invalid connections and cannot be inserted into the netlist");
       }
 
       if ( component.toNetlist ) {
@@ -5493,6 +5498,10 @@ sparks.createQuestionsCSV = function(data) {
         return $.map(this.connections, function (connection) {
           return connection.nodeName();
         });
+      },
+
+      canInsertIntoNetlist: function () {
+        return true;
       },
 
       /**

@@ -67,10 +67,15 @@
     $.each(board.components, function(name, component) {
       var line;
       
-      if ( !component.hasValidConnections() ) {
+      if ( !component.canInsertIntoNetlist() ) {
         return;
       }
-        
+      
+      if ( !component.hasValidConnections() ) {
+        console.log(component);
+        throw new Error("Component " + name + " has invalid connections and cannot be inserted into the netlist");
+      }
+      
       if ( component.toNetlist ) {
         line = component.toNetlist();
       } else {
