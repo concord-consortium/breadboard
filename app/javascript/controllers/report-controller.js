@@ -233,7 +233,6 @@
         var sessionReport = sessionReports[i];
         scores[i] = (sessionReport.score / sessionReport.maxScore) * 100;
       }
-      console.log("returning "+scores)
       return scores;
     },
     
