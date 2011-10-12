@@ -3563,6 +3563,8 @@ sparks.createQuestionsCSV = function(data) {
 (function() {
 
   sparks.ClassReportView = function(){
+    this.$wrapperDiv = null;
+    this.$classReport = null;
   };
 
   sparks.ClassReportView.prototype = {
@@ -3593,7 +3595,11 @@ sparks.createQuestionsCSV = function(data) {
           }
         });
 
-      return $div;
+      this.$classReport = $div;
+
+      this.$wrapperDiv = $("<div>").append(this.$classReport);
+
+      return this.$wrapperDiv;
     },
 
     createLevelsTable: function(reports) {
@@ -3608,17 +3614,21 @@ sparks.createQuestionsCSV = function(data) {
       $table.append(headerRow);
 
       for (i = 0, ii = reports.length; i < ii; i++){
-        var $studentRow = this._createStudentRow(reports[i], levels.length, i%2 === 0);
+        var $studentRow = this._createStudentRow(reports[i], levels.length);
         $table.append($studentRow);
       }
       return $table;
     },
 
-    _createStudentRow: function(report, numLevels, even) {
+    _createStudentRow: function(report, numLevels) {
       var $tr = $("<tr>"),
           name = this._cleanStudentName(report.user.name),
           totalScore = 0;
-      $tr.append("<td class='firstcol'>" + name + "</td>");
+
+      var $name = $("<td class='firstcol'>" + name + "</td>");
+      $tr.append($name);
+      var self = this;
+      $name.click(function(){self.showStudentReport(report);});
       for (var i = 0, ii = report.sectionReports.length; i < ii; i++){
         var summary = sparks.reportController.getSummaryForSectionReport(report.sectionReports[i]),
             light;
@@ -3717,6 +3727,102 @@ sparks.createQuestionsCSV = function(data) {
       });
 
       return $table;
+    },
+
+    showStudentReport: function(report) {
+      var $div = $("<div>");
+
+      var $returnButton = $("<button>").text("Return to class report").css('padding-left', "10px")
+                        .css('padding-right', "10px").css('margin-left', "20px");
+      var self = this;
+      $returnButton.click(function(){
+        $div.hide();
+        self.$classReport.show();
+      });
+      $div.append($returnButton);
+
+      $div.append("<h1>"+this._cleanStudentName(report.user.name)+"</h1>");
+      $div.append(this.createStudentReport(report));
+
+      this.$classReport.hide();
+      this.$wrapperDiv.append($div);
+    },
+
+    createStudentReport: function(report) {
+      var $table = $("<table>").addClass('classReport').addClass('tablesorter');
+      var levels = sparks.classReportController.getLevels();
+
+      var headerRow = "<thead><tr><th class='firstcol'>Level</th><th>Sessions</th><th>Total score</th></tr></thead>";
+      $table.append(headerRow);
+      for (var i = 0, ii = levels.length; i < ii; i++){
+        var level = levels[i];
+        var $tr = $("<tr>");
+        $tr.append("<td class='firstcol'>"+levels[i]+"</td>");
+        $tr.append("<td><canvas id='graphSpace' width='200' height='150'></canvas></td>");
+        var graphCanvas = $tr.find('canvas')[0];
+        if (graphCanvas && graphCanvas.getContext) {
+          var context = graphCanvas.getContext('2d');
+          var data = sparks.reportController.getSessionScoresAsPercentages(report.sectionReports[i]);
+          this.drawBarChart(context, data, 30, 10, 140, 50);
+        }
+
+        var score = "";
+        if (i < report.sectionReports.length){
+          score = sparks.reportController.getTotalScoreForSectionReport(report.sectionReports[i]);
+        }
+        $tr.append("<td>"+score+"</td>");
+        $table.append($tr);
+      }
+      return $table;
+    },
+
+    drawBarChart: function(context, data, startX, barWidth, chartHeight, markDataIncrementsIn) {
+      context.lineWidth = "1.0";
+      var startY = 380;
+      this.drawLine(context, startX, startY, startX, 30);
+      this.drawLine(context, startX, startY, 570, startY);
+      context.lineWidth = "0.0";
+      var maxValue = 0;
+      for (var i=0; i < data.length; i++) {
+        var height = data[i];
+        if (parseInt(height) > parseInt(maxValue)) maxValue = height;
+
+        if (height < 30) {
+          context.fillStyle = "#b90000";
+        } else if (height < 90) {
+          context.fillStyle = "#b9b900";
+        } else {
+          context.fillStyle = "#00b900";
+        }
+        this.drawRectangle(context,startX + (i * barWidth) + i,(chartHeight - height),barWidth,height,true);
+
+        context.textAlign = "left";
+        context.fillStyle = "#000";
+      }
+      var numMarkers = Math.ceil(maxValue / markDataIncrementsIn);
+      context.textAlign = "right";
+      context.fillStyle = "#000";
+      var markerValue = 0;
+      for (var i=0; i < numMarkers; i++) {
+        context.fillText(markerValue, (startX - 5), (chartHeight - markerValue), 50);
+        markerValue += markDataIncrementsIn;
+      }
+    },
+
+    drawLine: function(contextO, startx, starty, endx, endy) {
+      contextO.beginPath();
+      contextO.moveTo(startx, starty);
+      contextO.lineTo(endx, endy);
+      contextO.closePath();
+      contextO.stroke();
+    },
+
+    drawRectangle: function(contextO, x, y, w, h, fill) {
+      contextO.beginPath();
+      contextO.rect(x, y, w, h);
+      contextO.closePath();
+      contextO.stroke();
+      if (fill) contextO.fill();
     }
 
   };
@@ -4534,6 +4640,17 @@ sparks.createQuestionsCSV = function(data) {
         }
       }
       return bestSessionReport;
+    },
+
+    getSessionScoresAsPercentages: function(sectionReport) {
+      var scores = [];
+      var sessionReports = this._sortSessionsByTime({sectionReports: [sectionReport]});
+      for (var i = 0, ii = sessionReports.length; i < ii; i++){
+        var sessionReport = sessionReports[i];
+        scores[i] = (sessionReport.score / sessionReport.maxScore) * 100;
+      }
+      console.log("returning "+scores)
+      return scores;
     },
 
     getCategories: function(report) {

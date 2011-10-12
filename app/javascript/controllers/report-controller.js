@@ -226,6 +226,17 @@
       return bestSessionReport;
     },
     
+    getSessionScoresAsPercentages: function(sectionReport) {
+      var scores = [];
+      var sessionReports = this._sortSessionsByTime({sectionReports: [sectionReport]});
+      for (var i = 0, ii = sessionReports.length; i < ii; i++){
+        var sessionReport = sessionReports[i];
+        scores[i] = (sessionReport.score / sessionReport.maxScore) * 100;
+      }
+      console.log("returning "+scores)
+      return scores;
+    },
+    
     // each category is stored as an array:
     // [total answered correctly, total, total of previous 3 answered correctly, tutorial url]
     // categories = {
