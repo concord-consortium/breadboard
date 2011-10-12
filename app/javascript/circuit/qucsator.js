@@ -84,7 +84,7 @@
           if (!(nodes.length == 2 && component.UID)) { return; }
           line = 'TLIN:' + component.UID + ' ';
           line = line + nodes.join(' ');
-          line = line + ' Z="0 Ohm" L="1 mm" Alpha="0 dB"' ;
+          line = line + ' Z="0.000001 Ohm" L="1 mm" Alpha="0 dB"' ;
           break;
         case "battery":
           if (!(nodes.length == 2 && component.voltage && component.UID)) { return; }
