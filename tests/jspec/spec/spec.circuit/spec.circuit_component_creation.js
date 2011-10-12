@@ -8,8 +8,9 @@ describe "Construction of individual circuit components from a JSON circuit spec
   
   function match_prototype_and_object(proto, obj) {
     for (key in proto) {
-      proto[key].should.be obj[key]
+      if (proto[key] !== obj[key]) return false;
     }
+    return true;
   }
     
   
@@ -54,7 +55,7 @@ describe "Construction of individual circuit components from a JSON circuit spec
           end   
             
           it "should be a sparks.circuit.Component"
-            match_prototype_and_object(sparks.circuit.Component.prototype, component);
+            match_prototype_and_object(sparks.circuit.Component.prototype, component).should.be true
             component.parentConstructor.should.be_undefined
           end
         end
@@ -83,7 +84,7 @@ describe "Construction of individual circuit components from a JSON circuit spec
         end
         
         it "should be a sparks.circuit.Resistor"
-          match_prototype_and_object(sparks.circuit.Resistor.prototype, component);
+          match_prototype_and_object(sparks.circuit.Resistor.prototype, component).should.be true
         end
       end
     end
@@ -106,7 +107,7 @@ describe "Construction of individual circuit components from a JSON circuit spec
         end
       
         it "should be a sparks.circuit.Inductor"
-          match_prototype_and_object(sparks.circuit.Inductor.prototype, component);
+          match_prototype_and_object(sparks.circuit.Inductor.prototype, component).should.be true
         end
         
         it "should have the specified inductance (1.23 H)"
@@ -133,7 +134,7 @@ describe "Construction of individual circuit components from a JSON circuit spec
         end
       
         it "should be a sparks.circuit.Capacitor"
-          match_prototype_and_object(sparks.circuit.Capacitor.prototype, component);
+          match_prototype_and_object(sparks.circuit.Capacitor.prototype, component).should.be true
         end
         
         it "should have the specified capacitance (2.34 F)"
