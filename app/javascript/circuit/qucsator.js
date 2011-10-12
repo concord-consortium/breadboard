@@ -71,38 +71,43 @@
       $.each(component.connections, function(i, hole){
         nodes.push(hole.nodeName());
       });
+      
+      if (component.toNetlist) {
+        line = component.toNetlist();
+      } else {
 
-      switch (component.kind) {
-        case "resistor":
-          if (!(nodes.length == 2 && component.UID)) { return; }
-          var resistance = !component.resistance ? 0 : component.resistance;
-          line = 'R:' + component.UID + ' ';
-          line = line + nodes.join(' ');
-          line = line + ' R="' + component.resistance + ' Ohm"' ;
-          break;
-        case "wire":
-          if (!(nodes.length == 2 && component.UID)) { return; }
-          line = 'TLIN:' + component.UID + ' ';
-          line = line + nodes.join(' ');
-          line = line + ' Z="0.000001 Ohm" L="1 mm" Alpha="0 dB"' ;
-          break;
-        case "battery":
-          if (!(nodes.length == 2 && component.voltage && component.UID)) { return; }
-          line = 'Vdc:' + component.UID + ' ';
-          line = line + nodes.join(' ');
-          line = line + ' U="' + component.voltage + ' V"' ;
-          break;
-        case "vprobe":
-          if (!(nodes.length == 2 && component.UID)) { return; }
-          line = 'VProbe:' + component.UID + ' ';
-          line = line + nodes.join(' ');
-          break;
-        case "iprobe":
-          if (!(nodes.length == 2 && component.UID)) { return; }
-          line = 'IProbe:' + component.UID + ' ';
-          line = line + nodes.join(' ');
-          break;
+        if (nodes.length !== 2) {
+          //throw new Error("sparks.circuit.qucsator.makeNetlist: component " + component.UID + "does not have two nodes.");
+          return;
+        }
 
+        switch (component.kind) {
+          case "resistor":
+            var resistance = !component.resistance ? 0 : component.resistance;
+            line = 'R:' + component.UID + ' ';
+            line = line + nodes.join(' ');
+            line = line + ' R="' + component.resistance + ' Ohm"' ;
+            break;
+          case "wire":
+            line = 'TLIN:' + component.UID + ' ';
+            line = line + nodes.join(' ');
+            line = line + ' Z="0.000001 Ohm" L="1 mm" Alpha="0 dB"' ;
+            break;
+          case "battery":
+            if ('undefined' === typeof component.voltage || component.voltage === null) { return; }
+            line = 'Vdc:' + component.UID + ' ';
+            line = line + nodes.join(' ');
+            line = line + ' U="' + component.voltage + ' V"' ;
+            break;
+          case "vprobe":
+            line = 'VProbe:' + component.UID + ' ';
+            line = line + nodes.join(' ');
+            break;
+          case "iprobe":
+            line = 'IProbe:' + component.UID + ' ';
+            line = line + nodes.join(' ');
+            break;
+        }
       }
 
       netlist = netlist + "\n" + line;
