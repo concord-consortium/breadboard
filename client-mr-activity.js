@@ -3325,7 +3325,7 @@ sparks.createQuestionsCSV = function(data) {
           this.connections[i] = [];
         }
         this.connections = [];
-        delete this.breadBoard.components[this.name];
+        delete this.breadBoard.components[this.UID];
       },
 
       _ensureInt: function (val) {
