@@ -204,7 +204,14 @@
             resistance += this.colorToNumber(colors[i]);
           }
           return resistance * Math.pow(10, this.colorToNumber(colors[i]));
-        }
+        },
+                        
+        toNetlist: function () {
+          var resistance = this.resistance || 0,
+              nodes      = this.getNodes();
+          
+          return 'R:' + this.UID + ' ' + nodes.join(' ') + ' R="' + resistance + ' Ohm"';
+        }        
     });
 
 })();

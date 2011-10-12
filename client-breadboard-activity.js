@@ -5369,29 +5369,21 @@ sparks.createQuestionsCSV = function(data) {
 
   q.makeNetlist = function(board) {
     var netlist = '# QUCS Netlist\n';
+
     $.each(board.components, function(name, component) {
-      var line = '';
+      var line;
 
-      var nodes = [];
-      $.each(component.connections, function(i, hole){
-        nodes.push(hole.nodeName());
-      });
+      if ( !component.hasValidConnections() ) {
+        return;
+      }
 
-      if (component.toNetlist) {
+      if ( component.toNetlist ) {
         line = component.toNetlist();
       } else {
 
-        if (nodes.length !== 2) {
-          return;
-        }
+        nodes = component.getNodes();
 
         switch (component.kind) {
-          case "resistor":
-            var resistance = !component.resistance ? 0 : component.resistance;
-            line = 'R:' + component.UID + ' ';
-            line = line + nodes.join(' ');
-            line = line + ' R="' + component.resistance + ' Ohm"' ;
-            break;
           case "wire":
             line = 'TLIN:' + component.UID + ' ';
             line = line + nodes.join(' ');
@@ -5495,7 +5487,24 @@ sparks.createQuestionsCSV = function(data) {
         if (!!this[val] && typeof(this[val]) === "string"){
           this[val] = parseInt(this[val], 10);
         }
+      },
+
+      getNodes: function () {
+        return $.map(this.connections, function (connection) {
+          return connection.nodeName();
+        });
+      },
+
+      /**
+        hasValidConnections: check that this component has connections that are valid for generating a QUCS netlist.
+
+        The only check performed right now is that there be 2 connections, but this validity check could be enhanced
+        to check, for example, that the two connections map to different nodes, etc.
+      */
+      hasValidConnections: function () {
+        return this.connections.length === 2;
       }
+
     };
 
 })();
@@ -5690,6 +5699,13 @@ sparks.createQuestionsCSV = function(data) {
             resistance += this.colorToNumber(colors[i]);
           }
           return resistance * Math.pow(10, this.colorToNumber(colors[i]));
+        },
+
+        toNetlist: function () {
+          var resistance = this.resistance || 0,
+              nodes      = this.getNodes();
+
+          return 'R:' + this.UID + ' ' + nodes.join(' ') + ' R="' + resistance + ' Ohm"';
         }
     });
 

@@ -63,31 +63,21 @@
   //
   q.makeNetlist = function(board) {
     var netlist = '# QUCS Netlist\n';
+    
     $.each(board.components, function(name, component) {
-      var line = '';
-
-      // Convert the connections object to an array of qucs node names
-      var nodes = [];
-      $.each(component.connections, function(i, hole){
-        nodes.push(hole.nodeName());
-      });
+      var line;
       
-      if (component.toNetlist) {
+      if ( !component.hasValidConnections() ) {
+        return;
+      }
+        
+      if ( component.toNetlist ) {
         line = component.toNetlist();
       } else {
 
-        if (nodes.length !== 2) {
-          //throw new Error("sparks.circuit.qucsator.makeNetlist: component " + component.UID + "does not have two nodes.");
-          return;
-        }
-
+        nodes = component.getNodes();
+        
         switch (component.kind) {
-          case "resistor":
-            var resistance = !component.resistance ? 0 : component.resistance;
-            line = 'R:' + component.UID + ' ';
-            line = line + nodes.join(' ');
-            line = line + ' R="' + component.resistance + ' Ohm"' ;
-            break;
           case "wire":
             line = 'TLIN:' + component.UID + ' ';
             line = line + nodes.join(' ');
