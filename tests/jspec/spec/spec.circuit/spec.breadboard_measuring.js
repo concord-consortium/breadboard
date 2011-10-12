@@ -296,7 +296,7 @@ describe 'Measuring breadboard components'
         breadModel('insertComponent', 'battery', {"connections": 'a2,a1', "voltage": 9});
       
         var result = breadModel('query', 'voltage', 'a1,a3')
-        result.should.be 0
+        result.should.be_less_than 1e-4
       end
     
     
