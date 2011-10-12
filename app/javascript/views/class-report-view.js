@@ -24,15 +24,9 @@
           textExtraction: function(node) {      // convert image to a string so we can sort on it
             var content = node.childNodes[0];
             if (!content) {
-              return "ZZZ";
+              return "A";
             } else if (content.nodeName === "IMG") {
-              var src = content.src;
-              if (src.indexOf('light-on') > 0) {
-                return "A";
-              } else if (src.indexOf('light-off') > 0) {
-                return "B";
-              }
-              return "C";
+              return "Z"+(content.getAttribute('score'));
             } else {
               return content.textContent;
             }
@@ -77,7 +71,7 @@
         } else {  
           light = "common/icons/light-on.png";
         }
-        var $img = $('<img>').attr('src', light).attr('width', 35);
+        var $img = $('<img>').attr('src', light).attr('width', 35).attr('score', summary[0]);
         $img.easyTooltip({
            content: name + " scored "+sparks.math.roundToSigDigits(summary[0]*100,3)+"% of the possible points from the last "+summary[2]+" times they ran this level"
         });
@@ -140,7 +134,7 @@
               case 3:
                light = "common/icons/light-on.png";
             }
-            var $img = $('<img>').attr('src', light).attr('width', 35);
+            var $img = $('<img>').attr('src', light).attr('width', 35).attr('score', score[2]);
             $img.easyTooltip({
                content: name+" got "+score[2]+" out of the last "+(Math.min(score[1],3))+" questions of this type correct"
             });
