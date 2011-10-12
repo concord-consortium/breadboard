@@ -5767,11 +5767,11 @@ sparks.createQuestionsCSV = function(data) {
         this.powerRail = { // I was told these were called power-rails
           left:{
             positive: new Strip( null, "powerPosL"),
-            negative: new Strip( null, "powerNegL")
+            negative: new Strip( null, "gnd")
           },
           right:{
             positive: new Strip( null, "powerPosR" ),
-            negative: new Strip( null, "powerNegR" )
+            negative: new Strip( null, "gnd" )
           }
         };
 
