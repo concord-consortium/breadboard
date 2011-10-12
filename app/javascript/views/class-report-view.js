@@ -17,18 +17,40 @@
       $div.append('<h2>Question categories</h2>');
       $div.append(this.createCategoryTable(reports));
       
+      $div.find('.tablesorter').tablesorter(
+        {
+          sortList: [[0,0]], 
+          widgets: ['zebra'],
+          textExtraction: function(node) {      // convert image to a string so we can sort on it
+            var content = node.childNodes[0];
+            if (!content) {
+              return "ZZZ";
+            } else if (content.nodeName === "IMG") {
+              var src = content.src;
+              if (src.indexOf('light-on') > 0) {
+                return "A";
+              } else if (src.indexOf('light-off') > 0) {
+                return "B";
+              }
+              return "C";
+            } else {
+              return content.textContent;
+            }
+          }
+        });
+      
       return $div;
     },
     
     createLevelsTable: function(reports) {
-      var $table = $("<table>").addClass('classReport');
+      var $table = $("<table>").addClass('classReport').addClass('tablesorter');
       var levels = sparks.classReportController.getLevels();
       
-      var headerRow = "<tr><th class='firstcol'>Student Name</th>";
+      var headerRow = "<thead><tr><th class='firstcol'>Student Name</th>";
       for (var i = 0, ii = levels.length; i < ii; i++){
         headerRow += "<th>" + levels[i] + "</th>";
       }
-      headerRow += "<th class='lastcol'>Cumulative Points</th></tr>";
+      headerRow += "<th class='lastcol'>Cumulative Points</th></tr></thead>";
       $table.append(headerRow);
       
       for (i = 0, ii = reports.length; i < ii; i++){
@@ -39,7 +61,7 @@
     },
     
     _createStudentRow: function(report, numLevels, even) {
-      var $tr = $("<tr class='" + (even ? "evenrow'>" : "oddrow'>")),
+      var $tr = $("<tr>"),
           name = this._cleanStudentName(report.user.name),
           totalScore = 0;
       $tr.append("<td class='firstcol'>" + name + "</td>");
@@ -78,7 +100,7 @@
     },
     
     createCategoryTable: function(reports) {
-      var $table = $("<table>").addClass('classReport'),
+      var $table = $("<table>").addClass('classReport').addClass('tablesorter'),
           categories = [],
           i, ii;
       for (i = 0, ii = reports.length; i < ii; i++){
@@ -130,17 +152,16 @@
       }
       
       // create headers now that we know all the categories
-      var header = "<tr><th>Students</th>";
+      var header = "<thead><tr><th>Students</th>";
       for (i = 0, ii = categories.length; i < ii; i++){
         header += "<th>" + categories[i] + "</th>";
       }
-      header += "</tr>";
+      header += "</tr></thead>";
       $table.prepend(header);
       
       // finally, fill up all the rows (they may have been created with diff # of categories)
       $table.find('tr').each(function(i, tr){
         for (j = categories.length, jj = tr.childNodes.length; j >= jj; j--){
-          console.log("adding a td to row "+i);
           $(tr).append('<td>');
         }
       });

@@ -209,10 +209,6 @@ dl {
   margin: 1em 0; }
 
 /* GENERIC TABLE STYLES */
-table.tablesorter th, table.tablesorter td {
-  border: solid 1px #a8d6d5 !important;
-  color: #555555;
-  padding: 5px; }
 table.yui-dt-table th, table.yui-dt-table td {
   border: solid 1px #a8d6d5 !important;
   color: #555555;
@@ -221,25 +217,8 @@ table.roster-table th, table.roster-table td {
   border: solid 1px #a8d6d5 !important;
   color: #555555;
   padding: 5px; }
-table.tablesorter th, table.yui-dt-table th, table.roster-table th {
-  background: #a0d1d0 url(/images/new/bg-thead.png) left bottom repeat-x !important;
-  border-bottom: 1px solid #b9dedd !important;
-  color: #222222;
-  font-size: 1em;
-  text-align: left; }
 table.yui-dt-table th a, table.roster-table th a {
   color: #222222 !important; }
-table.tablesorter thead th, table.yui-dt-table thead th, table.roster-table th {
-  border-right-color: white !important; }
-table.tablesorter thead th.last, table.yui-dt-table thead th.last, table.roster-table th.last {
-  border-right-color: #a8d6d5 !important; }
-table.tablesorter td, table.yui-dt-table td, table.roster-table td {
-  background-color: #f7f2df !important;
-  vertical-align: top; }
-table.tablesorter .odd td, table.yui-dt-table .odd td, table.roster-table .odd td {
-  background-color: white; }
-table.tablesorter tfoot td, table.yui-dt-table tfoot td, table.roster-table tfoot td {
-  background: #f7f2df; }
 
 html body #content table.roster-table {
   width: 545px !important; }

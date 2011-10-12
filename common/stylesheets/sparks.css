@@ -89,10 +89,10 @@ table th.lastcol {
 table td.lastcol {
   border-left: 1px black solid;
 }
-table.classReport tr.evenrow {
+table.classReport tbody tr td {
   background: #F6F6F6;
 }
-table.classReport tr.oddrow {
+table.classReport tbody tr.odd td {
   background: #E9E9E9;
 }
 
@@ -114,6 +114,20 @@ table.finalReport td button {
 }
 .row_b {
   background: #f0e0b0;
+}
+
+/* tablesorter */
+table.tablesorter thead tr .header {
+	background-image: url("../../common/icons/doublearrow.gif");
+	background-repeat: no-repeat;
+	background-position: center right;
+	cursor: pointer;
+}
+table.tablesorter thead tr .headerSortUp {
+	background-image: url("../../common/icons/asc.gif");
+}
+table.tablesorter thead tr .headerSortDown {
+	background-image: url("../../common/icons/desc.gif");
 }
 
 #rcc_model {
@@ -229,5 +243,6 @@ border-bottom-style:solid;
 	background:#195fa4 url(../../common/icons/bg.gif) repeat-x;
 	color:#fff;
 }
+
 
 .
