@@ -93,5 +93,25 @@ describe "As components are added to the breadboard model, "
       end
     end
     
+    
+    describe "when an inductor is added to the model layer, and updateFlash is called"
+    
+      it "should receive the sendCommand method with the appropriate arguments"
+        sparks.flash.should_receive('sendCommand', 'once').with_args("insert_component", "inductor", "L1", "a1,a2", "inductor label");
+        breadModel('insertComponent', 'inductor', { connections: 'a1,a2', inductance: 1.23, UID: 'L1', label: 'inductor label' });
+        breadModel('updateFlash');
+      end
+    end
+    
+    
+    describe "when a capacitor is added to the model layer, and updateFlash is called"
+    
+      it "should receive the sendCommand method with the appropriate arguments"
+        sparks.flash.should_receive('sendCommand', 'once').with_args("insert_component", "capacitor", "C1", "a1,a2", "capacitor label");
+        breadModel('insertComponent', 'capacitor', { connections: 'a1,a2', capacitance: 1.23, UID: 'C1', label: 'capacitor label' });
+        breadModel('updateFlash');
+      end
+    end
+    
   end
 end

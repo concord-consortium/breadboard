@@ -462,6 +462,7 @@
               var location = component.connections[0].getName() + "," + component.connections[1].getName();
             
               switch (component.kind) {
+
                 case "resistor":
                   if (component.resistance > 0){
                     sparks.flash.sendCommand('insert_component', 'resistor', name, location, '4band', component.label, component.colors);
@@ -469,11 +470,12 @@
                     sparks.flash.sendCommand('insert_component', 'resistor', name, location, 'wire', component.label, null);
                   }
                   break;
+                  
                 case "wire":
                   var color;
-                  if (location.indexOf("positive") > -1){
+                  if (location.indexOf("positive") > -1) {
                     color = "0xaa0000";
-                  } else if (location.indexOf("negative") > -1){
+                  } else if (location.indexOf("negative") > -1) {
                     color = "0x000000";
                   } else {
                     if (Math.random() < 0.5){
@@ -484,6 +486,15 @@
                   }
                   sparks.flash.sendCommand('insert_component', 'wire', component.UID, location, color);
                   break;
+                  
+                case "inductor": 
+                  sparks.flash.sendCommand('insert_component', 'inductor', name, location, component.label);
+                  break;
+                  
+                case "capacitor": 
+                  sparks.flash.sendCommand('insert_component', 'capacitor', name, location, component.label);
+                  break;                  
+                  
               }
             }
           });
