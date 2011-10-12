@@ -35,7 +35,7 @@ The simplest way to do this is to modify the file proxy/apache.conf.sample with 
  // or simply
  ./start.sh
 
-from your Sparks directory. Now you will be able to navigate to the html files in the project by pointing your browser to 
+from your Sparks directory (though you first need to copy start.sample.sh to start.sh and modify the contents accordingly). Now you will be able to navigate to the html files in the project by pointing your browser to 
 
  http://localhost:1234
  http://localhost:1234/activities.html
