@@ -146,6 +146,9 @@
           if (props.kind === 'capacitor') {
             return new sparks.circuit.Capacitor(props, breadBoard);
           }
+          if (props.kind === 'battery') {
+            return new sparks.circuit.Battery(props, breadBoard);
+          }
           return new sparks.circuit.Component(props, breadBoard);
         }
       };

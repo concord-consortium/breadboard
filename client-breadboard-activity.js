@@ -5394,12 +5394,6 @@ sparks.createQuestionsCSV = function(data) {
             line = line + nodes.join(' ');
             line = line + ' Z="0.000001 Ohm" L="1 mm" Alpha="0 dB"' ;
             break;
-          case "battery":
-            if ('undefined' === typeof component.voltage || component.voltage === null) { return; }
-            line = 'Vdc:' + component.UID + ' ';
-            line = line + nodes.join(' ');
-            line = line + ' U="' + component.voltage + ' V"' ;
-            break;
           case "vprobe":
             line = 'VProbe:' + component.UID + ' ';
             line = line + nodes.join(' ');
@@ -5850,6 +5844,9 @@ sparks.createQuestionsCSV = function(data) {
           }
           if (props.kind === 'capacitor') {
             return new sparks.circuit.Capacitor(props, breadBoard);
+          }
+          if (props.kind === 'battery') {
+            return new sparks.circuit.Battery(props, breadBoard);
           }
           return new sparks.circuit.Component(props, breadBoard);
         }
@@ -7159,6 +7156,25 @@ sparks.createQuestionsCSV = function(data) {
           nodes       = this.getNodes();
 
       return 'C:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' C="' + capacitance + ' F"';
+    }
+  });
+
+})();
+/* FILE battery.js */
+/*globals console sparks */
+
+(function () {
+
+  sparks.circuit.Battery = function (props, breadBoard) {
+    sparks.circuit.Battery.parentConstructor.call(this, props, breadBoard);
+  };
+
+  sparks.extend(sparks.circuit.Battery, sparks.circuit.Component, {
+    toNetlist: function () {
+      var voltage = this.voltage || 0,
+          nodes      = this.getNodes();
+
+      return 'Vdc:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' U="' + voltage + ' V"';
     }
   });
 

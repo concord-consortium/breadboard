@@ -43,6 +43,7 @@
 //= require <circuit/circuit-math>
 //= require <circuit/inductor>
 //= require <circuit/capacitor>
+//= require <circuit/battery>
 //= require <apMessageBox>
 //= require <helpers/math>
 

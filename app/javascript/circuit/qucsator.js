@@ -88,12 +88,6 @@
             line = line + nodes.join(' ');
             line = line + ' Z="0.000001 Ohm" L="1 mm" Alpha="0 dB"' ;
             break;
-          case "battery":
-            if ('undefined' === typeof component.voltage || component.voltage === null) { return; }
-            line = 'Vdc:' + component.UID + ' ';
-            line = line + nodes.join(' ');
-            line = line + ' U="' + component.voltage + ' V"' ;
-            break;
           case "vprobe":
             line = 'VProbe:' + component.UID + ' ';
             line = line + nodes.join(' ');
