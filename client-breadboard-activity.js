@@ -5389,11 +5389,6 @@ sparks.createQuestionsCSV = function(data) {
         nodes = component.getNodes();
 
         switch (component.kind) {
-          case "wire":
-            line = 'TLIN:' + component.UID + ' ';
-            line = line + nodes.join(' ');
-            line = line + ' Z="0.000001 Ohm" L="1 mm" Alpha="0 dB"' ;
-            break;
           case "vprobe":
             line = 'VProbe:' + component.UID + ' ';
             line = line + nodes.join(' ');
@@ -5847,6 +5842,9 @@ sparks.createQuestionsCSV = function(data) {
           }
           if (props.kind === 'battery') {
             return new sparks.circuit.Battery(props, breadBoard);
+          }
+          if (props.kind === 'wire') {
+            return new sparks.circuit.Wire(props, breadBoard);
           }
           return new sparks.circuit.Component(props, breadBoard);
         }
@@ -7175,6 +7173,25 @@ sparks.createQuestionsCSV = function(data) {
           nodes      = this.getNodes();
 
       return 'Vdc:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' U="' + voltage + ' V"';
+    }
+  });
+
+})();
+/* FILE battery.js */
+/*globals console sparks */
+
+(function () {
+
+  sparks.circuit.Wire = function (props, breadBoard) {
+    sparks.circuit.Wire.parentConstructor.call(this, props, breadBoard);
+  };
+
+  sparks.extend(sparks.circuit.Wire, sparks.circuit.Component, {
+    toNetlist: function () {
+      var voltage = this.voltage || 0,
+          nodes      = this.getNodes();
+
+      return 'TLIN:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' Z="0.000001 Ohm" L="1 mm" Alpha="0 dB"';
     }
   });
 

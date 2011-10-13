@@ -149,6 +149,9 @@
           if (props.kind === 'battery') {
             return new sparks.circuit.Battery(props, breadBoard);
           }
+          if (props.kind === 'wire') {
+            return new sparks.circuit.Wire(props, breadBoard);
+          }
           return new sparks.circuit.Component(props, breadBoard);
         }
       };
