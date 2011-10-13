@@ -7127,10 +7127,6 @@ sparks.createQuestionsCSV = function(data) {
   };
 
   sparks.extend(sparks.circuit.Inductor, sparks.circuit.Component, {
-    init: function (id) {
-      this.id = id;
-    },
-
     getInductance: function () {
       return this.inductance;
     }
@@ -7147,10 +7143,6 @@ sparks.createQuestionsCSV = function(data) {
   };
 
   sparks.extend(sparks.circuit.Capacitor, sparks.circuit.Component, {
-    init: function (id) {
-      this.id = id;
-    },
-
     getCapacitance: function () {
       return this.capacitance;
     }

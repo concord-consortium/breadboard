@@ -9,10 +9,6 @@
   };
 
   sparks.extend(sparks.circuit.Capacitor, sparks.circuit.Component, {
-    init: function (id) {
-      this.id = id;
-    },
-    
     getCapacitance: function () {
       return this.capacitance;
     }

@@ -9,10 +9,6 @@
   };
 
   sparks.extend(sparks.circuit.Inductor, sparks.circuit.Component, {
-    init: function (id) {
-      this.id = id;
-    },
-    
     getInductance: function () {
       return this.inductance;
     }
