@@ -5400,9 +5400,17 @@ sparks.createQuestionsCSV = function(data) {
         }
       }
 
-      netlist = netlist + "\n" + line;
+      netlist += "\n" + line;
     });
-    return netlist + "\n.DC:DC1";
+
+    if (board.components["source"] && board.components["source"].getQucsSimulationType) {
+      netlist += "\n" + board.components["source"].getQucsSimulationType();
+    } else {
+      netlist += "\n" + sparks.circuit.Battery.prototype.getQucsSimulationType();
+    }
+    console.log("[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]] ")
+    console.log(netlist)
+    return netlist;
   };
 
   q.ppNetlist = function (s) {
@@ -7167,6 +7175,10 @@ sparks.createQuestionsCSV = function(data) {
           nodes      = this.getNodes();
 
       return 'Vdc:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' U="' + voltage + ' V"';
+    },
+
+    getQucsSimulationType: function() {
+      return ".DC:DC1";
     }
   });
 

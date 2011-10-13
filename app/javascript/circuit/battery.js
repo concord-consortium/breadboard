@@ -26,6 +26,10 @@
           nodes      = this.getNodes();
       
       return 'Vdc:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' U="' + voltage + ' V"';
+    },
+    
+    getQucsSimulationType: function() {
+      return ".DC:DC1";
     }
   });
 

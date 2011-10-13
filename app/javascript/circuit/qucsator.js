@@ -62,9 +62,10 @@
   // make qucs netlists from breadboard objects
   //
   q.makeNetlist = function(board) {
-    var netlist = '# QUCS Netlist\n';
+    var components = board.components,
+        netlist = '# QUCS Netlist\n';
     
-    $.each(board.components, function(name, component) {
+    $.each(components, function(name, component) {
       var line;
       
       if ( !component.canInsertIntoNetlist() ) {
@@ -94,9 +95,19 @@
         }
       }
 
-      netlist = netlist + "\n" + line;
+      netlist += "\n" + line;
     });
-    return netlist + "\n.DC:DC1"; 
+    
+    // get the simulation type from the source power component. If there is no source,
+    // assume it's a DC simulation (this should only happen in spec tests when createCircuit
+    // was never called)
+    if (components["source"] && components["source"].getQucsSimulationType) {
+      netlist += "\n" + components["source"].getQucsSimulationType();
+    } else {
+      netlist += "\n" + sparks.circuit.Battery.prototype.getQucsSimulationType();
+    }
+    
+    return netlist;
   };
   
   // Pretty-print netlist
