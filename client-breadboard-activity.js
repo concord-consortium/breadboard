@@ -5489,6 +5489,10 @@ sparks.createQuestionsCSV = function(data) {
         });
       },
 
+      getLocation: function () {
+        return this.connections[0].getName() + "," + this.connections[1].getName()
+      },
+
       canInsertIntoNetlist: function () {
         return true;
       },
@@ -5704,6 +5708,14 @@ sparks.createQuestionsCSV = function(data) {
               nodes      = this.getNodes();
 
           return 'R:' + this.UID + ' ' + nodes.join(' ') + ' R="' + resistance + ' Ohm"';
+        },
+
+        getFlashArguments: function() {
+          if (this.resistance > 0) {
+            return ['resistor', this.UID, this.getLocation(), '4band', this.label, this.colors];
+          } else {
+            return ['resistor', this.UID, this.getLocation(), 'wire', this.label, null];
+          }
         }
     });
 
@@ -6122,46 +6134,11 @@ sparks.createQuestionsCSV = function(data) {
           return  result;
         },
         updateFlash: function() {
-          $.each(breadBoard.components, function(name, component) {
-
-            if (!!component.connections[0] && !!component.connections[1]){
-              var location = component.connections[0].getName() + "," + component.connections[1].getName();
-
-              switch (component.kind) {
-
-                case "resistor":
-                  if (component.resistance > 0){
-                    sparks.flash.sendCommand('insert_component', 'resistor', name, location, '4band', component.label, component.colors);
-                  } else {
-                    sparks.flash.sendCommand('insert_component', 'resistor', name, location, 'wire', component.label, null);
-                  }
-                  break;
-
-                case "wire":
-                  var color;
-                  if (location.indexOf("positive") > -1) {
-                    color = "0xaa0000";
-                  } else if (location.indexOf("negative") > -1) {
-                    color = "0x000000";
-                  } else {
-                    if (Math.random() < 0.5){
-                      color = "0x008800";
-                    } else {
-                      color = "0x000088";
-                    }
-                  }
-                  sparks.flash.sendCommand('insert_component', 'wire', component.UID, location, color);
-                  break;
-
-                case "inductor":
-                  sparks.flash.sendCommand('insert_component', 'inductor', name, location, component.label);
-                  break;
-
-                case "capacitor":
-                  sparks.flash.sendCommand('insert_component', 'capacitor', name, location, component.label);
-                  break;
-
-              }
+          $.each(breadBoard.components, function(i, component) {
+            if (component.getFlashArguments && component.hasValidConnections()) {
+              var flashArguments = component.getFlashArguments();
+              flashArguments.unshift('insert_component');
+              sparks.flash.sendCommand.apply(this, flashArguments);
             }
           });
         }
@@ -7131,6 +7108,10 @@ sparks.createQuestionsCSV = function(data) {
           nodes      = this.getNodes();
 
       return 'L:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' L="' + inductance + ' H"';
+    },
+
+    getFlashArguments: function () {
+      return ['inductor', this.UID, this.getLocation(), this.label];
     }
   });
 
@@ -7154,6 +7135,10 @@ sparks.createQuestionsCSV = function(data) {
           nodes       = this.getNodes();
 
       return 'C:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' C="' + capacitance + ' F"';
+    },
+
+    getFlashArguments: function () {
+      return ['capacitor', this.UID, this.getLocation(), this.label];
     }
   });
 
@@ -7187,11 +7172,30 @@ sparks.createQuestionsCSV = function(data) {
   };
 
   sparks.extend(sparks.circuit.Wire, sparks.circuit.Component, {
+    getColor: function () {
+      var location = this.getLocation();
+      if (location.indexOf("positive") > -1) {
+        return "0xaa0000";
+      } else if (location.indexOf("negative") > -1) {
+        return "0x000000";
+      } else {
+        if (Math.random() < 0.5){
+          return "0x008800";
+        } else {
+          return "0x000088";
+        }
+      }
+    },
+
     toNetlist: function () {
       var voltage = this.voltage || 0,
           nodes      = this.getNodes();
 
       return 'TLIN:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' Z="0.000001 Ohm" L="1 mm" Alpha="0 dB"';
+    },
+
+    getFlashArguments: function () {
+      return ['wire', this.UID, this.getLocation(), this.getColor()];
     }
   });
 

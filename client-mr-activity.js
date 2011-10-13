@@ -3340,6 +3340,10 @@ sparks.createQuestionsCSV = function(data) {
         });
       },
 
+      getLocation: function () {
+        return this.connections[0].getName() + "," + this.connections[1].getName()
+      },
+
       canInsertIntoNetlist: function () {
         return true;
       },
@@ -3556,6 +3560,14 @@ sparks.createQuestionsCSV = function(data) {
               nodes      = this.getNodes();
 
           return 'R:' + this.UID + ' ' + nodes.join(' ') + ' R="' + resistance + ' Ohm"';
+        },
+
+        getFlashArguments: function() {
+          if (this.resistance > 0) {
+            return ['resistor', this.UID, this.getLocation(), '4band', this.label, this.colors];
+          } else {
+            return ['resistor', this.UID, this.getLocation(), 'wire', this.label, null];
+          }
         }
     });
 

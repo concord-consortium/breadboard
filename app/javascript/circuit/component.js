@@ -76,6 +76,11 @@
         });
       },
       
+      // converts connections to string, for flash arguments
+      getLocation: function () {
+        return this.connections[0].getName() + "," + this.connections[1].getName()
+      },
+      
       canInsertIntoNetlist: function () {
         return true;
       },

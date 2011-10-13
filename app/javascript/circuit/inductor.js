@@ -18,6 +18,10 @@
           nodes      = this.getNodes();
       
       return 'L:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' L="' + inductance + ' H"';
+    },
+
+    getFlashArguments: function () {
+      return ['inductor', this.UID, this.getLocation(), this.label];
     }
   });
 

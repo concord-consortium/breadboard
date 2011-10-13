@@ -211,7 +211,16 @@
               nodes      = this.getNodes();
           
           return 'R:' + this.UID + ' ' + nodes.join(' ') + ' R="' + resistance + ' Ohm"';
-        }        
+        },
+        
+        // for now, all resistors are 4-band
+        getFlashArguments: function() {
+          if (this.resistance > 0) {
+            return ['resistor', this.UID, this.getLocation(), '4band', this.label, this.colors];
+          } else {
+            return ['resistor', this.UID, this.getLocation(), 'wire', this.label, null];
+          }
+        }
     });
 
 })();

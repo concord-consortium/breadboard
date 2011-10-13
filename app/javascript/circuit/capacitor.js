@@ -18,6 +18,10 @@
           nodes       = this.getNodes();
       
       return 'C:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' C="' + capacitance + ' F"';
+    },
+
+    getFlashArguments: function () {
+      return ['capacitor', this.UID, this.getLocation(), this.label];
     }
   });
 
