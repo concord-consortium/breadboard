@@ -5368,9 +5368,10 @@ sparks.createQuestionsCSV = function(data) {
   };
 
   q.makeNetlist = function(board) {
-    var netlist = '# QUCS Netlist\n';
+    var components = board.components,
+        netlist = '# QUCS Netlist\n';
 
-    $.each(board.components, function(name, component) {
+    $.each(components, function(name, component) {
       var line;
 
       if ( !component.canInsertIntoNetlist() ) {
@@ -5403,13 +5404,12 @@ sparks.createQuestionsCSV = function(data) {
       netlist += "\n" + line;
     });
 
-    if (board.components["source"] && board.components["source"].getQucsSimulationType) {
-      netlist += "\n" + board.components["source"].getQucsSimulationType();
+    if (components["source"] && components["source"].getQucsSimulationType) {
+      netlist += "\n" + components["source"].getQucsSimulationType();
     } else {
       netlist += "\n" + sparks.circuit.Battery.prototype.getQucsSimulationType();
     }
-    console.log("[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]] ")
-    console.log(netlist)
+
     return netlist;
   };
 
@@ -5851,6 +5851,8 @@ sparks.createQuestionsCSV = function(data) {
         if(typeof props=='string'){
           return this.components[props];
         } else {
+
+
           if (props.kind === "resistor"){
             return new sparks.circuit.Resistor(props, breadBoard);
           }
@@ -5862,6 +5864,9 @@ sparks.createQuestionsCSV = function(data) {
           }
           if (props.kind === 'battery') {
             return new sparks.circuit.Battery(props, breadBoard);
+          }
+          if (props.kind === 'function generator') {
+            return new sparks.circuit.FunctionGenerator(props, breadBoard);
           }
           if (props.kind === 'wire') {
             return new sparks.circuit.Wire(props, breadBoard);
@@ -7183,6 +7188,68 @@ sparks.createQuestionsCSV = function(data) {
   });
 
 })();
+/* FILE function-generator.js */
+/*globals console sparks */
+
+(function () {
+
+  sparks.circuit.FunctionGenerator = function (props, breadBoard) {
+    sparks.circuit.FunctionGenerator.parentConstructor.call(this, props, breadBoard);
+
+    this.frequency = props.initialFrequency;
+
+    if ( ('undefined' === typeof this.frequency || this.frequency === null) && props.frequencies ) {
+      if ('number' === typeof props.frequencies[0]) {
+        this.frequency = props.frequencies[0];
+      }
+      else if (props.frequencies[0] === 'linear' || props.frequencies[0] === 'logarithmic') {
+        this.frequency = props.frequencies[1];
+      }
+    }
+
+    if ('undefined' === typeof this.frequency || this.frequency === null) {
+      throw new Error("FunctionGenerator: initialFrequency is undefined and an initial frequency could not be inferred from frequency range specification.");
+    }
+  };
+
+  sparks.extend(sparks.circuit.FunctionGenerator, sparks.circuit.Component, {
+
+    toNetlist: function () {
+      var amplitude = this.amplitude || 0,
+          nodes     = this.getNodes();
+
+      return 'Vac:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' U="' + amplitude + ' V" f="' + this.frequency + '" Phase="0" Theta="0"';
+    },
+
+    defaultFrequencySteps: 100,
+
+    getNetlistSimulationLine: function () {
+      var type, nSteps, ret;
+
+      if (this.frequencies && (this.frequencies[0] === 'linear' || this.frequencies[0] === 'logarithmic')) {
+        type   = this.frequencies[0] === 'linear' ? 'lin' : 'log';
+        nSteps = this.frequencies[3] || this.defaultFrequencySteps;
+
+        return '.AC:AC1 Type="' + type + '" Start="' + this.frequencies[1] + '" Stop="' + this.frequencies[2] + '" Points="' + nSteps + '" Noise="no"';
+      }
+
+      if (this.frequencies && typeof this.frequencies[0] === 'number') {
+
+        if (this.frequencies.length === 1) {
+          return '.AC:AC1 Type="const" Values="' + this.frequencies[0] + '" Noise="no"';
+        }
+        else if (this.frequencies.length > 1) {
+          return '.AC:AC1 Type="list" Values="[' + this.frequencies.join('; ') + ']" Noise="no"';
+        }
+
+      }
+
+    }
+
+  });
+
+})();
+
 /* FILE battery.js */
 /*globals console sparks */
 

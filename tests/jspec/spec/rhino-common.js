@@ -28,6 +28,7 @@ specResults = JSpec
 .exec('spec/spec.circuit/spec.flash_breadboard.js') 
 .exec('spec/spec.circuit/spec.circuit_constructor.js')
 .exec('spec/spec.circuit/spec.circuit_component_creation.js')
+.exec('spec/spec.circuit/spec.function_generator.js')
 .exec('spec/spec.circuit/spec.circuit-math.js')
 .exec('spec/spec.circuit/spec.qucs.js')
 

@@ -137,6 +137,9 @@
         if(typeof props=='string'){
           return this.components[props];
         } else {
+          
+          // FIXME refactor this repetitive code
+          
           if (props.kind === "resistor"){
             return new sparks.circuit.Resistor(props, breadBoard);
           }
@@ -148,6 +151,9 @@
           }
           if (props.kind === 'battery') {
             return new sparks.circuit.Battery(props, breadBoard);
+          }
+          if (props.kind === 'function generator') {
+            return new sparks.circuit.FunctionGenerator(props, breadBoard);
           }
           if (props.kind === 'wire') {
             return new sparks.circuit.Wire(props, breadBoard);
