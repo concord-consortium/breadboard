@@ -5972,14 +5972,26 @@ sparks.createQuestionsCSV = function(data) {
 
           props.UID = interfaces.getUID(!!props.UID ? props.UID : props.kind);
 
-          var newComponent;
-          newComponent = breadBoard.component(props);
+          if (props.UID === "source" && !props.connections){
+            props.connections = "left_positive1,left_negative1";
+          }
+
+          var newComponent = breadBoard.component(props);
           return newComponent.UID;
         },
         createCircuit: function(jsonCircuit){
           $.each(jsonCircuit, function(i, spec){
             interfaces.insertComponent(spec.type, spec);
           });
+
+          if (!breadBoard.components["source"]) {
+            var battery = {
+              UID: "source",
+              type: "battery",
+              voltage: 9
+            }
+            interfaces.insertComponent("battery", battery);
+          }
         },
         addFaults: function(jsonFaults){
           $.each(jsonFaults, function(i, fault){
@@ -6094,18 +6106,6 @@ sparks.createQuestionsCSV = function(data) {
               connections: connections.split(',')});
             tempComponents.push(probe);
           }
-
-          tempComponents.push(breadBoard.component({
-            UID: 'leftRailPower',
-            kind: 'battery',
-            voltage: 9,
-            connections: ["left_positive1", "left_negative1"]}));
-
-          tempComponents.push(breadBoard.component({
-            UID: 'rightRailPower',
-            kind: 'battery',
-            voltage: 9,
-            connections:  ["right_positive1", "right_negative1"]}));
 
           var result;
 

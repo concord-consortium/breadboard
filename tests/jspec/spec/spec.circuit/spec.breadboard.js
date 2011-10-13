@@ -62,7 +62,7 @@ describe 'Creating a breadboard'
     
     end
     
-    describe "Mapping gohst holes"
+    describe "Mapping ghost holes"
     
       it 'should be able to add a component with a ghost hole'
         breadModel('insertComponent', 'resistor', {"connections": 'a1,xx', "colors": "brown,black,brown,gold"});

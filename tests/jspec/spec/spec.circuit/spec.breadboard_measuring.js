@@ -246,7 +246,7 @@ describe 'Measuring breadboard components'
         result.should.be 250
       end
     
-      it "should correctly measure voltage"
+      it "should correctly measure voltage with an added battery"
       
         // we add a 100 ohm resistor and a 5V battery
         breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
@@ -266,19 +266,37 @@ describe 'Measuring breadboard components'
         result.should.be 1
         var result = breadModel('query', 'voltage', 'a2,a3')
         result.should.be 4
+      end
       
-        breadModel('clear');
-      
-        // we add a 100 ohm resistor and 800 ohm resistor to 9V rails
-        breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
-        breadModel('insertComponent', 'resistor', {"connections": 'a2,a3', "colors": 'gray,black,brown,gold'});
-        breadModel('insertComponent', 'wire', {"connections": 'a1,left_positive1'});
-        breadModel('insertComponent', 'wire', {"connections": 'a3,left_negative1'});
-      
+      it "should correctly measure voltage with the default (unauthored) battery"
+        
+        var jsonCircuit = [
+          {
+            "type": "resistor",
+            "connections": "a1,a2",
+            "resistance": "100"
+          },
+          {
+            "type": "resistor",
+            "connections": "a2,a3",
+            "resistance": "200"
+          },
+          {
+            "type": "wire",
+            "connections": "a1,left_positive1"
+          },
+          {
+            "type": "wire",
+            "connections": "a3,left_negative1"
+          }
+         ];
+
+        breadModel("createCircuit", jsonCircuit);
+        
         var result = breadModel('query', 'voltage', 'a2,a1')
-        result.should.be 1
+        result.should.be 3
         var result = breadModel('query', 'voltage', 'a3,a2')
-        result.should.be 8
+        result.should.be 6
       end
     
       // previously, this circuit would show a positive voltage in the voltmeter, because

@@ -288,14 +288,28 @@
           // ensure no dupes, using either passed UID or type
           props.UID = interfaces.getUID(!!props.UID ? props.UID : props.kind);
           
-          var newComponent;
-          newComponent = breadBoard.component(props);
+          // if uid is source, and no conections are specified, assume we are connecting to rails
+          if (props.UID === "source" && !props.connections){
+            props.connections = "left_positive1,left_negative1";
+          }
+          
+          var newComponent = breadBoard.component(props);
           return newComponent.UID;
         },
         createCircuit: function(jsonCircuit){
           $.each(jsonCircuit, function(i, spec){
             interfaces.insertComponent(spec.type, spec);
           });
+          
+          // check if there is any power source, if not, add a battery
+          if (!breadBoard.components["source"]) {
+            var battery = {
+              UID: "source",
+              type: "battery",
+              voltage: 9
+            }
+            interfaces.insertComponent("battery", battery);
+          }
         },
         addFaults: function(jsonFaults){
           $.each(jsonFaults, function(i, fault){
@@ -417,22 +431,6 @@
               connections: connections.split(',')});
             tempComponents.push(probe);
           }
-          
-          // attach batteries to rails on the fly. This is weird -- why don't we
-          // attach the batteries from the start, or when user attaches them?
-          // if (type != 'resistance') {
-          tempComponents.push(breadBoard.component({
-            UID: 'leftRailPower', 
-            kind: 'battery', 
-            voltage: 9,
-            connections: ["left_positive1", "left_negative1"]}));
-
-          tempComponents.push(breadBoard.component({
-            UID: 'rightRailPower', 
-            kind: 'battery', 
-            voltage: 9,
-            connections:  ["right_positive1", "right_negative1"]}));
-          // }
 
           var result;
           

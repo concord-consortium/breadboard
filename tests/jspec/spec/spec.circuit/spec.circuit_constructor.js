@@ -26,7 +26,8 @@ describe 'Circuit Constructor'
     
       breadModel("createCircuit", jsonCircuit);
     
-      size(components).should.be 1
+      // we should have 2, because we autmatically add a power source (battery)
+      size(components).should.be 2
     end
     
      it 'should be able to add a wire'
@@ -42,13 +43,11 @@ describe 'Circuit Constructor'
      
        var components = getBreadBoard().components;
      
-       size(components).should.be 1
-   
-       $.each(components, function(i, val){
-         val.UID.should.be "newWire"
-         val.connections[0].nodeName().should.be "L1"
-         val.connections[1].nodeName().should.be "L2"
-       })
+       size(components).should.be 2
+       
+       components["newWire"].should_not.be null
+       components["newWire"].connections[0].nodeName().should.be "L1"
+       components["newWire"].connections[1].nodeName().should.be "L2"
      end
    
      it 'should be able to make a complex circuit'
@@ -73,8 +72,9 @@ describe 'Circuit Constructor'
          },
          {
            "type": "battery",
+           "UID": "bat",
            "connections": "left_positive1,j10",
-           "voltage": "9"
+           "voltage": "3"
          }
        ];
      
@@ -82,7 +82,7 @@ describe 'Circuit Constructor'
      
        var components = getBreadBoard().components;
      
-       size(components).should.be 4
+       size(components).should.be 5
    
        components['w1'].should.not.be null
        components['w1'].kind.should.be "wire"
@@ -96,17 +96,56 @@ describe 'Circuit Constructor'
        components['r1'].resistance.should.be 500
      
        components['r2'].resistance.should.be 100
-     
-       // check unnamed component
-       var batteryExists = false;
-       $.each(components, function(i, val){
-         if (i.search(/battery.*/) > -1){
-           batteryExists = true;
-           val.voltage.should.be 9
-         }
-       });
-       batteryExists.should.be true
+       
+       components['bat'].voltage.should.be 3
      end
+  end
+  
+  describe "Adding power sources"
+  
+    it "should be able to add a battery power source"
+      var jsonCircuit = [
+        {
+           "type": "battery",
+           "UID": "source",
+           "voltage": 6
+         },
+         {
+           "type": "wire",
+           "UID": "newWire",
+           "connections": "a1,b2"
+         }
+       ];
+     
+       breadModel("createCircuit", jsonCircuit);
+       var components = getBreadBoard().components;
+     
+       components["source"].should.not.be null
+       components["source"].voltage.should.be 6
+       components["source"].connections[0].nodeName().should.be "powerPosL"
+       components['source'].connections[1].nodeName().should.be "gnd"
+    end
+    
+    it "should add a 9V battery power source if none is specified"
+      var jsonCircuit = [
+         {
+           "type": "wire",
+           "UID": "newWire",
+           "connections": "a1,b2"
+         }
+       ];
+       
+       breadModel("createCircuit", jsonCircuit);
+       var components = getBreadBoard().components;
+
+       size(components).should.be 2
+       
+       components["source"].should.not.be null
+       components["source"].voltage.should.be 9
+       components["source"].connections[0].nodeName().should.be "powerPosL"
+       components['source'].connections[1].nodeName().should.be "gnd"
+    end
+    
   end
   
   describe "Creating resistors"
@@ -131,7 +170,7 @@ describe 'Circuit Constructor'
      
        var components = getBreadBoard().components;
      
-       size(components).should.be 3
+       size(components).should.be 4
      end
    
      it 'should be able to create a resistor with random resistances'
@@ -294,9 +333,11 @@ describe 'Circuit Constructor'
     
       var resistances = [];
       for (var i in components){
-        var resistor  = components[i];
-        var resistance = resistor.nominalResistance;
-        resistances.push(resistance);
+        if (!!components[i].resistance){
+          var resistor  = components[i];
+          var resistance = resistor.nominalResistance;
+          resistances.push(resistance);
+        }
       }
     
       resistances.length.should.be 30
