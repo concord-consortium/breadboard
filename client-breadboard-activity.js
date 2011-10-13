@@ -7150,6 +7150,15 @@ sparks.createQuestionsCSV = function(data) {
 
   sparks.circuit.Battery = function (props, breadBoard) {
     sparks.circuit.Battery.parentConstructor.call(this, props, breadBoard);
+
+    if (this.voltage && this.voltage.length) {
+      if (this.voltage.length === 1) {
+        this.voltage = this.voltage[0];
+      } else {
+        var range = this.voltage[1] - this.voltage[0];
+        this.voltage = this.voltage[0] + (Math.random() * range);
+      }
+    }
   };
 
   sparks.extend(sparks.circuit.Battery, sparks.circuit.Component, {

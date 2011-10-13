@@ -62,6 +62,48 @@ describe 'Creating a breadboard'
     
     end
     
+    describe "Adding batteries"
+    
+      it "should be able to add a simple battery"
+    
+        breadModel('insertComponent', 'battery', {"UID": 'bat', "voltage": 6});
+        var board = getBreadBoard();
+        board.components.bat.should_not.be null
+        board.components.bat.voltage.should.be 6
+      end 
+      
+      it "should be able to add a battery with a range of voltages"
+    
+        breadModel('insertComponent', 'battery', {"UID": 'bat', "voltage": [8.5, 9]});
+        
+        var board = getBreadBoard();
+        board.components.bat.should_not.be null
+        board.components.bat.voltage.should.be_at_least 8.5
+        board.components.bat.voltage.should.be_at_most 9
+      end
+      
+      it "should be able to define a range of voltages, and the average voltage should be in the middle"
+    
+        // we start by adding several batteries, so that we can average their voltages
+        breadModel('insertComponent', 'battery', {"voltage": [8.5, 9]});
+        breadModel('insertComponent', 'battery', {"voltage": [8.5, 9]});
+        breadModel('insertComponent', 'battery', {"voltage": [8.5, 9]});
+        breadModel('insertComponent', 'battery', {"voltage": [8.5, 9]});
+        breadModel('insertComponent', 'battery', {"voltage": [8.5, 9]});
+        breadModel('insertComponent', 'battery', {"voltage": [8.5, 9]});
+        
+        var components = getBreadBoard().components;
+        var sum = 0;
+        $.each(components, function(i, component){
+          sum += components[i].voltage;
+        });
+        var average = sum / 6;
+        average.should.be_at_least 8.55
+        average.should.be_at_most 8.95
+      end
+    
+    end
+    
     describe "Mapping ghost holes"
     
       it 'should be able to add a component with a ghost hole'
