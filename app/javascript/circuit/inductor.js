@@ -11,6 +11,13 @@
   sparks.extend(sparks.circuit.Inductor, sparks.circuit.Component, {
     getInductance: function () {
       return this.inductance;
+    },
+    
+    toNetlist: function () {
+      var inductance = this.getInductance() || 0,
+          nodes      = this.getNodes();
+      
+      return 'L:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' L="' + inductance + ' H"';
     }
   });
 

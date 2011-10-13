@@ -197,4 +197,27 @@ describe 'Creating netlists for QUCS'
     end
     
     
+    it "should be able to add inductors"
+      var board, netlist;
+      
+      breadModel('insertComponent', 'inductor', { UID: 'L1', connections: 'a1,a2', inductance: 1.23 });
+      board = getBreadBoard();
+      netlist = sparks.circuit.qucsator.makeNetlist(board);
+      
+      console.log(netlist);
+      
+      netlist.search(/L:L1 L1 L2 L=\"1.23 H\"/).should.be_at_least 0
+    end
+    
+    
+    it "should be able to add capacitors"
+      var board, netlist;
+    
+      breadModel('insertComponent', 'capacitor', { UID: 'C1', connections: 'a1,a2', capacitance: 2.34 });
+      board = getBreadBoard();
+      netlist = sparks.circuit.qucsator.makeNetlist(board);
+    
+      netlist.search(/C:C1 L1 L2 C=\"2.34 F\"/).should.be_at_least 0
+    end
+    
 end
