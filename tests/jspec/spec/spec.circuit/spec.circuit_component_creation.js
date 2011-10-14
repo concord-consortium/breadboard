@@ -46,7 +46,7 @@ describe "Construction of individual circuit components from a JSON circuit spec
         end
                 
         it "should contain only one object"
-          size(components).should.be 1
+          size(components).should.be 2
         end
         
         describe "the component"
@@ -75,7 +75,7 @@ describe "Construction of individual circuit components from a JSON circuit spec
       end 
         
       it "should contain one object"
-        size(components).should.be 1
+        size(components).should.be 2
       end
       
       describe "the component"
