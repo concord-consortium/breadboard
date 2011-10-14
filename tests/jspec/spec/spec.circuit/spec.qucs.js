@@ -226,7 +226,8 @@ describe 'Interfacing with QUCS'
     describe 'Parsing returned QUCS results'
     
       it 'should be able to parse a single-value results with simple numbers'
-        var results = "<Qucs Dataset 0.0.15>\n"+
+        var results = 
+          "<Qucs Dataset 0.0.15>\n"+
           "<indep meter.V 1>\n"    +
           "  -9.00000000000e+00\n" +
           "</indep>\n"             +
@@ -245,14 +246,39 @@ describe 'Interfacing with QUCS'
         
         var parsed = sparks.circuit.qucsator.parse(results);
         
-        // this will be changed to parsed.meter.should.be [-9]
-        parsed.meter.should.be -9
-        parsed.source.should.be -1.03807827262e-05
-        parsed.L23.should.be 0
+        parsed.meter.V.should.eql [-9]
+        parsed.source.I.should.eql [-1.03807827262e-05]
+        parsed.L23.V.should.eql [0]
       end
       
       it 'should be able to parse a multi-value results with simple numbers'
-      
+        var results = 
+          "<Qucs Dataset 0.0.15>\n"+
+          "<indep source 3>\n"     +
+          "  +1.00000000000e+00\n" +
+          "  +5.00000000000e+00\n" +
+          "  +9.00000000000e+00\n" +
+          "</indep>\n"             +
+          "<dep meter.V V1>\n"     +
+          "  +2.00000000000e+00\n" +
+          "  +2.00000000000e+00\n" +
+          "  +2.00000000000e+00\n" +
+          "</dep>\n"               +
+          "<dep source.I V1>\n"    +
+          "  +1.00000000000e+12\n" +
+          "  +1.00000000000e+12\n" +
+          "  +1.00000000000e+12\n" +
+          "</dep>"
+        
+        var parsed = sparks.circuit.qucsator.parse(results);
+        
+        // parsed.source is an array, and parsed.source.I is also an array.
+        // a basic .eql someArray won't work for parsed.source, because it will
+        // find parsed.source.I, so we do this to extract just the array
+        var sourceArray = parsed.source.concat([]);
+        sourceArray.should.eql [1, 5, 9]
+        parsed.meter.V.should.eql [2, 2, 2]
+        parsed.source.I.should.eql [1e12, 1e12, 1e12]
       end
       
       it 'should be able to parse a multi-value results with complex numbers'

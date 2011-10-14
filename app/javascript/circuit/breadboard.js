@@ -4,6 +4,8 @@
 
 /* FILE breadboard.js */
 
+/*globals console sparks $ breadBoard window*/
+
 (function () {
     
     var q = sparks.circuit.qucsator;
@@ -444,10 +446,13 @@
             tempComponents.push(probe);
           }
 
-          var result;
+          var meterResultType = (type === 'voltage') ? 'V' : 'I',
+              netlist = q.makeNetlist(breadBoard),
+              result;
           
-          q.qucsate(q.makeNetlist(breadBoard),
-                  function (r) { result = r.meter; } );
+          q.qucsate(netlist, function (results) { 
+            result = results.meter[meterResultType];
+          } );
 
           console.log('result=' + result);
           

@@ -43,21 +43,58 @@
       callback(results);
     });
   };
-
+  
+  // This will take the string returned by QUCS and turn in into an object representing the data
+  // Each data heading from QUCS, such as source.I, will turn into a (potantially nested) key on
+  // the results object, and the value will be an array of the values.
+  // Keys may be nested. If a heading is source.I, the array of data will be found at results.source.I.
+  // Note that results.source and results.source.I may both be arrays of values.
   q.parse = function(data) {
     var results = {};
-    // for jsonp we simply put the whole string into the 'result' property of the json object
-    if ( data.result ) { data = data.result; }
-
-    var chunks = data.split("\n");
-    chunks = inGroupsOf(chunks.slice(1, chunks.length - 1), 3);
-    for (var i in chunks) {
-      var key = /<indep (.+)\./.exec(chunks[i][0]);
-      key = key && key[1];
-      if(key) {
-        results[key] = parseFloat(chunks[i][1]);
-      }
+    
+    // the data may(?) come back as a json object under the key 'result'
+    if ( data.result ) { 
+      data = data.result; 
     }
+    
+    // split the data into an array. It will now look something like
+    // ["<Qucs Dataset 0.0.15>", "<indep source 2>", "  +1.00000000e+00", "  +5.00000000e+00", "  +9.00000000e+00",
+    //   "</indep>", "<dep meter.V V1>", "  +2.00000000e+00", "  +2.00000000e+00", "</dep>"]
+    data = data.split("\n");
+    
+    // iterate through the array of data. If we come across a data heading (<indep...> or <dep...>), create a new
+    // key on our results hash. Data under a heading such as "source" will be at results.source, data under a heading
+    // such as source.I will be at results.source.I
+    // For each value, push that into an array at the current key.
+    
+    var currentArray = null;
+    for (var i = 0, ii = data.length; i < ii; i++) { 
+      var line = data[i],
+          key,
+          dataHeading = /<i?n?dep (.+) /.exec(line); 
+          
+      if (dataHeading && dataHeading.length) {
+        key = dataHeading[1];
+         
+        if (key.indexOf('.') > 0) { 
+          var splitKey = key.split('.'); 
+          if (!results[splitKey[0]]) {
+            results[splitKey[0]] = [];
+          } 
+          currentArray = results[splitKey[0]][splitKey[1]] = [];
+        } else {
+          currentArray = results[key] = [];
+        } 
+        
+      } else if (!!currentArray) {
+        val = parseFloat(line);       // TODO: need to check for complex as well
+        if (!isNaN(val)) {
+          currentArray.push(val);
+        }
+      } 
+    }
+    
+
     return results;
   };
 

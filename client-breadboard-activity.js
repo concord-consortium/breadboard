@@ -5357,17 +5357,42 @@ sparks.createQuestionsCSV = function(data) {
 
   q.parse = function(data) {
     var results = {};
-    if ( data.result ) { data = data.result; }
 
-    var chunks = data.split("\n");
-    chunks = inGroupsOf(chunks.slice(1, chunks.length - 1), 3);
-    for (var i in chunks) {
-      var key = /<indep (.+)\./.exec(chunks[i][0]);
-      key = key && key[1];
-      if(key) {
-        results[key] = parseFloat(chunks[i][1]);
+    if ( data.result ) {
+      data = data.result;
+    }
+
+    data = data.split("\n");
+
+
+    var currentArray = null;
+    for (var i = 0, ii = data.length; i < ii; i++) {
+      var line = data[i],
+          key,
+          dataHeading = /<i?n?dep (.+) /.exec(line);
+
+      if (dataHeading && dataHeading.length) {
+        key = dataHeading[1];
+
+        if (key.indexOf('.') > 0) {
+          var splitKey = key.split('.');
+          if (!results[splitKey[0]]) {
+            results[splitKey[0]] = [];
+          }
+          currentArray = results[splitKey[0]][splitKey[1]] = [];
+        } else {
+          currentArray = results[key] = [];
+        }
+
+      } else if (!!currentArray) {
+        val = parseFloat(line);       // need to check for complex as well
+        if (!isNaN(val)) {
+          currentArray.push(val);
+        }
       }
     }
+
+
     return results;
   };
 
@@ -5734,6 +5759,8 @@ sparks.createQuestionsCSV = function(data) {
 })();
 
 /* FILE breadboard.js */
+
+/*globals console sparks $ breadBoard window*/
 
 (function () {
 
@@ -6131,10 +6158,13 @@ sparks.createQuestionsCSV = function(data) {
             tempComponents.push(probe);
           }
 
-          var result;
+          var meterResultType = (type === 'voltage') ? 'V' : 'I',
+              netlist = q.makeNetlist(breadBoard),
+              result;
 
-          q.qucsate(q.makeNetlist(breadBoard),
-                  function (r) { result = r.meter; } );
+          q.qucsate(netlist, function (results) {
+            result = results.meter[meterResultType];
+          } );
 
           console.log('result=' + result);
 
