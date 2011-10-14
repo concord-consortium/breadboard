@@ -38,13 +38,12 @@
     toNetlist: function () {
       var amplitude = this.amplitude || 0,
           nodes     = this.getNodes();
-      
       return 'Vac:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' U="' + amplitude + ' V" f="' + this.frequency + '" Phase="0" Theta="0"';
     },
     
     defaultFrequencySteps: 100,
     
-    getNetlistSimulationLine: function () {  
+    getQucsSimulationType: function () {  
       var type, nSteps, ret;
       
       if (this.frequencies && (this.frequencies[0] === 'linear' || this.frequencies[0] === 'logarithmic')) {

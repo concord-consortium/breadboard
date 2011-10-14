@@ -5340,7 +5340,7 @@ sparks.createQuestionsCSV = function(data) {
         async: false,
         url: sparks.config.qucsate_server_url,
         data: data,
-        success: q.parser(callback),
+        success: q.success(callback),
         error: function (request, status, error) {
                   debug('ERROR: url=' + sparks.config.qucsate_server_url + '\nstatus=' + status + '\nerror=' + error);
               }
@@ -5348,23 +5348,27 @@ sparks.createQuestionsCSV = function(data) {
   };
 
 
-  q.parser = function(callback) {
+  q.success = function(callback) {
     return(function(data) {
-      var results = {};
-
-      if ( data.result ) { data = data.result; }
-
-      var chunks = data.split("\n");
-      chunks = inGroupsOf(chunks.slice(1, chunks.length - 1), 3);
-      for (var i in chunks) {
-        var key = /<indep (.+)\./.exec(chunks[i][0]);
-        key = key && key[1];
-        if(key) {
-          results[key] = parseFloat(chunks[i][1]);
-        }
-      }
+      var results = q.parse(data);
       callback(results);
     });
+  };
+
+  q.parse = function(data) {
+    var results = {};
+    if ( data.result ) { data = data.result; }
+
+    var chunks = data.split("\n");
+    chunks = inGroupsOf(chunks.slice(1, chunks.length - 1), 3);
+    for (var i in chunks) {
+      var key = /<indep (.+)\./.exec(chunks[i][0]);
+      key = key && key[1];
+      if(key) {
+        results[key] = parseFloat(chunks[i][1]);
+      }
+    }
+    return results;
   };
 
   q.makeNetlist = function(board) {
@@ -7217,13 +7221,12 @@ sparks.createQuestionsCSV = function(data) {
     toNetlist: function () {
       var amplitude = this.amplitude || 0,
           nodes     = this.getNodes();
-
       return 'Vac:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' U="' + amplitude + ' V" f="' + this.frequency + '" Phase="0" Theta="0"';
     },
 
     defaultFrequencySteps: 100,
 
-    getNetlistSimulationLine: function () {
+    getQucsSimulationType: function () {
       var type, nSteps, ret;
 
       if (this.frequencies && (this.frequencies[0] === 'linear' || this.frequencies[0] === 'logarithmic')) {

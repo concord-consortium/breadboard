@@ -25,7 +25,7 @@
         async: false,
         url: sparks.config.qucsate_server_url,
         data: data,
-        success: q.parser(callback),
+        success: q.success(callback),
         error: function (request, status, error) {
                   debug('ERROR: url=' + sparks.config.qucsate_server_url + '\nstatus=' + status + '\nerror=' + error);
               }
@@ -36,26 +36,29 @@
   // Generate a parser, which is a function that parses the qucs data format
   // and passes the data to the callback
   //
-
-  q.parser = function(callback) {
+  
+  q.success = function(callback) {
     return(function(data) {
-      var results = {};
-
-      // for jsonp we simply put the whole string into the 'result' property of the json object
-      if ( data.result ) { data = data.result; }
-
-      var chunks = data.split("\n");
-      chunks = inGroupsOf(chunks.slice(1, chunks.length - 1), 3);
-      for (var i in chunks) {
-        var key = /<indep (.+)\./.exec(chunks[i][0]);
-        key = key && key[1];
-        if(key) {
-          results[key] = parseFloat(chunks[i][1]);
-        }
-      }
-      // console.log('qucsate.parser results=' + JSON.stringify(results));
+      var results = q.parse(data);
       callback(results);
     });
+  };
+
+  q.parse = function(data) {
+    var results = {};
+    // for jsonp we simply put the whole string into the 'result' property of the json object
+    if ( data.result ) { data = data.result; }
+
+    var chunks = data.split("\n");
+    chunks = inGroupsOf(chunks.slice(1, chunks.length - 1), 3);
+    for (var i in chunks) {
+      var key = /<indep (.+)\./.exec(chunks[i][0]);
+      key = key && key[1];
+      if(key) {
+        results[key] = parseFloat(chunks[i][1]);
+      }
+    }
+    return results;
   };
 
   //

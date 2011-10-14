@@ -220,4 +220,42 @@ describe 'Creating netlists for QUCS'
       netlist.search(/C:C1 L1 L2 C=\"2.34 F\"/).should.be_at_least 0
     end
     
+    describe 'Parsing returned QUCS results'
+    
+      it 'should be able to parse a single-value results with simple numbers'
+        var results = "<Qucs Dataset 0.0.15>\n"+
+          "<indep meter.V 1>\n"    +
+          "  -9.00000000000e+00\n" +
+          "</indep>\n"             +
+          "<indep source.I 1>\n"   +
+          "  -1.03807827262e-05\n" +
+          "</indep>\n"             +
+          "<indep L23.V 1>\n"      +
+          "  +0.00000000000e+00\n" +
+          "</indep>\n"             +
+          "<indep L17.V 1>\n"      +
+          "  +9.00000000000e+00\n" +
+          "</indep>\n"             +
+          "<indep powerPosL.V 1>\n"+
+          "  +9.00000000000e+00\n" +
+          "</indep>";
+        
+        var parsed = sparks.circuit.qucsator.parse(results);
+        
+        // this will be changed to parsed.meter.should.be [-9]
+        parsed.meter.should.be -9
+        parsed.source.should.be -1.03807827262e-05
+        parsed.L23.should.be 0
+      end
+      
+      it 'should be able to parse a multi-value results with simple numbers'
+      
+      end
+      
+      it 'should be able to parse a multi-value results with complex numbers'
+      
+      end
+      
+    end
+    
 end
