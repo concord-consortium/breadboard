@@ -20,6 +20,7 @@ specResults = JSpec
 .exec('spec/spec.common/spec.util.js')
 .exec('spec/spec.common/spec.units.js')
 .exec('spec/spec.common/spec.math.js')
+.exec('spec/spec.common/spec.complex_number.js')
 
 .exec('spec/spec.circuit/spec.resistor_colors.js')
 .exec('spec/spec.circuit/spec.breadboard.js')
