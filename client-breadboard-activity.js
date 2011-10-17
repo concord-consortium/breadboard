@@ -5385,6 +5385,7 @@ sparks.createQuestionsCSV = function(data) {
           if (!results[splitKey[0]]) {
             results[splitKey[0]] = [];
           }
+          splitKey[1] = splitKey[1].toLowerCase();      // qucs returns diff cases if in AC or DC mode. We don't want that
           currentArray = results[splitKey[0]][splitKey[1]] = [];
         } else {
           currentArray = results[key] = [];
@@ -6679,22 +6680,29 @@ sparks.createQuestionsCSV = function(data) {
                 }
 
                 if (!!measurement){
+                  console.log("MEASUREMENT!!!")
                   var resultsBlob = this.makeMeasurement(measurement),
-                      meterKey = (measurement === 'voltage') ? 'V' : 'I',
-                      result = resultsBlob.meter[meterKey][0];
+                      meterKey = (measurement === 'voltage') ? 'v' : 'i';
 
-                  result = Math.abs(result);
-                  if (measurement === 'resistance') {
-                    result = 1 / result;
-                  }
-                  result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
-
-                  this.absoluteValue = result;
-
-                  if (measurement === "current"){
-                    if (this.absoluteValue > 0.44){
-                      this.blowFuse();
+                  if (!!meterKey && !!resultsBlob.meter[meterKey]){
+                    var result = resultsBlob.meter[meterKey][0];
+                    console.log("result = "+result)
+                    result = Math.abs(result);
+                    if (measurement === 'resistance') {
+                      result = 1 / result;
                     }
+                    result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
+
+                    this.absoluteValue = result;
+
+                    if (measurement === "current"){
+                      if (this.absoluteValue > 0.44){
+                        this.blowFuse();
+                      }
+                    }
+                  } else {
+                    console.log("phew, nothing for me to do");
+                    this.absoluteValue = 0;
                   }
                 }
             }

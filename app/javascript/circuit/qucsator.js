@@ -81,6 +81,7 @@
           if (!results[splitKey[0]]) {
             results[splitKey[0]] = [];
           } 
+          splitKey[1] = splitKey[1].toLowerCase();      // qucs returns diff cases if in AC or DC mode. We don't want that
           currentArray = results[splitKey[0]][splitKey[1]] = [];
         } else {
           currentArray = results[key] = [];

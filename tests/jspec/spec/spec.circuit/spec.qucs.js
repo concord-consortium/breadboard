@@ -246,9 +246,9 @@ describe 'Interfacing with QUCS'
         
         var parsed = sparks.circuit.qucsator.parse(results);
         
-        parsed.meter.V.should.eql [-9]
-        parsed.source.I.should.eql [-1.03807827262e-05]
-        parsed.L23.V.should.eql [0]
+        parsed.meter.v.should.eql [-9]
+        parsed.source.i.should.eql [-1.03807827262e-05]
+        parsed.L23.v.should.eql [0]
       end
       
       it 'should be able to parse a multi-value results with simple numbers'
@@ -277,8 +277,8 @@ describe 'Interfacing with QUCS'
         // find parsed.source.I, so we do this to extract just the array
         var sourceArray = parsed.source.concat([]);
         sourceArray.should.eql [1, 5, 9]
-        parsed.meter.V.should.eql [2, 2, 2]
-        parsed.source.I.should.eql [1e12, 1e12, 1e12]
+        parsed.meter.v.should.eql [2, 2, 2]
+        parsed.source.i.should.eql [1e12, 1e12, 1e12]
       end
       
       it 'should be able to parse a multi-value results with complex numbers'
