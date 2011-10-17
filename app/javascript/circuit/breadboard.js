@@ -404,19 +404,17 @@
           interfaces.insert('resistor', location, resistor.getRealValue(), name, resistor.colors);
           return resistor;
         },
+        
+        // this method will modify the breadboard as necessary to create additional temporary components
+        // that correspond to the measurement-type's circuit changes (e.g. large resistor for a voltmeter),
+        // and then simply call qucsator.qucsate, and return the resulting results object.
+        // NB: This function used to return the final value required by the DMM. It no longer does so, as
+        // it does not assume a DMM is doing the requesting, and instead returns the entire results object.
         query: function(type, connections){
-          // Current dummy function will pass query to model
-          // Model will then compile SPICE net list and send to server
-          // Server will respond with voltage at queried points
-          // Power and MultiMeter settings will be assumed
-
-          //debug( breadBoard.query( arguments[1].split(',') ) );
-          
-          // console.log("at time of measuring, netlist = ");
-          // console.log(q.makeNetlist(breadBoard));
           
           var tempComponents = [];
           
+          // add DMM components as necessary
           if (type === 'resistance') {
             connections = connections.split(',');
             var ghost = new GhostHole();
@@ -428,7 +426,7 @@
             var currentProbe = breadBoard.component({
               UID: 'meter', 
               kind: 'iprobe',
-              connections: [ghost, connections[1]]});
+              connections: [connections[1], ghost]});
             tempComponents.push(ohmmeterBattery, currentProbe);
           } else {
             if (type === 'voltage'){
@@ -445,30 +443,21 @@
               connections: connections.split(',')});
             tempComponents.push(probe);
           }
-
-          var meterResultType = (type === 'voltage') ? 'V' : 'I',
-              netlist = q.makeNetlist(breadBoard),
-              result;
           
-          q.qucsate(netlist, function (results) { 
-            result = results.meter[meterResultType];
+          // get the result from qucsator
+          var netlist = q.makeNetlist(breadBoard),
+              resultObject;
+          
+          q.qucsate(netlist, function (results) {
+            resultObject = results;
           } );
-
-          console.log('result=' + result);
           
+          // destroy the temporary DMM components
           $.each(tempComponents, function(i, component){
             component.destroy();
           });
-
-          if (type === 'resistance') {
-            result = (1 / result);
-          }
-          result = -1 * result;
           
-          // round to 8 decimal places
-          result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
-          //document.getElementById('dmm-output').innerHTML = "Meter Reading: " + result;
-          return  result;
+          return  resultObject;
         },
         updateFlash: function() {
           $.each(breadBoard.components, function(i, component) {

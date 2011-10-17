@@ -25,7 +25,6 @@
     sparks.extend(circuit.Multimeter2, circuit.MultimeterBase, {
             
         update: function () {
-
             if (this.redProbeConnection && this.blackProbeConnection) {
                 var measurement = null;
                 if (this.dialPosition.indexOf('dcv_') > -1){
@@ -39,7 +38,18 @@
                 }
                 
                 if (!!measurement){
-                  this.absoluteValue = this.makeMeasurement(measurement);
+                  var resultsBlob = this.makeMeasurement(measurement),
+                      meterKey = (measurement === 'voltage') ? 'V' : 'I',
+                      result = resultsBlob.meter[meterKey][0];
+                  
+                  // process the absolute value
+                  result = Math.abs(result);
+                  if (measurement === 'resistance') {
+                    result = 1 / result;
+                  }
+                  result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
+                      
+                  this.absoluteValue = result;
                   
                   if (measurement === "current"){
                     if (this.absoluteValue > 0.44){
@@ -65,7 +75,7 @@
         },
         
         makeMeasurement: function(measurementType) {
-            var measurement = Math.abs(breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection));
+            var measurement = breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection);
             return measurement;
         },
         

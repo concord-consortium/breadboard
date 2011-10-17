@@ -232,47 +232,48 @@ describe 'Measuring breadboard components'
     
         // we add a 100 ohm resistor
         breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
-        var result = breadModel('query', 'resistance', 'a1,a2')
-        result.should.be 100
+        var result = breadModel('query', 'resistance', 'a1,a2');
+        // the first value of the current (I) value of the meter
+        result.meter.I[0].should.be 1/100
       
         // we add another 100 ohm resistor in series
         breadModel('insertComponent', 'resistor', {"connections": 'b2,b3', "colors": 'brown,black,brown,gold'});
         var result = breadModel('query', 'resistance', 'a1,a3')
-        result.should.be 200
+        result.meter.I[0].should.be 1/200
       
         // we add a 300 ohm resistor in series, but only measure between 2 and 3
         breadModel('insertComponent', 'resistor', {"connections": 'c3,c4', "colors": 'orange,black,brown,gold'});
         var result = breadModel('query', 'resistance', 'a2,d4')
-        result.should.be 400
+        result.meter.I[0].should.be 1/400
       
         // we add a 500 ohm resistor in parallel to everything
         // ____100___100___300____
         //   \_____500________/
         breadModel('insertComponent', 'resistor', {"connections": 'd1,d4', "colors": 'green,black,brown,gold'});
         var result = breadModel('query', 'resistance', 'a1,d4')
-        result.should.be 250
+        result.meter.I[0].should.be 1/250
       end
     
       it "should correctly measure voltage with an added battery"
       
         // we add a 100 ohm resistor and a 5V battery
         breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
-        breadModel('insertComponent', 'battery', {"connections": 'a2,a1', "voltage": 5});
+        breadModel('insertComponent', 'battery', {"connections": 'a1,a2', "voltage": 5});
       
         var result = breadModel('query', 'voltage', 'a1,a2')
-        result.should.be 5
+        result.meter.V[0].should.be 5
       
         breadModel('clear');
       
         // we add a 100 ohm resistor and 400 ohm resistor and a 5V battery
         breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
         breadModel('insertComponent', 'resistor', {"connections": 'a2,a3', "colors": 'yellow,black,brown,gold'});
-        breadModel('insertComponent', 'battery', {"connections": 'a3,a1', "voltage": 5});
+        breadModel('insertComponent', 'battery', {"connections": 'a1,a3', "voltage": 5});
       
         var result = breadModel('query', 'voltage', 'a1,a2')
-        result.should.be 1
+        Math.round(result.meter.V[0]).should.be 1
         var result = breadModel('query', 'voltage', 'a2,a3')
-        result.should.be 4
+        Math.round(result.meter.V[0]).should.be 4
       end
       
       it "should correctly measure voltage with the default (unauthored) battery"
@@ -300,10 +301,10 @@ describe 'Measuring breadboard components'
 
         breadModel("createCircuit", jsonCircuit);
         
-        var result = breadModel('query', 'voltage', 'a2,a1')
-        result.should.be 3
-        var result = breadModel('query', 'voltage', 'a3,a2')
-        result.should.be 6
+        var result = breadModel('query', 'voltage', 'a1,a2')
+        Math.round(result.meter.V[0]).should.be 3
+        var result = breadModel('query', 'voltage', 'a2,a3')
+        Math.round(result.meter.V[0]).should.be 6
       end
     
       // previously, this circuit would show a positive voltage in the voltmeter, because
@@ -321,7 +322,7 @@ describe 'Measuring breadboard components'
         breadModel('insertComponent', 'battery', {"connections": 'a2,a1', "voltage": 9});
       
         var result = breadModel('query', 'voltage', 'a1,a3')
-        result.should.be_less_than 1e-4
+        result.meter.V[0].should.be_less_than 1e-4
       end
     
     
@@ -329,9 +330,9 @@ describe 'Measuring breadboard components'
       
         // we add a 100 ohm resistor and a 5V battery
         breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
-        breadModel('insertComponent', 'battery', {"connections": 'a3,a1', "voltage": 5});
+        breadModel('insertComponent', 'battery', {"connections": 'a1,a3', "voltage": 5});
         var result = breadModel('query', 'current', 'a2,a3');
-        result.should.be (5 / 100)
+        result.meter.I[0].should.be (5 / 100)
       end
     
     end

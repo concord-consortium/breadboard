@@ -6129,9 +6129,8 @@ sparks.createQuestionsCSV = function(data) {
           interfaces.insert('resistor', location, resistor.getRealValue(), name, resistor.colors);
           return resistor;
         },
+
         query: function(type, connections){
-
-
 
           var tempComponents = [];
 
@@ -6146,7 +6145,7 @@ sparks.createQuestionsCSV = function(data) {
             var currentProbe = breadBoard.component({
               UID: 'meter',
               kind: 'iprobe',
-              connections: [ghost, connections[1]]});
+              connections: [connections[1], ghost]});
             tempComponents.push(ohmmeterBattery, currentProbe);
           } else {
             if (type === 'voltage'){
@@ -6164,27 +6163,18 @@ sparks.createQuestionsCSV = function(data) {
             tempComponents.push(probe);
           }
 
-          var meterResultType = (type === 'voltage') ? 'V' : 'I',
-              netlist = q.makeNetlist(breadBoard),
-              result;
+          var netlist = q.makeNetlist(breadBoard),
+              resultObject;
 
           q.qucsate(netlist, function (results) {
-            result = results.meter[meterResultType];
+            resultObject = results;
           } );
-
-          console.log('result=' + result);
 
           $.each(tempComponents, function(i, component){
             component.destroy();
           });
 
-          if (type === 'resistance') {
-            result = (1 / result);
-          }
-          result = -1 * result;
-
-          result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
-          return  result;
+          return  resultObject;
         },
         updateFlash: function() {
           $.each(breadBoard.components, function(i, component) {
@@ -6676,7 +6666,6 @@ sparks.createQuestionsCSV = function(data) {
     sparks.extend(circuit.Multimeter2, circuit.MultimeterBase, {
 
         update: function () {
-
             if (this.redProbeConnection && this.blackProbeConnection) {
                 var measurement = null;
                 if (this.dialPosition.indexOf('dcv_') > -1){
@@ -6690,7 +6679,17 @@ sparks.createQuestionsCSV = function(data) {
                 }
 
                 if (!!measurement){
-                  this.absoluteValue = this.makeMeasurement(measurement);
+                  var resultsBlob = this.makeMeasurement(measurement),
+                      meterKey = (measurement === 'voltage') ? 'V' : 'I',
+                      result = resultsBlob.meter[meterKey][0];
+
+                  result = Math.abs(result);
+                  if (measurement === 'resistance') {
+                    result = 1 / result;
+                  }
+                  result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
+
+                  this.absoluteValue = result;
 
                   if (measurement === "current"){
                     if (this.absoluteValue > 0.44){
@@ -6716,7 +6715,7 @@ sparks.createQuestionsCSV = function(data) {
         },
 
         makeMeasurement: function(measurementType) {
-            var measurement = Math.abs(breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection));
+            var measurement = breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection);
             return measurement;
         },
 
