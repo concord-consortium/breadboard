@@ -5316,7 +5316,49 @@ sparks.createQuestionsCSV = function(data) {
   }
 
 })();
+/* FILE complex_number.js */
+/*globals sparks */
+
+(function () {
+
+    sparks.ComplexNumber = function (real, i) {
+      this.real = real || 0;
+      this.i = i || 0;
+    };
+
+    sparks.ComplexNumber.parse = function (str) {
+      if (!str) {
+        return null;
+      }
+
+      var cn = new sparks.ComplexNumber();
+
+      var parts = /(.*)([+,\-]j.*)/.exec(str),            // try to tranform 'str' into [str, real, imaginary]
+          real,
+          imaginary;
+      if (parts && parts.length === 3){
+        real = parseFloat(parts[1]);
+        imaginary = parseFloat(parts[2].replace("j", ""));    // imag. is of form (+/-)j123. We remove the j, but keep the +/-
+      } else {
+        real = parseFloat(str);
+      }
+
+      if (!isNaN(real)) {
+        cn.real = real;
+      } else {
+        return null;        // if we couldn't parse a real part, don't return anything
+      }
+
+      if (!isNaN(imaginary)) {
+        cn.i = imaginary;
+      }
+
+      return cn;
+    };
+
+})();
 /* FILE qucsator.js */
+/*globals console sparks $ breadModel getBreadBoard debug*/
 
 (function () {
 
@@ -5325,7 +5367,7 @@ sparks.createQuestionsCSV = function(data) {
 
   var inGroupsOf = function (ary, n) {
     var grouped = [];
-    for(i in ary) {
+    for(var i in ary) {
       if (!grouped[Math.floor(i / 3)]) { grouped[Math.floor(i / 3)] = []; }
       grouped[Math.floor(i / 3)][i % 3] = ary[i];
     }
@@ -5392,8 +5434,8 @@ sparks.createQuestionsCSV = function(data) {
         }
 
       } else if (!!currentArray) {
-        val = parseFloat(line);       // TODO: need to check for complex as well
-        if (!isNaN(val)) {
+        var val = sparks.ComplexNumber.parse(line);     // Sparks values are always CNs -- in a DC circuit, the i is just ommitted
+        if (!!val) {
           currentArray.push(val);
         }
       }
@@ -5423,7 +5465,7 @@ sparks.createQuestionsCSV = function(data) {
         line = component.toNetlist();
       } else {
 
-        nodes = component.getNodes();
+        var nodes = component.getNodes();
 
         switch (component.kind) {
           case "vprobe":
@@ -5440,8 +5482,8 @@ sparks.createQuestionsCSV = function(data) {
       netlist += "\n" + line;
     });
 
-    if (components["source"] && components["source"].getQucsSimulationType) {
-      netlist += "\n" + components["source"].getQucsSimulationType();
+    if (components.source && components.source.getQucsSimulationType) {
+      netlist += "\n" + components.source.getQucsSimulationType();
     } else {
       netlist += "\n" + sparks.circuit.Battery.prototype.getQucsSimulationType();
     }
@@ -6134,10 +6176,9 @@ sparks.createQuestionsCSV = function(data) {
         },
 
         query: function(type, connections){
-
           var tempComponents = [];
 
-          if (type === 'resistance') {
+          if (!!type && type === 'resistance') {
             connections = connections.split(',');
             var ghost = new GhostHole();
             var ohmmeterBattery = breadBoard.component({
@@ -6150,7 +6191,7 @@ sparks.createQuestionsCSV = function(data) {
               kind: 'iprobe',
               connections: [connections[1], ghost]});
             tempComponents.push(ohmmeterBattery, currentProbe);
-          } else {
+          } else if (!!type) {
             if (type === 'voltage'){
               var voltmeterResistor = breadBoard.component({
                 UID: 'voltmeterResistor',
@@ -6198,7 +6239,7 @@ sparks.createQuestionsCSV = function(data) {
         }
         var func = arguments[0];
 
-        if (func === 'query') {
+        if (func === 'query' && !!arguments[2]) {
             var conns = arguments[2].split(',');
 
             if (conns[0] === 'null' || conns[1] === 'null') {
@@ -6707,6 +6748,8 @@ sparks.createQuestionsCSV = function(data) {
 
                   if (!!meterKey && !!resultsBlob.meter[meterKey]){
                     var result = resultsBlob.meter[meterKey][0];
+
+                    result = result.real;
 
                     result = Math.abs(result);
                     var source = getBreadBoard().components.source;
