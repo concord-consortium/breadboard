@@ -322,7 +322,7 @@ describe 'Measuring breadboard components'
         breadModel('insertComponent', 'battery', {"connections": 'a2,a1', "voltage": 9});
       
         var result = breadModel('query', 'voltage', 'a1,a3')
-        result.meter.v[0].should.be_less_than 1e-4
+        Math.abs(result.meter.v[0]).should.be_less_than 1e-4
       end
     
     
@@ -339,22 +339,10 @@ describe 'Measuring breadboard components'
       
         // we add a 100 ohm resistor and a 5V battery
         breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
-        breadModel('insertComponent', 'function generator', {"connections": 'a2,a1', "amplitude": 5, "frequency": [1000]});
+        breadModel('insertComponent', 'function generator', {"UID": "source", "connections": 'a2,a1', "amplitude": 5, "frequencies": [1000]});
       
-        var result = breadModel('query', 'ac_voltage', 'a1,a2')
-        result.meter.v[0].should.be (5/Math.sqrt(2))
-      
-        breadModel('clear');
-      
-        // // we add a 100 ohm resistor and 400 ohm resistor and a 5V battery
-        // breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
-        // breadModel('insertComponent', 'resistor', {"connections": 'a2,a3', "colors": 'yellow,black,brown,gold'});
-        // breadModel('insertComponent', 'battery', {"connections": 'a3,a1', "voltage": 5});
-        //       
-        // var result = breadModel('query', 'voltage', 'a1,a2')
-        // result.should.be 1
-        // var result = breadModel('query', 'voltage', 'a2,a3')
-        // result.should.be 4
+        var result = breadModel('query', 'ac_voltage', 'a1,a2');
+        Math.abs(result.meter.v[0]).should.be 5
       end
     
     end

@@ -39,7 +39,7 @@
                 
                 if (!!measurement){
                   var resultsBlob = this.makeMeasurement(measurement),
-                      meterKey = (measurement === 'voltage') ? 'v' : 'i';
+                      meterKey = (measurement === 'voltage' || measurement === 'ac_voltage') ? 'v' : 'i';
                   
                   if (!!meterKey && !!resultsBlob.meter[meterKey]){
                     var result = resultsBlob.meter[meterKey][0];
@@ -47,6 +47,8 @@
                     result = Math.abs(result);
                     if (measurement === 'resistance') {
                       result = 1 / result;
+                    } else if (measurement === "ac_voltage"){
+                      result = result / Math.sqrt(2);
                     }
                     result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
                       

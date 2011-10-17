@@ -6065,7 +6065,9 @@ sparks.createQuestionsCSV = function(data) {
         insert: function(type, connections){
           console.log("ERROR: 'insert' is deprecated. Use 'insertComponent'");
         },
-        getUID: function(name){
+        getUID: function(_name){
+          var name = _name.replace(/ /g, "_");      // no spaces in qucs
+
           if (!breadBoard.components[name]){
             return name;
           }
@@ -6159,7 +6161,7 @@ sparks.createQuestionsCSV = function(data) {
             }
             var probe = breadBoard.component({
               UID: 'meter',
-              kind: {'current' : 'iprobe', 'voltage' : 'vprobe'}[type],
+              kind: {'current' : 'iprobe', 'voltage' : 'vprobe', 'ac_voltage' : 'vprobe'}[type],
               connections: connections.split(',')});
             tempComponents.push(probe);
           }
@@ -6272,7 +6274,7 @@ sparks.createQuestionsCSV = function(data) {
                     }
 
                 } else if (this.dialPosition === 'dcv_200') {
-                     if (this.absoluteValue < 199.95) {
+                    if (this.absoluteValue < 199.95) {
                         text = (Math.round(this.absoluteValue * 10) * 0.1).toString();
                         text = this.toDisplayString(text, 1);
                     }
@@ -6284,6 +6286,7 @@ sparks.createQuestionsCSV = function(data) {
                      if (this.absoluteValue < 999.95) {
                         text = Math.round(this.absoluteValue).toString();
                         text = this.toDisplayString(text, 0);
+                        text = "h" + text.substring(1);
                     }
                     else {
                         text = 'h1 .   ';
@@ -6307,6 +6310,25 @@ sparks.createQuestionsCSV = function(data) {
                     }
                     else {
                         text = ' 1 .   ';
+                    }
+
+                } else if (this.dialPosition === 'acv_200') {
+                    if (this.absoluteValue < 199.95) {
+                        text = (Math.round(this.absoluteValue * 10) * 0.1).toString();
+                        text = this.toDisplayString(text, 1);
+                    }
+                    else {
+                        text = ' 1 .   ';
+                    }
+
+                } else if (this.dialPosition === 'acv_750') {
+                    if (this.absoluteValue < 699.5) {
+                        text = (Math.round(this.absoluteValue)).toString();
+                        text = this.toDisplayString(text, 0);
+                        text = "h"+text.substring(1);
+                    }
+                    else {
+                        text = 'h1 .   ';
                     }
 
                 } else if (this.dialPosition === 'r_200') {
@@ -6680,16 +6702,16 @@ sparks.createQuestionsCSV = function(data) {
                 }
 
                 if (!!measurement){
-                  console.log("MEASUREMENT!!!")
                   var resultsBlob = this.makeMeasurement(measurement),
-                      meterKey = (measurement === 'voltage') ? 'v' : 'i';
+                      meterKey = (measurement === 'voltage' || measurement === 'ac_voltage') ? 'v' : 'i';
 
                   if (!!meterKey && !!resultsBlob.meter[meterKey]){
                     var result = resultsBlob.meter[meterKey][0];
-                    console.log("result = "+result)
                     result = Math.abs(result);
                     if (measurement === 'resistance') {
                       result = 1 / result;
+                    } else if (measurement === "ac_voltage"){
+                      result = result / Math.sqrt(2);
                     }
                     result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
 
@@ -6701,7 +6723,6 @@ sparks.createQuestionsCSV = function(data) {
                       }
                     }
                   } else {
-                    console.log("phew, nothing for me to do");
                     this.absoluteValue = 0;
                   }
                 }

@@ -441,7 +441,7 @@
             }
             var probe = breadBoard.component({
               UID: 'meter',
-              kind: {'current' : 'iprobe', 'voltage' : 'vprobe'}[type],
+              kind: {'current' : 'iprobe', 'voltage' : 'vprobe', 'ac_voltage' : 'vprobe'}[type],
               connections: connections.split(',')});
             tempComponents.push(probe);
           }

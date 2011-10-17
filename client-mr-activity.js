@@ -2853,7 +2853,7 @@ sparks.createQuestionsCSV = function(data) {
                     }
 
                 } else if (this.dialPosition === 'dcv_200') {
-                     if (this.absoluteValue < 199.95) {
+                    if (this.absoluteValue < 199.95) {
                         text = (Math.round(this.absoluteValue * 10) * 0.1).toString();
                         text = this.toDisplayString(text, 1);
                     }
@@ -2865,6 +2865,7 @@ sparks.createQuestionsCSV = function(data) {
                      if (this.absoluteValue < 999.95) {
                         text = Math.round(this.absoluteValue).toString();
                         text = this.toDisplayString(text, 0);
+                        text = "h" + text.substring(1);
                     }
                     else {
                         text = 'h1 .   ';
@@ -2888,6 +2889,25 @@ sparks.createQuestionsCSV = function(data) {
                     }
                     else {
                         text = ' 1 .   ';
+                    }
+
+                } else if (this.dialPosition === 'acv_200') {
+                    if (this.absoluteValue < 199.95) {
+                        text = (Math.round(this.absoluteValue * 10) * 0.1).toString();
+                        text = this.toDisplayString(text, 1);
+                    }
+                    else {
+                        text = ' 1 .   ';
+                    }
+
+                } else if (this.dialPosition === 'acv_750') {
+                    if (this.absoluteValue < 699.5) {
+                        text = (Math.round(this.absoluteValue)).toString();
+                        text = this.toDisplayString(text, 0);
+                        text = "h"+text.substring(1);
+                    }
+                    else {
+                        text = 'h1 .   ';
                     }
 
                 } else if (this.dialPosition === 'r_200') {

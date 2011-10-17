@@ -123,6 +123,51 @@ describe 'Using multimeter with mock Flash connection'
       
     end
     
+    it "should send a RMS voltage to flash when in ac_voltage mode and both probes added"
+           
+      // we add a 100 ohm resistor
+      breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
+      breadModel('insertComponent', 'function generator', {"UID": "source", "connections": 'b1,b2', "amplitude": 5, "frequencies": [1000]});
+      
+      var sendCalled = false;
+      var oldSendCommand = sparks.flash.sendCommand;
+      
+      sparks.flash.sendCommand = function(command, value) {
+        command.should.be "set_multimeter_display"
+        value.should.be "  0 0.0"
+        sendCalled = true;
+      }
+      
+      receiveEvent('multimeter_dial', 'acv_200', 0);          // will call first sendCommand
+      receiveEvent('connect', 'probe|probe_black|a1', 0);     // will call first sendCommand
+      sendCalled.should.be true
+      
+      var sendCalled = false;
+      
+      sparks.flash.sendCommand = function(command, value) {
+        command.should.be "set_multimeter_display"
+        value.should.be "  0 3.5"
+        sendCalled = true;
+      }
+      
+      receiveEvent('connect', 'probe|probe_red|a2', 0);     // will call second sendCommand
+      sendCalled.should.be true
+      
+      var sendCalled = false;
+      
+      sparks.flash.sendCommand = function(command, value) {
+        command.should.be "set_multimeter_display"
+        value.should.be "h 0 0 4"
+        sendCalled = true;
+      }
+      
+      receiveEvent('multimeter_dial', 'acv_750', 0);     // will call third sendCommand
+      sendCalled.should.be true
+      
+      sparks.flash.sendCommand = oldSendCommand;
+      
+    end
+    
     it "should pop up a warning if we blow the fuse"
            
       // we add a 100 ohm resistor
