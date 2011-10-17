@@ -14,10 +14,18 @@
     }
     return grouped;
   };
+  
+  q.previousMeasurements = {};
 
   q.qucsate = function (netlist, callback, type) {
-    // console.log('netlist=' + q.ppNetlist(netlist));
-    // console.log('url=' + sparks.config.qucsate_server_url);
+    
+    var key = netlist.replace(/\n/g, '') + type,
+        previousMeasurement = this.previousMeasurements[key];
+    if (!!previousMeasurement) {
+      callback(previousMeasurement);
+      return;
+    }
+    
     type = type || 'qucs';
     var data = {};
     data[type || 'qucs'] = netlist;
@@ -25,22 +33,14 @@
         async: false,
         url: sparks.config.qucsate_server_url,
         data: data,
-        success: q.success(callback),
+        success: function(ret) {
+          var results = q.parse(ret);
+          q.previousMeasurements[key] = results;
+          callback(results);
+        },
         error: function (request, status, error) {
-                  debug('ERROR: url=' + sparks.config.qucsate_server_url + '\nstatus=' + status + '\nerror=' + error);
-              }
-    });
-  };
-
-  //
-  // Generate a parser, which is a function that parses the qucs data format
-  // and passes the data to the callback
-  //
-  
-  q.success = function(callback) {
-    return(function(data) {
-      var results = q.parse(data);
-      callback(results);
+          debug('ERROR: url=' + sparks.config.qucsate_server_url + '\nstatus=' + status + '\nerror=' + error);
+        }
     });
   };
   

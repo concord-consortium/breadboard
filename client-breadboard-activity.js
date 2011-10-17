@@ -5332,7 +5332,17 @@ sparks.createQuestionsCSV = function(data) {
     return grouped;
   };
 
+  q.previousMeasurements = {};
+
   q.qucsate = function (netlist, callback, type) {
+
+    var key = netlist.replace(/\n/g, '') + type,
+        previousMeasurement = this.previousMeasurements[key];
+    if (!!previousMeasurement) {
+      callback(previousMeasurement);
+      return;
+    }
+
     type = type || 'qucs';
     var data = {};
     data[type || 'qucs'] = netlist;
@@ -5340,18 +5350,14 @@ sparks.createQuestionsCSV = function(data) {
         async: false,
         url: sparks.config.qucsate_server_url,
         data: data,
-        success: q.success(callback),
+        success: function(ret) {
+          var results = q.parse(ret);
+          q.previousMeasurements[key] = results;
+          callback(results);
+        },
         error: function (request, status, error) {
-                  debug('ERROR: url=' + sparks.config.qucsate_server_url + '\nstatus=' + status + '\nerror=' + error);
-              }
-    });
-  };
-
-
-  q.success = function(callback) {
-    return(function(data) {
-      var results = q.parse(data);
-      callback(results);
+          debug('ERROR: url=' + sparks.config.qucsate_server_url + '\nstatus=' + status + '\nerror=' + error);
+        }
     });
   };
 
@@ -5385,7 +5391,7 @@ sparks.createQuestionsCSV = function(data) {
         }
 
       } else if (!!currentArray) {
-        val = parseFloat(line);       // need to check for complex as well
+        val = parseFloat(line);       // TODO: need to check for complex as well
         if (!isNaN(val)) {
           currentArray.push(val);
         }
@@ -6716,16 +6722,8 @@ sparks.createQuestionsCSV = function(data) {
         },
 
         makeMeasurement: function(measurementType) {
-          var netlist = sparks.circuit.qucsator.makeNetlist(getBreadBoard());
-          var measurmentKey = "" + netlist.replace(/\n/g, '') + this.redProbeConnection + this.blackProbeConnection + measurementType;
-          var existingMeasurement = this.measurements[measurmentKey];
-          if (existingMeasurement !== undefined && existingMeasurement !== null){
-            return existingMeasurement;
-          } else {
             var measurement = Math.abs(breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection));
-            this.measurements[measurmentKey] = measurement;
             return measurement;
-          }
         },
 
         blowFuse: function() {

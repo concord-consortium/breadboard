@@ -69,16 +69,8 @@
         },
         
         makeMeasurement: function(measurementType) {
-          var netlist = sparks.circuit.qucsator.makeNetlist(getBreadBoard());
-          var measurmentKey = "" + netlist.replace(/\n/g, '') + this.redProbeConnection + this.blackProbeConnection + measurementType;
-          var existingMeasurement = this.measurements[measurmentKey];
-          if (existingMeasurement !== undefined && existingMeasurement !== null){
-            return existingMeasurement;
-          } else {
             var measurement = Math.abs(breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection));
-            this.measurements[measurmentKey] = measurement;
             return measurement;
-          }
         },
         
         blowFuse: function() {

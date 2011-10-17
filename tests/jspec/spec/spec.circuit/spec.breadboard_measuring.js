@@ -6,6 +6,7 @@ describe 'Measuring breadboard components'
     
     before_each
       stub(sparks.logController, 'addEvent').and_return(null);
+      sparks.circuit.qucsator.previousMeasurements = {};
       breadModel('clear');
     end
     
@@ -13,11 +14,12 @@ describe 'Measuring breadboard components'
     
       it "it should call QUCS when we first connect both probes"
         
+        mock_request().and_return('<Qucs Dataset 0.0.15>\n<dep meter.V V1>\n  +2.00000000000e+00\n</dep>', 'text/plain')
         var timesCalled = 0;
-        var oldQucsate = sparks.circuit.qucsator.qucsate;
-        sparks.circuit.qucsator.qucsate = function(netlist, callback){
+        var oldParse = sparks.circuit.qucsator.parse;   // parse is a proxy for knowing when we made a new measurement
+        sparks.circuit.qucsator.parse = function(){
           timesCalled++;
-          callback({meter: 1});
+          return {meter: {I: 1, V: 1}};
         }
         
         breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
@@ -33,17 +35,18 @@ describe 'Measuring breadboard components'
         
         timesCalled.should.be 1
         
-        sparks.circuit.qucsator.qucsate = oldQucsate;
+        sparks.circuit.qucsator.parse = oldParse;
         
       end
       
       it "it should call QUCS when we switch to new measurement type"
         
+        mock_request().and_return('<Qucs Dataset 0.0.15>\n<dep meter.V V1>\n  +2.00000000000e+00\n</dep>', 'text/plain')
         var timesCalled = 0;
-        var oldQucsate = sparks.circuit.qucsator.qucsate;
-        sparks.circuit.qucsator.qucsate = function(netlist, callback){
+        var oldParse = sparks.circuit.qucsator.parse;
+        sparks.circuit.qucsator.parse = function(){
           timesCalled++;
-          callback({meter: 1});
+          return {meter: {I: 1, V: 1}};
         }
         
         breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
@@ -68,17 +71,18 @@ describe 'Measuring breadboard components'
         timesCalled.should.be 3
         
         
-        sparks.circuit.qucsator.qucsate = oldQucsate;
+        sparks.circuit.qucsator.parse = oldParse;
         
       end
       
       it "it should not call QUCS when we switch to new range within same measurement type"
       
+        mock_request().and_return('<Qucs Dataset 0.0.15>\n<dep meter.V V1>\n  +2.00000000000e+00\n</dep>', 'text/plain')
         var timesCalled = 0;
-        var oldQucsate = sparks.circuit.qucsator.qucsate;
-        sparks.circuit.qucsator.qucsate = function(netlist, callback){
+        var oldParse = sparks.circuit.qucsator.parse;
+        sparks.circuit.qucsator.parse = function(){
           timesCalled++;
-          callback({meter: 0});
+          return {meter: {I: 1, V: 1}};
         }
         
         breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
@@ -113,17 +117,18 @@ describe 'Measuring breadboard components'
         timesCalled.should.be 2
         
         
-        sparks.circuit.qucsator.qucsate = oldQucsate;
+        sparks.circuit.qucsator.parse = oldParse;
         
       end
       
       it "it should not call QUCS when we return to a previous measurement type"
         
+        mock_request().and_return('<Qucs Dataset 0.0.15>\n<dep meter.V V1>\n  +2.00000000000e+00\n</dep>', 'text/plain')
         var timesCalled = 0;
-        var oldQucsate = sparks.circuit.qucsator.qucsate;
-        sparks.circuit.qucsator.qucsate = function(netlist, callback){
+        var oldParse = sparks.circuit.qucsator.parse;
+        sparks.circuit.qucsator.parse = function(){
           timesCalled++;
-          callback({meter: 1});
+          return {meter: {I: 1, V: 1}};
         }
         
         breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
@@ -147,17 +152,18 @@ describe 'Measuring breadboard components'
         
         timesCalled.should.be 2
         
-        sparks.circuit.qucsator.qucsate = oldQucsate;
+        sparks.circuit.qucsator.parse = oldParse;
         
       end
       
       it "it should call QUCS when we change the circuit"
         
+        mock_request().and_return('<Qucs Dataset 0.0.15>\n<dep meter.V V1>\n  +2.00000000000e+00\n</dep>', 'text/plain')
         var timesCalled = 0;
-        var oldQucsate = sparks.circuit.qucsator.qucsate;
-        sparks.circuit.qucsator.qucsate = function(netlist, callback){
+        var oldParse = sparks.circuit.qucsator.parse;
+        sparks.circuit.qucsator.parse = function(){
           timesCalled++;
-          callback({meter: 1});
+          return {meter: {I: 1, V: 1}};
         }
         
         breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
@@ -177,17 +183,18 @@ describe 'Measuring breadboard components'
         
         timesCalled.should.be 2
         
-        sparks.circuit.qucsator.qucsate = oldQucsate;
+        sparks.circuit.qucsator.parse = oldParse;
         
       end
       
       it "it should not call QUCS when we return to a previous circuit configuration"
         
+        mock_request().and_return('<Qucs Dataset 0.0.15>\n<dep meter.V V1>\n  +2.00000000000e+00\n</dep>', 'text/plain')
         var timesCalled = 0;
-        var oldQucsate = sparks.circuit.qucsator.qucsate;
-        sparks.circuit.qucsator.qucsate = function(netlist, callback){
+        var oldParse = sparks.circuit.qucsator.parse;
+        sparks.circuit.qucsator.parse = function(){
           timesCalled++;
-          callback({meter: 1});
+          return {meter: {I: 1, V: 1}};
         }
         
         breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
@@ -213,7 +220,7 @@ describe 'Measuring breadboard components'
         
         timesCalled.should.be 2
         
-        sparks.circuit.qucsator.qucsate = oldQucsate;
+        sparks.circuit.qucsator.parse = oldParse;
         
       end
       
