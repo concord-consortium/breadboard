@@ -20,7 +20,6 @@
         this.dialPosition = 'dcv_20';
         this.powerOn = true;
         this.update();
-        this.measurements = {};
     };
 
     sparks.extend(circuit.Multimeter2, circuit.MultimeterBase, {
@@ -32,29 +31,26 @@
                 if (this.dialPosition.indexOf('dcv_') > -1){
                   measurement = "voltage";
                 } else if (this.dialPosition.indexOf('dca_') > -1){
-                   measurement = "current";
+                  measurement = "current";
                 } else if (this.dialPosition.indexOf('r_') > -1){
-                      measurement = "resistance";
+                  measurement = "resistance";
+                } else if (this.dialPosition.indexOf('acv_') > -1){
+                  measurement = "ac_voltage";
                 }
                 
                 if (!!measurement){
-                  if (measurement === "voltage"){
-                    this.v_value = this.makeMeasurement(measurement);
-                  } else if (measurement === "current"){
-                    this.i_value = this.makeMeasurement(measurement);
-                    if (this.i_value > 0.44){
+                  this.absoluteValue = this.makeMeasurement(measurement);
+                  
+                  if (measurement === "current"){
+                    if (this.absoluteValue > 0.44){
                       this.blowFuse();
                     }
-                  } else if (measurement === "resistance"){
-                    this.r_value = this.makeMeasurement(measurement);
-                    console.log("r_value = "+this.r_value);
                   }
                 }
             }
             else {
-                this.v_value = 0;
+                this.absoluteValue = 0;
             }
-            
             
             this.updateDisplay();
             

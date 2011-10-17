@@ -18,9 +18,7 @@
         init: function () {
             this.mode = this.modes.ohmmeter;
             
-            this.v_value = 0; //voltage value
-            this.i_value = 0; //current value
-            this.r_value = 0; //resistance value
+            this.absoluteValue = 0;   //current meter value
             
             this.displayText = '       ';
 
@@ -43,13 +41,13 @@
                 flash.sendCommand('set_multimeter_display', '       ');
                 return;
             }
-            console.log('Multimeter.update: v=' + this.v_value + ' i=' + this.i_value + ' r=' + this.r_value + ' dial=' + this.dialPosition);
+            console.log('Multimeter.update: v=' + this.absoluteValue + ', dial=' + this.dialPosition);
 
             var text = '';
             if (this.allConnected()) {
                 if (this.dialPosition === 'dcv_20') {
-                    if (this.v_value < 19.995) {
-                        text = (Math.round(this.v_value * 100) * 0.01).toString();
+                    if (this.absoluteValue < 19.995) {
+                        text = (Math.round(this.absoluteValue * 100) * 0.01).toString();
                         text = this.toDisplayString(text, 2);
                     }
                     else {
@@ -57,8 +55,8 @@
                     }
                     
                 } else if (this.dialPosition === 'dcv_200') {
-                     if (this.v_value < 199.95) {
-                        text = (Math.round(this.v_value * 10) * 0.1).toString();
+                     if (this.absoluteValue < 199.95) {
+                        text = (Math.round(this.absoluteValue * 10) * 0.1).toString();
                         text = this.toDisplayString(text, 1);
                     }
                     else {
@@ -66,8 +64,8 @@
                     }
 
                 } else if (this.dialPosition === 'dcv_1000') {
-                     if (this.v_value < 999.95) {
-                        text = Math.round(this.v_value).toString();
+                     if (this.absoluteValue < 999.95) {
+                        text = Math.round(this.absoluteValue).toString();
                         text = this.toDisplayString(text, 0);
                     }
                     else {
@@ -75,7 +73,7 @@
                     }
 
                 } else if (this.dialPosition === 'dcv_2000m') {
-                    var vm = this.v_value * 1000;
+                    var vm = this.absoluteValue * 1000;
                     if (vm < 1999.5) {
                         text = Math.round(vm).toString();
                         text = this.toDisplayString(text, 0);
@@ -85,7 +83,7 @@
                     }
 
                 } else if (this.dialPosition === 'dcv_200m') {
-                    var vm = this.v_value * 1000;
+                    var vm = this.absoluteValue * 1000;
                     if (vm < 195){
                       text = (Math.round(vm * 100) * 0.01).toString();
                       text = this.toDisplayString(text, 1);
@@ -95,16 +93,16 @@
                     }
 
                 } else if (this.dialPosition === 'r_200') {
-                    if (this.r_value < 199.95) {
-                        text = (Math.round(this.r_value * 10) * 0.1).toString();
+                    if (this.absoluteValue < 199.95) {
+                        text = (Math.round(this.absoluteValue * 10) * 0.1).toString();
                         text = this.toDisplayString(text, 1);
                     }
                     else {
                         text = ' 1   . ';
                     }
                 } else if (this.dialPosition === 'r_2000') {
-                    if (this.r_value < 1999.5) {
-                        text = Math.round(this.r_value).toString();
+                    if (this.absoluteValue < 1999.5) {
+                        text = Math.round(this.absoluteValue).toString();
                         text = this.toDisplayString(text, 0);
                     }
                     else {
@@ -112,8 +110,8 @@
                     }
                 }
                 else if (this.dialPosition === 'r_20k') {
-                    if (this.r_value < 19995) {
-                        text = (Math.round(this.r_value * 0.1) * 0.01).toString();
+                    if (this.absoluteValue < 19995) {
+                        text = (Math.round(this.absoluteValue * 0.1) * 0.01).toString();
                         text = this.toDisplayString(text, 2);
                     }
                     else {
@@ -121,8 +119,8 @@
                     }
                 }
                 else if (this.dialPosition === 'r_200k') {
-                    if (this.r_value < 199950) {
-                        text = (Math.round(this.r_value * 0.01) * 0.1).toString();
+                    if (this.absoluteValue < 199950) {
+                        text = (Math.round(this.absoluteValue * 0.01) * 0.1).toString();
                         text = this.toDisplayString(text, 1);
                     }
                     else {
@@ -130,8 +128,8 @@
                     }
                 }
                 else if (this.dialPosition === 'r_2000k') {
-                    if (this.r_value < 1999500) {
-                        text = Math.round(this.r_value * 0.001).toString();
+                    if (this.absoluteValue < 1999500) {
+                        text = Math.round(this.absoluteValue * 0.001).toString();
                         text = this.toDisplayString(text, 0);
                     }
                     else {
@@ -139,7 +137,7 @@
                     }
                 } 
                 else if (this.dialPosition === 'dca_200mc') {
-                  var imc = this.i_value * 1000000
+                  var imc = this.absoluteValue * 1000000
                   if (imc < 195){
                     text = (Math.round(imc * 100) * 0.01).toString();
                     text = this.toDisplayString(text, 1);
@@ -149,7 +147,7 @@
                   }
                 }
                 else if (this.dialPosition === 'dca_2000mc') {
-                  var imc = this.i_value * 1000000
+                  var imc = this.absoluteValue * 1000000
                   if (imc < 1950){
                     text = (Math.round(imc * 10) * 0.1).toString();
                     text = this.toDisplayString(text, 0);
@@ -159,7 +157,7 @@
                   }
                 }
                 else if (this.dialPosition === 'dca_20m') {
-                  var im = this.i_value * 1000
+                  var im = this.absoluteValue * 1000
                   if (im < 19.5){
                     text = (Math.round(im * 100) * 0.01).toString();
                     text = this.toDisplayString(text, 2);
@@ -169,7 +167,7 @@
                   }
                 }
                 else if (this.dialPosition === 'dca_200m') {
-                  var im = this.i_value * 1000
+                  var im = this.absoluteValue * 1000
                   if (im < 195){
                     text = (Math.round(im * 10) * 0.1).toString();
                     text = this.toDisplayString(text, 1);
