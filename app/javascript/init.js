@@ -36,6 +36,7 @@
 //= require <helpers/string>
 //= require <helpers/ui>
 //= require <helpers/flash_comm>
+//= require <helpers/complex-number>
 //= require <circuit/breadboard>
 //= require <circuit/multimeter2>
 //= require <circuit/resistor-4band>
