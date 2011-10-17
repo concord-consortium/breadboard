@@ -89,8 +89,8 @@
         } 
         
       } else if (!!currentArray) {
-        val = parseFloat(line);       // TODO: need to check for complex as well
-        if (!isNaN(val)) {
+        var val = sparks.ComplexNumber.parse(line);     // Sparks values are always CNs -- in a DC circuit, the i is just ommitted
+        if (!!val) {
           currentArray.push(val);
         }
       } 

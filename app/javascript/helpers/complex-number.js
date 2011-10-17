@@ -3,12 +3,12 @@
 
 (function () {
 
-    sparks.ComplexNumber = function () {
-      this.real = 0;
-      this.i = 0;
+    sparks.ComplexNumber = function (real, i) {
+      this.real = real || 0;
+      this.i = i || 0;
     };
     
-    // must handle
+    // must handle strings of the form
     // +1.00000000000e+03
     // -1.95000000000e+02+j4.92889189986e-16
     // +1.95000000000e+02-j2.46444594993e-16

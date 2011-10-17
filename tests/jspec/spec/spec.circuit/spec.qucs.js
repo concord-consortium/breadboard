@@ -246,15 +246,15 @@ describe 'Interfacing with QUCS'
         
         var parsed = sparks.circuit.qucsator.parse(results);
         
-        parsed.meter.v.should.eql [-9]
-        parsed.source.i.should.eql [-1.03807827262e-05]
-        parsed.L23.v.should.eql [0]
+        parsed.meter.v.should.eql [new sparks.ComplexNumber(-9)]
+        parsed.source.i.should.eql [new sparks.ComplexNumber(-1.03807827262e-05)]
+        parsed.L23.v.should.eql [new sparks.ComplexNumber(0)]
       end
       
       it 'should be able to parse a multi-value results with simple numbers'
         var results = 
           "<Qucs Dataset 0.0.15>\n"+
-          "<indep source 3>\n"     +
+          "<indep acfrequency 3>\n"+
           "  +1.00000000000e+00\n" +
           "  +5.00000000000e+00\n" +
           "  +9.00000000000e+00\n" +
@@ -275,14 +275,42 @@ describe 'Interfacing with QUCS'
         // parsed.source is an array, and parsed.source.I is also an array.
         // a basic .eql someArray won't work for parsed.source, because it will
         // find parsed.source.I, so we do this to extract just the array
-        var sourceArray = parsed.source.concat([]);
-        sourceArray.should.eql [1, 5, 9]
-        parsed.meter.v.should.eql [2, 2, 2]
-        parsed.source.i.should.eql [1e12, 1e12, 1e12]
+        parsed.acfrequency.should.eql [new sparks.ComplexNumber(1), new sparks.ComplexNumber(5), new sparks.ComplexNumber(9)]
+        parsed.meter.v.should.eql [new sparks.ComplexNumber(2), new sparks.ComplexNumber(2), new sparks.ComplexNumber(2)]
+        parsed.source.i.should.eql [new sparks.ComplexNumber(1e12), new sparks.ComplexNumber(1e12), new sparks.ComplexNumber(1e12)]
       end
       
       it 'should be able to parse a multi-value results with complex numbers'
-      
+        var results =
+          "<Qucs Dataset 0.0.15>\n"       +
+          "<indep acfrequency 1>\n"       +
+          "  +1.00000000000e+03\n"        +
+          "  +2.00000000000e+03\n"        +
+          "</indep>\n"                    +
+          "<dep source.i acfrequency>\n"  +
+          "  +5.34600846482e-17+j4.65206153026e+15\n"   +
+          "  +10.34600846482e-17+j4.65206153026e+15\n"  +
+          "</dep>\n"                      +
+          "<dep meter.i acfrequency>\n"   +
+          "  -5.34600846482e-17-j4.65206153026e+15\n"  +
+          "  -10.34600846482e-17-j4.65206153026e+15\n" +
+          "</dep>"
+          
+        var parsed = sparks.circuit.qucsator.parse(results);
+
+        parsed.acfrequency.should.eql [new sparks.ComplexNumber(1e3), new sparks.ComplexNumber(2e3)]
+        
+        var matchSourceI = [
+            new sparks.ComplexNumber(5.34600846482e-17, 4.65206153026e+15), 
+            new sparks.ComplexNumber(10.34600846482e-17, 4.65206153026e+15)
+          ]
+        parsed.source.i.should.eql matchSourceI
+        
+        var matchMeterI = [
+            new sparks.ComplexNumber(-5.34600846482e-17, -4.65206153026e+15), 
+            new sparks.ComplexNumber(-10.34600846482e-17, -4.65206153026e+15)
+          ]
+        parsed.meter.i.should.eql matchMeterI
       end
       
     end

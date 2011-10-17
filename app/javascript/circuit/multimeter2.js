@@ -43,6 +43,10 @@
                   
                   if (!!meterKey && !!resultsBlob.meter[meterKey]){
                     var result = resultsBlob.meter[meterKey][0];
+                    
+                    // result is a complex number. for the DMM, we only care about the real part
+                    result = result.real;
+                    
                     // process the absolute value
                     result = Math.abs(result);
                     // if in wrong voltage mode for AC/DC voltage, show zero
