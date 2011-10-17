@@ -1,4 +1,5 @@
 /* FILE qucsator.js */
+/*globals console sparks $ breadModel getBreadBoard debug*/
 
 (function () {
   
@@ -7,7 +8,7 @@
   
   var inGroupsOf = function (ary, n) {
     var grouped = [];
-    for(i in ary) {
+    for(var i in ary) {
   //    if (i % 3 == 0) { grouped[Math.floor(i / 3)] = []; }
       if (!grouped[Math.floor(i / 3)]) { grouped[Math.floor(i / 3)] = []; }
       grouped[Math.floor(i / 3)][i % 3] = ary[i];
@@ -122,7 +123,7 @@
         line = component.toNetlist();
       } else {
 
-        nodes = component.getNodes();
+        var nodes = component.getNodes();
         
         switch (component.kind) {
           case "vprobe":
@@ -142,8 +143,8 @@
     // get the simulation type from the source power component. If there is no source,
     // assume it's a DC simulation (this should only happen in spec tests when createCircuit
     // was never called)
-    if (components["source"] && components["source"].getQucsSimulationType) {
-      netlist += "\n" + components["source"].getQucsSimulationType();
+    if (components.source && components.source.getQucsSimulationType) {
+      netlist += "\n" + components.source.getQucsSimulationType();
     } else {
       netlist += "\n" + sparks.circuit.Battery.prototype.getQucsSimulationType();
     }
