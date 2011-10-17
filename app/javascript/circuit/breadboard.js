@@ -413,11 +413,10 @@
         // NB: This function used to return the final value required by the DMM. It no longer does so, as
         // it does not assume a DMM is doing the requesting, and instead returns the entire results object.
         query: function(type, connections){
-          
           var tempComponents = [];
           
           // add DMM components as necessary
-          if (type === 'resistance') {
+          if (!!type && type === 'resistance') {
             connections = connections.split(',');
             var ghost = new GhostHole();
             var ohmmeterBattery = breadBoard.component({
@@ -430,7 +429,7 @@
               kind: 'iprobe',
               connections: [connections[1], ghost]});
             tempComponents.push(ohmmeterBattery, currentProbe);
-          } else {
+          } else if (!!type) {
             if (type === 'voltage'){
               var voltmeterResistor = breadBoard.component({
                 UID: 'voltmeterResistor', 
@@ -481,7 +480,7 @@
         }
         var func = arguments[0];
         
-        if (func === 'query') {
+        if (func === 'query' && !!arguments[2]) {
             var conns = arguments[2].split(',');
 
             if (conns[0] === 'null' || conns[1] === 'null') {
