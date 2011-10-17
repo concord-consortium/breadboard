@@ -168,6 +168,58 @@ describe 'Using multimeter with mock Flash connection'
       
     end
     
+    it "should send show zero volts if measuring an AC circuit with DC_V"
+           
+      // we add a 100 ohm resistor
+      breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
+      breadModel('insertComponent', 'function generator', {"UID": "source", "connections": 'b1,b2', "amplitude": 5, "frequencies": [1000]});
+      
+      
+      
+      receiveEvent('multimeter_dial', 'dcv_20', 0);
+      receiveEvent('connect', 'probe|probe_black|a1', 0);
+      
+      var oldSendCommand = sparks.flash.sendCommand;
+      var sendCalled = false;
+      sparks.flash.sendCommand = function(command, value) {
+        command.should.be "set_multimeter_display"
+        value.should.be "  0.0 0"
+        sendCalled = true;
+      }
+      
+      receiveEvent('connect', 'probe|probe_red|a2', 0);     // will call sendCommand
+      sendCalled.should.be true
+      
+      sparks.flash.sendCommand = oldSendCommand;
+      
+    end
+    
+    it "should send show zero volts if measuring an DC circuit with AC_V"
+           
+      // we add a 100 ohm resistor
+      breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
+      breadModel('insertComponent', 'battery', {"UID": "source", "connections": 'b1,b2', "voltage": 5});
+      
+      
+      
+      receiveEvent('multimeter_dial', 'acv_200', 0);
+      receiveEvent('connect', 'probe|probe_black|a1', 0);
+      
+      var oldSendCommand = sparks.flash.sendCommand;
+      var sendCalled = false;
+      sparks.flash.sendCommand = function(command, value) {
+        command.should.be "set_multimeter_display"
+        value.should.be "  0 0.0"
+        sendCalled = true;
+      }
+      
+      receiveEvent('connect', 'probe|probe_red|a2', 0);     // will call sendCommand
+      sendCalled.should.be true
+      
+      sparks.flash.sendCommand = oldSendCommand;
+      
+    end
+    
     it "should pop up a warning if we blow the fuse"
            
       // we add a 100 ohm resistor

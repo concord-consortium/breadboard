@@ -45,7 +45,13 @@
                     var result = resultsBlob.meter[meterKey][0];
                     // process the absolute value
                     result = Math.abs(result);
-                    if (measurement === 'resistance') {
+                    // if in wrong voltage mode for AC/DC voltage, show zero
+                    var source = getBreadBoard().components.source;
+                    if (!!source &&
+                       ((measurement === 'voltage' && source.getQucsSimulationType().indexOf(".AC") > -1) ||
+                        (measurement === 'ac_voltage' && source.getQucsSimulationType().indexOf(".DC") > -1))) {
+                      result = 0;
+                    } else if (measurement === 'resistance') {
                       result = 1 / result;
                     } else if (measurement === "ac_voltage"){
                       result = result / Math.sqrt(2);
