@@ -339,7 +339,9 @@
         insert: function(type, connections){
           console.log("ERROR: 'insert' is deprecated. Use 'insertComponent'");
         },
-        getUID: function(name){
+        getUID: function(_name){
+          var name = _name.replace(/ /g, "_");      // no spaces in qucs
+          
           if (!breadBoard.components[name]){
             return name;
           }
