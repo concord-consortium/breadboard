@@ -52,9 +52,9 @@
     setTrace: function (n, frequency, amplitude, phase) {
       // NB plot "cos (wt + phase)"
       
-      console.log("setTrace(%d, %f, %f, %f)", n, amplitude, frequency, phase);
+      console.log("setTrace(%d, %f, %f, %f)", n, frequency, amplitude, phase);
       
-      if (this.traces[n]) this.clearTrace(n);
+      this.clearTrace(n);
       
       this.traces[n] = {
         amplitude: amplitude,
@@ -75,8 +75,10 @@
       Clears trace n (removes it from the screen)
     */
     clearTrace: function (n) {
-      this.removeRaphaelTrace(this.traces[n].raphaelObject);
-      delete this.traces[n];
+      if (this.traces[n]) {
+        this.removeRaphaelTrace(this.traces[n].raphaelObject);
+        delete this.traces[n];
+      }
     },
     
     drawGrid: function () {
