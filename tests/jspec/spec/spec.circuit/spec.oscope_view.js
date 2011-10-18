@@ -148,21 +148,22 @@ describe 'OScope View'
       
       var ac = new sparks.ActivityConstructor(jsonSection);
       
-      // mock_request().and_return(
-      //   "<Qucs Dataset 0.0.15>\n" +
-      //   "<indep acfrequency 1>\n" +
-      //   "  +1.00000000000e+03\n" +
-      //   "</indep>\n" +
-      //   "<dep source.i acfrequency>\n" +
-      //   "  -9.99999999747e-01-j1.59154943052e-05\n" +
-      //   "</dep>\n" +
-      //   "<dep L1.v acfrequency>\n" +
-      //   "  +2.53302959042e-08-j1.59154943052e-03\n" +
-      //   "</dep>\n" +
-      //   "<dep powerPosL.v acfrequency>\n" +
-      //   "  +1.00000000000e+02\n" +
-      //   "</dep>",
-      //   'text/plain');
+      // actual QUCS result for above circuit
+      mock_request().and_return(
+        "<Qucs Dataset 0.0.15>\n" +
+        "<indep acfrequency 1>\n" +
+        "  +1.00000000000e+03\n" +
+        "</indep>\n" +
+        "<dep source.i acfrequency>\n" +
+        "  -9.99999999747e-01-j1.59154943052e-05\n" +
+        "</dep>\n" +
+        "<dep L1.v acfrequency>\n" +
+        "  +2.53302959042e-08-j1.59154943052e-03\n" +
+        "</dep>\n" +
+        "<dep powerPosL.v acfrequency>\n" +
+        "  +1.00000000000e+02\n" +
+        "</dep>",
+        'text/plain');
       
       var setTraceCalledTimes = 0;
       sparks.OscilloscopeView.prototype.setTrace = function (n, frequency, amplitude, phase) {
