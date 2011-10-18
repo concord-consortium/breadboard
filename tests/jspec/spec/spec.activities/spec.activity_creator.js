@@ -1,5 +1,18 @@
 describe 'Activity Creator'
 
+  before
+    oldOScopeView = sparks.OscilloscopeView;
+    sparks.OscilloscopeView = function() {
+        this.getView = function () { return $('<div>');};
+        this.setTrace = function() {};
+        this.clearTrace = function() {};
+      };
+  end
+  
+  after
+    sparks.OscilloscopeView = oldOScopeView;
+  end
+
   before_each
     breadModel('clear');
     sparks.sectionController.reset();
