@@ -41,6 +41,7 @@
 //= require <helpers/complex-number>
 //= require <circuit/breadboard>
 //= require <circuit/multimeter2>
+//= require <circuit/oscilloscope>
 //= require <circuit/resistor-4band>
 //= require <circuit/resistor-5band>
 //= require <circuit/circuit-math>
