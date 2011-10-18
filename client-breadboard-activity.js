@@ -3582,6 +3582,7 @@ sparks.createQuestionsCSV = function(data) {
     this.horizontalScale = null;
     this.verticalScale   = null;
     this.scaleChanged    = false;
+    this.raphaelGrid     = null;
   };
 
   sparks.OscilloscopeView.prototype = {
@@ -3706,7 +3707,7 @@ sparks.createQuestionsCSV = function(data) {
         path.push(y);
       }
 
-      r.path(path.join(' ')).attr({stroke: this.tickColor});
+      this.raphaelGrid = r.path(path.join(' ')).attr({stroke: this.tickColor, opacity: 0.5});
     },
 
     setHorizontalScaleFrom: function (frequency) {
@@ -3768,6 +3769,8 @@ sparks.createQuestionsCSV = function(data) {
         r.path(path).attr({stroke: this.traceOuterColor, 'stroke-width': 5}),
         r.path(path).attr({stroke: this.traceInnerColor, 'stroke-width': 3})
       );
+
+      this.raphaelGrid.toFront();
 
       raphaelObject.translate(-1 * overscan, 0);
 

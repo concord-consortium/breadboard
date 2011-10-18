@@ -9,6 +9,7 @@
     this.horizontalScale = null;
     this.verticalScale   = null;
     this.scaleChanged    = false;
+    this.raphaelGrid     = null;
   };
   
   sparks.OscilloscopeView.prototype = {
@@ -134,7 +135,7 @@
         path.push(y);
       }
       
-      r.path(path.join(' ')).attr({stroke: this.tickColor});
+      this.raphaelGrid = r.path(path.join(' ')).attr({stroke: this.tickColor, opacity: 0.5});
     },
     
     setHorizontalScaleFrom: function (frequency) {
@@ -200,6 +201,8 @@
         r.path(path).attr({stroke: this.traceOuterColor, 'stroke-width': 5}),
         r.path(path).attr({stroke: this.traceInnerColor, 'stroke-width': 3})
       );
+      
+      this.raphaelGrid.toFront();
 
       // translate the path 5 pixels to the left to accomodate the overscan
       raphaelObject.translate(-1 * overscan, 0);
