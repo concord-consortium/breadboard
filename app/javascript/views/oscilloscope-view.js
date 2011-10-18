@@ -24,10 +24,10 @@
       Sets this.$view to be the returned jQuery object.
       
     */
-    getView: function () {      
-      this.raphaelCanvas = Raphael(this.width, this.height);
-      this.$view = $('div').append( $(this.raphaelCanvas) );
-      
+    getView: function () {
+      this.$view = $('<div>'); 
+      this.raphaelCanvas = Raphael(this.$view[0], this.width, this.height);
+
       this.drawGrid();
       
       return this.$view;

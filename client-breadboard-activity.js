@@ -3597,9 +3597,8 @@ sparks.createQuestionsCSV = function(data) {
 
     */
     getView: function () {
-      this.raphaelCanvas = Raphael(this.width, this.height);
-      this.$view = $('div').append( $(this.raphaelCanvas) );
-
+      this.$view = $('<div>');
+      this.raphaelCanvas = Raphael(this.$view[0], this.width, this.height);
       this.drawGrid();
 
       return this.$view;
