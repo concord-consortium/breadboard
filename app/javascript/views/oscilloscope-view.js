@@ -1,32 +1,42 @@
-/*globals sparks*/
+/*globals sparks Raphael*/
+
 (function () {
   
   sparks.OscilloscopeView = function () {
-    this.$view = null;
-    this.traces = {};
-    this.verticalScale = 1;
-    this._paper = null;
+    this.$view           = null;
+    this.raphaelCanvas   = null;
+    this.traces          = [];
+    this.horizontalScale = null;
+    this.verticalScale   = null;
+    this.scaleChanged    = false;
   };
   
-  
   sparks.OscilloscopeView.prototype = {
+    
+    width:    400,
+    height:   400,
+    nPeriods: 5,
+    verticalScreenFraction: 0.8,
 
     /**
       @returns $view A jQuery object containing a Raphael canvas displaying the oscilloscope traces.
       
-    */
-    getView: function () {
-      // set this.$view
-      // ...
-      // set this.paper;
+      Sets this.$view to be the returned jQuery object.
       
+    */
+    getView: function () {      
+      this.raphaelCanvas = Raphael(this.width, this.height);
+      this.$view = $('div').append( $(this.raphaelCanvas) );
+      
+      this.drawGrid();
       
       return this.$view;
     },
     
     /**
-      Sets trace number n to be a sinusoid of specified amplitude and phase. 
-      
+      Sets trace number n to be a sinusoid of specified amplitude and phase. Rescales the display to show this.nPeriods
+      of the signal from left to right and to show 
+       
       @param Number n            Which channel (should be 1 or 2)
       @param Number amplitude    Amplitude of the wave, in volts.
       @param Number frequency    Frequency of the wave, in Hz. This is ignored at first.
@@ -34,32 +44,77 @@
     */
     setTrace: function (n, amplitude, frequency, phase) {
       // NB plot "cos (wt + phase)"
+      
+      if (this.traces[n]) this.clearTrace(n);
+      
+      this.traces[n] = {
+        amplitude: amplitude,
+        frequency: frequency,
+        phase:     phase
+      };
+      
+      this.setHorizontalScaleFrom(frequency);
+      if (n === 1) {
+        this.setVerticalScaleFrom(amplitude);
+      }
+      this.redrawIfScaleChanged();
+      
+      this.addRaphaelTrace(this.traces[n]);
     },
   
     /**
       Clears trace n (removes it from the screen)
     */
     clearTrace: function (n) {
-      this._removeElement(this.traces[n].raphaelTrace);
+      this.removeRaphaelTrace(this.traces[n].raphaelObject);
       delete this.traces[n];
     },
     
+    drawGrid: function () {
+    },
+    
+    setHorizontalScaleFrom: function (frequency) {
+      var scale = 2 * this.nPeriods * Math.PI / this.width;
+      
+      if (scale !== this.horizontalScale) {
+        this.horizontalScale = scale;
+        this.scaleChanged = true;
+      }
+    },
+    
+    setVerticalScaleFrom: function (amplitude) {
+      var scale = this.verticalScreenFraction * this.height / (2 * amplitude);
+      
+      if (scale !== this.verticalScale) {
+        this.verticalScale = scale;
+        this.scaleChanged = true;
+      }
+    },
+    
+    redrawIfScaleChanged: function () {
+      var i, l;
+      
+      if (this.scaleChanged) {
+        for (i = 0, l = this.traces.length; i < l; i++) {
+          if (this.traces[i]) this.redrawRaphaelTrace(this.traces[i]);
+        } 
+        this.scaleChanged = false;
+      }
+    },
     
     // Private. Remove raphael element el.
-    _removeRaphaelTrace: function (raphaelObject) {
+    removeRaphaelTrace: function (raphaelObject) {
     },
     
     // Private. Add a raphael element to the graph
-    _addRaphaelTrace: function (trace) {
+    addRaphaelTrace: function (trace) {
       var raphaelObject;
-      
-      // put it into this.paper
-      // ... 
-      
-      
       return raphaelObject;
+    },
+    
+    redrawRaphaelTrace: function (trace) {
     }
-  
+      
   };
   
 }());
