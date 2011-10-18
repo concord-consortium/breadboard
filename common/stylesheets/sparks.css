@@ -248,6 +248,13 @@ border-bottom-style:solid;
   margin: 10px 0 10px 0;
 }
 
+#oscope p {
+  margin: 3px 0 3px 0;
+}
+
+#oscope .hscale, #oscope .vscale {
+  font-weight: bold;
+}
 
 /* TIMELINE CHARTS */
 .timeline { 
@@ -285,4 +292,3 @@ border-bottom-style:solid;
 .timeline li a .count:hover { 
   background: #8E8; 
 }
-

@@ -3609,6 +3609,7 @@ sparks.createQuestionsCSV = function(data) {
       this.$view = $('<div>');
       this.raphaelCanvas = Raphael(this.$view[0], this.width, this.height);
 
+      this.$view.append('<p><span class="hscale"></span> msec/div</p> <p><span class="vscale"></span> volts/div</p>');
       this.drawGrid();
 
       return this.$view;
@@ -3709,19 +3710,23 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     setHorizontalScaleFrom: function (frequency) {
-      var scale = 2 * this.nPeriods * Math.PI / this.width;
+      var scale          = 2 * this.nPeriods * Math.PI / this.width,
+          millisecPerDiv = (1 / frequency) * this.nPeriods / this.nHorizontalMarks * 1000;
 
       if (scale !== this.horizontalScale) {
         this.horizontalScale = scale;
+        this.$view.find('.hscale').html(sparks.math.roundToSigDigits(millisecPerDiv, 3).toString());
         this.scaleChanged = true;
       }
     },
 
     setVerticalScaleFrom: function (amplitude) {
-      var scale = this.verticalScreenFraction * this.height / (2 * amplitude);
+      var scale       = this.verticalScreenFraction * this.height / (2 * amplitude),
+          voltsPerDiv = (amplitude / this.verticalScreenFraction) / (this.nVerticalMarks / 2);
 
       if (scale !== this.verticalScale) {
         this.verticalScale = scale;
+        this.$view.find('.vscale').html(sparks.math.roundToSigDigits(voltsPerDiv, 3).toString());
         this.scaleChanged = true;
       }
     },
