@@ -57,15 +57,8 @@
       
       if (name === 'connect') {
           if (args[0] === 'probe') {
-              if (args[1] === 'probe_red') {
-                  sparks.sectionController.multimeter.redProbeConnection = args[2];
-              }
-              else if (args[1] === 'probe_black') {
-                  sparks.sectionController.multimeter.blackProbeConnection = args[2];
-              }
-              else {
-                  alert('Activity#receiveEvent: connect: unknonw probe name ' + args[1]);
-              }
+            var probe_color = args[1] === 'probe_red' ? "red" : "black";
+            sparks.sectionController.multimeter.setProbeLocation(probe_color, args[2]);
           }
           if (args[0] === 'component') {
               // for now, we're just dealing with the situation of replacing one lead that had been lifted
@@ -79,15 +72,8 @@
           sparks.sectionController.multimeter.update();
       } else if (name === 'disconnect') {
           if (args[0] === 'probe') {
-              if (args[1] === 'probe_red') {
-                  sparks.sectionController.multimeter.redProbeConnection = null;
-              }
-              else if (args[1] === 'probe_black') {
-                  sparks.sectionController.multimeter.blackProbeConnection = null;
-              }
-              else {
-                  alert('Activity#receiveEvent: disconnect: Unknonw probe name ' + args[1]);
-              }
+            var probe_color = args[1] === 'probe_red' ? "red" : "black";
+            sparks.sectionController.multimeter.setProbeLocation(probe_color, null);
           } else if (args[0] === 'component') {
             var hole = args[2];
             var newHole = breadModel('getGhostHole', hole+"ghost");

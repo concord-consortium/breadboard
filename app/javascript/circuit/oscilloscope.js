@@ -17,8 +17,9 @@
         this.update();         // we can update view immediately with the source trace
       },
       
-      // can be a hole name, like 'a1' or can be null if probe is lifted
-      setProbeLocation: function(location) {
+      // @probe Name of probe being attached. We ignore everything but "red"
+      // @location Hole name, like 'a1' or can be null if probe is lifted
+      setProbeLocation: function(probe, location) {
         this.probeLocation = location;
         this.update();
       },

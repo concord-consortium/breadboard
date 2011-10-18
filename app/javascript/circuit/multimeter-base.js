@@ -30,6 +30,16 @@
             this.powerOn = false;
             this.disabledPositions = [];
         },
+        
+        // @probe Either "red" or "black"
+        // @location hole name (e.g. 'a1') or null
+        setProbeLocation: function (probe, location) {
+          if (probe === "red") {
+            this.redProbeConnection = location;
+          } else {
+            this.blackProbeConnection = location;
+          }
+        },
 
         update : function () {
             console.log('ENTER MultimeterBase#update');
