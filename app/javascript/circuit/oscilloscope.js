@@ -43,8 +43,14 @@
         this.addTrace(this.SOURCE_CHANNEL, sourceTrace);
         
         if (this.probeLocation){
-          var data = breadModel('query');
           var probeNode = getBreadBoard().getHole(this.probeLocation).nodeName();
+          if (probeNode === "gnd"){
+            // short-circuit this operation and just return a flat trace
+            this.addTrace(this.PROBE_CHANNEL, {amplitude: 0, freqency: 0, phase: 0});
+            return;
+          }
+          
+          var data = breadModel('query');
           
           // for our first pass, we're assuming single input frequency
           var result = data[probeNode].v[0];
