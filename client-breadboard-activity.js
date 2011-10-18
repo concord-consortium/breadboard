@@ -3588,7 +3588,7 @@ sparks.createQuestionsCSV = function(data) {
 
     width:    400,
     height:   320,
-    nPeriods: 3,
+    nPeriods: 50 / 36,
     verticalScreenFraction: 0.8,
 
     nVerticalMarks:   8,
