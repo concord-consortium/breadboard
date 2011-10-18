@@ -18,9 +18,9 @@
     nPeriods: 5,
     verticalScreenFraction: 0.8,
     
-    nVerticalMarks: 10,
+    nVerticalMarks:   10,
     nHorizontalMarks: 10,
-    nMinorTicks: 5,
+    nMinorTicks:      5,
     
     bgColor:    '#C6F7F7',
     tickColor:  '#7A9E9D',
@@ -84,9 +84,9 @@
           path = [],
           x, dx, y, dy;
       
-      r.rect(0, 0, this.width, this.height, 5).attr({fill: this.bgColor, 'stroke-width': 0});
+      r.rect(0, 0, this.width, this.height, 10).attr({fill: this.bgColor, 'stroke-width': 0});
       
-      for (x = 0, dx = this.height / this.nHorizontalMarks; x <= this.height; x += dx) {
+      for (x = dx = this.height / this.nHorizontalMarks; x <= this.height - dx; x += dx) {
         path.push('M');
         path.push(x);
         path.push(0);
@@ -96,7 +96,7 @@
         path.push(this.height);      
       }
       
-      for (y = 0, dy = this.width / this.nVerticalMarks; y <= this.width; y += dy) {
+      for (y = dy = this.width / this.nVerticalMarks; y <= this.width - dy; y += dy) {
         path.push('M');
         path.push(0);
         path.push(y);
@@ -112,26 +112,26 @@
       
       x = this.height / 2;
       
-      for (y = 0, dy = this.width / (this.nVerticalMarks * this.nMinorTicks); y <= this.width; y += dy) {
+      for (y = dy = this.width / (this.nVerticalMarks * this.nMinorTicks); y <= this.width - dy; y += dy) {
         path.push('M');
-        path.push(x-2);
+        path.push(x-3);
         path.push(y);
         
         path.push('L');
-        path.push(x+2);
+        path.push(x+3);
         path.push(y);
       }
       
       y = this.height / 2;
       
-      for (x = 0, dx = this.height / (this.nHorizontalMarks * this.nMinorTicks); x <= this.height; x += dx) {
+      for (x = dx = this.height / (this.nHorizontalMarks * this.nMinorTicks); x <= this.height - dx; x += dx) {
         path.push('M');
         path.push(x);
-        path.push(y-2);
+        path.push(y-3);
         
         path.push('L');
         path.push(x);
-        path.push(y+2);
+        path.push(y+3);
       }
       
       r.path(path.join(' ')).attr({stroke: this.tickColor});
