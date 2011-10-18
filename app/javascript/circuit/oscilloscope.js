@@ -1,5 +1,5 @@
+/*globals sparks getBreadBoard breadModel */
 /* FILE oscilloscope.js */
-/*globals console sparks breadModel getBreadBoard*/
 
 (function () {
 
