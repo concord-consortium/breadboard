@@ -8,7 +8,6 @@
 //= require <jquery/plugins/jquery.couch>
 //= require <jquery/plugins/jquery.easyTooltip>
 //= require <jquery/plugins/jquery.tablesorter.min>
-//= require <raphael-min>
 //= require <data-source/couch-ds>
 //= require <helpers/util>
 //= require <helpers/unit>
