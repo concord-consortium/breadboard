@@ -4173,10 +4173,15 @@ sparks.createQuestionsCSV = function(data) {
          return n;
      };
 
-     math.roundToSigDigits = function(x, n) {
-         var k = Math.pow(10, n - math.leftMostPos(x) - 1);
-         return Math.round(x * k) / k;
-     };
+    math.roundToSigDigits = function(x, n) {
+      var order = Math.ceil(Math.log10(x));
+
+      if (n - order > 0) {
+        return Math.round(x * Math.pow(10, n - order)) / Math.pow(10, n - order);
+      } else {
+        return Math.round(x / Math.pow(10, order - n)) * Math.pow(10, order - n);
+      }
+    };
 
      math.getRoundedSigDigits = function (x, n) {
          return Math.round(x * Math.pow(10, n - math.leftMostPos(x) - 1));
