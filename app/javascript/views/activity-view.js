@@ -36,9 +36,17 @@
         }
         this.loadFlash();
         breadModel('updateFlash');
+        
         if (section.show_multimeter){
           sparks.flash.sendCommand('set_multimeter_visibility','true');
           sparks.flash.sendCommand('set_probe_visibility','true');
+        } else if (section.show_oscilloscope){
+          var scopeView = new sparks.OscilloscopeView();
+          var $scope = scopeView.getView();
+          $('#oscope').append($scope);
+          sparks.flash.sendCommand('set_probe_visibility','true');
+          
+          section.meter.setView(scopeView);
         }
       }
 
