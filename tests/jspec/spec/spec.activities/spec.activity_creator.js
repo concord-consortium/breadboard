@@ -59,6 +59,64 @@ describe 'Activity Creator'
     
   end
   
+  describe 'Adding DMMs and OScopes'
+    
+    it 'should not set the section.meter property if no multimeter or oscope is visible'
+      var jsonSection =
+        {
+          "circuit": [
+             {
+               "type": "resistor",
+               "UID": "r1",
+               "connections": "b2,b3"
+             }
+          ]
+        };
+        
+      var ac = new sparks.ActivityConstructor(jsonSection);
+      sparks.activityController.currentSection.meter.should.be null
+    end
+    
+    it 'should set the section.meter property to be a DMM if multimeter is visible'
+      var jsonSection =
+        {
+          "circuit": [
+             {
+               "type": "resistor",
+               "UID": "r1",
+               "connections": "b2,b3"
+             }
+          ],
+          "show_multimeter": true
+        };
+        
+      var ac = new sparks.ActivityConstructor(jsonSection);
+      sparks.activityController.currentSection.meter.should_not.be null
+      sparks.activityController.currentSection.meter.dialPosition.should_not.be null
+      sparks.activityController.currentSection.meter.PROBE_CHANNEL.should.be undefined
+    end
+    
+    it 'should set the section.meter property to be an o-scope if o-scope is visible'
+      var jsonSection =
+        {
+          "circuit": [
+             {
+               "type": "resistor",
+               "UID": "r1",
+               "connections": "b2,b3"
+             }
+          ],
+          "show_oscilloscope": true
+        };
+        
+      var ac = new sparks.ActivityConstructor(jsonSection);
+      sparks.activityController.currentSection.meter.should_not.be null
+      sparks.activityController.currentSection.meter.PROBE_CHANNEL.should_not.be null
+      sparks.activityController.currentSection.meter.dialPosition.should.be undefined
+    end
+    
+  end
+  
   describe 'Question creation'
 
       // for more question creation examples, see spec.questions

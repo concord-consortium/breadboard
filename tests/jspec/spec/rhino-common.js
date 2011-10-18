@@ -1,5 +1,6 @@
 load('spec/support/env.rhino.js');
 
+load('../../lib/raphael-min.js');
 load('../../client-mr-activity.js');
 load('../../client-breadboard-activity.js');
 load('activities/series-interpretive.js');
