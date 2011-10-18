@@ -49,9 +49,9 @@
 
           if (!!result){
             var probeTrace = {
-              amplitude: result.real,
               frequency: source.frequency,
-              phase: this._getPhase(result.real, result.i)
+              amplitude: result.magnitude,
+              phase:     result.angle
             };
             
             this.addTrace(this.PROBE_CHANNEL, probeTrace);
@@ -64,15 +64,11 @@
       },
       
       addTrace: function(n, data) {
-        this.view.setTrace(n, data.amplitude, data.frequency, data.phase);
+        this.view.setTrace(n, data.frequency, data.amplitude, data.phase);
       },
       
       clearTrace: function(n) {
         this.view.clearTrace(n);
-      },
-      
-      _getPhase: function(real, imaginary) {
-        return Math.atan(real === 0 ? Infinity : imaginary / real);
       }
       
     };

@@ -45,11 +45,11 @@
       of the signal from left to right and to show 
        
       @param Number n            Which channel (should be 1 or 2)
-      @param Number amplitude    Amplitude of the wave, in volts.
-      @param Number frequency    Frequency of the wave, in Hz. This is ignored at first.
+      @param Number frequency    Frequency of the wave, in Hz. This is used to autoscale the y axis
+      @param Number amplitude    Amplitude of the wave, in volts
       @param Number phase        Phase of the wave, in radians. 0 -> cos(t), Math.PI/2 -> -sin(t), Math.PI -> -cos(t), (3*Math.PI)/2 -> sin(t)
     */
-    setTrace: function (n, amplitude, frequency, phase) {
+    setTrace: function (n, frequency, amplitude, phase) {
       // NB plot "cos (wt + phase)"
       
       console.log("setTrace(%d, %f, %f, %f)", n, amplitude, frequency, phase);

@@ -3,9 +3,11 @@
 
 (function () {
 
-    sparks.ComplexNumber = function (real, i) {
-      this.real = real || 0;
-      this.i = i || 0;
+    sparks.ComplexNumber = function (real, imag) {
+      this.real      = real || 0;
+      this.imag      = imag || 0;
+      this.magnitude = Math.sqrt(this.real*this.real + this.imag*this.imag);
+      this.angle     = this.real !== 0 ? Math.atan(this.imag / this.real) : (Math.PI / 2) * (this.imag > 0 ? 1 : 3);
     };
     
     // must handle strings of the form

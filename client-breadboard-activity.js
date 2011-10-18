@@ -3618,11 +3618,11 @@ sparks.createQuestionsCSV = function(data) {
       of the signal from left to right and to show
 
       @param Number n            Which channel (should be 1 or 2)
-      @param Number amplitude    Amplitude of the wave, in volts.
-      @param Number frequency    Frequency of the wave, in Hz. This is ignored at first.
+      @param Number frequency    Frequency of the wave, in Hz. This is used to autoscale the y axis
+      @param Number amplitude    Amplitude of the wave, in volts
       @param Number phase        Phase of the wave, in radians. 0 -> cos(t), Math.PI/2 -> -sin(t), Math.PI -> -cos(t), (3*Math.PI)/2 -> sin(t)
     */
-    setTrace: function (n, amplitude, frequency, phase) {
+    setTrace: function (n, frequency, amplitude, phase) {
 
       console.log("setTrace(%d, %f, %f, %f)", n, amplitude, frequency, phase);
 
@@ -5500,9 +5500,11 @@ sparks.createQuestionsCSV = function(data) {
 
 (function () {
 
-    sparks.ComplexNumber = function (real, i) {
-      this.real = real || 0;
-      this.i = i || 0;
+    sparks.ComplexNumber = function (real, imag) {
+      this.real      = real || 0;
+      this.imag      = imag || 0;
+      this.magnitude = Math.sqrt(this.real*this.real + this.imag*this.imag);
+      this.angle     = this.real !== 0 ? Math.atan(this.imag / this.real) : (Math.PI / 2) * (this.imag > 0 ? 1 : 3);
     };
 
     sparks.ComplexNumber.parse = function (str) {
@@ -7053,9 +7055,9 @@ sparks.createQuestionsCSV = function(data) {
 
           if (!!result){
             var probeTrace = {
-              amplitude: result.real,
               frequency: source.frequency,
-              phase: this._getPhase(result.real, result.i)
+              amplitude: result.magnitude,
+              phase:     result.angle
             };
 
             this.addTrace(this.PROBE_CHANNEL, probeTrace);
@@ -7068,15 +7070,11 @@ sparks.createQuestionsCSV = function(data) {
       },
 
       addTrace: function(n, data) {
-        this.view.setTrace(n, data.amplitude, data.frequency, data.phase);
+        this.view.setTrace(n, data.frequency, data.amplitude, data.phase);
       },
 
       clearTrace: function(n) {
         this.view.clearTrace(n);
-      },
-
-      _getPhase: function(real, imaginary) {
-        return Math.atan(real === 0 ? Infinity : imaginary / real);
       }
 
     };
