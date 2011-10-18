@@ -3588,16 +3588,17 @@ sparks.createQuestionsCSV = function(data) {
 
     width:    400,
     height:   320,
-    nPeriods: 5,
+    nPeriods: 3,
     verticalScreenFraction: 0.8,
 
     nVerticalMarks:   8,
     nHorizontalMarks: 10,
     nMinorTicks:      5,
 
-    bgColor:    '#C6F7F7',
-    tickColor:  '#7A9E9D',
-    traceColor: '#32E376',
+    bgColor:         '#74A6A6',//'#DEF7F7',//'#C6F7F7',
+    tickColor:       '#C6F7F7',//'#7A9E9D',
+    traceInnerColor: '#DEFFFA',
+    traceOuterColor: '#00FFD5',//'#2FF50C', //'#2EED0C',//'#D1FA02',//'#02FA3C',
 
     /**
       @returns $view A jQuery object containing a Raphael canvas displaying the oscilloscope traces.
@@ -3648,7 +3649,7 @@ sparks.createQuestionsCSV = function(data) {
     */
     clearTrace: function (n) {
       if (this.traces[n]) {
-        this.removeRaphaelTrace(this.traces[n].raphaelObject);
+        if (this.traces[n].raphaelObject) this.traces[n].raphaelObject.remove();
         delete this.traces[n];
       }
     },
@@ -3730,21 +3731,43 @@ sparks.createQuestionsCSV = function(data) {
 
       if (this.scaleChanged) {
         for (i = 0, l = this.traces.length; i < l; i++) {
-          if (this.traces[i]) this.redrawRaphaelTrace(this.traces[i]);
+          if (this.traces[i] && this.traces[i].raphaelObject) {
+            this.traces[i].raphaelObject.remove();
+            this.addRaphaelTrace(this.traces[i]);
+          }
         }
         this.scaleChanged = false;
       }
     },
 
-    removeRaphaelTrace: function (raphaelObject) {
-    },
-
     addRaphaelTrace: function (trace) {
-      var raphaelObject;
-      return raphaelObject;
-    },
+      var r    = this.raphaelCanvas,
+          path = [],
+          x    = 0,
+          hScale = this.horizontalScale,
+          vScale = this.verticalScale,
+          h    = this.height / 2,
+          overscan = 5,
+          raphaelObject;
 
-    redrawRaphaelTrace: function (trace) {
+      for (x = 0; x < this.width + overscan * 2; x++) {
+        path.push(x ===  0 ? 'M' : 'L');
+        path.push(x);
+
+        path.push(h - trace.amplitude * vScale * Math.sin((x - overscan) * hScale + trace.phase));
+      }
+
+      path = path.join(' ');
+
+      raphaelObject = r.set(
+        r.path(path).attr({stroke: this.traceOuterColor, 'stroke-width': 5}),
+        r.path(path).attr({stroke: this.traceInnerColor, 'stroke-width': 3})
+      );
+
+      raphaelObject.translate(-1 * overscan, 0);
+
+      trace.raphaelObject = raphaelObject;
+      return raphaelObject;
     }
 
   };
