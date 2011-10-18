@@ -249,4 +249,40 @@ border-bottom-style:solid;
 }
 
 
-.
+/* TIMELINE CHARTS */
+.timeline { 
+  font-size: 0.75em; 
+  height: 7em; 
+/*  width: 12em;*/
+  margin: 0.5em 1em 0.2em 1em;
+}
+.timeline li { 
+  position: relative;
+  float: left;
+  width: 1em; 
+  margin: 0 0.1em;
+  height: 6em; 
+  background: #FAA;
+}
+.timeline li a { 
+  display: block;
+  height: 100%;  
+}
+.timeline li a .count { 
+  display: block; 
+  position: absolute; 
+  bottom: 0; 
+  left: 0; 
+  height: 0; 
+  width: 100%; 
+  background: #AFA; 
+  text-indent: -9999px; 
+  overflow: hidden; 
+}
+.timeline li:hover { 
+  background: #E99; 
+}
+.timeline li a .count:hover { 
+  background: #8E8; 
+}
+

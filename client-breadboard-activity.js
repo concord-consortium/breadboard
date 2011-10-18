@@ -3967,19 +3967,24 @@ sparks.createQuestionsCSV = function(data) {
       var $table = $("<table>").addClass('classReport').addClass('tablesorter');
       var levels = sparks.classReportController.getLevels();
 
-      var headerRow = "<thead><tr><th class='firstcol'>Level</th><th>Sessions</th><th>Total score</th></tr></thead>";
+      var headerRow = "<thead><tr><th class='firstcol'>Level</th><th>Score per Attempt (%)</th><th>Total score</th></tr></thead>";
       $table.append(headerRow);
       for (var i = 0, ii = levels.length; i < ii; i++){
         var level = levels[i];
-        var $tr = $("<tr>");
+        var $tr = $("<tr>").addClass(i%2===0 ? "even":"odd");
         $tr.append("<td class='firstcol'>"+levels[i]+"</td>");
-        $tr.append("<td><canvas id='graphSpace' width='200' height='150'></canvas></td>");
-        var graphCanvas = $tr.find('canvas')[0];
-        if (graphCanvas && graphCanvas.getContext) {
-          var context = graphCanvas.getContext('2d');
-          var data = sparks.reportController.getSessionScoresAsPercentages(report.sectionReports[i]);
-          this.drawBarChart(context, data, 30, 10, 140, 50);
+
+        var $graphTD = $("<td>");//.css('width', '10em').css('overflow-x', 'scroll').css('overflow-y','hidden');
+        var $graph = $('<ul class="timeline">');
+        var data = sparks.reportController.getSessionScoresAsPercentages(report.sectionReports[i]);
+        for (j = 0, jj = data.length; j < jj; j++) {
+          var $li = $('<li><a><span class="count" style="height: '+data[j]+'%"></a></li>');
+          $li.easyTooltip({
+             content: ""+sparks.math.roundToSigDigits(data[j],3)+"% of the possible points in attempt "+(j+1)
+          });
+          $graph.append($li);
         }
+        $tr.append($graphTD.append($graph));
 
         var score = "";
         if (i < report.sectionReports.length){
@@ -3989,57 +3994,7 @@ sparks.createQuestionsCSV = function(data) {
         $table.append($tr);
       }
       return $table;
-    },
-
-    drawBarChart: function(context, data, startX, barWidth, chartHeight, markDataIncrementsIn) {
-      context.lineWidth = "1.0";
-      var startY = 380;
-      this.drawLine(context, startX, startY, startX, 30);
-      this.drawLine(context, startX, startY, 570, startY);
-      context.lineWidth = "0.0";
-      var maxValue = 0;
-      for (var i=0; i < data.length; i++) {
-        var height = data[i];
-        if (parseInt(height) > parseInt(maxValue)) maxValue = height;
-
-        if (height < 30) {
-          context.fillStyle = "#b90000";
-        } else if (height < 90) {
-          context.fillStyle = "#b9b900";
-        } else {
-          context.fillStyle = "#00b900";
-        }
-        this.drawRectangle(context,startX + (i * barWidth) + i,(chartHeight - height),barWidth,height,true);
-
-        context.textAlign = "left";
-        context.fillStyle = "#000";
-      }
-      var numMarkers = Math.ceil(maxValue / markDataIncrementsIn);
-      context.textAlign = "right";
-      context.fillStyle = "#000";
-      var markerValue = 0;
-      for (var i=0; i < numMarkers; i++) {
-        context.fillText(markerValue, (startX - 5), (chartHeight - markerValue), 50);
-        markerValue += markDataIncrementsIn;
-      }
-    },
-
-    drawLine: function(contextO, startx, starty, endx, endy) {
-      contextO.beginPath();
-      contextO.moveTo(startx, starty);
-      contextO.lineTo(endx, endy);
-      contextO.closePath();
-      contextO.stroke();
-    },
-
-    drawRectangle: function(contextO, x, y, w, h, fill) {
-      contextO.beginPath();
-      contextO.rect(x, y, w, h);
-      contextO.closePath();
-      contextO.stroke();
-      if (fill) contextO.fill();
     }
-
   };
 })();
 /*globals console sparks $ breadModel getBreadBoard */
