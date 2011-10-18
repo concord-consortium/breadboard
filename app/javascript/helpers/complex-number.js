@@ -19,29 +19,23 @@
         return null;
       }
       
-      var cn = new sparks.ComplexNumber();
-      
       var parts = /(.*)([+,\-]j.*)/.exec(str),            // try to tranform 'str' into [str, real, imaginary]
           real,
           imaginary;
-      if (parts && parts.length === 3){
-        real = parseFloat(parts[1]);
+          
+      if (parts && parts.length === 3) {
+        real      = parseFloat(parts[1]);
         imaginary = parseFloat(parts[2].replace("j", ""));    // imag. is of form (+/-)j123. We remove the j, but keep the +/-
       } else {
-        real = parseFloat(str);
+        real      = parseFloat(str);
+        imaginary = 0;
       }
       
-      if (!isNaN(real)) {
-        cn.real = real;
-      } else {
-        return null;        // if we couldn't parse a real part, don't return anything
+      if ( isNaN(real) || isNaN(imaginary) ) {
+        return null;  // should this be an Error?
       }
       
-      if (!isNaN(imaginary)) {
-        cn.i = imaginary;
-      }
-      
-      return cn;
+      return new sparks.ComplexNumber(real, imaginary);
     };
 
 })();
