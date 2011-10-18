@@ -6,6 +6,8 @@
     sparks.circuit.Oscilloscope = function () {
       this.probeLocation = null;
       this.view = null;
+      this.SOURCE_CHANNEL = 1;
+      this.PROBE_CHANNEL = 2;
     };
 
     sparks.circuit.Oscilloscope.prototype = {
@@ -35,7 +37,7 @@
           phase: 0
         };
         
-        this.addTrace(0, sourceTrace);
+        this.addTrace(this.SOURCE_CHANNEL, sourceTrace);
         
         if (this.probeLocation){
           var data = breadModel('query');
@@ -51,12 +53,12 @@
               phase: this._getPhase(result.real, result.i)
             };
             
-            this.addTrace(1, probeTrace);
+            this.addTrace(this.PROBE_CHANNEL, probeTrace);
           } else {
-            this.clearTrace(1);
+            this.clearTrace(this.PROBE_CHANNEL);
           }
         } else {
-          this.clearTrace(1);
+          this.clearTrace(this.PROBE_CHANNEL);
         }
       },
       
