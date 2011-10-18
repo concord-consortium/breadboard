@@ -9,7 +9,8 @@
       $breadboardDiv: $('#breadboard'),
       $imageDiv: $('#image'),
       $questionsDiv: $('#questions_area'),
-      $titleDiv: $('#title')
+      $titleDiv: $('#title'),
+      $scopeDiv: $('#oscope')
     };
   };
   
@@ -43,7 +44,7 @@
         } else if (section.show_oscilloscope){
           var scopeView = new sparks.OscilloscopeView();
           var $scope = scopeView.getView();
-          $('#oscope').append($scope);
+          this.divs.$scopeDiv.append($scope);
           sparks.flash.sendCommand('set_probe_visibility','true');
           
           section.meter.setView(scopeView);
