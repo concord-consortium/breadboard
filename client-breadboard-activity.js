@@ -2843,7 +2843,8 @@ sparks.createQuestionsCSV = function(data) {
       $breadboardDiv: $('#breadboard'),
       $imageDiv: $('#image'),
       $questionsDiv: $('#questions_area'),
-      $titleDiv: $('#title')
+      $titleDiv: $('#title'),
+      $scopeDiv: $('#oscope')
     };
   };
 
@@ -2877,7 +2878,7 @@ sparks.createQuestionsCSV = function(data) {
         } else if (section.show_oscilloscope){
           var scopeView = new sparks.OscilloscopeView();
           var $scope = scopeView.getView();
-          $('#oscope').append($scope);
+          this.divs.$scopeDiv.append($scope);
           sparks.flash.sendCommand('set_probe_visibility','true');
 
           section.meter.setView(scopeView);
@@ -3590,15 +3591,23 @@ sparks.createQuestionsCSV = function(data) {
     nPeriods: 5,
     verticalScreenFraction: 0.8,
 
+    nVerticalMarks: 10,
+    nHorizontalMarks: 10,
+    nMinorTicks: 5,
+
+    bgColor:    '#C6F7F7',
+    tickColor:  '#7A9E9D',
+    traceColor: '#32E376',
+
     /**
       @returns $view A jQuery object containing a Raphael canvas displaying the oscilloscope traces.
 
       Sets this.$view to be the returned jQuery object.
-
     */
     getView: function () {
       this.$view = $('<div>');
       this.raphaelCanvas = Raphael(this.$view[0], this.width, this.height);
+
       this.drawGrid();
 
       return this.$view;
@@ -3614,6 +3623,8 @@ sparks.createQuestionsCSV = function(data) {
       @param Number phase        Phase of the wave, in radians. 0 -> cos(t), Math.PI/2 -> -sin(t), Math.PI -> -cos(t), (3*Math.PI)/2 -> sin(t)
     */
     setTrace: function (n, amplitude, frequency, phase) {
+
+      console.log("setTrace(%d, %f, %f, %f)", n, amplitude, frequency, phase);
 
       if (this.traces[n]) this.clearTrace(n);
 
@@ -3641,6 +3652,61 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     drawGrid: function () {
+      var r = this.raphaelCanvas,
+          path = [],
+          x, dx, y, dy;
+
+      r.rect(0, 0, this.width, this.height, 5).attr({fill: this.bgColor, 'stroke-width': 0});
+
+      for (x = 0, dx = this.height / this.nHorizontalMarks; x <= this.height; x += dx) {
+        path.push('M');
+        path.push(x);
+        path.push(0);
+
+        path.push('L');
+        path.push(x);
+        path.push(this.height);
+      }
+
+      for (y = 0, dy = this.width / this.nVerticalMarks; y <= this.width; y += dy) {
+        path.push('M');
+        path.push(0);
+        path.push(y);
+
+        path.push('L');
+        path.push(this.width);
+        path.push(y);
+      }
+
+      r.path(path.join(' ')).attr({stroke: this.tickColor});
+
+      path = [];
+
+      x = this.height / 2;
+
+      for (y = 0, dy = this.width / (this.nVerticalMarks * this.nMinorTicks); y <= this.width; y += dy) {
+        path.push('M');
+        path.push(x-2);
+        path.push(y);
+
+        path.push('L');
+        path.push(x+2);
+        path.push(y);
+      }
+
+      y = this.height / 2;
+
+      for (x = 0, dx = this.height / (this.nHorizontalMarks * this.nMinorTicks); x <= this.height; x += dx) {
+        path.push('M');
+        path.push(x);
+        path.push(y-2);
+
+        path.push('L');
+        path.push(x);
+        path.push(y+2);
+      }
+
+      r.path(path.join(' ')).attr({stroke: this.tickColor});
     },
 
     setHorizontalScaleFrom: function (frequency) {
