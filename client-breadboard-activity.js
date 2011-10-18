@@ -7047,8 +7047,13 @@ sparks.createQuestionsCSV = function(data) {
         this.addTrace(this.SOURCE_CHANNEL, sourceTrace);
 
         if (this.probeLocation){
-          var data = breadModel('query');
           var probeNode = getBreadBoard().getHole(this.probeLocation).nodeName();
+          if (probeNode === "gnd"){
+            this.addTrace(this.PROBE_CHANNEL, {amplitude: 0, frequency: 0, phase: 0});
+            return;
+          }
+
+          var data = breadModel('query');
 
           var result = data[probeNode].v[0];
 

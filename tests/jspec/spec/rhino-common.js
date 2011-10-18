@@ -34,6 +34,7 @@ specResults = JSpec
 .exec('spec/spec.circuit/spec.function_generator.js')
 .exec('spec/spec.circuit/spec.circuit-math.js')
 .exec('spec/spec.circuit/spec.qucs.js')
+.exec('spec/spec.circuit/spec.oscope_view.js')
 
 .exec('spec/spec.activities/spec.pages.js')
 .exec('spec/spec.activities/spec.activity_creator.js')
