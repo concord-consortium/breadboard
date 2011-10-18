@@ -3587,11 +3587,11 @@ sparks.createQuestionsCSV = function(data) {
   sparks.OscilloscopeView.prototype = {
 
     width:    400,
-    height:   400,
+    height:   320,
     nPeriods: 5,
     verticalScreenFraction: 0.8,
 
-    nVerticalMarks:   10,
+    nVerticalMarks:   8,
     nHorizontalMarks: 10,
     nMinorTicks:      5,
 
@@ -3658,7 +3658,7 @@ sparks.createQuestionsCSV = function(data) {
 
       r.rect(0, 0, this.width, this.height, 10).attr({fill: this.bgColor, 'stroke-width': 0});
 
-      for (x = dx = this.height / this.nHorizontalMarks; x <= this.height - dx; x += dx) {
+      for (x = dx = this.width / this.nHorizontalMarks; x <= this.width - dx; x += dx) {
         path.push('M');
         path.push(x);
         path.push(0);
@@ -3668,7 +3668,7 @@ sparks.createQuestionsCSV = function(data) {
         path.push(this.height);
       }
 
-      for (y = dy = this.width / this.nVerticalMarks; y <= this.width - dy; y += dy) {
+      for (y = dy = this.height / this.nVerticalMarks; y <= this.height - dy; y += dy) {
         path.push('M');
         path.push(0);
         path.push(y);
@@ -3678,25 +3678,9 @@ sparks.createQuestionsCSV = function(data) {
         path.push(y);
       }
 
-      r.path(path.join(' ')).attr({stroke: this.tickColor});
-
-      path = [];
-
-      x = this.height / 2;
-
-      for (y = dy = this.width / (this.nVerticalMarks * this.nMinorTicks); y <= this.width - dy; y += dy) {
-        path.push('M');
-        path.push(x-3);
-        path.push(y);
-
-        path.push('L');
-        path.push(x+3);
-        path.push(y);
-      }
-
       y = this.height / 2;
 
-      for (x = dx = this.height / (this.nHorizontalMarks * this.nMinorTicks); x <= this.height - dx; x += dx) {
+      for (x = dx = this.width / (this.nHorizontalMarks * this.nMinorTicks); x <= this.width - dx; x += dx) {
         path.push('M');
         path.push(x);
         path.push(y-3);
@@ -3704,6 +3688,18 @@ sparks.createQuestionsCSV = function(data) {
         path.push('L');
         path.push(x);
         path.push(y+3);
+      }
+
+      x = this.width / 2;
+
+      for (y = dy = this.height / (this.nVerticalMarks * this.nMinorTicks); y <= this.height - dy; y += dy) {
+        path.push('M');
+        path.push(x-3);
+        path.push(y);
+
+        path.push('L');
+        path.push(x+3);
+        path.push(y);
       }
 
       r.path(path.join(' ')).attr({stroke: this.tickColor});
