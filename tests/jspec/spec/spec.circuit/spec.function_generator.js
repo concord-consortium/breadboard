@@ -137,7 +137,7 @@ describe "the FunctionGenerator component"
   end
   
   
-  describe "getNetlistSimulationLine()"    
+  describe "getQucsSimulationType()"    
   
     var fg, fgJSON;
   
@@ -161,7 +161,7 @@ describe "the FunctionGenerator component"
           breadModel('createCircuit', [fgJSON]);
           fg = getBreadBoard().components['source'];
           
-          fg.getNetlistSimulationLine().should.be '.AC:AC1 Type="lin" Start="1000" Stop="2000" Points="100" Noise="no"'          
+          fg.getQucsSimulationType().should.be '.AC:AC1 Type="lin" Start="1000" Stop="2000" Points="100" Noise="no"'          
         end
         
       end
@@ -174,7 +174,7 @@ describe "the FunctionGenerator component"
           breadModel('createCircuit', [fgJSON]);
           fg = getBreadBoard().components['source'];
 
-          fg.getNetlistSimulationLine().should.be '.AC:AC1 Type="lin" Start="1000" Stop="2000" Points="3" Noise="no"'
+          fg.getQucsSimulationType().should.be '.AC:AC1 Type="lin" Start="1000" Stop="2000" Points="3" Noise="no"'
         end
       end
     end
@@ -192,7 +192,7 @@ describe "the FunctionGenerator component"
           breadModel('createCircuit', [fgJSON]);
           fg = getBreadBoard().components['source'];
           
-          fg.getNetlistSimulationLine().should.be '.AC:AC1 Type="log" Start="4000" Stop="5000" Points="100" Noise="no"'          
+          fg.getQucsSimulationType().should.be '.AC:AC1 Type="log" Start="4000" Stop="5000" Points="100" Noise="no"'          
         end
         
       end
@@ -205,7 +205,7 @@ describe "the FunctionGenerator component"
           breadModel('createCircuit', [fgJSON]);
           fg = getBreadBoard().components['source'];
 
-          fg.getNetlistSimulationLine().should.be '.AC:AC1 Type="log" Start="2000" Stop="3000" Points="4" Noise="no"'
+          fg.getQucsSimulationType().should.be '.AC:AC1 Type="log" Start="2000" Stop="3000" Points="4" Noise="no"'
         end
 
       end
@@ -221,7 +221,7 @@ describe "the FunctionGenerator component"
         breadModel('createCircuit', [fgJSON]);
         fg = getBreadBoard().components['source'];
 
-        fg.getNetlistSimulationLine().should.be '.AC:AC1 Type="list" Values="[2000; 3000; 4000]" Noise="no"'
+        fg.getQucsSimulationType().should.be '.AC:AC1 Type="list" Values="[2000; 3000; 4000]" Noise="no"'
       end
       
     end
@@ -234,7 +234,7 @@ describe "the FunctionGenerator component"
         breadModel('createCircuit', [fgJSON]);
         fg = getBreadBoard().components['source'];
 
-        fg.getNetlistSimulationLine().should.be '.AC:AC1 Type="const" Values="1234" Noise="no"'
+        fg.getQucsSimulationType().should.be '.AC:AC1 Type="const" Values="1234" Noise="no"'
       end
     end
   
