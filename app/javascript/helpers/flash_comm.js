@@ -55,10 +55,12 @@
       var t = '';
       var args = value.split('|');
       
+      var section = sparks.activityController.currentSection;
+      
       if (name === 'connect') {
           if (args[0] === 'probe') {
             var probe_color = args[1] === 'probe_red' ? "red" : "black";
-            sparks.sectionController.multimeter.setProbeLocation(probe_color, args[2]);
+            section.meter.setProbeLocation(probe_color, args[2]);
           }
           if (args[0] === 'component') {
               // for now, we're just dealing with the situation of replacing one lead that had been lifted
@@ -69,11 +71,10 @@
                 "type": "connect lead", 
                 "location": args[2]});
           }
-          sparks.sectionController.multimeter.update();
       } else if (name === 'disconnect') {
           if (args[0] === 'probe') {
             var probe_color = args[1] === 'probe_red' ? "red" : "black";
-            sparks.sectionController.multimeter.setProbeLocation(probe_color, null);
+            section.meter.setProbeLocation(probe_color, null);
           } else if (args[0] === 'component') {
             var hole = args[2];
             var newHole = breadModel('getGhostHole', hole+"ghost");
@@ -83,7 +84,6 @@
               "type": "disconnect lead", 
               "location": hole});
           }
-          sparks.sectionController.multimeter.update();
       } else if (name === 'probe') {
           $('#popup').dialog();
           
@@ -126,13 +126,10 @@
 
           $('#popup').dialog('close');
       } else if (name == 'multimeter_dial') {
-          console.log('changed multimeter dial'+value);
-          sparks.sectionController.multimeter.dialPosition = value;
-          sparks.sectionController.multimeter.update();
+          section.meter.dialPosition = value;
           // activity.log.add(name, { value: this.multimeter.dialPosition });
       } else if (name == 'multimeter_power') {
-          sparks.sectionController.multimeter.powerOn = value == 'true' ? true : false;
-          sparks.sectionController.multimeter.update();
+          section.meter.powerOn = value == 'true' ? true : false;
           // activity.log.add(name, { value: this.multimeter.powerOn });
           //                 if (value === 'true' && this.multimeter.allConnected()) {
           //                     activity.log.add('make_circuit');
@@ -140,6 +137,8 @@
           //                     activity.log.add('break_circuit');
           //                 }
       }
+      
+      section.meter.update();
   }
 
 })();

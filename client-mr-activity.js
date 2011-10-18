@@ -2315,17 +2315,12 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
       var t = '';
       var args = value.split('|');
 
+      var section = sparks.activityController.currentSection;
+
       if (name === 'connect') {
           if (args[0] === 'probe') {
-              if (args[1] === 'probe_red') {
-                  sparks.sectionController.multimeter.redProbeConnection = args[2];
-              }
-              else if (args[1] === 'probe_black') {
-                  sparks.sectionController.multimeter.blackProbeConnection = args[2];
-              }
-              else {
-                  alert('Activity#receiveEvent: connect: unknonw probe name ' + args[1]);
-              }
+            var probe_color = args[1] === 'probe_red' ? "red" : "black";
+            section.meter.setProbeLocation(probe_color, args[2]);
           }
           if (args[0] === 'component') {
               if (!!args[2]){
@@ -2335,18 +2330,10 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
                 "type": "connect lead",
                 "location": args[2]});
           }
-          sparks.sectionController.multimeter.update();
       } else if (name === 'disconnect') {
           if (args[0] === 'probe') {
-              if (args[1] === 'probe_red') {
-                  sparks.sectionController.multimeter.redProbeConnection = null;
-              }
-              else if (args[1] === 'probe_black') {
-                  sparks.sectionController.multimeter.blackProbeConnection = null;
-              }
-              else {
-                  alert('Activity#receiveEvent: disconnect: Unknonw probe name ' + args[1]);
-              }
+            var probe_color = args[1] === 'probe_red' ? "red" : "black";
+            section.meter.setProbeLocation(probe_color, null);
           } else if (args[0] === 'component') {
             var hole = args[2];
             var newHole = breadModel('getGhostHole', hole+"ghost");
@@ -2356,7 +2343,6 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
               "type": "disconnect lead",
               "location": hole});
           }
-          sparks.sectionController.multimeter.update();
       } else if (name === 'probe') {
           $('#popup').dialog();
 
@@ -2398,13 +2384,12 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
 
           $('#popup').dialog('close');
       } else if (name == 'multimeter_dial') {
-          console.log('changed multimeter dial'+value);
-          sparks.sectionController.multimeter.dialPosition = value;
-          sparks.sectionController.multimeter.update();
+          section.meter.dialPosition = value;
       } else if (name == 'multimeter_power') {
-          sparks.sectionController.multimeter.powerOn = value == 'true' ? true : false;
-          sparks.sectionController.multimeter.update();
+          section.meter.powerOn = value == 'true' ? true : false;
       }
+
+      section.meter.update();
   }
 
 })();
@@ -2827,6 +2812,14 @@ sparks.createQuestionsCSV = function(data) {
             this.dialPosition = 'acv_750';
             this.powerOn = false;
             this.disabledPositions = [];
+        },
+
+        setProbeLocation: function (probe, location) {
+          if (probe === "red") {
+            this.redProbeConnection = location;
+          } else {
+            this.blackProbeConnection = location;
+          }
         },
 
         update : function () {

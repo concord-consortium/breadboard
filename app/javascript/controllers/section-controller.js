@@ -11,8 +11,6 @@
     this.currentPageIndex = -1;
     this.pageIndexMap = {};
     
-    this.multimeter = null; // this is a kind of strange place for this, yes
-    
     this.jsonSection = null;
     this.id = -1;
   };
@@ -39,9 +37,20 @@
       
       section.circuit = jsonSection.circuit;
       section.faults = jsonSection.faults;
+      
       section.hide_circuit = !!jsonSection.hide_circuit;
-      section.show_multimeter = !(!(jsonSection.show_multimeter) || jsonSection.show_multimeter === "false");
+      section.show_multimeter = !(!(jsonSection.show_multimeter) || jsonSection.show_multimeter === "false");     // may be a string
+      section.show_oscilloscope = !(!(jsonSection.show_oscilloscope) || jsonSection.show_oscilloscope === "false");
       section.disable_multimeter_position = jsonSection.disable_multimeter_position;
+      
+      if (!section.hide_circuit && section.show_multimeter) {
+        section.meter = new sparks.circuit.Multimeter2();
+        if(section.disable_multimeter_position){
+          section.meter.set_disable_multimeter_position(section.disable_multimeter_position);
+        }
+      } else if (!section.hide_circuit && section.show_oscilloscope) {
+        section.meter = new sparks.circuit.Oscilloscope();
+      }
       
       section.jsonSection = jsonSection;
       
@@ -67,11 +76,6 @@
       
       if (!!section.circuit){
         breadModel("createCircuit", section.circuit);
-        
-        this.multimeter = new sparks.circuit.Multimeter2();
-        if(section.disable_multimeter_position){
-          this.multimeter.set_disable_multimeter_position(section.disable_multimeter_position);
-        }
       }
       
       if (!!section.faults){

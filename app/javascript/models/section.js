@@ -12,7 +12,11 @@
     this.pages = [];
     this.variables = {};
     
+    this.meter = null;        // may become either the dmm or the oscilloscope
+    
     this.hide_circuit = false;
+    this.show_multimeter = false;
+    this.show_oscilloscope = false;
     
     this.section_url = "";
     this.images_url = "";
