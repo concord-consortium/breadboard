@@ -1,5 +1,6 @@
 describe 'Using multimeter with mock Flash connection'
     before
+      sparks.activityController.reset();
       stub(sparks.util, 'readCookie').and_return(null);
       mock_request().and_return(sparks.jsonSection, 'application/javascript', 200)
       sparks.config.qucsate_server_url = "http://localhost:1234/sparks/qucsator/solve";

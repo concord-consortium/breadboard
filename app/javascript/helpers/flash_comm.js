@@ -70,6 +70,7 @@
               sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
                 "type": "connect lead", 
                 "location": args[2]});
+              section.meter.update();
           }
       } else if (name === 'disconnect') {
           if (args[0] === 'probe') {
@@ -83,6 +84,7 @@
             sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
               "type": "disconnect lead", 
               "location": hole});
+            section.meter.update();
           }
       } else if (name === 'probe') {
           $('#popup').dialog();
@@ -127,9 +129,11 @@
           $('#popup').dialog('close');
       } else if (name == 'multimeter_dial') {
           section.meter.dialPosition = value;
+          section.meter.update();
           // activity.log.add(name, { value: this.multimeter.dialPosition });
       } else if (name == 'multimeter_power') {
           section.meter.powerOn = value == 'true' ? true : false;
+          section.meter.update();
           // activity.log.add(name, { value: this.multimeter.powerOn });
           //                 if (value === 'true' && this.multimeter.allConnected()) {
           //                     activity.log.add('make_circuit');
@@ -137,8 +141,6 @@
           //                     activity.log.add('break_circuit');
           //                 }
       }
-      
-      section.meter.update();
   }
 
 })();

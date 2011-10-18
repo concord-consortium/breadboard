@@ -39,6 +39,7 @@
           } else {
             this.blackProbeConnection = location;
           }
+          this.update();
         },
 
         update : function () {

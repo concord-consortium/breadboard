@@ -5431,6 +5431,7 @@ sparks.createQuestionsCSV = function(data) {
               sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
                 "type": "connect lead",
                 "location": args[2]});
+              section.meter.update();
           }
       } else if (name === 'disconnect') {
           if (args[0] === 'probe') {
@@ -5444,6 +5445,7 @@ sparks.createQuestionsCSV = function(data) {
             sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
               "type": "disconnect lead",
               "location": hole});
+            section.meter.update();
           }
       } else if (name === 'probe') {
           $('#popup').dialog();
@@ -5487,11 +5489,11 @@ sparks.createQuestionsCSV = function(data) {
           $('#popup').dialog('close');
       } else if (name == 'multimeter_dial') {
           section.meter.dialPosition = value;
+          section.meter.update();
       } else if (name == 'multimeter_power') {
           section.meter.powerOn = value == 'true' ? true : false;
+          section.meter.update();
       }
-
-      section.meter.update();
   }
 
 })();
@@ -6472,6 +6474,7 @@ sparks.createQuestionsCSV = function(data) {
           } else {
             this.blackProbeConnection = location;
           }
+          this.update();
         },
 
         update : function () {
@@ -7021,8 +7024,10 @@ sparks.createQuestionsCSV = function(data) {
       },
 
       setProbeLocation: function(probe, location) {
-        this.probeLocation = location;
-        this.update();
+        if (probe === "red") {
+          this.probeLocation = location;
+          this.update();
+        }
       },
 
       update: function() {

@@ -4,6 +4,7 @@ load('../../lib/raphael-min.js');
 load('../../client-mr-activity.js');
 load('../../client-breadboard-activity.js');
 load('activities/series-interpretive.js');
+load('activities/oscope-activity.js');
 
 load('spec/lib/jspec.js');
 load('spec/lib/jspec.timers.js');
@@ -28,6 +29,7 @@ specResults = JSpec
 .exec('spec/spec.circuit/spec.breadboard_measuring.js')
 .exec('spec/spec.circuit/spec.flash_multimeter.js')
 .exec('spec/spec.circuit/spec.flash_breadboard.js') 
+.exec('spec/spec.circuit/spec.flash_oscope.js')
 .exec('spec/spec.circuit/spec.circuit_constructor.js')
 .exec('spec/spec.circuit/spec.circuit_component_creation.js')
 .exec('spec/spec.circuit/spec.function_generator.js')

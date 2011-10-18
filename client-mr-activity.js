@@ -2329,6 +2329,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
               sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
                 "type": "connect lead",
                 "location": args[2]});
+              section.meter.update();
           }
       } else if (name === 'disconnect') {
           if (args[0] === 'probe') {
@@ -2342,6 +2343,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
             sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
               "type": "disconnect lead",
               "location": hole});
+            section.meter.update();
           }
       } else if (name === 'probe') {
           $('#popup').dialog();
@@ -2385,11 +2387,11 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
           $('#popup').dialog('close');
       } else if (name == 'multimeter_dial') {
           section.meter.dialPosition = value;
+          section.meter.update();
       } else if (name == 'multimeter_power') {
           section.meter.powerOn = value == 'true' ? true : false;
+          section.meter.update();
       }
-
-      section.meter.update();
   }
 
 })();
@@ -2820,6 +2822,7 @@ sparks.createQuestionsCSV = function(data) {
           } else {
             this.blackProbeConnection = location;
           }
+          this.update();
         },
 
         update : function () {
