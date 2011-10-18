@@ -1,4 +1,5 @@
 /* FILE oscilloscope.js */
+/*globals console sparks breadModel getBreadBoard*/
 
 (function () {
 
@@ -11,16 +12,16 @@
       
       setView: function(view) {
         this.view = view;
-        this.updateDisplay();         // we can update view immediately with the source trace
+        this.update();         // we can update view immediately with the source trace
       },
       
       // can be a hole name, like 'a1' or can be null if probe is lifted
       setProbeLocation: function(location) {
         this.probeLocation = location;
-        this.updateDisplay();
+        this.update();
       },
       
-      updateDisplay: function() {
+      update: function() {
         var breadboard = getBreadBoard(),
             source     = breadboard.components.source;
             
@@ -32,7 +33,7 @@
           amplitude: source.amplitude,
           frequency: source.frequency,
           phase: 0
-        }
+        };
         
         this.addTrace(0, sourceTrace);
         
@@ -47,15 +48,15 @@
             var probeTrace = {
               amplitude: result.real,
               frequency: source.frequency,
-              phase: result.i
-            }
+              phase: this._getPhase(result.real, result.i)
+            };
             
             this.addTrace(1, probeTrace);
           } else {
             this.clearTrace(1);
           }
         } else {
-          clearTrace(1);
+          this.clearTrace(1);
         }
       },
       
@@ -65,6 +66,10 @@
       
       clearTrace: function(n) {
         this.view.clearTrace(n);
+      },
+      
+      _getPhase: function(real, imaginary) {
+        return Math.atan(real === 0 ? Infinity : imaginary / real);
       }
       
     };
