@@ -46,7 +46,7 @@
           var probeNode = getBreadBoard().getHole(this.probeLocation).nodeName();
           if (probeNode === "gnd"){
             // short-circuit this operation and just return a flat trace
-            this.addTrace(this.PROBE_CHANNEL, {amplitude: 0, freqency: 0, phase: 0});
+            this.addTrace(this.PROBE_CHANNEL, {amplitude: 0, frequency: 0, phase: 0});
             return;
           }
           
