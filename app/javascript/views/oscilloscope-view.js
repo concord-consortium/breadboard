@@ -214,9 +214,11 @@
           x    = 0,
           hScale = this.horizontalScale,
           vScale = this.verticalScale,
-          h    = this.height / 2,
-          overscan = 5,
-          raphaelObject;
+          h      = this.height / 2,
+          overscan = 50,
+          raphaelObject,
+          paths,
+          i;
           
       for (x = 0; x < this.width + overscan * 2; x++) {
         path.push(x ===  0 ? 'M' : 'L');
@@ -229,12 +231,16 @@
       
       path = path.join(' ');
       
+      paths = [];
+      for (i = 1; i < 10; i++ ) {
+        paths.push( r.path(path).attr({stroke: this.traceOuterColor, 'stroke-width': 15 * i, opacity: 0.01}) );
+      }
+      paths.push(r.path(path).attr({stroke: this.traceOuterColor, 'stroke-width': 4.5}));
+      paths.push(r.path(path).attr({stroke: this.traceInnerColor, 'stroke-width': 2}));
+
+      raphaelObject = r.set.apply(r, paths);
+      
       // "glowy green line" effect by tracing overlaying an oversaturated (greenish white) line over a fatter green line
-      raphaelObject = r.set(
-        r.path(path).attr({stroke: this.traceOuterColor, 'stroke-width': 7, opacity: 0.4}),
-        r.path(path).attr({stroke: this.traceOuterColor, 'stroke-width': 4}),
-        r.path(path).attr({stroke: this.traceInnerColor, 'stroke-width': 2})
-      );
       
       this.raphaelGrid.toFront();
 
