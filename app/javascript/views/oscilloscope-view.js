@@ -10,6 +10,7 @@
     this.verticalScale   = null;
     this.scaleChanged    = false;
     this.raphaelGrid     = null;
+    this.model           = null;
   };
   
   sparks.OscilloscopeView.prototype = {
@@ -29,6 +30,11 @@
     traceInnerColor: '#FFFFFF',
     traceOuterColor: '#00E3AE',
 
+    // The famed "MV" pattern...
+    setModel: function (model) {
+      this.model = model;
+    },
+    
     /**
       @returns $view A jQuery object containing a Raphael canvas displaying the oscilloscope traces.
       

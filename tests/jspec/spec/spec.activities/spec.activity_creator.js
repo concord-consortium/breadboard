@@ -2,11 +2,13 @@ describe 'Activity Creator'
 
   before
     oldOScopeView = sparks.OscilloscopeView;
-    sparks.OscilloscopeView = function() {
-        this.getView = function () { return $('<div>');};
-        this.setTrace = function() {};
-        this.clearTrace = function() {};
-      };
+    sparks.OscilloscopeView = function () {};
+    sparks.OscilloscopeView.prototype = {
+      getView:    function () { return $('<div>'); },
+      setTrace:   function () {},
+      clearTrace: function () {},
+      setModel:   function () {}
+    };
   end
   
   after

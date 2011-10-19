@@ -14,6 +14,7 @@
       
       setView: function(view) {
         this.view = view;
+        this.view.setModel(this);
         this.update();         // we can update view immediately with the source trace
       },
       
@@ -35,7 +36,6 @@
             data,
             result;
             
-            
         if (!source || !source.frequency || !source.amplitude) {
           return;                                     // we must have a source with a freq and an amplitude
         }
@@ -50,6 +50,7 @@
         
         if (this.probeLocation) {
           probeNode = getBreadBoard().getHole(this.probeLocation).nodeName();
+
           if (probeNode === 'gnd') {
             // short-circuit this operation and just return a flat trace
             this.addTrace(this.PROBE_CHANNEL, {amplitude: 0, frequency: 0, phase: 0});

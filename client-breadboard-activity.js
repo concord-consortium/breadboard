@@ -3583,6 +3583,7 @@ sparks.createQuestionsCSV = function(data) {
     this.verticalScale   = null;
     this.scaleChanged    = false;
     this.raphaelGrid     = null;
+    this.model           = null;
   };
 
   sparks.OscilloscopeView.prototype = {
@@ -3601,6 +3602,10 @@ sparks.createQuestionsCSV = function(data) {
     textColor:       '#D8E1EB',
     traceInnerColor: '#FFFFFF',
     traceOuterColor: '#00E3AE',
+
+    setModel: function (model) {
+      this.model = model;
+    },
 
     /**
       @returns $view A jQuery object containing a Raphael canvas displaying the oscilloscope traces.
@@ -7049,6 +7054,7 @@ sparks.createQuestionsCSV = function(data) {
 
       setView: function(view) {
         this.view = view;
+        this.view.setModel(this);
         this.update();         // we can update view immediately with the source trace
       },
 
@@ -7068,7 +7074,6 @@ sparks.createQuestionsCSV = function(data) {
             data,
             result;
 
-
         if (!source || !source.frequency || !source.amplitude) {
           return;                                     // we must have a source with a freq and an amplitude
         }
@@ -7083,6 +7088,7 @@ sparks.createQuestionsCSV = function(data) {
 
         if (this.probeLocation) {
           probeNode = getBreadBoard().getHole(this.probeLocation).nodeName();
+
           if (probeNode === 'gnd') {
             this.addTrace(this.PROBE_CHANNEL, {amplitude: 0, frequency: 0, phase: 0});
             return;
