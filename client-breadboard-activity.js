@@ -3598,8 +3598,8 @@ sparks.createQuestionsCSV = function(data) {
 
     bgColor:         '#324569',
     tickColor:       '#141C2B',
-    traceInnerColor: '#DEFFFA',
-    traceOuterColor: '#00FFD5',
+    traceInnerColor: '#FFFFFF',
+    traceOuterColor: '#00E3AE',
 
     /**
       @returns $view A jQuery object containing a Raphael canvas displaying the oscilloscope traces.
@@ -3766,8 +3766,9 @@ sparks.createQuestionsCSV = function(data) {
       path = path.join(' ');
 
       raphaelObject = r.set(
-        r.path(path).attr({stroke: this.traceOuterColor, 'stroke-width': 5}),
-        r.path(path).attr({stroke: this.traceInnerColor, 'stroke-width': 3})
+        r.path(path).attr({stroke: this.traceOuterColor, 'stroke-width': 7, opacity: 0.4}),
+        r.path(path).attr({stroke: this.traceOuterColor, 'stroke-width': 4}),
+        r.path(path).attr({stroke: this.traceInnerColor, 'stroke-width': 2})
       );
 
       this.raphaelGrid.toFront();
