@@ -51,15 +51,18 @@
      // Round x to n significant digits
      // e.g. Returns 12700 for 12678 when n = 3.
     math.roundToSigDigits = function(x, n) {
-      var order = Math.ceil(Math.log10(x));
+      var order = Math.ceil(Math.log10(x)),
+          factor;
        
       // Divide into 2 cases to get numerically sane results (i.e., no .xxx999999s)
       if (n - order > 0) {
-        // Ex. order = 1e-4, n = 3: multiply by 1e7, round, divide by 1e7
-        return Math.round(x * Math.pow(10, n - order)) / Math.pow(10, n - order);
+        // Ex. order of x = 1e-4, n = 3 sig digs: so multiply by 1e7, round, then divide by 1e7
+        factor = Math.pow(10, n - order);
+        return Math.round(x * factor) / factor;
       } else {
-        // Ex. order = 1e6, n = 2: divide by 1e4, round, multiply by 1e4
-        return Math.round(x / Math.pow(10, order - n)) * Math.pow(10, order - n);
+        // Ex. order of x = 1e6, n = 2 sig digs: so divide by 1e4, round, then multiply by 1e4
+        factor = Math.pow(10, order - n);
+        return Math.round(x / factor) * factor;
       }
     };
 

@@ -7891,12 +7891,15 @@ var apMessageBox = apMessageBox || {};
      };
 
     math.roundToSigDigits = function(x, n) {
-      var order = Math.ceil(Math.log10(x));
+      var order = Math.ceil(Math.log10(x)),
+          factor;
 
       if (n - order > 0) {
-        return Math.round(x * Math.pow(10, n - order)) / Math.pow(10, n - order);
+        factor = Math.pow(10, n - order);
+        return Math.round(x * factor) / factor;
       } else {
-        return Math.round(x / Math.pow(10, order - n)) * Math.pow(10, order - n);
+        factor = Math.pow(10, order - n);
+        return Math.round(x / factor) * factor;
       }
     };
 
