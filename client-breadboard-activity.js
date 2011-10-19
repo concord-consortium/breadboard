@@ -3597,7 +3597,8 @@ sparks.createQuestionsCSV = function(data) {
     nMinorTicks:      5,
 
     bgColor:         '#324569',
-    tickColor:       '#141C2B',
+    tickColor:       '#9EBDDE',//'#141C2B',
+    textColor:       '#D8E1EB',
     traceInnerColor: '#FFFFFF',
     traceOuterColor: '#00E3AE',
 
@@ -3608,9 +3609,38 @@ sparks.createQuestionsCSV = function(data) {
     */
     getView: function () {
       this.$view = $('<div>');
-      this.raphaelCanvas = Raphael(this.$view[0], this.width, this.height);
+      this.$view.css({
+        position: 'relative',
+        width:    this.width +100,
+        height:   this.height+50,
+        backgroundColor: '#2F85E0'
+      });
 
-      this.$view.append('<p>CH1 <span class="hscale"></span>μs</p> <p>M  <span class="vscale"></span>V</p>');
+      this.$holder = $('<div class="raphael-holder">').css({
+        paddingTop:  10,
+        paddingLeft: 10
+      }).appendTo(this.$view);
+
+      this.raphaelCanvas = Raphael(this.$holder[0], this.width, this.height);
+
+      $('<p>CH1 <span class="vscale channel1"></span>V</p>').css({
+        position: 'absolute',
+        left: 5,
+        color: this.textColor
+      }).appendTo(this.$view);
+
+      $('<p>CH2 <span class="vscale channel2"></span>V</p>').css({
+        position: 'absolute',
+        left: 5 + this.width / 4,
+        color: this.textColor
+      }).appendTo(this.$view);
+
+      $('<p>M <span class="hscale"></span>μs</p>').css({
+        position: 'absolute',
+        left: 5 + this.width / 2,
+        color: this.textColor
+      }).appendTo(this.$view);
+
       this.drawGrid();
 
       return this.$view;
@@ -3623,9 +3653,13 @@ sparks.createQuestionsCSV = function(data) {
       @param Number n            Which channel (should be 1 or 2)
       @param Number frequency    Frequency of the wave, in Hz. This is used to autoscale the y axis
       @param Number amplitude    Amplitude of the wave, in volts
-      @param Number phase        Phase of the wave, in radians. 0 -> sin(t), Math.PI/2 -> -cos(t), Math.PI -> -sin(t), (3*Math.PI)/2 -> cos(t)
+      @param Number phase        Phase of the wave, in radians.
     */
     setTrace: function (n, frequency, amplitude, phase) {
+
+      if (n !== 1 && n !== 2) {
+        throw new Error("OscilloscopeView: attempted to set nonexistent channel number " + n);
+      }
 
       console.log("setTrace(%d, %f, %f, %f)", n, frequency, amplitude, phase);
 
@@ -3661,7 +3695,7 @@ sparks.createQuestionsCSV = function(data) {
           path = [],
           x, dx, y, dy;
 
-      r.rect(0, 0, this.width, this.height, 10).attr({fill: this.bgColor, 'stroke-width': 0});
+      r.rect(0, 0, this.width, this.height).attr({fill: this.bgColor, 'stroke-width': 0});
 
       for (x = dx = this.width / this.nHorizontalMarks; x <= this.width - dx; x += dx) {
         path.push('M');
@@ -3716,7 +3750,7 @@ sparks.createQuestionsCSV = function(data) {
 
       if (scale !== this.horizontalScale) {
         this.horizontalScale = scale;
-        this.$view.find('.hscale').html(sparks.math.roundToSigDigits(millisecPerDiv, 3).toString());
+        this.$view.find('.hscale').html(sparks.math.roundToSigDigits(millisecPerDiv * 1000, 3).toString());
         this.scaleChanged = true;
       }
     },
