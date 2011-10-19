@@ -250,10 +250,8 @@ border-bottom-style:solid;
 
 #oscope p {
   margin: 3px 0 3px 0;
-}
-
-#oscope .hscale, #oscope .vscale {
-  font-weight: bold;
+  font-family: 'Anonymous Pro', sans-serif;
+  font-size: 16px;
 }
 
 /* TIMELINE CHARTS */

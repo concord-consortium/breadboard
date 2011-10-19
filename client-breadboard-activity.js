@@ -3610,7 +3610,7 @@ sparks.createQuestionsCSV = function(data) {
       this.$view = $('<div>');
       this.raphaelCanvas = Raphael(this.$view[0], this.width, this.height);
 
-      this.$view.append('<p><span class="hscale"></span> msec/div</p> <p><span class="vscale"></span> volts/div</p>');
+      this.$view.append('<p>CH1 <span class="hscale"></span>μs</p> <p>M  <span class="vscale"></span>V</p>');
       this.drawGrid();
 
       return this.$view;
