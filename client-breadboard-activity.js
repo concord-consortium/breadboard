@@ -7061,13 +7061,19 @@ sparks.createQuestionsCSV = function(data) {
 
       update: function() {
         var breadboard = getBreadBoard(),
-            source     = breadboard.components.source;
+            source     = breadboard.components.source,
+            sourceTrace,
+            probeTrace,
+            probeNode,
+            data,
+            result;
 
-        if (!source || !source.frequency || !source.amplitude){
+
+        if (!source || !source.frequency || !source.amplitude) {
           return;                                     // we must have a source with a freq and an amplitude
         }
 
-        var sourceTrace = {
+        sourceTrace = {
           amplitude: source.amplitude,
           frequency: source.frequency,
           phase: 0
@@ -7075,19 +7081,19 @@ sparks.createQuestionsCSV = function(data) {
 
         this.addTrace(this.SOURCE_CHANNEL, sourceTrace);
 
-        if (this.probeLocation){
-          var probeNode = getBreadBoard().getHole(this.probeLocation).nodeName();
-          if (probeNode === "gnd"){
+        if (this.probeLocation) {
+          probeNode = getBreadBoard().getHole(this.probeLocation).nodeName();
+          if (probeNode === 'gnd') {
             this.addTrace(this.PROBE_CHANNEL, {amplitude: 0, frequency: 0, phase: 0});
             return;
           }
 
-          var data = breadModel('query');
+          data = breadModel('query');
 
-          var result = data[probeNode].v[0];
+          result = data[probeNode].v[0];
 
-          if (!!result){
-            var probeTrace = {
+          if (result) {
+            probeTrace = {
               frequency: source.frequency,
               amplitude: result.magnitude,
               phase:     result.angle
