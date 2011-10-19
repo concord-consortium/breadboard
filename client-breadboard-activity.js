@@ -3760,7 +3760,7 @@ sparks.createQuestionsCSV = function(data) {
         path.push(x ===  0 ? 'M' : 'L');
         path.push(x);
 
-        path.push(h - trace.amplitude * vScale * Math.sin((x - overscan) * hScale - trace.phase));
+        path.push(h - trace.amplitude * vScale * Math.sin((x - overscan) * hScale + trace.phase));
       }
 
       path = path.join(' ');

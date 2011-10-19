@@ -191,7 +191,7 @@
         
         // "overscan" the trace 5 pixels to either side of the scope window, but translate 5 pixels to the right so we 
         // don't have negative x-coords (which are invalid) in the path string
-        path.push(h - trace.amplitude * vScale * Math.sin((x - overscan) * hScale - trace.phase));
+        path.push(h - trace.amplitude * vScale * Math.sin((x - overscan) * hScale + trace.phase));
       }
       
       path = path.join(' ');
