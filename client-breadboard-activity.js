@@ -3623,7 +3623,7 @@ sparks.createQuestionsCSV = function(data) {
       @param Number n            Which channel (should be 1 or 2)
       @param Number frequency    Frequency of the wave, in Hz. This is used to autoscale the y axis
       @param Number amplitude    Amplitude of the wave, in volts
-      @param Number phase        Phase of the wave, in radians. 0 -> cos(t), Math.PI/2 -> -sin(t), Math.PI -> -cos(t), (3*Math.PI)/2 -> sin(t)
+      @param Number phase        Phase of the wave, in radians. 0 -> sin(t), Math.PI/2 -> -cos(t), Math.PI -> -sin(t), (3*Math.PI)/2 -> cos(t)
     */
     setTrace: function (n, frequency, amplitude, phase) {
 
