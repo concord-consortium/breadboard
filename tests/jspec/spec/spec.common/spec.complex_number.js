@@ -18,5 +18,42 @@ describe 'Complex number'
     cn.should.be null
     
   end
+  
+  it "should calculate magnitudes and angles correctly"
+  
+    // yes IEEE 754 skeptics the following works:
+    cn = sparks.ComplexNumber.parse("1");
+    cn.magnitude.should.be 1
+    cn.angle.should.be     0
+    
+    cn = sparks.ComplexNumber.parse("1+j1");
+    cn.magnitude.should.be Math.SQRT2
+    cn.angle.should.be     Math.PI / 4
+    
+    cn = sparks.ComplexNumber.parse("0+j1");
+    cn.magnitude.should.be 1
+    cn.angle.should.be     Math.PI / 2
+    
+    cn = sparks.ComplexNumber.parse("-1+j1");
+    cn.magnitude.should.be Math.SQRT2
+    cn.angle.should.be     (3 * Math.PI) / 4
+    
+    cn = sparks.ComplexNumber.parse("-1");
+    cn.magnitude.should.be 1
+    cn.angle.should.be     Math.PI
+    
+    cn = sparks.ComplexNumber.parse("-1-j1");
+    cn.magnitude.should.be Math.SQRT2
+    cn.angle.should.be     (-3 * Math.PI) / 4
+    
+    cn = sparks.ComplexNumber.parse("0-j1");
+    cn.magnitude.should.be 1
+    cn.angle.should.be     -1 * Math.PI / 2
+
+    cn = sparks.ComplexNumber.parse("1-j1");
+    cn.magnitude.should.be Math.SQRT2
+    cn.angle.should.be     -1 * Math.PI / 4
+
+  end
 
 end

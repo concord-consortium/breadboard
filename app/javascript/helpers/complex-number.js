@@ -7,7 +7,8 @@
       this.real      = real || 0;
       this.imag      = imag || 0;
       this.magnitude = Math.sqrt(this.real*this.real + this.imag*this.imag);
-      this.angle     = this.real !== 0 ? Math.atan(this.imag / this.real) : (Math.PI / 2) * (this.imag > 0 ? 1 : 3);
+      this.angle     = Math.atan2(imag, real); // Math.atan2(y, x) -> angle to the point at (x,y) [yes, y comes first!]
+      this.angle     = Math.atan2(this.imag, this.real); // Math.atan2(y, x) -> angle to the point at (x,y) [yes, y comes first!]
     };
     
     // must handle strings of the form
