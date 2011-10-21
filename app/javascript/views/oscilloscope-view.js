@@ -79,6 +79,22 @@
       return this.$view;
     },
     
+    renderTrace: function (channel) {
+      var trace = this.model.getTrace(channel);
+      
+      if (trace) {
+        // FIXME this is just a stepping stone during refactoring.
+        this.setTrace(channel, trace.amplitude, trace.frequency, trace.phase);
+      }
+      else {
+        this.clearTrace(channel);
+      }
+    },
+    
+    removeTrace: function (channel) {
+      this.clearTrace(channel);
+    },
+    
     /**
       Sets trace number n to be a sinusoid of specified amplitude and phase. Rescales the display to show this.nPeriods
       of the signal from left to right and to show 
@@ -88,7 +104,7 @@
       @param Number amplitude    Amplitude of the wave, in volts
       @param Number phase        Phase of the wave, in radians.
     */
-    setTrace: function (n, frequency, amplitude, phase) {
+    setTrace: function (n, amplitude, frequency, phase) {
     
       if (n !== 1 && n !== 2) {
         throw new Error("OscilloscopeView: attempted to set nonexistent channel number " + n);

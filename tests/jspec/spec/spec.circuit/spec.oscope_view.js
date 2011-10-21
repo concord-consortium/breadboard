@@ -34,7 +34,7 @@ describe 'OScope View'
         };
       
       var setTraceCalled = false;
-      sparks.OscilloscopeView.prototype.setTrace = function (n, frequency, amplitude, phase) {
+      sparks.OscilloscopeView.prototype.setTrace = function (n, amplitude, frequency, phase) {
         setTraceCalled = true;
         n.should.be 1
         frequency.should.be 1000
@@ -82,7 +82,7 @@ describe 'OScope View'
         'text/plain');
       
       var setTraceCalledTimes = 0;
-      sparks.OscilloscopeView.prototype.setTrace = function (n, frequency, amplitude, phase) {
+      sparks.OscilloscopeView.prototype.setTrace = function (n, amplitude, frequency, phase) {
         setTraceCalledTimes++;
         console.log("set trace called!")
         if (n === 1) {
@@ -103,7 +103,7 @@ describe 'OScope View'
       setTraceCalledTimes.should.be 2
       
       var setTraceCalledTimes = 0;
-      sparks.OscilloscopeView.prototype.setTrace = function (n, frequency, amplitude, phase) {
+      sparks.OscilloscopeView.prototype.setTrace = function (n, amplitude, frequency, phase) {
         setTraceCalledTimes++;
         if (n === 1) {
           frequency.should.be 1000
@@ -166,7 +166,7 @@ describe 'OScope View'
         'text/plain');
       
       var setTraceCalledTimes = 0;
-      sparks.OscilloscopeView.prototype.setTrace = function (n, frequency, amplitude, phase) {
+      sparks.OscilloscopeView.prototype.setTrace = function (n, amplitude, frequency, phase) {
         setTraceCalledTimes++;
         if (n === 1) {
           frequency.should.be 1000

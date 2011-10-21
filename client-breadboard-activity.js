@@ -3651,6 +3651,21 @@ sparks.createQuestionsCSV = function(data) {
       return this.$view;
     },
 
+    renderTrace: function (channel) {
+      var trace = this.model.getTrace(channel);
+
+      if (trace) {
+        this.setTrace(channel, trace.amplitude, trace.frequency, trace.phase);
+      }
+      else {
+        this.clearTrace(channel);
+      }
+    },
+
+    removeTrace: function (channel) {
+      this.clearTrace(channel);
+    },
+
     /**
       Sets trace number n to be a sinusoid of specified amplitude and phase. Rescales the display to show this.nPeriods
       of the signal from left to right and to show
@@ -3660,7 +3675,7 @@ sparks.createQuestionsCSV = function(data) {
       @param Number amplitude    Amplitude of the wave, in volts
       @param Number phase        Phase of the wave, in radians.
     */
-    setTrace: function (n, frequency, amplitude, phase) {
+    setTrace: function (n, amplitude, frequency, phase) {
 
       if (n !== 1 && n !== 2) {
         throw new Error("OscilloscopeView: attempted to set nonexistent channel number " + n);
@@ -7046,11 +7061,15 @@ sparks.createQuestionsCSV = function(data) {
     sparks.circuit.Oscilloscope = function () {
       this.probeLocation = null;
       this.view = null;
-      this.SOURCE_CHANNEL = 1;
-      this.PROBE_CHANNEL = 2;
+      this.traces = [];
+
     };
 
     sparks.circuit.Oscilloscope.prototype = {
+
+      N_CHANNELS:     2,
+      SOURCE_CHANNEL: 1,
+      PROBE_CHANNEL:  2,
 
       setView: function(view) {
         this.view = view;
@@ -7084,13 +7103,13 @@ sparks.createQuestionsCSV = function(data) {
           phase: 0
         };
 
-        this.addTrace(this.SOURCE_CHANNEL, sourceTrace);
+        this.setTrace(this.SOURCE_CHANNEL, sourceTrace);
 
         if (this.probeLocation) {
           probeNode = getBreadBoard().getHole(this.probeLocation).nodeName();
 
           if (probeNode === 'gnd') {
-            this.addTrace(this.PROBE_CHANNEL, {amplitude: 0, frequency: 0, phase: 0});
+            this.setTrace(this.PROBE_CHANNEL, {amplitude: 0, frequency: 0, phase: 0});
             return;
           }
 
@@ -7100,12 +7119,12 @@ sparks.createQuestionsCSV = function(data) {
 
           if (result) {
             probeTrace = {
-              frequency: source.frequency,
               amplitude: result.magnitude,
+              frequency: source.frequency,
               phase:     result.angle
             };
 
-            this.addTrace(this.PROBE_CHANNEL, probeTrace);
+            this.setTrace(this.PROBE_CHANNEL, probeTrace);
           } else {
             this.clearTrace(this.PROBE_CHANNEL);
           }
@@ -7114,12 +7133,18 @@ sparks.createQuestionsCSV = function(data) {
         }
       },
 
-      addTrace: function(n, data) {
-        this.view.setTrace(n, data.frequency, data.amplitude, data.phase);
+      setTrace: function(channel, trace) {
+        this.traces[channel] = trace;
+        this.view.renderTrace(channel);
       },
 
-      clearTrace: function(n) {
-        this.view.clearTrace(n);
+      getTrace: function(channel) {
+        return this.traces[channel];
+      },
+
+      clearTrace: function(channel) {
+        delete this.traces[channel];
+        this.view.removeTrace(channel);
       }
 
     };

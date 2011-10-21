@@ -6,11 +6,15 @@
     sparks.circuit.Oscilloscope = function () {
       this.probeLocation = null;
       this.view = null;
-      this.SOURCE_CHANNEL = 1;
-      this.PROBE_CHANNEL = 2;
+      this.traces = [];
+
     };
 
     sparks.circuit.Oscilloscope.prototype = {
+      
+      N_CHANNELS:     2,
+      SOURCE_CHANNEL: 1,
+      PROBE_CHANNEL:  2,
       
       setView: function(view) {
         this.view = view;
@@ -46,14 +50,14 @@
           phase: 0
         };
         
-        this.addTrace(this.SOURCE_CHANNEL, sourceTrace);
+        this.setTrace(this.SOURCE_CHANNEL, sourceTrace);
         
         if (this.probeLocation) {
           probeNode = getBreadBoard().getHole(this.probeLocation).nodeName();
 
           if (probeNode === 'gnd') {
             // short-circuit this operation and just return a flat trace
-            this.addTrace(this.PROBE_CHANNEL, {amplitude: 0, frequency: 0, phase: 0});
+            this.setTrace(this.PROBE_CHANNEL, {amplitude: 0, frequency: 0, phase: 0});
             return;
           }
           
@@ -64,12 +68,12 @@
 
           if (result) {
             probeTrace = {
-              frequency: source.frequency,
               amplitude: result.magnitude,
+              frequency: source.frequency,
               phase:     result.angle
             };
-            
-            this.addTrace(this.PROBE_CHANNEL, probeTrace);
+
+            this.setTrace(this.PROBE_CHANNEL, probeTrace);
           } else {
             this.clearTrace(this.PROBE_CHANNEL);
           }
@@ -78,12 +82,18 @@
         }
       },
       
-      addTrace: function(n, data) {
-        this.view.setTrace(n, data.frequency, data.amplitude, data.phase);
+      setTrace: function(channel, trace) {
+        this.traces[channel] = trace;
+        this.view.renderTrace(channel);
       },
       
-      clearTrace: function(n) {
-        this.view.clearTrace(n);
+      getTrace: function(channel) {
+        return this.traces[channel];
+      },
+      
+      clearTrace: function(channel) {
+        delete this.traces[channel];
+        this.view.removeTrace(channel);
       }
       
     };
