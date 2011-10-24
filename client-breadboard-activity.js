@@ -3756,10 +3756,12 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     drawTrace: function (signal, horizontalScale, verticalScale) {
-      var r        = this.raphaelCanvas,
-          path     = [],
-          h        = this.height / 2,
-          overscan = 50,
+      var r            = this.raphaelCanvas,
+          path         = [],
+          h            = this.height / 2,
+
+          overscan     = 5,                       // how many pixels to overscan on either side (see below)
+          triggerStart = this.width / 2,          // horizontal position at which the rising edge of a 0-phase signal should cross zero
 
           radiansPerPixel = (2 * Math.PI * signal.frequency * horizontalScale) / (this.width / this.nHorizontalMarks),
 
@@ -3774,7 +3776,7 @@ sparks.createQuestionsCSV = function(data) {
         path.push(x ===  0 ? 'M' : 'L');
         path.push(x);
 
-        path.push(h - signal.amplitude * pixelsPerVolt * Math.sin((x - overscan) * radiansPerPixel + signal.phase));
+        path.push(h - signal.amplitude * pixelsPerVolt * Math.sin((x - overscan - triggerStart) * radiansPerPixel + signal.phase));
       }
       path = path.join(' ');
 
