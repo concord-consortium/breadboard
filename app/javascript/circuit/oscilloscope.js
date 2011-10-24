@@ -7,7 +7,8 @@
       this.probeLocation = null;
       this.view = null;
       this.signals = [];
-
+      this._verticalScale = [];
+      this._horizontalScale = null;
     };
 
     sparks.circuit.Oscilloscope.prototype = {
@@ -15,6 +16,12 @@
       N_CHANNELS:     2,
       SOURCE_CHANNEL: 1,
       PROBE_CHANNEL:  2,
+      
+      HORIZONTAL_SCALES: [1e-3, 5e-4, 2.5e-4, 1e-4, 5e-5, 2.5e-5, 1e-5, 5e-6, 2.5e-6, 1e-6],  // sec/div
+      VERTICAL_SCALES:   [100,  50,   25,     10,   5,    2.5,    1,    0.5,  0.25,   0.01],  // V/div
+      
+      INITIAL_HORIZONTAL_SCALE: 2.5e-4,
+      INITIAL_VERTICAL_SCALE:   2.5,
       
       setView: function(view) {
         this.view = view;
@@ -94,6 +101,67 @@
       clearSignal: function(channel) {
         delete this.signals[channel];
         this.view.removeTrace(channel);
+      },
+      
+      setHorizontalScale: function(scale) {
+        this._horizontalScale = scale;
+        if (this.view) this.view.horizontalScaleChanged();
+      },
+      
+      getHorizontalScale: function() {
+        if (!this._horizontalScale) {
+          // if you want to randomize the scales, hook something in here
+          this._horizontalScale = this.INITIAL_HORIZONTAL_SCALE;
+        }
+        return this._horizontalScale;
+      },
+      
+      setVerticalScale: function(channel, scale) {
+        this._verticalScale[channel] = scale;
+        if (this.view) this.view.verticalScaleChanged(channel);
+      },
+      
+      getVerticalScale: function(channel) {
+        if (!this._verticalScale[channel]) {
+          // if you want to randomize the scales, hook something in here
+          this._verticalScale[channel] = this.INITIAL_VERTICAL_SCALE;
+        }
+        return this._verticalScale[channel];
+      },
+      
+      bumpHorizontalScale: function(direction) {
+        var currentScale = this.getHorizontalScale(),
+            newScale     = this._getNextScaleFromList(currentScale, this.HORIZONTAL_SCALES, direction);
+        
+        if (newScale !== currentScale) {
+          this.setHorizontalScale(newScale);
+        }
+      },
+      
+      bumpVerticalScale: function(channel, direction) {
+        var currentScale = this.getVerticalScale(channel),
+            newScale     = this._getNextScaleFromList(currentScale, this.VERTICAL_SCALES, direction);
+            
+        if (newScale !== currentScale) {
+          this.setVerticalScale(channel, newScale);
+        }
+      },
+      
+      _getNextScaleFromList: function(scale, scales, direction) {
+        var i, len, prevIndex;
+        
+        for (i = 0, len = scales.length; i < len; i++) {
+          if (scales[i] < scale) break;
+        }
+        prevIndex = (i > 0) ? i - 1 : 0;
+        
+        if (direction === 1 && prevIndex - 1 >= 0) {
+          return scales[prevIndex - 1];
+        } else if (direction === -1 && prevIndex + 1 < scales.length) {
+          return scales[prevIndex + 1];
+        } else {
+          return scale;
+        }
       }
       
     };
