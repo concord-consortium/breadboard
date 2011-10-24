@@ -6,9 +6,6 @@
     this.$view           = null;
     this.raphaelCanvas   = null;
     this.traces          = [];
-    this.horizontalScale = null;
-    this.verticalScale   = null;
-    this.scaleChanged    = false;
     this.raphaelGrid     = null;
     this.model           = null;
   };
@@ -17,15 +14,13 @@
     
     width:    400,
     height:   320,
-    nPeriods: 50 / 36,
-    verticalScreenFraction: 0.8,
     
     nVerticalMarks:   8,
     nHorizontalMarks: 10,
     nMinorTicks:      5,
     
     bgColor:         '#324569',
-    tickColor:       '#9EBDDE',//'#141C2B',
+    tickColor:       '#9EBDDE',
     textColor:       '#D8E1EB',
     traceInnerColor: '#FFFFFF',
     traceOuterColor: '#00E3AE',
@@ -78,65 +73,62 @@
       
       return this.$view;
     },
-    
-    renderSignal: function (channel) {
-      var signal = this.model.getSignal(channel);
       
-      if (signal) {
-        // FIXME this is just a stepping stone during refactoring.
-        this.setTrace(channel, signal.amplitude, signal.frequency, signal.phase);
+    renderSignal: function (channel) {
+      var s = this.model.getSignal(channel),
+          t = this.traces[channel],
+          horizontalScale,
+          verticalScale;
+      
+      if (s) {
+        horizontalScale = this.model.getHorizontalScale();
+        verticalScale   = this.model.getVerticalScale(channel);
+        
+        // don't render the signal if we've already drawn it at the same scale
+        if (!t || (t.amplitude !== s.amplitude || t.frequency !== s.frequency || t.phase !== s.phase || 
+                   t.horizontalScale !== horizontalScale || t.verticalScale !== verticalScale)) {
+          
+          this.removeTrace(channel);
+          this.traces[channel] = {
+            amplitude:       s.amplitude,
+            frequency:       s.frequency,
+            phase:           s.phase,
+            horizontalScale: horizontalScale,
+            verticalScale:   verticalScale,
+            raphaelObject:   this.drawTrace(s, horizontalScale, verticalScale)   // TODO add a color argument
+          }; 
+        }
       }
       else {
-        this.clearTrace(channel);
+        this.removeTrace(channel);
       }
-    },
-    
-    removeTrace: function (channel) {
-      this.clearTrace(channel);
-    },
-    
-    /**
-      Sets trace number n to be a sinusoid of specified amplitude and phase. Rescales the display to show this.nPeriods
-      of the signal from left to right and to show 
-       
-      @param Number n            Which channel (should be 1 or 2)
-      @param Number frequency    Frequency of the wave, in Hz. This is used to autoscale the y axis
-      @param Number amplitude    Amplitude of the wave, in volts
-      @param Number phase        Phase of the wave, in radians.
-    */
-    setTrace: function (n, amplitude, frequency, phase) {
-    
-      if (n !== 1 && n !== 2) {
-        throw new Error("OscilloscopeView: attempted to set nonexistent channel number " + n);
-      }
-      
-      console.log("setTrace(%d, %f, %f, %f)", n, frequency, amplitude, phase);
-      
-      this.clearTrace(n);
-      
-      this.traces[n] = {
-        amplitude: amplitude,
-        frequency: frequency,
-        phase:     phase
-      };
-      
-      this.setHorizontalScaleFrom(frequency);
-      if (n === 1) {
-        this.setVerticalScaleFrom(amplitude);
-      }
-      this.redrawIfScaleChanged();
-      
-      this.addRaphaelTrace(this.traces[n]);
     },
   
-    /**
-      Clears trace n (removes it from the screen)
-    */
-    clearTrace: function (n) {
-      if (this.traces[n]) {
-        if (this.traces[n].raphaelObject) this.traces[n].raphaelObject.remove();
-        delete this.traces[n];
+  
+    removeTrace: function (channel) {
+      if (this.traces[channel]) {
+        if (this.traces[channel].raphaelObject) this.traces[channel].raphaelObject.remove();
+        delete this.traces[channel];
       }
+    },
+    
+    horizontalScaleChanged: function () {
+      var scale = this.model.getHorizontalScale(),
+          channel;
+
+      // TODO make the units a little more sophisticated.
+      this.$view.find('.hscale').html(sparks.math.roundToSigDigits(scale * 1e6, 3).toString());
+
+      for (channel = 1; channel <= this.model.N_CHANNELS; channel++) {
+        if (this.traces[channel]) this.renderSignal(channel);
+      }
+    },
+    
+    verticalScaleChanged: function (channel) {
+      var scale = this.model.getVerticalScale(channel);
+
+      this.$view.find('.vscale.channel'+channel).html(sparks.math.roundToSigDigits(scale, 3).toString());
+      if (this.traces[channel]) this.renderSignal(channel);
     },
     
     drawGrid: function () {
@@ -193,51 +185,19 @@
       this.raphaelGrid = r.path(path.join(' ')).attr({stroke: this.tickColor, opacity: 0.5});
     },
     
-    setHorizontalScaleFrom: function (frequency) {
-      var scale          = 2 * this.nPeriods * Math.PI / this.width,
-          millisecPerDiv = (1 / frequency) * this.nPeriods / this.nHorizontalMarks * 1000;
-
-      if (scale !== this.horizontalScale) {
-        this.horizontalScale = scale;
-        this.$view.find('.hscale').html(sparks.math.roundToSigDigits(millisecPerDiv * 1000, 3).toString());
-        this.scaleChanged = true;
-      }
-    },
-    
-    setVerticalScaleFrom: function (amplitude) {
-      var scale       = this.verticalScreenFraction * this.height / (2 * amplitude),
-          voltsPerDiv = (amplitude / this.verticalScreenFraction) / (this.nVerticalMarks / 2);
-      
-      if (scale !== this.verticalScale) {
-        this.verticalScale = scale;
-        this.$view.find('.vscale').html(sparks.math.roundToSigDigits(voltsPerDiv, 3).toString());
-        this.scaleChanged = true;
-      }
-    },
-    
-    redrawIfScaleChanged: function () {
-      var i, l;
-      
-      if (this.scaleChanged) {
-        for (i = 0, l = this.traces.length; i < l; i++) {
-          if (this.traces[i] && this.traces[i].raphaelObject) {
-            this.traces[i].raphaelObject.remove();
-            this.addRaphaelTrace(this.traces[i]);
-          }
-        }
-        this.scaleChanged = false;
-      }
-    },
-    
-    // Private. Add a raphael element to the graph
-    addRaphaelTrace: function (trace) {
-      var r    = this.raphaelCanvas,
-          path = [],
-          x    = 0,
-          hScale = this.horizontalScale,
-          vScale = this.verticalScale,
-          h      = this.height / 2,
+    drawTrace: function (signal, horizontalScale, verticalScale) {
+      var r        = this.raphaelCanvas,
+          path     = [],
+          h        = this.height / 2,
           overscan = 50,
+          
+          // (radians/sec * sec/div) / pixels/div  => radians / pixel
+          radiansPerPixel = (2 * Math.PI * signal.frequency * horizontalScale) / (this.width / this.nHorizontalMarks), 
+
+          // pixels/div / volts/div => pixels/volt
+          pixelsPerVolt = (this.height / this.nVerticalMarks) / verticalScale,
+          
+          x,
           raphaelObject,
           paths,
           i;
@@ -246,30 +206,25 @@
         path.push(x ===  0 ? 'M' : 'L');
         path.push(x);
         
-        // "overscan" the trace 5 pixels to either side of the scope window, but translate 5 pixels to the right so we 
-        // don't have negative x-coords (which are invalid) in the path string
-        path.push(h - trace.amplitude * vScale * Math.sin((x - overscan) * hScale + trace.phase));
+        // "Overscan" the trace some pixels to either side of the scope window; we will translate the path the same # 
+        // of pixels to the right later. This way we don't have negative, i.e., invalid, x-coords in the path string.
+        path.push(h - signal.amplitude * pixelsPerVolt * Math.sin((x - overscan) * radiansPerPixel + signal.phase));
       }
-      
       path = path.join(' ');
       
+      // "glowy green line" effect by tracing overlaying an oversaturated (greenish white) line over a fatter green line
       paths = [];
-      for (i = 1; i < 10; i++ ) {
-        paths.push( r.path(path).attr({stroke: this.traceOuterColor, 'stroke-width': 15 * i, opacity: 0.01}) );
-      }
       paths.push(r.path(path).attr({stroke: this.traceOuterColor, 'stroke-width': 4.5}));
       paths.push(r.path(path).attr({stroke: this.traceInnerColor, 'stroke-width': 2}));
 
       raphaelObject = r.set.apply(r, paths);
       
-      // "glowy green line" effect by tracing overlaying an oversaturated (greenish white) line over a fatter green line
-      
-      this.raphaelGrid.toFront();
-
-      // translate the path 5 pixels to the left to accomodate the overscan
+      // translate the path to the left to accomodate the overscan
       raphaelObject.translate(-1 * overscan, 0);
-
-      trace.raphaelObject = raphaelObject;
+      
+      // make sure the graticule grid is in front
+      this.raphaelGrid.toFront();
+      
       return raphaelObject;
     }
           

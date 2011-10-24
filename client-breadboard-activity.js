@@ -3579,9 +3579,6 @@ sparks.createQuestionsCSV = function(data) {
     this.$view           = null;
     this.raphaelCanvas   = null;
     this.traces          = [];
-    this.horizontalScale = null;
-    this.verticalScale   = null;
-    this.scaleChanged    = false;
     this.raphaelGrid     = null;
     this.model           = null;
   };
@@ -3590,15 +3587,13 @@ sparks.createQuestionsCSV = function(data) {
 
     width:    400,
     height:   320,
-    nPeriods: 50 / 36,
-    verticalScreenFraction: 0.8,
 
     nVerticalMarks:   8,
     nHorizontalMarks: 10,
     nMinorTicks:      5,
 
     bgColor:         '#324569',
-    tickColor:       '#9EBDDE',//'#141C2B',
+    tickColor:       '#9EBDDE',
     textColor:       '#D8E1EB',
     traceInnerColor: '#FFFFFF',
     traceOuterColor: '#00E3AE',
@@ -3652,62 +3647,58 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     renderSignal: function (channel) {
-      var signal = this.model.getSignal(channel);
+      var s = this.model.getSignal(channel),
+          t = this.traces[channel],
+          horizontalScale,
+          verticalScale;
 
-      if (signal) {
-        this.setTrace(channel, signal.amplitude, signal.frequency, signal.phase);
+      if (s) {
+        horizontalScale = this.model.getHorizontalScale();
+        verticalScale   = this.model.getVerticalScale(channel);
+
+        if (!t || (t.amplitude !== s.amplitude || t.frequency !== s.frequency || t.phase !== s.phase ||
+                   t.horizontalScale !== horizontalScale || t.verticalScale !== verticalScale)) {
+
+          this.removeTrace(channel);
+          this.traces[channel] = {
+            amplitude:       s.amplitude,
+            frequency:       s.frequency,
+            phase:           s.phase,
+            horizontalScale: horizontalScale,
+            verticalScale:   verticalScale,
+            raphaelObject:   this.drawTrace(s, horizontalScale, verticalScale)   // TODO add a color argument
+          };
+        }
       }
       else {
-        this.clearTrace(channel);
+        this.removeTrace(channel);
       }
     },
+
 
     removeTrace: function (channel) {
-      this.clearTrace(channel);
+      if (this.traces[channel]) {
+        if (this.traces[channel].raphaelObject) this.traces[channel].raphaelObject.remove();
+        delete this.traces[channel];
+      }
     },
 
-    /**
-      Sets trace number n to be a sinusoid of specified amplitude and phase. Rescales the display to show this.nPeriods
-      of the signal from left to right and to show
+    horizontalScaleChanged: function () {
+      var scale = this.model.getHorizontalScale(),
+          channel;
 
-      @param Number n            Which channel (should be 1 or 2)
-      @param Number frequency    Frequency of the wave, in Hz. This is used to autoscale the y axis
-      @param Number amplitude    Amplitude of the wave, in volts
-      @param Number phase        Phase of the wave, in radians.
-    */
-    setTrace: function (n, amplitude, frequency, phase) {
+      this.$view.find('.hscale').html(sparks.math.roundToSigDigits(scale * 1e6, 3).toString());
 
-      if (n !== 1 && n !== 2) {
-        throw new Error("OscilloscopeView: attempted to set nonexistent channel number " + n);
+      for (channel = 1; channel <= this.model.N_CHANNELS; channel++) {
+        if (this.traces[channel]) this.renderSignal(channel);
       }
-
-      console.log("setTrace(%d, %f, %f, %f)", n, frequency, amplitude, phase);
-
-      this.clearTrace(n);
-
-      this.traces[n] = {
-        amplitude: amplitude,
-        frequency: frequency,
-        phase:     phase
-      };
-
-      this.setHorizontalScaleFrom(frequency);
-      if (n === 1) {
-        this.setVerticalScaleFrom(amplitude);
-      }
-      this.redrawIfScaleChanged();
-
-      this.addRaphaelTrace(this.traces[n]);
     },
 
-    /**
-      Clears trace n (removes it from the screen)
-    */
-    clearTrace: function (n) {
-      if (this.traces[n]) {
-        if (this.traces[n].raphaelObject) this.traces[n].raphaelObject.remove();
-        delete this.traces[n];
-      }
+    verticalScaleChanged: function (channel) {
+      var scale = this.model.getVerticalScale(channel);
+
+      this.$view.find('.vscale.channel'+channel).html(sparks.math.roundToSigDigits(scale, 3).toString());
+      if (this.traces[channel]) this.renderSignal(channel);
     },
 
     drawGrid: function () {
@@ -3764,50 +3755,17 @@ sparks.createQuestionsCSV = function(data) {
       this.raphaelGrid = r.path(path.join(' ')).attr({stroke: this.tickColor, opacity: 0.5});
     },
 
-    setHorizontalScaleFrom: function (frequency) {
-      var scale          = 2 * this.nPeriods * Math.PI / this.width,
-          millisecPerDiv = (1 / frequency) * this.nPeriods / this.nHorizontalMarks * 1000;
-
-      if (scale !== this.horizontalScale) {
-        this.horizontalScale = scale;
-        this.$view.find('.hscale').html(sparks.math.roundToSigDigits(millisecPerDiv * 1000, 3).toString());
-        this.scaleChanged = true;
-      }
-    },
-
-    setVerticalScaleFrom: function (amplitude) {
-      var scale       = this.verticalScreenFraction * this.height / (2 * amplitude),
-          voltsPerDiv = (amplitude / this.verticalScreenFraction) / (this.nVerticalMarks / 2);
-
-      if (scale !== this.verticalScale) {
-        this.verticalScale = scale;
-        this.$view.find('.vscale').html(sparks.math.roundToSigDigits(voltsPerDiv, 3).toString());
-        this.scaleChanged = true;
-      }
-    },
-
-    redrawIfScaleChanged: function () {
-      var i, l;
-
-      if (this.scaleChanged) {
-        for (i = 0, l = this.traces.length; i < l; i++) {
-          if (this.traces[i] && this.traces[i].raphaelObject) {
-            this.traces[i].raphaelObject.remove();
-            this.addRaphaelTrace(this.traces[i]);
-          }
-        }
-        this.scaleChanged = false;
-      }
-    },
-
-    addRaphaelTrace: function (trace) {
-      var r    = this.raphaelCanvas,
-          path = [],
-          x    = 0,
-          hScale = this.horizontalScale,
-          vScale = this.verticalScale,
-          h      = this.height / 2,
+    drawTrace: function (signal, horizontalScale, verticalScale) {
+      var r        = this.raphaelCanvas,
+          path     = [],
+          h        = this.height / 2,
           overscan = 50,
+
+          radiansPerPixel = (2 * Math.PI * signal.frequency * horizontalScale) / (this.width / this.nHorizontalMarks),
+
+          pixelsPerVolt = (this.height / this.nVerticalMarks) / verticalScale,
+
+          x,
           raphaelObject,
           paths,
           i;
@@ -3816,26 +3774,20 @@ sparks.createQuestionsCSV = function(data) {
         path.push(x ===  0 ? 'M' : 'L');
         path.push(x);
 
-        path.push(h - trace.amplitude * vScale * Math.sin((x - overscan) * hScale + trace.phase));
+        path.push(h - signal.amplitude * pixelsPerVolt * Math.sin((x - overscan) * radiansPerPixel + signal.phase));
       }
-
       path = path.join(' ');
 
       paths = [];
-      for (i = 1; i < 10; i++ ) {
-        paths.push( r.path(path).attr({stroke: this.traceOuterColor, 'stroke-width': 15 * i, opacity: 0.01}) );
-      }
       paths.push(r.path(path).attr({stroke: this.traceOuterColor, 'stroke-width': 4.5}));
       paths.push(r.path(path).attr({stroke: this.traceInnerColor, 'stroke-width': 2}));
 
       raphaelObject = r.set.apply(r, paths);
 
+      raphaelObject.translate(-1 * overscan, 0);
 
       this.raphaelGrid.toFront();
 
-      raphaelObject.translate(-1 * overscan, 0);
-
-      trace.raphaelObject = raphaelObject;
       return raphaelObject;
     }
 
@@ -7075,12 +7027,18 @@ sparks.createQuestionsCSV = function(data) {
       HORIZONTAL_SCALES: [1e-3, 5e-4, 2.5e-4, 1e-4, 5e-5, 2.5e-5, 1e-5, 5e-6, 2.5e-6, 1e-6],  // sec/div
       VERTICAL_SCALES:   [100,  50,   25,     10,   5,    2.5,    1,    0.5,  0.25,   0.01],  // V/div
 
-      INITIAL_HORIZONTAL_SCALE: 2.5e-4,
-      INITIAL_VERTICAL_SCALE:   2.5,
+      INITIAL_HORIZONTAL_SCALE: 1e-5,
+      INITIAL_VERTICAL_SCALE:   5,
 
       setView: function(view) {
+        var i;
+
         this.view = view;
         this.view.setModel(this);
+        view.horizontalScaleChanged();
+        for (i = 1; i <= this.N_CHANNELS; i++) {
+          view.verticalScaleChanged(i);
+        }
         this.update();         // we can update view immediately with the source trace
       },
 
@@ -7161,7 +7119,7 @@ sparks.createQuestionsCSV = function(data) {
 
       getHorizontalScale: function() {
         if (!this._horizontalScale) {
-          this._horizontalScale = this.INITIAL_HORIZONTAL_SCALE;
+          this.setHorizontalScale(this.INITIAL_HORIZONTAL_SCALE);
         }
         return this._horizontalScale;
       },
@@ -7173,7 +7131,7 @@ sparks.createQuestionsCSV = function(data) {
 
       getVerticalScale: function(channel) {
         if (!this._verticalScale[channel]) {
-          this._verticalScale[channel] = this.INITIAL_VERTICAL_SCALE;
+          this.setVerticalScale(channel, this.INITIAL_VERTICAL_SCALE);
         }
         return this._verticalScale[channel];
       },
