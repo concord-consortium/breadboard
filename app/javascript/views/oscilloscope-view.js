@@ -79,12 +79,12 @@
       return this.$view;
     },
     
-    renderTrace: function (channel) {
-      var trace = this.model.getTrace(channel);
+    renderSignal: function (channel) {
+      var signal = this.model.getSignal(channel);
       
-      if (trace) {
+      if (signal) {
         // FIXME this is just a stepping stone during refactoring.
-        this.setTrace(channel, trace.amplitude, trace.frequency, trace.phase);
+        this.setTrace(channel, signal.amplitude, signal.frequency, signal.phase);
       }
       else {
         this.clearTrace(channel);

@@ -6,7 +6,7 @@
     sparks.circuit.Oscilloscope = function () {
       this.probeLocation = null;
       this.view = null;
-      this.traces = [];
+      this.signals = [];
 
     };
 
@@ -34,8 +34,8 @@
       update: function() {
         var breadboard = getBreadBoard(),
             source     = breadboard.components.source,
-            sourceTrace,
-            probeTrace,
+            sourceSignal,
+            probeSignal,
             probeNode,
             data,
             result;
@@ -44,20 +44,20 @@
           return;                                     // we must have a source with a freq and an amplitude
         }
         
-        sourceTrace = {
+        sourceSignal = {
           amplitude: source.amplitude,
           frequency: source.frequency,
           phase: 0
         };
         
-        this.setTrace(this.SOURCE_CHANNEL, sourceTrace);
+        this.setSignal(this.SOURCE_CHANNEL, sourceSignal);
         
         if (this.probeLocation) {
           probeNode = getBreadBoard().getHole(this.probeLocation).nodeName();
 
           if (probeNode === 'gnd') {
             // short-circuit this operation and just return a flat trace
-            this.setTrace(this.PROBE_CHANNEL, {amplitude: 0, frequency: 0, phase: 0});
+            this.setSignal(this.PROBE_CHANNEL, {amplitude: 0, frequency: 0, phase: 0});
             return;
           }
           
@@ -67,32 +67,32 @@
           result = data[probeNode].v[0];
 
           if (result) {
-            probeTrace = {
+            probeSignal = {
               amplitude: result.magnitude,
               frequency: source.frequency,
               phase:     result.angle
             };
 
-            this.setTrace(this.PROBE_CHANNEL, probeTrace);
+            this.setSignal(this.PROBE_CHANNEL, probeSignal);
           } else {
-            this.clearTrace(this.PROBE_CHANNEL);
+            this.clearSignal(this.PROBE_CHANNEL);
           }
         } else {
-          this.clearTrace(this.PROBE_CHANNEL);
+          this.clearSignal(this.PROBE_CHANNEL);
         }
       },
       
-      setTrace: function(channel, trace) {
-        this.traces[channel] = trace;
-        this.view.renderTrace(channel);
+      setSignal: function(channel, signal) {
+        this.signals[channel] = signal;
+        this.view.renderSignal(channel);
       },
       
-      getTrace: function(channel) {
-        return this.traces[channel];
+      getSignal: function(channel) {
+        return this.signals[channel];
       },
       
-      clearTrace: function(channel) {
-        delete this.traces[channel];
+      clearSignal: function(channel) {
+        delete this.signals[channel];
         this.view.removeTrace(channel);
       }
       
