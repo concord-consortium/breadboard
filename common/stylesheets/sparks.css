@@ -248,7 +248,7 @@ border-bottom-style:solid;
   margin: 10px 0 10px 0;
 }
 
-#oscope p {
+#oscope .display-area p {
   font-family: 'Anonymous Pro', sans-serif;
   font-size: 16px;
 }

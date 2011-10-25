@@ -18,7 +18,8 @@
     nHorizontalMarks: 10,
     nMinorTicks:      5,
     
-    viewBgColor:     '#2F85E0',
+    faceplateColor:   '#EEEEEE', 
+    displayAreaColor: '#2F85E0',
     traceBgColor:    '#324569',
     tickColor:       '#9EBDDE',
     textColor:       '#D8E1EB',
@@ -37,22 +38,31 @@
       Sets this.$view to be the returned jQuery object.
     */
     getView: function () {
-      var $canvasHolder;
+      var $canvasHolder,
+          self = this;
       
       this.$view = $('<div>');
       this.$view.css({
         position: 'relative',
-        width:    this.width +100,
-        height:   this.height+50,
-        backgroundColor: this.viewBgColor
+        width: this.width + 400,
+        height: this.height + 50
       });
+      
+      
+      // display area (could split this out into separate method, though not a separate view
+      this.$displayArea = $('<div class="display-area">').css({
+        position: 'absolute',
+        width:    this.width + 100,
+        height:   this.height + 50,
+        backgroundColor: this.displayAreaColor
+      }).appendTo(this.$view);
       
       $canvasHolder = $('<div class="raphael-holder">').css({
         position: 'absolute',
         top:  10,
         left: 10,
         backgroundColor: this.traceBgColor
-      }).appendTo(this.$view);
+      }).appendTo(this.$displayArea);
       
       this.raphaelCanvas = Raphael($canvasHolder[0], this.width, this.height);
       
@@ -63,25 +73,126 @@
         top:   15 + this.height,
         left:  5,
         color: this.textColor
-      }).appendTo(this.$view);
+      }).appendTo(this.$displayArea);
       
       $('<p>CH2 <span class="vscale channel2"></span>V</p>').css({
         position: 'absolute',
         top:   15 + this.height,
         left:  5 + this.width / 4,
         color: this.textColor
-      }).appendTo(this.$view);
+      }).appendTo(this.$displayArea);
       
       $('<p>M <span class="hscale"></span>s</p>').css({
         position: 'absolute',
         top:   15 + this.height,
         left:  5 + this.width / 2,
         color: this.textColor
+      }).appendTo(this.$displayArea);
+      
+      
+      // 'faceplate'
+      
+      this.$faceplate = $('<div class="faceplate">').css({
+        position: 'absolute',
+        left:   this.width + 100,
+        right: 0,
+        height: this.height + 50,        
+        backgroundColor: this.faceplateColor
       }).appendTo(this.$view);
-            
+      
+      this.$controls = $('<div>').css({
+        position: 'absolute',
+        top:      100,
+        left:     0,
+        right:    0,
+        height:   200
+      }).appendTo(this.$faceplate);
+        
+      this.$channel1 = $('<div>').css({
+        position:  'absolute',
+        top:       10,
+        left:      0,
+        width:     150,
+        height:    100
+      }).appendTo(this.$controls);
+      
+      $('<p>Channel 1</p>').css({
+        top:       0,
+        left:      0,
+        right:     0,
+        height:    20,
+        textAlign: 'center'
+      }).appendTo(this.$channel1);
+      
+      this._addScaleControl(this.$channel1, function () {
+        self.model.bumpVerticalScale(1, -1);
+      }, function () {
+        self.model.bumpVerticalScale(1, 1);
+      });
+      
+      this.$channel2 = $('<div>').css({
+        position: 'absolute',
+        top:      10,
+        left:     150,
+        width:    150,
+        height:   100
+      }).appendTo(this.$controls);
+      
+      $('<p>Channel 2</p>').css({
+        top:    0,
+        left:   0,
+        right:  0,
+        height: 20,
+        textAlign: 'center'
+      }).appendTo(this.$channel2);
+      
+      this._addScaleControl(this.$channel2, function () {
+        self.model.bumpVerticalScale(2, -1);
+      }, function () {
+        self.model.bumpVerticalScale(2, 1);
+      });
+      
+      this.$horizontal = $('<div>').css({
+        position:  'absolute',
+        top:       100,
+        left:      75,
+        width:     150,
+        height:    100
+      }).appendTo(this.$controls);
+      
+      $('<p>Horizontal</p>').css({
+        top:    0,
+        left:   0,
+        right:  0,
+        height: 20,
+        textAlign: 'center'
+      }).appendTo(this.$horizontal);
+      
+      this._addScaleControl(this.$horizontal, function () {
+        self.model.bumpHorizontalScale(-1);
+      }, function () {
+        self.model.bumpHorizontalScale(1);
+      });
+
       return this.$view;
     },
+    
+    _addScaleControl: function ($el, minusCallback, plusCallback) {
+      $('<button>-</button>').css({
+        position: 'absolute',
+        top:   25,
+        left:  35,
+        width: 30
+      }).click(minusCallback).appendTo($el);
       
+      $('<button>+</button>').css({
+        position: 'absolute',
+        top:   25,
+        right: 35,
+        width: 30
+      }).click(plusCallback).appendTo($el);
+    },
+    
     renderSignal: function (channel) {
       var s = this.model.getSignal(channel),
           t = this.traces[channel],
@@ -119,7 +230,7 @@
       }
     },
     
-    // Not moved to sparks.math because it's somewhat specialized for scope display
+    // Not moved to sparks.math because it's somewhat specialized for scope display 
     humanizeUnits: function (val) {
       var prefixes  = ['M', 'k', '', 'm', 'μ', 'n', 'p'],
           order     = Math.floor(Math.log10(val) + 0.01),    // accounts for: Math.log10(1e-6) = -5.999999999999999
