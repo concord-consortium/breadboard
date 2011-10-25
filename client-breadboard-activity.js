@@ -3593,17 +3593,14 @@ sparks.createQuestionsCSV = function(data) {
 
     faceplateColor:   '#EEEEEE',
     displayAreaColor: '#2F85E0',
-    traceBgColor:    '#324569',
-    tickColor:       '#9EBDDE',
-    textColor:       '#D8E1EB',
-    traceInnerColor: '#FFFFFF',
-    traceOuterColor: '#00E3AE',
+    traceBgColor:     '#324569',
+    tickColor:        '#9EBDDE',
+    textColor:        '#D8E1EB',
     traceOuterColors: ['#FFFF4A', '#FF5C4A'],
-    traceInnerColors: ['#FFFFFF', '#FFD3CF'],//'#FFE8E6'],//'#FFFFFF'],
+    traceInnerColors: ['#FFFFFF', '#FFD3CF'],
 
     setModel: function (model) {
       this.model = model;
-      window.humanizeUnits = this.humanizeUnits;
     },
 
     /**
@@ -3661,7 +3658,6 @@ sparks.createQuestionsCSV = function(data) {
         left:  5 + this.width / 2,
         color: this.textColor
       }).appendTo(this.$displayArea);
-
 
 
       this.$faceplate = $('<div class="faceplate">').css({

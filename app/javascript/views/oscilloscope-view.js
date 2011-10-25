@@ -11,27 +11,27 @@
     
   sparks.OscilloscopeView.prototype = {
     
+    // Note that sizing and placement of the various elements of the view are handled ad-hoc in the getView() method;
+    // however, this.width and this.height indicate the dimensions of the gridded area where traces are drawn.
     width:    400,
     height:   320,
     
+    // These define the grid aka 'graticule'. This is pretty standard for scopes.
     nVerticalMarks:   8,
     nHorizontalMarks: 10,
     nMinorTicks:      5,
-    
+
     faceplateColor:   '#EEEEEE', 
     displayAreaColor: '#2F85E0',
-    traceBgColor:    '#324569',
-    tickColor:       '#9EBDDE',
-    textColor:       '#D8E1EB',
-    traceInnerColor: '#FFFFFF',
-    traceOuterColor: '#00E3AE',
+    traceBgColor:     '#324569',
+    tickColor:        '#9EBDDE',
+    textColor:        '#D8E1EB',
     traceOuterColors: ['#FFFF4A', '#FF5C4A'],
-    traceInnerColors: ['#FFFFFF', '#FFD3CF'],//'#FFE8E6'],//'#FFFFFF'],
+    traceInnerColors: ['#FFFFFF', '#FFD3CF'],
 
     // The famed "MV" pattern...
     setModel: function (model) {
       this.model = model;
-      window.humanizeUnits = this.humanizeUnits;
     },
     
     /**
@@ -93,7 +93,6 @@
       
       
       // 'faceplate'
-      
       this.$faceplate = $('<div class="faceplate">').css({
         position: 'absolute',
         left:   this.width + 100,
@@ -347,13 +346,14 @@
         path.push(x ===  0 ? 'M' : 'L');
         path.push(x);
         
-        // "Overscan" the trace some pixels to either side of the scope window; we will translate the path the same # 
-        // of pixels to the right later. This way we don't have negative, i.e., invalid, x-coords in the path string.
+        // Avoid worrying about the odd appearance of the left and right edges of the trace by "overscanning" the trace 
+        // a few pixels to either side of the scope window; we will translate the path the same # of pixels to the 
+        // left later. (Done this way we don't have negative, i.e., invalid, x-coords in the path string.)
         path.push(h - signal.amplitude * pixelsPerVolt * Math.sin((x - overscan - triggerStart) * radiansPerPixel + signal.phase));
       }
       path = path.join(' ');
       
-      // "glowy green line" effect by tracing overlaying an oversaturated (greenish white) line over a fatter green line
+      // slight 3d effect (inspired by CRT scopes) by overlaying a thin, oversaturated line over a fatter colored line
       paths = [];
       paths.push(r.path(path).attr({stroke: this.traceOuterColors[channel-1], 'stroke-width': 4.5}));
       paths.push(r.path(path).attr({stroke: this.traceInnerColors[channel-1], 'stroke-width': 2}));
