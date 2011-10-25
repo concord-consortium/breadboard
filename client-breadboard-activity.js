@@ -3809,7 +3809,7 @@ sparks.createQuestionsCSV = function(data) {
           scaledVal = val * Math.pow(10, rank * 3),
 
 
-          decimalPlaces = order % 3 === 0 ? 2 : 0;
+          decimalPlaces = order % 3 >= 0 ? 2 - (order % 3) : -1 * ((order + 1) % 3);
 
       return scaledVal.toFixed(decimalPlaces) + prefix;
     },

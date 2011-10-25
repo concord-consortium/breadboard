@@ -244,10 +244,10 @@
           prefix    = prefixes[rank+2],
           scaledVal = val * Math.pow(10, rank * 3),
 
-          // Make sure it has sensible digits ... noting that only values in range 1.00 .. 5.00 of whatever unit 
-          // (e.g, s, ms, μs, or ns) get digits after the decimal point          
+          // Make sure the result has sensible digits ... values in range 1.00 .. 5.00 of whatever unit 
+          // (e.g, s, ms, μs, or ns) get 2 digits after the decimal point; values in range 10.0 .. 50.0 get 1 digit
           
-          decimalPlaces = order % 3 === 0 ? 2 : 0;
+          decimalPlaces = order % 3 >= 0 ? 2 - (order % 3) : -1 * ((order + 1) % 3);
       
       return scaledVal.toFixed(decimalPlaces) + prefix;
     },
