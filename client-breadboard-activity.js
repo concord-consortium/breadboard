@@ -3576,11 +3576,10 @@ sparks.createQuestionsCSV = function(data) {
 (function () {
 
   sparks.OscilloscopeView = function () {
-    this.$view           = null;
-    this.raphaelCanvas   = null;
-    this.traces          = [];
-    this.raphaelGrid     = null;
-    this.model           = null;
+    this.$view         = null;
+    this.raphaelCanvas = null;
+    this.traces        = [];
+    this.model         = null;
   };
 
   sparks.OscilloscopeView.prototype = {
@@ -3592,7 +3591,8 @@ sparks.createQuestionsCSV = function(data) {
     nHorizontalMarks: 10,
     nMinorTicks:      5,
 
-    bgColor:         '#324569',
+    viewBgColor:     '#2F85E0',
+    traceBgColor:    '#324569',
     tickColor:       '#9EBDDE',
     textColor:       '#D8E1EB',
     traceInnerColor: '#FFFFFF',
@@ -3608,40 +3608,47 @@ sparks.createQuestionsCSV = function(data) {
       Sets this.$view to be the returned jQuery object.
     */
     getView: function () {
+      var $canvasHolder;
+
       this.$view = $('<div>');
       this.$view.css({
         position: 'relative',
         width:    this.width +100,
         height:   this.height+50,
-        backgroundColor: '#2F85E0'
+        backgroundColor: this.viewBgColor
       });
 
-      this.$holder = $('<div class="raphael-holder">').css({
-        paddingTop:  10,
-        paddingLeft: 10
+      $canvasHolder = $('<div class="raphael-holder">').css({
+        position: 'absolute',
+        top:  10,
+        left: 10,
+        backgroundColor: this.traceBgColor
       }).appendTo(this.$view);
 
-      this.raphaelCanvas = Raphael(this.$holder[0], this.width, this.height);
+      this.raphaelCanvas = Raphael($canvasHolder[0], this.width, this.height);
+
+      this.drawGrid();
 
       $('<p>CH1 <span class="vscale channel1"></span>V</p>').css({
         position: 'absolute',
-        left: 5,
+        top:   15 + this.height,
+        left:  5,
         color: this.textColor
       }).appendTo(this.$view);
 
       $('<p>CH2 <span class="vscale channel2"></span>V</p>').css({
         position: 'absolute',
-        left: 5 + this.width / 4,
+        top:   15 + this.height,
+        left:  5 + this.width / 4,
         color: this.textColor
       }).appendTo(this.$view);
 
       $('<p>M <span class="hscale"></span>μs</p>').css({
         position: 'absolute',
-        left: 5 + this.width / 2,
+        top:   15 + this.height,
+        left:  5 + this.width / 2,
         color: this.textColor
       }).appendTo(this.$view);
-
-      this.drawGrid();
 
       return this.$view;
     },
@@ -3675,7 +3682,6 @@ sparks.createQuestionsCSV = function(data) {
       }
     },
 
-
     removeTrace: function (channel) {
       if (this.traces[channel]) {
         if (this.traces[channel].raphaelObject) this.traces[channel].raphaelObject.remove();
@@ -3705,8 +3711,6 @@ sparks.createQuestionsCSV = function(data) {
       var r = this.raphaelCanvas,
           path = [],
           x, dx, y, dy;
-
-      r.rect(0, 0, this.width, this.height).attr({fill: this.bgColor, 'stroke-width': 0});
 
       for (x = dx = this.width / this.nHorizontalMarks; x <= this.width - dx; x += dx) {
         path.push('M');
@@ -3752,7 +3756,7 @@ sparks.createQuestionsCSV = function(data) {
         path.push(y);
       }
 
-      this.raphaelGrid = r.path(path.join(' ')).attr({stroke: this.tickColor, opacity: 0.5});
+      return r.path(path.join(' ')).attr({stroke: this.tickColor, opacity: 0.5});
     },
 
     drawTrace: function (signal, horizontalScale, verticalScale) {
@@ -3787,8 +3791,6 @@ sparks.createQuestionsCSV = function(data) {
       raphaelObject = r.set.apply(r, paths);
 
       raphaelObject.translate(-1 * overscan, 0);
-
-      this.raphaelGrid.toFront();
 
       return raphaelObject;
     }
