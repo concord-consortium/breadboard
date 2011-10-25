@@ -179,19 +179,19 @@
     },
     
     _addScaleControl: function ($el, minusCallback, plusCallback) {
-      $('<button>-</button>').css({
+      $('<button>+</button>').css({
         position: 'absolute',
         top:   25,
         left:  35,
         width: 30
-      }).click(minusCallback).appendTo($el);
+      }).click(plusCallback).appendTo($el);
       
-      $('<button>+</button>').css({
+      $('<button>-</button>').css({
         position: 'absolute',
         top:   25,
         right: 35,
         width: 30
-      }).click(plusCallback).appendTo($el);
+      }).click(minusCallback).appendTo($el);
     },
     
     renderSignal: function (channel) {
