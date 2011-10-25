@@ -326,7 +326,8 @@
     drawTrace: function (signal, channel, horizontalScale, verticalScale) {
       var r            = this.raphaelCanvas,
           path         = [],
-          h            = this.height / 2,
+          height       = this.height,
+          h            = height / 2,
 
           overscan     = 5,                       // how many pixels to overscan on either side (see below)
           triggerStart = this.width / 2,          // horizontal position at which the rising edge of a 0-phase signal should cross zero
@@ -341,7 +342,11 @@
           raphaelObject,
           paths,
           i;
-          
+      
+      function clip(y) {
+        return y < 0 ? 0 : y > height ? height : y;
+      }
+      
       for (x = 0; x < this.width + overscan * 2; x++) {
         path.push(x ===  0 ? 'M' : 'L');
         path.push(x);
@@ -349,7 +354,7 @@
         // Avoid worrying about the odd appearance of the left and right edges of the trace by "overscanning" the trace 
         // a few pixels to either side of the scope window; we will translate the path the same # of pixels to the 
         // left later. (Done this way we don't have negative, i.e., invalid, x-coords in the path string.)
-        path.push(h - signal.amplitude * pixelsPerVolt * Math.sin((x - overscan - triggerStart) * radiansPerPixel + signal.phase));
+        path.push(clip(h - signal.amplitude * pixelsPerVolt * Math.sin((x - overscan - triggerStart) * radiansPerPixel + signal.phase)));
       }
       path = path.join(' ');
       
