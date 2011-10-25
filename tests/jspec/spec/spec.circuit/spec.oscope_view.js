@@ -5,8 +5,10 @@ describe 'OScope View'
     before_each
       oldOScopeViewPrototype = sparks.OscilloscopeView.prototype;
       sparks.OscilloscopeView.prototype.getView = function() {  return $('<div>'); };
-      sparks.OscilloscopeView.prototype.setTrace = function() { };
-      sparks.OscilloscopeView.prototype.clearTrace = function() { };
+      sparks.OscilloscopeView.prototype.renderSignal = function() { };
+      sparks.OscilloscopeView.prototype.removeTrace = function() { };
+      sparks.OscilloscopeView.prototype.horizontalScaleChanged = function() {};
+      sparks.OscilloscopeView.prototype.verticalScaleChanged = function() {};
       
       sparks.config.qucsate_server_url = "http://localhost:1234/sparks/qucsator/solve";
       
@@ -33,17 +35,14 @@ describe 'OScope View'
           "show_oscilloscope": true
         };
       
-      var setTraceCalled = false;
-      sparks.OscilloscopeView.prototype.setTrace = function (n, amplitude, frequency, phase) {
-        setTraceCalled = true;
-        n.should.be 1
-        frequency.should.be 1000
-        amplitude.should.be 100
-        phase.should.be 0
+      var renderSignalCalled = false;
+      sparks.OscilloscopeView.prototype.renderSignal = function (channel) {
+        renderSignalCalled = true;
+        channel.should.be 1
       }
       
       var ac = new sparks.ActivityConstructor(jsonSection);
-      setTraceCalled.should.be true
+      renderSignalCalled.should.be true
     end
     
     it 'should send the right commands to the view for a probe trace for signal and ground (mock QUCS)'
@@ -81,45 +80,22 @@ describe 'OScope View'
         "</dep>", 
         'text/plain');
       
-      var setTraceCalledTimes = 0;
-      sparks.OscilloscopeView.prototype.setTrace = function (n, amplitude, frequency, phase) {
-        setTraceCalledTimes++;
-        console.log("set trace called!")
-        if (n === 1) {
-          frequency.should.be 1000
-          amplitude.should.be 100
-          phase.should.be 0
-        } else if (n === 2) {
-          frequency.should.be 0
-          amplitude.should.be 0
-          phase.should.be 0
-        } else {
-          throw new Error("setTrace called with the wrong channel: "+n);
-        }
+      var renderSignalCalledTimes = 0;
+      sparks.OscilloscopeView.prototype.renderSignal = function (channel) {
+        renderSignalCalledTimes++;
       }
       
       var meter = sparks.activityController.currentSection.meter;
       meter.setProbeLocation("red", "left_negative1");
-      setTraceCalledTimes.should.be 2
+      renderSignalCalledTimes.should.be 2
       
-      var setTraceCalledTimes = 0;
-      sparks.OscilloscopeView.prototype.setTrace = function (n, amplitude, frequency, phase) {
-        setTraceCalledTimes++;
-        if (n === 1) {
-          frequency.should.be 1000
-          amplitude.should.be 100
-          phase.should.be 0
-        } else if (n === 2) {
-          frequency.should.be 1000
-          amplitude.should.be 100
-          phase.should.be 0
-        } else {
-          throw new Error("setTrace called with the wrong channel: "+n);
-        }
+      var renderSignalCalledTimes = 0;
+      sparks.OscilloscopeView.prototype.renderSignal = function (channel) {
+        renderSignalCalledTimes++;
       }
       
       meter.setProbeLocation("red", "left_positive1");
-      setTraceCalledTimes.should.be 2
+      renderSignalCalledTimes.should.be 2
     end
     
     it 'should send the right commands to the view for a probe trace at a node (mock QUCS)'
@@ -165,25 +141,14 @@ describe 'OScope View'
         "</dep>",
         'text/plain');
       
-      var setTraceCalledTimes = 0;
-      sparks.OscilloscopeView.prototype.setTrace = function (n, amplitude, frequency, phase) {
-        setTraceCalledTimes++;
-        if (n === 1) {
-          frequency.should.be 1000
-          amplitude.should.be 100
-          phase.should.be 0
-        } else if (n === 2) {
-          frequency.should.be 1000
-          amplitude.should.be 1.591549430721572e-3
-          phase.should.be -1.5707804113005888
-        } else {
-          throw new Error("setTrace called with the wrong channel: "+n);
-        }
+      var renderSignalCalledTimes = 0;
+      sparks.OscilloscopeView.prototype.renderSignal = function (channel) {
+        renderSignalCalledTimes++;
       }
       
       var meter = sparks.activityController.currentSection.meter;
       meter.setProbeLocation("red", "a1");
-      setTraceCalledTimes.should.be 2
+      renderSignalCalledTimes.should.be 2
     end
     
     

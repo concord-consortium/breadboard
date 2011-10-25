@@ -5,9 +5,11 @@ describe 'Activity Creator'
     sparks.OscilloscopeView = function () {};
     sparks.OscilloscopeView.prototype = {
       getView:    function () { return $('<div>'); },
-      setTrace:   function () {},
-      clearTrace: function () {},
-      setModel:   function () {}
+      renderSignal:   function () {},
+      removeTrace: function () {},
+      setModel:   function () {},
+      horizontalScaleChanged: function () {},
+      verticalScaleChanged: function () {}    
     };
   end
   

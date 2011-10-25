@@ -3,12 +3,14 @@ describe 'Using oscope with mock Flash connection'
       oldOScopeView = sparks.OscilloscopeView;
       sparks.OscilloscopeView = function () {};
       sparks.OscilloscopeView.prototype = {
-        getView:    function () { return $('<div>'); },
-        setTrace:   function () {},
-        clearTrace: function () {},
-        setModel:   function () {}
+        getView:      function () { return $('<div>'); },
+        renderSignal: function () {},
+        removeTrace:  function () {},
+        setModel:     function () {},
+        horizontalScaleChanged: function () {},
+        verticalScaleChanged:   function () {}
       };
-      
+            
       sparks.activityController.reset();
       stub(sparks.util, 'readCookie').and_return(null);
       mock_request().and_return(sparks.jsonSectionOScopeActivity, 'application/javascript', 200)
