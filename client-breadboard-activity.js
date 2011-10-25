@@ -3598,6 +3598,8 @@ sparks.createQuestionsCSV = function(data) {
     textColor:       '#D8E1EB',
     traceInnerColor: '#FFFFFF',
     traceOuterColor: '#00E3AE',
+    traceOuterColors: ['#FFFF4A', '#FF5C4A'],
+    traceInnerColors: ['#FFFFFF', '#FFD3CF'],//'#FFE8E6'],//'#FFFFFF'],
 
     setModel: function (model) {
       this.model = model;
@@ -3783,8 +3785,12 @@ sparks.createQuestionsCSV = function(data) {
             phase:           s.phase,
             horizontalScale: horizontalScale,
             verticalScale:   verticalScale,
-            raphaelObject:   this.drawTrace(s, horizontalScale, verticalScale)   // TODO add a color argument
+            raphaelObject:   this.drawTrace(s, channel, horizontalScale, verticalScale)
           };
+        }
+
+        if (channel === 1 && this.traces[2]) {
+          this.traces[2].raphaelObject.toFront();
         }
       }
       else {
@@ -3882,7 +3888,7 @@ sparks.createQuestionsCSV = function(data) {
       return r.path(path.join(' ')).attr({stroke: this.tickColor, opacity: 0.5});
     },
 
-    drawTrace: function (signal, horizontalScale, verticalScale) {
+    drawTrace: function (signal, channel, horizontalScale, verticalScale) {
       var r            = this.raphaelCanvas,
           path         = [],
           h            = this.height / 2,
@@ -3908,8 +3914,8 @@ sparks.createQuestionsCSV = function(data) {
       path = path.join(' ');
 
       paths = [];
-      paths.push(r.path(path).attr({stroke: this.traceOuterColor, 'stroke-width': 4.5}));
-      paths.push(r.path(path).attr({stroke: this.traceInnerColor, 'stroke-width': 2}));
+      paths.push(r.path(path).attr({stroke: this.traceOuterColors[channel-1], 'stroke-width': 4.5}));
+      paths.push(r.path(path).attr({stroke: this.traceInnerColors[channel-1], 'stroke-width': 2}));
 
       raphaelObject = r.set.apply(r, paths);
 
