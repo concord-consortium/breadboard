@@ -3600,6 +3600,7 @@ sparks.createQuestionsCSV = function(data) {
 
     setModel: function (model) {
       this.model = model;
+      window.humanizeUnits = this.humanizeUnits;
     },
 
     /**
@@ -3643,7 +3644,7 @@ sparks.createQuestionsCSV = function(data) {
         color: this.textColor
       }).appendTo(this.$view);
 
-      $('<p>M <span class="hscale"></span>μs</p>').css({
+      $('<p>M <span class="hscale"></span>s</p>').css({
         position: 'absolute',
         top:   15 + this.height,
         left:  5 + this.width / 2,
@@ -3689,11 +3690,24 @@ sparks.createQuestionsCSV = function(data) {
       }
     },
 
+    humanizeUnits: function (val) {
+      var prefixes  = ['M', 'k', '', 'm', 'μ', 'n', 'p'],
+          order     = Math.floor(Math.log10(val) + 0.01),    // accounts for: Math.log10(1e-6) = -5.999999999999999
+          rank      = Math.ceil(-1 * order / 3),
+          prefix    = prefixes[rank+2],
+          scaledVal = val * Math.pow(10, rank * 3),
+
+
+          decimalPlaces = order % 3 === 0 ? 2 : 0;
+
+      return scaledVal.toFixed(decimalPlaces) + prefix;
+    },
+
     horizontalScaleChanged: function () {
       var scale = this.model.getHorizontalScale(),
           channel;
 
-      this.$view.find('.hscale').html(sparks.math.roundToSigDigits(scale * 1e6, 3).toString());
+      this.$view.find('.hscale').html(this.humanizeUnits(scale));
 
       for (channel = 1; channel <= this.model.N_CHANNELS; channel++) {
         if (this.traces[channel]) this.renderSignal(channel);
@@ -3703,7 +3717,7 @@ sparks.createQuestionsCSV = function(data) {
     verticalScaleChanged: function (channel) {
       var scale = this.model.getVerticalScale(channel);
 
-      this.$view.find('.vscale.channel'+channel).html(sparks.math.roundToSigDigits(scale, 3).toString());
+      this.$view.find('.vscale.channel'+channel).html(this.humanizeUnits(scale));
       if (this.traces[channel]) this.renderSignal(channel);
     },
 
