@@ -34,6 +34,21 @@
   };
 
   sparks.extend(sparks.circuit.FunctionGenerator, sparks.circuit.Component, {
+    
+    // for now, no validation on frequency. So we might set something QUCS isn't expecting from the given sim type
+    setFrequency: function(frequency) {
+      this.frequency = frequency;
+      if (sparks.activityController.currentSection.meter) {
+        sparks.activityController.currentSection.meter.update();
+      }
+    },
+    
+    setAmplitude: function(amplitude) {
+      this.amplitude = amplitude;
+      if (sparks.activityController.currentSection.meter) {
+        sparks.activityController.currentSection.meter.update();
+      }
+    },
 
     toNetlist: function () {
       var amplitude = this.amplitude || 0,

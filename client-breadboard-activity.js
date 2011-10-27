@@ -7827,6 +7827,20 @@ sparks.createQuestionsCSV = function(data) {
 
   sparks.extend(sparks.circuit.FunctionGenerator, sparks.circuit.Component, {
 
+    setFrequency: function(frequency) {
+      this.frequency = frequency;
+      if (sparks.activityController.currentSection.meter) {
+        sparks.activityController.currentSection.meter.update();
+      }
+    },
+
+    setAmplitude: function(amplitude) {
+      this.amplitude = amplitude;
+      if (sparks.activityController.currentSection.meter) {
+        sparks.activityController.currentSection.meter.update();
+      }
+    },
+
     toNetlist: function () {
       var amplitude = this.amplitude || 0,
           nodes     = this.getNodes();

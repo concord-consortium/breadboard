@@ -236,8 +236,7 @@ describe 'OScope View'
       oscope.signals[2].phase.should.be 1.564513224169169
       
       // change the source frequency
-      getBreadBoard().components.source.frequency = 2000;
-      oscope.update();
+      getBreadBoard().components.source.setFrequency(2000);
       
       oscope.signals[1].frequency.should.be 2000
       
