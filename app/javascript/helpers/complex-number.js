@@ -37,5 +37,8 @@
       
       return new sparks.ComplexNumber(real, imaginary);
     };
-
+    
+    sparks.ComplexNumber.prototype.toString = function() {
+      return "" + this.real + "+i" + this.imag
+    };
 })();
