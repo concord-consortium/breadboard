@@ -28,6 +28,9 @@
       }
     }
     
+    // set a base frequency, so that we don't have to change NetList representation after changing frequency
+    this.baseFrequency = this.frequency;
+    
     if ('undefined' === typeof this.frequency || this.frequency === null) {
       throw new Error("FunctionGenerator: initialFrequency is undefined and an initial frequency could not be inferred from frequency range specification.");
     }
@@ -53,7 +56,7 @@
     toNetlist: function () {
       var amplitude = this.amplitude || 0,
           nodes     = this.getNodes();
-      return 'Vac:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' U="' + amplitude + ' V" f="' + this.frequency + '" Phase="0" Theta="0"';
+      return 'Vac:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' U="' + amplitude + ' V" f="' + this.baseFrequency + '" Phase="0" Theta="0"';
     },
     
     defaultFrequencySteps: 100,
