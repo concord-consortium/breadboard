@@ -51,7 +51,9 @@
             probeSignal,
             probeNode,
             data,
-            result;
+            result,
+            freqs,
+            dataIndex;
             
         if (!source || !source.frequency || !source.amplitude) {
           return;                                     // we must have a source with a freq and an amplitude
@@ -76,8 +78,18 @@
           
           data = breadModel('query');
           
-          // for our first pass, we're assuming single input frequency
-          result = data[probeNode].v[0];
+          // first go through the returned frequencies, and find the one that matches our source frequency
+          freqs = data.acfrequency;
+          
+          for (var i = 0, ii = freqs.length; i < ii; i++){
+            if (freqs[i].real == source.frequency){
+              dataIndex = i;
+              break;
+            }
+          }
+          
+          // find the same index in our data
+          result = data[probeNode].v[dataIndex];
 
           if (result) {
             probeSignal = {
@@ -111,7 +123,9 @@
       
       setHorizontalScale: function(scale) {
         this._horizontalScale = scale;
-        if (this.view) this.view.horizontalScaleChanged();
+        if (this.view) {
+          this.view.horizontalScaleChanged();
+        }
       },
       
       getHorizontalScale: function() {
@@ -124,7 +138,9 @@
       
       setVerticalScale: function(channel, scale) {
         this._verticalScale[channel] = scale;
-        if (this.view) this.view.verticalScaleChanged(channel);
+        if (this.view) {
+          this.view.verticalScaleChanged(channel);
+        }
       },
       
       getVerticalScale: function(channel) {
@@ -157,7 +173,9 @@
         var i, len, prevIndex;
         
         for (i = 0, len = scales.length; i < len; i++) {
-          if (scales[i] < scale) break;
+          if (scales[i] < scale) {
+            break;
+          }
         }
         prevIndex = (i > 0) ? i - 1 : 0;
         

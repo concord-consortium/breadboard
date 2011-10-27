@@ -5668,6 +5668,9 @@ sparks.createQuestionsCSV = function(data) {
       return new sparks.ComplexNumber(real, imaginary);
     };
 
+    sparks.ComplexNumber.prototype.toString = function() {
+      return "" + this.real + "+i" + this.imag
+    };
 })();
 /* FILE qucsator.js */
 /*globals console sparks $ breadModel getBreadBoard debug*/
@@ -7190,7 +7193,9 @@ sparks.createQuestionsCSV = function(data) {
             probeSignal,
             probeNode,
             data,
-            result;
+            result,
+            freqs,
+            dataIndex;
 
         if (!source || !source.frequency || !source.amplitude) {
           return;                                     // we must have a source with a freq and an amplitude
@@ -7214,7 +7219,16 @@ sparks.createQuestionsCSV = function(data) {
 
           data = breadModel('query');
 
-          result = data[probeNode].v[0];
+          freqs = data.acfrequency;
+
+          for (var i = 0, ii = freqs.length; i < ii; i++){
+            if (freqs[i].real == source.frequency){
+              dataIndex = i;
+              break;
+            }
+          }
+
+          result = data[probeNode].v[dataIndex];
 
           if (result) {
             probeSignal = {
@@ -7248,7 +7262,9 @@ sparks.createQuestionsCSV = function(data) {
 
       setHorizontalScale: function(scale) {
         this._horizontalScale = scale;
-        if (this.view) this.view.horizontalScaleChanged();
+        if (this.view) {
+          this.view.horizontalScaleChanged();
+        }
       },
 
       getHorizontalScale: function() {
@@ -7260,7 +7276,9 @@ sparks.createQuestionsCSV = function(data) {
 
       setVerticalScale: function(channel, scale) {
         this._verticalScale[channel] = scale;
-        if (this.view) this.view.verticalScaleChanged(channel);
+        if (this.view) {
+          this.view.verticalScaleChanged(channel);
+        }
       },
 
       getVerticalScale: function(channel) {
@@ -7292,7 +7310,9 @@ sparks.createQuestionsCSV = function(data) {
         var i, len, prevIndex;
 
         for (i = 0, len = scales.length; i < len; i++) {
-          if (scales[i] < scale) break;
+          if (scales[i] < scale) {
+            break;
+          }
         }
         prevIndex = (i > 0) ? i - 1 : 0;
 
