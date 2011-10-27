@@ -43,6 +43,11 @@ describe 'OScope View'
       
       var ac = new sparks.ActivityConstructor(jsonSection);
       renderSignalCalled.should.be true
+      
+      var oscope = sparks.activityController.currentSection.meter;
+      oscope.signals[1].amplitude.should.be 100
+      oscope.signals[1].frequency.should.be 1000
+      oscope.signals[1].phase.should.be 0
     end
     
     it 'should send the right commands to the view for a probe trace for signal and ground (mock QUCS)'
@@ -65,6 +70,7 @@ describe 'OScope View'
         };
       
       var ac = new sparks.ActivityConstructor(jsonSection);
+      var oscope = sparks.activityController.currentSection.meter;
       
       // actual QUCS result for above circuit
       mock_request().and_return(
@@ -89,6 +95,14 @@ describe 'OScope View'
       meter.setProbeLocation("red", "left_negative1");
       renderSignalCalledTimes.should.be 2
       
+      oscope.signals[1].amplitude.should.be 100
+      oscope.signals[1].frequency.should.be 1000
+      oscope.signals[1].phase.should.be 0
+      
+      oscope.signals[2].amplitude.should.be 0
+      oscope.signals[2].frequency.should.be 0
+      oscope.signals[2].phase.should.be 0
+      
       var renderSignalCalledTimes = 0;
       sparks.OscilloscopeView.prototype.renderSignal = function (channel) {
         renderSignalCalledTimes++;
@@ -96,6 +110,10 @@ describe 'OScope View'
       
       meter.setProbeLocation("red", "left_positive1");
       renderSignalCalledTimes.should.be 2
+      
+      oscope.signals[2].amplitude.should.be 100
+      oscope.signals[2].frequency.should.be 1000
+      oscope.signals[2].phase.should.be 0
     end
     
     it 'should send the right commands to the view for a probe trace at a node (mock QUCS)'
@@ -123,6 +141,7 @@ describe 'OScope View'
         };
       
       var ac = new sparks.ActivityConstructor(jsonSection);
+      var oscope = sparks.activityController.currentSection.meter;
       
       // actual QUCS result for above circuit
       mock_request().and_return(
@@ -149,6 +168,10 @@ describe 'OScope View'
       var meter = sparks.activityController.currentSection.meter;
       meter.setProbeLocation("red", "a1");
       renderSignalCalledTimes.should.be 2
+      
+      oscope.signals[2].amplitude.should.be 1.591549430721572e-3
+      oscope.signals[2].frequency.should.be 1000
+      oscope.signals[2].phase.should.be -1.5707804113005888
     end
     
     
