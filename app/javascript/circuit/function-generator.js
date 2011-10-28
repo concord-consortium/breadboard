@@ -22,9 +22,11 @@
     if ( ('undefined' === typeof this.frequency || this.frequency === null) && props.frequencies ) {
       if ('number' === typeof props.frequencies[0]) {
         this.frequency = props.frequencies[0];
+        this.possibleFrequencies = props.frequencies;
       }
       else if (props.frequencies[0] === 'linear' || props.frequencies[0] === 'logarithmic') {
         this.frequency = props.frequencies[1];
+        this.possibleFrequencies = this._calcPossibleFrequencies(props);
       }
     }
     
@@ -51,6 +53,10 @@
       if (sparks.activityController.currentSection.meter) {
         sparks.activityController.currentSection.meter.update();
       }
+    },
+    
+    getPossibleFrequencies: function() {
+      return this.possibleFrequencies;
     },
 
     toNetlist: function () {
@@ -82,6 +88,30 @@
         
       }
       
+    },
+    
+    _calcPossibleFrequencies: function(props) {
+      var startF   = props.frequencies[1],
+          endF     = props.frequencies[2],
+          steps    = props.frequencies[3],
+          type     = props.frequencies[0],
+          diff     = endF - startF,
+          multiple = endF / startF,
+          stepSize,
+          i;
+      
+      var frequencies = [];
+      if (type === 'linear') {
+        stepSize = diff / (steps - 1);
+        for (i = 0; i < steps; i++){
+          frequencies.push(startF + (stepSize * i));
+        }
+      } else if (type === 'logarithmic') {
+        for (i = 0; i < steps; i++){
+          frequencies.push(startF * (Math.pow(multiple, ((i/(steps-1))))));
+        }
+      }
+      return frequencies;
     }
     
   });
