@@ -10,7 +10,8 @@
       $imageDiv: $('#image'),
       $questionsDiv: $('#questions_area'),
       $titleDiv: $('#title'),
-      $scopeDiv: $('#oscope')
+      $scopeDiv: $('#oscope'),
+      $fgDiv: $('#function_generator')
     };
   };
   
@@ -37,6 +38,13 @@
         }
         this.loadFlash();
         breadModel('updateFlash');
+        
+        var source = getBreadBoard().components.source;
+        if (source.frequency) {
+          var fgView = new sparks.FunctionGeneratorView(source);
+          var $fg = fgView.getView();
+          this.divs.$fgDiv.append($fg);
+        }
         
         if (section.show_multimeter){
           sparks.flash.sendCommand('set_multimeter_visibility','true');

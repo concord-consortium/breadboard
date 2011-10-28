@@ -23,6 +23,7 @@
 //= require <views/question-view>
 //= require <views/report-view>
 //= require <views/oscilloscope-view>
+//= require <views/function-generator-view>
 //= require <views/class-report-view>
 //= require <controllers/question-controller>
 //= require <controllers/page-controller>
