@@ -80,14 +80,7 @@
           
           // first go through the returned frequencies, and find the one that matches our source frequency
           freqs = data.acfrequency;
-          
-          for (var i = 0, ii = freqs.length; i < ii; i++){
-            if (freqs[i].real == source.frequency){
-              dataIndex = i;
-              break;
-            }
-          }
-          
+          dataIndex = this._getClosestQucsFrequencyIndex(freqs, source.frequency);
           // find the same index in our data
           result = data[probeNode].v[dataIndex];
 
@@ -186,6 +179,30 @@
         } else {
           return scale;
         }
+      },
+      
+      // When we define, say, a logaritmic sweep of frequencies, we calculate them on our end
+      // for the function generator, and QUCS generates them on its end after being given a
+      // simulation type. These two series may not be exactly the same after accounting for
+      // different precisions, so we want to pick the QUCS value that's closest to what we
+      // think we're generating. So, if we think we're generating 1002.2 Hz, and QUCS comes back
+      // with [1000, 1002.22222, 1003.33333], we want to return the index '1'
+      //
+      // @frequencies an array of frequencies, assumed to be complex numbers (ret from QUCS and parsed)
+      // @actual the frequency the FG believes it's generating
+      _getClosestQucsFrequencyIndex: function(frequencies, actual) {
+        var minDiff = Infinity,
+            index;
+        // this could be shortened as a CS exercise, but it takes 0 ms over an array of
+        // 10,000 so it's not really worth it...
+        for (var i = 0, ii = frequencies.length; i < ii; i++){
+          var diff = Math.abs(frequencies[i].real - actual);
+          if (diff < minDiff){
+            minDiff = diff;
+            index = i;
+          }
+        }
+        return index;
       }
       
     };
