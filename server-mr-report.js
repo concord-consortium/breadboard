@@ -70,6 +70,9 @@
      };
 
     math.roundToSigDigits = function(x, n) {
+      if (x === 0) {
+        return 0;
+      }
       var order = Math.ceil(Math.log10(x)),
           factor;
 
