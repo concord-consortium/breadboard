@@ -3910,6 +3910,8 @@ sparks.createQuestionsCSV = function(data) {
           paths,
           i;
 
+      if (radiansPerPixel > Math.PI / 2) radiansPerPixel = Math.PI / 2;
+
       function clip(y) {
         return y < 0 ? 0 : y > height ? height : y;
       }
