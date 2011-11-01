@@ -7209,9 +7209,12 @@ sparks.createQuestionsCSV = function(data) {
                       meterKey = (measurement === 'voltage' || measurement === 'ac_voltage') ? 'v' : 'i';
 
                   if (!!meterKey && !!resultsBlob.meter[meterKey]){
-                    var result = resultsBlob.meter[meterKey][0];
 
-                    result = result.real;
+                    var index = this._getResultsIndex(resultsBlob);
+
+                    var result = resultsBlob.meter[meterKey][index];
+
+                    result = result.magnitude;
 
                     result = Math.abs(result);
                     var source = getBreadBoard().components.source;
@@ -7276,6 +7279,15 @@ sparks.createQuestionsCSV = function(data) {
             return this.redProbeConnection !== null &&
                 this.blackProbeConnection !== null &&
                 this.powerOn;
+        },
+
+        _getResultsIndex: function (results) {
+          var i = 0,
+              source = getBreadBoard().components.source;
+          if (source && source.setFrequency && results.acfrequency){
+            i = sparks.circuit.Oscilloscope.prototype._getClosestQucsFrequencyIndex(results.acfrequency, source.frequency);
+          }
+          return i;
         }
     });
 

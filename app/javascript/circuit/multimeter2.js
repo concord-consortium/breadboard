@@ -42,10 +42,14 @@
                       meterKey = (measurement === 'voltage' || measurement === 'ac_voltage') ? 'v' : 'i';
                   
                   if (!!meterKey && !!resultsBlob.meter[meterKey]){
-                    var result = resultsBlob.meter[meterKey][0];
                     
-                    // result is a complex number. for the DMM, we only care about the real part
-                    result = result.real;
+                    // get the index of the data we want from the returned QUCS array
+                    var index = this._getResultsIndex(resultsBlob);
+                    
+                    var result = resultsBlob.meter[meterKey][index];
+                    
+                    // result is a complex number. for the DMM, we only care about the magnitude
+                    result = result.magnitude;
                     
                     // process the absolute value
                     result = Math.abs(result);
@@ -112,6 +116,15 @@
             return this.redProbeConnection !== null && 
                 this.blackProbeConnection !== null &&
                 this.powerOn;
+        },
+        
+        _getResultsIndex: function (results) {
+          var i = 0,
+              source = getBreadBoard().components.source;
+          if (source && source.setFrequency && results.acfrequency){
+            i = sparks.circuit.Oscilloscope.prototype._getClosestQucsFrequencyIndex(results.acfrequency, source.frequency);
+          }
+          return i;
         }
     });
 

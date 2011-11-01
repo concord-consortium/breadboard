@@ -66,9 +66,6 @@ describe 'Using oscope with mock Flash connection'
       
       var oldUpdate = sparks.circuit.Oscilloscope.prototype.update;
       sparks.circuit.Oscilloscope.prototype.update = function() {
-        console.log("WARRRRGHHH!")
-        console.trace()
-        console.log(console.trace())
         updateCalled = true;
       }
       
