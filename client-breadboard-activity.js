@@ -5018,27 +5018,29 @@ sparks.createQuestionsCSV = function(data) {
       var length = 0;
 
       $.each(report.sectionReports, function(i, sectionReport){
-        $.each(sectionReport.pageReports, function(j, pageReport){
-          $.each(pageReport.sessionReports, function(k, sessionReport){
-            if (length === 0) {
-              sessions.push(sessionReport);
-            } else {
-              var time = sessionReport.log.startTime;
-              var inserted = false;
-              for (var x = 0; x < length; x++){
-                if (time < sessions[x].log.startTime) {
-                  sessions.splice(x, 0, sessionReport);
-                  inserted = true;
-                  break;
+        if (!!sectionReport){
+          $.each(sectionReport.pageReports, function(j, pageReport){
+            $.each(pageReport.sessionReports, function(k, sessionReport){
+              if (length === 0) {
+                sessions.push(sessionReport);
+              } else {
+                var time = sessionReport.log.startTime;
+                var inserted = false;
+                for (var x = 0; x < length; x++){
+                  if (time < sessions[x].log.startTime) {
+                    sessions.splice(x, 0, sessionReport);
+                    inserted = true;
+                    break;
+                  }
+                }
+                if (!inserted){
+                  sessions.push(sessionReport);
                 }
               }
-              if (!inserted){
-                sessions.push(sessionReport);
-              }
-            }
-            length++;
+              length++;
+            });
           });
-        });
+        }
       });
 
       return sessions;
@@ -8127,6 +8129,9 @@ var apMessageBox = apMessageBox || {};
      };
 
     math.roundToSigDigits = function(x, n) {
+      if (x === 0) {
+        return 0;
+      }
       var order = Math.ceil(Math.log10(x)),
           factor;
 

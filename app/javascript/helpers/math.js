@@ -51,6 +51,9 @@
      // Round x to n significant digits
      // e.g. Returns 12700 for 12678 when n = 3.
     math.roundToSigDigits = function(x, n) {
+      if (x === 0) {
+        return 0;
+      }
       var order = Math.ceil(Math.log10(x)),
           factor;
        
