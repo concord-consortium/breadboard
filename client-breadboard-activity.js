@@ -5670,6 +5670,9 @@ sparks.createQuestionsCSV = function(data) {
       return new sparks.ComplexNumber(real, imaginary);
     };
 
+    sparks.ComplexNumber.prototype.toString = function() {
+      return "" + this.real + "+i" + this.imag
+    };
 })();
 /* FILE qucsator.js */
 /*globals console sparks $ breadModel getBreadBoard debug*/
