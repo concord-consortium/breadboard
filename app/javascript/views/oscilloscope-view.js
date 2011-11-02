@@ -343,6 +343,10 @@
           paths,
           i;
       
+      // if we try and display too many waves on the screen (high radiansPerPixel) we end up with strange effects,
+      // like beats or flat lines. Cap radiansPerPixel to Pi/2, which displays a solid block.
+      if (radiansPerPixel > Math.PI / 2) radiansPerPixel = Math.PI / 2;
+      
       function clip(y) {
         return y < 0 ? 0 : y > height ? height : y;
       }

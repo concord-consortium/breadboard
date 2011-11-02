@@ -51,7 +51,9 @@
             probeSignal,
             probeNode,
             data,
-            result;
+            result,
+            freqs,
+            dataIndex;
             
         if (!source || !source.frequency || !source.amplitude) {
           return;                                     // we must have a source with a freq and an amplitude
@@ -76,8 +78,11 @@
           
           data = breadModel('query');
           
-          // for our first pass, we're assuming single input frequency
-          result = data[probeNode].v[0];
+          // first go through the returned frequencies, and find the one that matches our source frequency
+          freqs = data.acfrequency;
+          dataIndex = this._getClosestQucsFrequencyIndex(freqs, source.frequency);
+          // find the same index in our data
+          result = data[probeNode].v[dataIndex];
 
           if (result) {
             probeSignal = {
@@ -111,7 +116,9 @@
       
       setHorizontalScale: function(scale) {
         this._horizontalScale = scale;
-        if (this.view) this.view.horizontalScaleChanged();
+        if (this.view) {
+          this.view.horizontalScaleChanged();
+        }
       },
       
       getHorizontalScale: function() {
@@ -124,7 +131,9 @@
       
       setVerticalScale: function(channel, scale) {
         this._verticalScale[channel] = scale;
-        if (this.view) this.view.verticalScaleChanged(channel);
+        if (this.view) {
+          this.view.verticalScaleChanged(channel);
+        }
       },
       
       getVerticalScale: function(channel) {
@@ -157,7 +166,9 @@
         var i, len, prevIndex;
         
         for (i = 0, len = scales.length; i < len; i++) {
-          if (scales[i] < scale) break;
+          if (scales[i] < scale) {
+            break;
+          }
         }
         prevIndex = (i > 0) ? i - 1 : 0;
         
@@ -168,6 +179,30 @@
         } else {
           return scale;
         }
+      },
+      
+      // When we define, say, a logaritmic sweep of frequencies, we calculate them on our end
+      // for the function generator, and QUCS generates them on its end after being given a
+      // simulation type. These two series may not be exactly the same after accounting for
+      // different precisions, so we want to pick the QUCS value that's closest to what we
+      // think we're generating. So, if we think we're generating 1002.2 Hz, and QUCS comes back
+      // with [1000, 1002.22222, 1003.33333], we want to return the index '1'
+      //
+      // @frequencies an array of frequencies, assumed to be complex numbers (ret from QUCS and parsed)
+      // @actual the frequency the FG believes it's generating
+      _getClosestQucsFrequencyIndex: function(frequencies, actual) {
+        var minDiff = Infinity,
+            index;
+        // this could be shortened as a CS exercise, but it takes 0 ms over an array of
+        // 10,000 so it's not really worth it...
+        for (var i = 0, ii = frequencies.length; i < ii; i++){
+          var diff = Math.abs(frequencies[i].real - actual);
+          if (diff < minDiff){
+            minDiff = diff;
+            index = i;
+          }
+        }
+        return index;
       }
       
     };

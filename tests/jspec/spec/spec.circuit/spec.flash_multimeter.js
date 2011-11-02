@@ -169,6 +169,42 @@ describe 'Using multimeter with mock Flash connection'
       
     end
     
+    it "should send pick the right RMS voltage if there are multiple frequencies"
+           
+      breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
+      breadModel('insertComponent', 'capacitor', {"connections": 'a2,a3', "capacitance": 0.00001});
+      breadModel('insertComponent', 'function generator', {"UID": "source", "connections": 'b1,b3', "amplitude": 5, "frequencies": [100, 1000]});
+      
+      receiveEvent('multimeter_dial', 'acv_200', 0);
+      receiveEvent('connect', 'probe|probe_black|a1', 0);
+      
+      var sendCalled = false;
+      var oldSendCommand = sparks.flash.sendCommand;
+      
+      sparks.flash.sendCommand = function(command, value) {
+        command.should.be "set_multimeter_display"
+        value.should.be "  0 1.9"
+        sendCalled = true;
+      }
+      
+      receiveEvent('connect', 'probe|probe_red|a2', 0);     // will call sendCommand
+      sendCalled.should.be true
+      
+      var sendCalled = false;
+      
+      sparks.flash.sendCommand = function(command, value) {
+        command.should.be "set_multimeter_display"
+        value.should.be "  0 3.5"
+        sendCalled = true;
+      }
+      
+      getBreadBoard().components.source.setFrequency(1000); // will call second sendCommand
+      sendCalled.should.be true
+      
+      sparks.flash.sendCommand = oldSendCommand;
+      
+    end
+    
     it "should send show zero volts if measuring an AC circuit with DC_V"
            
       // we add a 100 ohm resistor

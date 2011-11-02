@@ -22,11 +22,16 @@
     if ( ('undefined' === typeof this.frequency || this.frequency === null) && props.frequencies ) {
       if ('number' === typeof props.frequencies[0]) {
         this.frequency = props.frequencies[0];
+        this.possibleFrequencies = props.frequencies;
       }
       else if (props.frequencies[0] === 'linear' || props.frequencies[0] === 'logarithmic') {
         this.frequency = props.frequencies[1];
+        this.possibleFrequencies = this._calcPossibleFrequencies(props);
       }
     }
+    
+    // set a base frequency, so that we don't have to change NetList representation after changing frequency
+    this.baseFrequency = this.frequency;
     
     if ('undefined' === typeof this.frequency || this.frequency === null) {
       throw new Error("FunctionGenerator: initialFrequency is undefined and an initial frequency could not be inferred from frequency range specification.");
@@ -34,11 +39,30 @@
   };
 
   sparks.extend(sparks.circuit.FunctionGenerator, sparks.circuit.Component, {
+    
+    // for now, no validation on frequency. So we might set something QUCS isn't expecting from the given sim type
+    setFrequency: function(frequency) {
+      this.frequency = frequency;
+      if (sparks.activityController.currentSection.meter) {
+        sparks.activityController.currentSection.meter.update();
+      }
+    },
+    
+    setAmplitude: function(amplitude) {
+      this.amplitude = amplitude;
+      if (sparks.activityController.currentSection.meter) {
+        sparks.activityController.currentSection.meter.update();
+      }
+    },
+    
+    getPossibleFrequencies: function() {
+      return this.possibleFrequencies;
+    },
 
     toNetlist: function () {
       var amplitude = this.amplitude || 0,
           nodes     = this.getNodes();
-      return 'Vac:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' U="' + amplitude + ' V" f="' + this.frequency + '" Phase="0" Theta="0"';
+      return 'Vac:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' U="' + amplitude + ' V" f="' + this.baseFrequency + '" Phase="0" Theta="0"';
     },
     
     defaultFrequencySteps: 100,
@@ -64,6 +88,30 @@
         
       }
       
+    },
+    
+    _calcPossibleFrequencies: function(props) {
+      var startF   = props.frequencies[1],
+          endF     = props.frequencies[2],
+          steps    = props.frequencies[3],
+          type     = props.frequencies[0],
+          diff     = endF - startF,
+          multiple = endF / startF,
+          stepSize,
+          i;
+      
+      var frequencies = [];
+      if (type === 'linear') {
+        stepSize = diff / (steps - 1);
+        for (i = 0; i < steps; i++){
+          frequencies.push(startF + (stepSize * i));
+        }
+      } else if (type === 'logarithmic') {
+        for (i = 0; i < steps; i++){
+          frequencies.push(startF * (Math.pow(multiple, ((i/(steps-1))))));
+        }
+      }
+      return frequencies;
     }
     
   });
