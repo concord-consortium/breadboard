@@ -2066,7 +2066,7 @@ var firstAvailCol;if(typeof(matrix[rowIndex])=="undefined"){matrix[rowIndex]=[];
         loadClassDataWithLearnerIds: function (activity, studentIds, success, failure) {
           var keys = []
           for (var i=0, ii=studentIds.length; i<ii; i++){
-            keys.push([studentIds[i], activity]);
+            keys.push([""+studentIds[i], activity]);
           }
           $.couch.urlPrefix = this.saveDataPath;
           $.couch.db('').view(
