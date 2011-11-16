@@ -2003,6 +2003,26 @@ if (window.attachEvent) {
                 }
             }}
           );
+        },
+
+        loadClassDataWithLearnerIds: function (activity, studentIds, success, failure) {
+          var keys = []
+          for (var i=0, ii=studentIds.length; i<ii; i++){
+            keys.push([studentIds[i], activity]);
+          }
+          $.couch.urlPrefix = this.saveDataPath;
+          $.couch.db('').view(
+            "session_scores/Scores%20per%20student_id",
+            {
+              keys:keys,
+              success: function(response) {
+                if (response.rows.length > 0){
+                  success(response);
+                } else {
+                  failure();
+                }
+            }}
+          );
         }
     };
 

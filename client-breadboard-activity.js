@@ -2061,6 +2061,26 @@ var firstAvailCol;if(typeof(matrix[rowIndex])=="undefined"){matrix[rowIndex]=[];
                 }
             }}
           );
+        },
+
+        loadClassDataWithLearnerIds: function (activity, studentIds, success, failure) {
+          var keys = []
+          for (var i=0, ii=studentIds.length; i<ii; i++){
+            keys.push([studentIds[i], activity]);
+          }
+          $.couch.urlPrefix = this.saveDataPath;
+          $.couch.db('').view(
+            "session_scores/Scores%20per%20student_id",
+            {
+              keys:keys,
+              success: function(response) {
+                if (response.rows.length > 0){
+                  success(response);
+                } else {
+                  failure();
+                }
+            }}
+          );
         }
     };
 
@@ -5319,7 +5339,7 @@ sparks.createQuestionsCSV = function(data) {
 
   sparks.reportController = new sparks.ReportController();
 })();
-/*globals console sparks $ breadModel getBreadBoard window */
+/*globals console sparks $ breadModel getBreadBoard window alert*/
 
 (function() {
 
@@ -5336,7 +5356,7 @@ sparks.createQuestionsCSV = function(data) {
 
   sparks.ClassReportController.prototype = {
 
-    getClassData: function(activityId, classId, callback) {
+    getClassData: function(activityId, learnerIds, callback) {
       var reports = this.reports;
 
       var receivedData = function(response){
@@ -5352,7 +5372,7 @@ sparks.createQuestionsCSV = function(data) {
         alert("Failed to load class report");
       };
 
-      sparks.couchDS.loadClassData(activityId, classId, receivedData, fail);
+      sparks.couchDS.loadClassDataWithLearnerIds(activityId, learnerIds, receivedData, fail);
     },
 
     getLevels: function() {
@@ -8443,19 +8463,24 @@ var apMessageBox = apMessageBox || {};
   };
 
   this.loadClassReport = function () {
-    var classId,
+    var classStudents,
+        learnerIds = [],
         activity;
     if (!!sparks.util.readCookie('class')){
       activity = unescape(sparks.util.readCookie('activity_name')).split('#')[1];
-      classId = sparks.util.readCookie('class');
+      classStudents = JSON.parse(unescape(sparks.util.readCookie('class_students')));
+      for (var i=0, ii=classStudents.length; i < ii; i++){
+        learnerIds.push(classStudents[i].id);
+      }
     } else {
       activity = prompt("Enter the activity id");
-      classId = prompt("Enter a class id", "");
+      classStudents = prompt("Enter a list of learner ids", "");
+      learnerIds = classStudents.split(',');
     }
 
     sparks.classReportController.getClassData(
       activity,
-      classId,
+      learnerIds,
       function(reports) {
         $('#loading').hide();
         var view = new sparks.ClassReportView(),
