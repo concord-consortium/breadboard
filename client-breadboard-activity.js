@@ -8468,7 +8468,7 @@ var apMessageBox = apMessageBox || {};
         activity;
     if (!!sparks.util.readCookie('class')){
       activity = unescape(sparks.util.readCookie('activity_name')).split('#')[1];
-      classStudents = JSON.parse(unescape(sparks.util.readCookie('class_students')));
+      classStudents = eval(unescape(sparks.util.readCookie('class_students')).replace(/\+/g," "));
       for (var i=0, ii=classStudents.length; i < ii; i++){
         learnerIds.push(classStudents[i].id);
       }
