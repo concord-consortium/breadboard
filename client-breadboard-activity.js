@@ -2864,7 +2864,7 @@ sparks.createQuestionsCSV = function(data) {
       $imageDiv: $('#image'),
       $questionsDiv: $('#questions_area'),
       $titleDiv: $('#title'),
-      $scopeDiv: $('#oscope'),
+      $scopeDiv: $('#oscope_mini'),
       $fgDiv: $('#function_generator')
     };
   };
@@ -2905,7 +2905,7 @@ sparks.createQuestionsCSV = function(data) {
           sparks.flash.sendCommand('set_probe_visibility','true');
         } else if (section.show_oscilloscope){
           var scopeView = new sparks.OscilloscopeView();
-          var $scope = scopeView.getView();
+          var $scope = scopeView.getMiniView();
           this.divs.$scopeDiv.append($scope);
           sparks.flash.sendCommand('set_probe_visibility','true');
 
@@ -3605,15 +3605,26 @@ sparks.createQuestionsCSV = function(data) {
 
   sparks.OscilloscopeView = function () {
     this.$view         = null;
+    this.miniRaphaelCanvas = null;
     this.raphaelCanvas = null;
+    this.miniTraces    = [];
     this.traces        = [];
     this.model         = null;
   };
 
   sparks.OscilloscopeView.prototype = {
 
-    width:    400,
-    height:   320,
+    miniViewConfig: {
+      width: 132,
+      height: 100,
+      tickSize: 2
+    },
+
+    largeViewConfig: {
+      width:    400,
+      height:   320,
+      tickSize: 3
+    },
 
     nVerticalMarks:   8,
     nHorizontalMarks: 10,
@@ -3631,6 +3642,55 @@ sparks.createQuestionsCSV = function(data) {
       this.model = model;
     },
 
+    getMiniView: function () {
+      var $canvasHolder,
+          self = this,
+          conf = this.miniViewConfig;
+
+      this.$view = $('<div>');
+      this.$view.css({
+        position: 'relative',
+        width: conf.width+160,
+        height: conf.height+40
+      });
+
+
+      this.$displayArea = $('<div class="display-area">').css({
+        position: 'absolute',
+        top: 14,
+        left: 19,
+        width:    conf.width,
+        height:   conf.height,
+        backgroundColor: this.displayAreaColor
+      }).appendTo(this.$view);
+
+      $canvasHolder = $('<div class="raphael-holder">').css({
+        position: 'absolute',
+        top:  0,
+        left: 0,
+        backgroundColor: this.traceBgColor
+      }).appendTo(this.$displayArea);
+
+      this.miniRaphaelCanvas = Raphael($canvasHolder[0], conf.width, conf.height);
+
+      this.drawGrid(this.miniRaphaelCanvas, conf);
+
+      var self = this;
+      $('#oscope_mini_overlay').click(function(){
+        $view = self.getView();
+        self.renderSignal(1);
+        self.renderSignal(2);
+        $view.dialog({
+          width: self.largeViewConfig.width + 150,
+          height: self.largeViewConfig.height + 65,
+          dialogClass: 'tools-dialog',
+          title: "Oscilloscope",
+          closeOnEscape: false
+        });
+      });
+      return this.$view;
+    },
+
     /**
       @returns $view A jQuery object containing a Raphael canvas displaying the oscilloscope traces.
 
@@ -3638,67 +3698,68 @@ sparks.createQuestionsCSV = function(data) {
     */
     getView: function () {
       var $canvasHolder,
-          self = this;
+          self = this,
+          conf = this.largeViewConfig;
 
       this.$view = $('<div>');
       this.$view.css({
         position: 'relative',
-        width: this.width + 400,
-        height: this.height + 50
+        width: conf.width,
+        height: conf.height
       });
 
 
       this.$displayArea = $('<div class="display-area">').css({
         position: 'absolute',
-        width:    this.width + 100,
-        height:   this.height + 50,
+        width:    conf.width + 6,
+        height:   conf.height + 30,
         backgroundColor: this.displayAreaColor
       }).appendTo(this.$view);
 
       $canvasHolder = $('<div class="raphael-holder">').css({
         position: 'absolute',
-        top:  10,
-        left: 10,
+        top:  3,
+        left: 3,
+        width:    conf.width,
+        height:   conf.height,
         backgroundColor: this.traceBgColor
       }).appendTo(this.$displayArea);
 
-      this.raphaelCanvas = Raphael($canvasHolder[0], this.width, this.height);
+      this.raphaelCanvas = Raphael($canvasHolder[0], conf.width, conf.height);
 
-      this.drawGrid();
+      this.drawGrid(this.raphaelCanvas, conf);
 
       $('<p>CH1 <span class="vscale channel1"></span>V</p>').css({
         position: 'absolute',
-        top:   15 + this.height,
+        top:   10 + conf.height,
         left:  5,
         color: this.textColor
       }).appendTo(this.$displayArea);
 
       $('<p>CH2 <span class="vscale channel2"></span>V</p>').css({
         position: 'absolute',
-        top:   15 + this.height,
-        left:  5 + this.width / 4,
+        top:   10 + conf.height,
+        left:  5 + conf.width / 4,
         color: this.textColor
       }).appendTo(this.$displayArea);
 
       $('<p>M <span class="hscale"></span>s</p>').css({
         position: 'absolute',
-        top:   15 + this.height,
-        left:  5 + this.width / 2,
+        top:   10 + conf.height,
+        left:  5 + conf.width / 2,
         color: this.textColor
       }).appendTo(this.$displayArea);
 
 
       this.$faceplate = $('<div class="faceplate">').css({
         position: 'absolute',
-        left:   this.width + 100,
-        right: 0,
-        height: this.height + 50,
+        left:   conf.width + 20,
         backgroundColor: this.faceplateColor
       }).appendTo(this.$view);
 
       this.$controls = $('<div>').css({
         position: 'absolute',
-        top:      100,
+        top:      30,
         left:     0,
         right:    0,
         height:   200
@@ -3708,7 +3769,7 @@ sparks.createQuestionsCSV = function(data) {
         position:  'absolute',
         top:       10,
         left:      0,
-        width:     150,
+        width:     130,
         height:    100
       }).appendTo(this.$controls);
 
@@ -3728,9 +3789,9 @@ sparks.createQuestionsCSV = function(data) {
 
       this.$channel2 = $('<div>').css({
         position: 'absolute',
-        top:      10,
-        left:     150,
-        width:    150,
+        top:      110,
+        left:     0,
+        width:    130,
         height:   100
       }).appendTo(this.$controls);
 
@@ -3750,9 +3811,9 @@ sparks.createQuestionsCSV = function(data) {
 
       this.$horizontal = $('<div>').css({
         position:  'absolute',
-        top:       100,
-        left:      75,
-        width:     150,
+        top:       220,
+        left:      0,
+        width:     130,
         height:    100
       }).appendTo(this.$controls);
 
@@ -3777,14 +3838,14 @@ sparks.createQuestionsCSV = function(data) {
       $('<button>+</button>').css({
         position: 'absolute',
         top:   25,
-        left:  35,
+        left:  25,
         width: 30
       }).click(plusCallback).appendTo($el);
 
       $('<button>-</button>').css({
         position: 'absolute',
         top:   25,
-        right: 35,
+        right: 25,
         width: 30
       }).click(minusCallback).appendTo($el);
     },
@@ -3799,22 +3860,24 @@ sparks.createQuestionsCSV = function(data) {
         horizontalScale = this.model.getHorizontalScale();
         verticalScale   = this.model.getVerticalScale(channel);
 
-        if (!t || (t.amplitude !== s.amplitude || t.frequency !== s.frequency || t.phase !== s.phase ||
+        if (!t || !t.raphaelObjectMini || !t.raphaelObject || (t.amplitude !== s.amplitude || t.frequency !== s.frequency || t.phase !== s.phase ||
                    t.horizontalScale !== horizontalScale || t.verticalScale !== verticalScale)) {
 
           this.removeTrace(channel);
           this.traces[channel] = {
-            amplitude:       s.amplitude,
-            frequency:       s.frequency,
-            phase:           s.phase,
-            horizontalScale: horizontalScale,
-            verticalScale:   verticalScale,
-            raphaelObject:   this.drawTrace(s, channel, horizontalScale, verticalScale)
+            amplitude:          s.amplitude,
+            frequency:          s.frequency,
+            phase:              s.phase,
+            horizontalScale:    horizontalScale,
+            verticalScale:      verticalScale,
+            raphaelObjectMini:  this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, s, channel, horizontalScale, verticalScale),
+            raphaelObject:      this.drawTrace(this.raphaelCanvas, this.largeViewConfig, s, channel, horizontalScale, verticalScale)
           };
         }
 
         if (channel === 1 && this.traces[2]) {
-          this.traces[2].raphaelObject.toFront();
+          if (!!this.traces[2].raphaelObjectMini) this.traces[2].raphaelObjectMini.toFront();
+          if (!!this.traces[2].raphaelObject) this.traces[2].raphaelObject.toFront();
         }
       }
       else {
@@ -3824,6 +3887,7 @@ sparks.createQuestionsCSV = function(data) {
 
     removeTrace: function (channel) {
       if (this.traces[channel]) {
+        if (this.traces[channel].raphaelObjectMini) this.traces[channel].raphaelObjectMini.remove();
         if (this.traces[channel].raphaelObject) this.traces[channel].raphaelObject.remove();
         delete this.traces[channel];
       }
@@ -3860,70 +3924,69 @@ sparks.createQuestionsCSV = function(data) {
       if (this.traces[channel]) this.renderSignal(channel);
     },
 
-    drawGrid: function () {
-      var r = this.raphaelCanvas,
-          path = [],
+    drawGrid: function (r, conf) {
+      var path = [],
           x, dx, y, dy;
 
-      for (x = dx = this.width / this.nHorizontalMarks; x <= this.width - dx; x += dx) {
+      for (x = dx = conf.width / this.nHorizontalMarks; x <= conf.width - dx; x += dx) {
         path.push('M');
         path.push(x);
         path.push(0);
 
         path.push('L');
         path.push(x);
-        path.push(this.height);
+        path.push(conf.height);
       }
 
-      for (y = dy = this.height / this.nVerticalMarks; y <= this.height - dy; y += dy) {
+      for (y = dy = conf.height / this.nVerticalMarks; y <= conf.height - dy; y += dy) {
         path.push('M');
         path.push(0);
         path.push(y);
 
         path.push('L');
-        path.push(this.width);
+        path.push(conf.width);
         path.push(y);
       }
 
-      y = this.height / 2;
+      y = conf.height / 2;
 
-      for (x = dx = this.width / (this.nHorizontalMarks * this.nMinorTicks); x <= this.width - dx; x += dx) {
+      for (x = dx = conf.width / (this.nHorizontalMarks * this.nMinorTicks); x <= conf.width - dx; x += dx) {
         path.push('M');
         path.push(x);
-        path.push(y-3);
+        path.push(y-conf.tickSize);
 
         path.push('L');
         path.push(x);
-        path.push(y+3);
+        path.push(y+conf.tickSize);
       }
 
-      x = this.width / 2;
+      x = conf.width / 2;
 
-      for (y = dy = this.height / (this.nVerticalMarks * this.nMinorTicks); y <= this.height - dy; y += dy) {
+      for (y = dy = conf.height / (this.nVerticalMarks * this.nMinorTicks); y <= conf.height - dy; y += dy) {
         path.push('M');
-        path.push(x-3);
+        path.push(x-conf.tickSize);
         path.push(y);
 
         path.push('L');
-        path.push(x+3);
+        path.push(x+conf.tickSize);
         path.push(y);
       }
 
       return r.path(path.join(' ')).attr({stroke: this.tickColor, opacity: 0.5});
     },
 
-    drawTrace: function (signal, channel, horizontalScale, verticalScale) {
-      var r            = this.raphaelCanvas,
-          path         = [],
-          height       = this.height,
+    drawTrace: function (r, conf, signal, channel, horizontalScale, verticalScale) {
+      if (!r) return;
+      var path         = [],
+          height       = conf.height,
           h            = height / 2,
 
           overscan     = 5,                       // how many pixels to overscan on either side (see below)
-          triggerStart = this.width / 2,          // horizontal position at which the rising edge of a 0-phase signal should cross zero
+          triggerStart = conf.width / 2,          // horizontal position at which the rising edge of a 0-phase signal should cross zero
 
-          radiansPerPixel = (2 * Math.PI * signal.frequency * horizontalScale) / (this.width / this.nHorizontalMarks),
+          radiansPerPixel = (2 * Math.PI * signal.frequency * horizontalScale) / (conf.width / this.nHorizontalMarks),
 
-          pixelsPerVolt = (this.height / this.nVerticalMarks) / verticalScale,
+          pixelsPerVolt = (conf.height / this.nVerticalMarks) / verticalScale,
 
           x,
           raphaelObject,
@@ -3936,7 +3999,7 @@ sparks.createQuestionsCSV = function(data) {
         return y < 0 ? 0 : y > height ? height : y;
       }
 
-      for (x = 0; x < this.width + overscan * 2; x++) {
+      for (x = 0; x < conf.width + overscan * 2; x++) {
         path.push(x ===  0 ? 'M' : 'L');
         path.push(x);
 

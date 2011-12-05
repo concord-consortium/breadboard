@@ -10,7 +10,7 @@
       $imageDiv: $('#image'),
       $questionsDiv: $('#questions_area'),
       $titleDiv: $('#title'),
-      $scopeDiv: $('#oscope'),
+      $scopeDiv: $('#oscope_mini'),
       $fgDiv: $('#function_generator')
     };
   };
@@ -51,7 +51,7 @@
           sparks.flash.sendCommand('set_probe_visibility','true');
         } else if (section.show_oscilloscope){
           var scopeView = new sparks.OscilloscopeView();
-          var $scope = scopeView.getView();
+          var $scope = scopeView.getMiniView();
           this.divs.$scopeDiv.append($scope);
           sparks.flash.sendCommand('set_probe_visibility','true');
           
