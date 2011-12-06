@@ -90,6 +90,10 @@
           dialogClass: 'tools-dialog',
           title: "Oscilloscope",
           closeOnEscape: false
+        }).dialog("widget").position({
+           my: 'left top',
+           at: 'center top',
+           of: $("#breadboard_wrapper")
         });
       });
       return this.$view;

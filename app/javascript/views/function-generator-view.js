@@ -144,6 +144,11 @@
           dialogClass: 'tools-dialog',
           title: "Function Generator",
           closeOnEscape: false
+        }).dialog("widget").position({
+           my: 'left top',
+           at: 'left top',
+           offset: '5, 5',
+           of: $("#breadboard_wrapper")
         });
       });
     },
