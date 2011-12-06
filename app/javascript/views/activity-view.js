@@ -12,7 +12,9 @@
       $titleDiv:        $('#title'),
       $scopeDiv:        $('#oscope_mini'),
       $scopeOverlayDiv: $('#oscope_mini_overlay'),
-      $fgDiv:           $('#function_generator')
+      $fgDiv:           $('#fg_mini'),
+      $fgOverlayDiv:    $('#fg_mini_overlay'),
+      $fgValueDiv:      $('#fg_value')
     };
   };
   
@@ -44,7 +46,9 @@
         if (source.frequency) {
           var fgView = new sparks.FunctionGeneratorView(source);
           var $fg = fgView.getView();
-          this.divs.$fgDiv.append($fg);
+          fgView.setMiniViewSpan(this.divs.$fgValueDiv, this.divs.$fgOverlayDiv);
+          this.divs.$fgDiv.show();
+          this.divs.$fgOverlayDiv.show();
         }
         
         if (section.show_multimeter){

@@ -314,7 +314,40 @@ border-bottom-style:solid;
 
 #oscope_mini_overlay:hover {
   background: url(/common/images/oscope_mini_overlay.png) 0 -150px no-repeat;
-  color: white;
+}
+
+#fg_mini {
+  background: url(/common/images/fg_mini.png) no-repeat top left;
+  position: absolute;
+  top: 3;
+  left: -10;
+  width: 200;
+  height: 150;
+  z-index: 1;
+}
+
+#fg_mini_overlay {
+  background: url(/common/images/fg_mini_overlay.png) no-repeat top left;
+  position: absolute;
+  top: 16px;
+  left: -10;
+  width: 200;
+  height: 120;
+  z-index: 2;
+}
+
+#fg_mini_overlay:hover {
+  background: url(/common/images/fg_mini_overlay.png) 0 -150px no-repeat;
+}
+
+#fg_value {
+  position: absolute;
+  top: 52;
+  left: 28;
+  color: #30d4f4;
+  font-family: 'Anonymous Pro', sans-serif;
+  font-size: 15px;
+  font-weight:bold;
 }
 
 .tools-dialog .ui-dialog-titlebar {

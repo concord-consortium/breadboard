@@ -2866,7 +2866,9 @@ sparks.createQuestionsCSV = function(data) {
       $titleDiv:        $('#title'),
       $scopeDiv:        $('#oscope_mini'),
       $scopeOverlayDiv: $('#oscope_mini_overlay'),
-      $fgDiv:           $('#function_generator')
+      $fgDiv:           $('#fg_mini'),
+      $fgOverlayDiv:    $('#fg_mini_overlay'),
+      $fgValueDiv:      $('#fg_value')
     };
   };
 
@@ -2898,7 +2900,9 @@ sparks.createQuestionsCSV = function(data) {
         if (source.frequency) {
           var fgView = new sparks.FunctionGeneratorView(source);
           var $fg = fgView.getView();
-          this.divs.$fgDiv.append($fg);
+          fgView.setMiniViewSpan(this.divs.$fgValueDiv, this.divs.$fgOverlayDiv);
+          this.divs.$fgDiv.show();
+          this.divs.$fgOverlayDiv.show();
         }
 
         if (section.show_multimeter){
@@ -4029,8 +4033,10 @@ sparks.createQuestionsCSV = function(data) {
 
   sparks.FunctionGeneratorView = function (functionGenerator) {
     this.$view         = null;
+    this.miniView      = null;
     this.model         = functionGenerator;
     this.frequencies   = [];
+    this.currentFreqString = "";
   };
 
   sparks.FunctionGeneratorView.prototype = {
@@ -4107,10 +4113,10 @@ sparks.createQuestionsCSV = function(data) {
         if (i > freqs.length-1) i = freqs.length-1;
         var freq = freqs[i];
         self.model.setFrequency(freq);
-        $('#freq_value').text(sparks.mathParser.standardizeUnits(sparks.unit.convertMeasurement(freq + " Hz")))
+        self.setFrequency(freq);
       });
 
-      $('<p id="freq_value">' + sparks.mathParser.standardizeUnits(sparks.unit.convertMeasurement(freqs[0] + " Hz")) + '</p>').css({
+      $('<p id="freq_value"></p>').css({
         position:  'absolute',
         top:       45,
         left:      0,
@@ -4120,11 +4126,36 @@ sparks.createQuestionsCSV = function(data) {
       }).appendTo(this.$frequency);
 
 
+      self.setFrequency(freqs[0]);
+
+
       return this.$view;
     },
 
+    setFrequency: function (freq) {
+      this.currentFreqString = sparks.mathParser.standardizeUnits(sparks.unit.convertMeasurement(freq + " Hz"));
+      if (!!this.$miniView) this.$miniView.text(this.currentFreqString);
+      $('#freq_value').text(this.currentFreqString);
+      return this.currentFreqString;
+    },
+
+    setMiniViewSpan: function($miniDiv, $overlayDiv) {
+      this.$miniView = $miniDiv;
+      $miniDiv.text(this.currentFreqString);
+      var self = this;
+      $overlayDiv.click(function() {
+        $view = self.getView();
+        $view.dialog({
+          width: self.width,
+          height: self.height+30,
+          dialogClass: 'tools-dialog',
+          title: "Function Generator",
+          closeOnEscape: false
+        });
+      });
+    },
+
     _addSliderControl: function ($el, steps, callback) {
-      console.log("steps = "+steps)
       $("<div id='fg_slider'>").css({
         position: 'absolute',
         top:   25,
