@@ -316,6 +316,10 @@ border-bottom-style:solid;
   background: url(/common/images/oscope_mini_overlay.png) 0 -150px no-repeat;
 }
 
+.oscope_popup .ui-dialog-content{
+  background: url(/common/images/oscope_large.png) no-repeat -20 -30;
+}
+
 #fg_mini {
   background: url(/common/images/fg_mini.png) no-repeat top left;
   position: absolute;

@@ -143,7 +143,8 @@
           height: self.height+30,
           dialogClass: 'tools-dialog',
           title: "Function Generator",
-          closeOnEscape: false
+          closeOnEscape: false,
+          resizable: false
         }).dialog("widget").position({
            my: 'left top',
            at: 'left top',

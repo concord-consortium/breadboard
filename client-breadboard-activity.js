@@ -3637,7 +3637,7 @@ sparks.createQuestionsCSV = function(data) {
     nMinorTicks:      5,
 
     faceplateColor:   '#EEEEEE',
-    displayAreaColor: '#2F85E0',
+    displayAreaColor: '#324569',
     traceBgColor:     '#324569',
     tickColor:        '#9EBDDE',
     textColor:        '#D8E1EB',
@@ -3688,10 +3688,11 @@ sparks.createQuestionsCSV = function(data) {
         self.renderSignal(2, true);
         $view.dialog({
           width: self.largeViewConfig.width + 150,
-          height: self.largeViewConfig.height + 65,
-          dialogClass: 'tools-dialog',
+          height: self.largeViewConfig.height + 80,
+          dialogClass: 'tools-dialog oscope_popup',
           title: "Oscilloscope",
-          closeOnEscape: false
+          closeOnEscape: false,
+          resizable: false
         }).dialog("widget").position({
            my: 'left top',
            at: 'center top',
@@ -3721,6 +3722,8 @@ sparks.createQuestionsCSV = function(data) {
 
       this.$displayArea = $('<div class="display-area">').css({
         position: 'absolute',
+        top: 25,
+        left: 18,
         width:    conf.width + 6,
         height:   conf.height + 30,
         backgroundColor: this.displayAreaColor
@@ -3728,8 +3731,8 @@ sparks.createQuestionsCSV = function(data) {
 
       $canvasHolder = $('<div class="raphael-holder">').css({
         position: 'absolute',
-        top:  3,
-        left: 3,
+        top:  5,
+        left: 7,
         width:    conf.width,
         height:   conf.height,
         backgroundColor: this.traceBgColor
@@ -3763,7 +3766,8 @@ sparks.createQuestionsCSV = function(data) {
 
       this.$faceplate = $('<div class="faceplate">').css({
         position: 'absolute',
-        left:   conf.width + 20,
+        left:   conf.width + 27,
+        top: 15,
         backgroundColor: this.faceplateColor
       }).appendTo(this.$view);
 
@@ -3779,7 +3783,7 @@ sparks.createQuestionsCSV = function(data) {
         position:  'absolute',
         top:       10,
         left:      0,
-        width:     130,
+        width:     122,
         height:    100
       }).appendTo(this.$controls);
 
@@ -3801,7 +3805,7 @@ sparks.createQuestionsCSV = function(data) {
         position: 'absolute',
         top:      110,
         left:     0,
-        width:    130,
+        width:    122,
         height:   100
       }).appendTo(this.$controls);
 
@@ -3823,7 +3827,7 @@ sparks.createQuestionsCSV = function(data) {
         position:  'absolute',
         top:       220,
         left:      0,
-        width:     130,
+        width:     122,
         height:    100
       }).appendTo(this.$controls);
 
@@ -4154,7 +4158,8 @@ sparks.createQuestionsCSV = function(data) {
           height: self.height+30,
           dialogClass: 'tools-dialog',
           title: "Function Generator",
-          closeOnEscape: false
+          closeOnEscape: false,
+          resizable: false
         }).dialog("widget").position({
            my: 'left top',
            at: 'left top',
