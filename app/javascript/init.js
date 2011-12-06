@@ -107,6 +107,9 @@
     // Called by flash model when it is fully loaded
     this.initActivity = function () {
         sparks.flash.init();
+        if (!!sparks.activity.view) {
+          sparks.activity.view.setFlashLoaded(true);
+        }
     };
   };
   
