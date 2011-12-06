@@ -82,8 +82,8 @@
       var self = this;
       $('#oscope_mini_overlay').click(function(){
         $view = self.getView();
-        self.renderSignal(1);
-        self.renderSignal(2);
+        self.renderSignal(1, true);
+        self.renderSignal(2, true);
         $view.dialog({
           width: self.largeViewConfig.width + 150,
           height: self.largeViewConfig.height + 65,
@@ -256,7 +256,7 @@
       }).click(minusCallback).appendTo($el);
     },
 
-    renderSignal: function (channel) {
+    renderSignal: function (channel, forced) {
       var s = this.model.getSignal(channel),
           t = this.traces[channel],
           horizontalScale,
@@ -267,7 +267,7 @@
         verticalScale   = this.model.getVerticalScale(channel);
 
         // don't render the signal if we've already drawn it at the same scale
-        if (!t || !t.raphaelObjectMini || !t.raphaelObject || (t.amplitude !== s.amplitude || t.frequency !== s.frequency || t.phase !== s.phase ||
+        if (!t || forced || (t.amplitude !== s.amplitude || t.frequency !== s.frequency || t.phase !== s.phase ||
                    t.horizontalScale !== horizontalScale || t.verticalScale !== verticalScale)) {
 
           this.removeTrace(channel);
