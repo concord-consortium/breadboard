@@ -295,7 +295,7 @@ border-bottom-style:solid;
 }
 
 #oscope_mini {
-  background: url(/common/images/oscope_mini.png) no-repeat top left;
+  background: url("../../common/images/oscope_mini.png") no-repeat top left;
   position: absolute;
   top: 10;
   left: 420;
@@ -303,7 +303,7 @@ border-bottom-style:solid;
 }
 
 #oscope_mini_overlay {
-  background: url(/common/images/oscope_mini_overlay.png) no-repeat top left;
+  background: url("../../common/images/oscope_mini_overlay.png") no-repeat top left;
   position: absolute;
   top: 10;
   left: 420;
@@ -313,15 +313,15 @@ border-bottom-style:solid;
 }
 
 #oscope_mini_overlay:hover {
-  background: url(/common/images/oscope_mini_overlay.png) 0 -150px no-repeat;
+  background: url("../../common/images/oscope_mini_overlay.png") 0 -150px no-repeat;
 }
 
 .oscope_popup .ui-dialog-content{
-  background: url(/common/images/oscope_large.png) no-repeat -20 -30;
+  background: url("../../common/images/oscope_large.png") no-repeat -20 -30;
 }
 
 #fg_mini {
-  background: url(/common/images/fg_mini.png) no-repeat top left;
+  background: url("../../common/images/fg_mini.png") no-repeat top left;
   position: absolute;
   top: 3;
   left: -10;
@@ -331,7 +331,7 @@ border-bottom-style:solid;
 }
 
 #fg_mini_overlay {
-  background: url(/common/images/fg_mini_overlay.png) no-repeat top left;
+  background: url("../../common/images/fg_mini_overlay.png") no-repeat top left;
   position: absolute;
   top: 16px;
   left: -10;
@@ -341,7 +341,7 @@ border-bottom-style:solid;
 }
 
 #fg_mini_overlay:hover {
-  background: url(/common/images/fg_mini_overlay.png) 0 -150px no-repeat;
+  background: url("../../common/images/fg_mini_overlay.png") 0 -150px no-repeat;
 }
 
 #fg_value {
