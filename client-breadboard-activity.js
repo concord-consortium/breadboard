@@ -2860,12 +2860,13 @@ sparks.createQuestionsCSV = function(data) {
     this.activity = activity;
 
     this.divs = {
-      $breadboardDiv: $('#breadboard'),
-      $imageDiv: $('#image'),
-      $questionsDiv: $('#questions_area'),
-      $titleDiv: $('#title'),
-      $scopeDiv: $('#oscope_mini'),
-      $fgDiv: $('#function_generator')
+      $breadboardDiv:   $('#breadboard'),
+      $imageDiv:        $('#image'),
+      $questionsDiv:    $('#questions_area'),
+      $titleDiv:        $('#title'),
+      $scopeDiv:        $('#oscope_mini'),
+      $scopeOverlayDiv: $('#oscope_mini_overlay'),
+      $fgDiv:           $('#function_generator')
     };
   };
 
@@ -2908,7 +2909,8 @@ sparks.createQuestionsCSV = function(data) {
           var $scope = scopeView.getMiniView();
           this.divs.$scopeDiv.append($scope);
           sparks.flash.sendCommand('set_probe_visibility','true');
-
+          this.divs.$scopeDiv.show();
+          this.divs.$scopeOverlayDiv.show();
           section.meter.setView(scopeView);
         }
       }
