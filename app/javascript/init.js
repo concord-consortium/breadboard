@@ -107,23 +107,31 @@
     // Called by flash model when it is fully loaded
     this.initActivity = function () {
         sparks.flash.init();
+        if (!!sparks.activity.view) {
+          sparks.activity.view.setFlashLoaded(true);
+        }
     };
   };
   
   this.loadClassReport = function () {
-    var classId,
+    var classStudents,
+        learnerIds = [],
         activity;
     if (!!sparks.util.readCookie('class')){
       activity = unescape(sparks.util.readCookie('activity_name')).split('#')[1];
-      classId = sparks.util.readCookie('class');
+      classStudents = eval(unescape(sparks.util.readCookie('class_students')).replace(/\+/g," "));
+      for (var i=0, ii=classStudents.length; i < ii; i++){
+        learnerIds.push(classStudents[i].id);
+      }
     } else {  
       activity = prompt("Enter the activity id");
-      classId = prompt("Enter a class id", "");
+      classStudents = prompt("Enter a list of learner ids", "");
+      learnerIds = classStudents.split(',');
     }
     
     sparks.classReportController.getClassData(
       activity,
-      classId, 
+      learnerIds, 
       function(reports) {
         $('#loading').hide();
         var view = new sparks.ClassReportView(),

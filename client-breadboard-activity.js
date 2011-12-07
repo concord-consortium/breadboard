@@ -2061,6 +2061,26 @@ var firstAvailCol;if(typeof(matrix[rowIndex])=="undefined"){matrix[rowIndex]=[];
                 }
             }}
           );
+        },
+
+        loadClassDataWithLearnerIds: function (activity, studentIds, success, failure) {
+          var keys = []
+          for (var i=0, ii=studentIds.length; i<ii; i++){
+            keys.push([""+studentIds[i], activity]);
+          }
+          $.couch.urlPrefix = this.saveDataPath;
+          $.couch.db('').view(
+            "session_scores/Scores%20per%20student_id",
+            {
+              keys:keys,
+              success: function(response) {
+                if (response.rows.length > 0){
+                  success(response);
+                } else {
+                  failure();
+                }
+            }}
+          );
         }
     };
 
@@ -2838,14 +2858,18 @@ sparks.createQuestionsCSV = function(data) {
 
   sparks.ActivityView = function(activity){
     this.activity = activity;
+    this.flashQueue = [];
 
     this.divs = {
-      $breadboardDiv: $('#breadboard'),
-      $imageDiv: $('#image'),
-      $questionsDiv: $('#questions_area'),
-      $titleDiv: $('#title'),
-      $scopeDiv: $('#oscope'),
-      $fgDiv: $('#function_generator')
+      $breadboardDiv:   $('#breadboard'),
+      $imageDiv:        $('#image'),
+      $questionsDiv:    $('#questions_area'),
+      $titleDiv:        $('#title'),
+      $scopeDiv:        $('#oscope_mini'),
+      $scopeOverlayDiv: $('#oscope_mini_overlay'),
+      $fgDiv:           $('#fg_mini'),
+      $fgOverlayDiv:    $('#fg_mini_overlay'),
+      $fgValueDiv:      $('#fg_value')
     };
   };
 
@@ -2853,6 +2877,7 @@ sparks.createQuestionsCSV = function(data) {
 
     layoutCurrentSection: function() {
       var section = sparks.activityController.currentSection;
+      var self = this;
 
       $('#loading').hide();
 
@@ -2877,7 +2902,11 @@ sparks.createQuestionsCSV = function(data) {
         if (source.frequency) {
           var fgView = new sparks.FunctionGeneratorView(source);
           var $fg = fgView.getView();
-          this.divs.$fgDiv.append($fg);
+          fgView.setMiniViewSpan(this.divs.$fgValueDiv, this.divs.$fgOverlayDiv);
+          this.doOnFlashLoad(function(){
+            self.divs.$fgDiv.show();
+            self.divs.$fgOverlayDiv.show();
+          });
         }
 
         if (section.show_multimeter){
@@ -2885,10 +2914,13 @@ sparks.createQuestionsCSV = function(data) {
           sparks.flash.sendCommand('set_probe_visibility','true');
         } else if (section.show_oscilloscope){
           var scopeView = new sparks.OscilloscopeView();
-          var $scope = scopeView.getView();
+          var $scope = scopeView.getMiniView();
           this.divs.$scopeDiv.append($scope);
           sparks.flash.sendCommand('set_probe_visibility','true');
-
+          this.doOnFlashLoad(function(){
+            self.divs.$scopeDiv.show();
+            self.divs.$scopeOverlayDiv.show();
+          });
           section.meter.setView(scopeView);
         }
       }
@@ -2918,6 +2950,24 @@ sparks.createQuestionsCSV = function(data) {
            allowScriptAccess: 'sameDomain',
            wmode: 'transparent'
        });
+     },
+
+     setFlashLoaded: function(flashLoaded) {
+       this.flashLoaded = flashLoaded;
+       if (flashLoaded){
+         for (var i = 0, ii = this.flashQueue.length; i < ii; i++) {
+           this.flashQueue[i]();
+         }
+         this.flashQueue = [];
+       }
+     },
+
+     doOnFlashLoad: function(func) {
+       if (this.flashLoaded) {
+         func();
+       } else {
+         this.flashQueue.push(func);
+       }
      },
 
      setEmbeddingTargets: function(targets) {
@@ -3585,22 +3635,33 @@ sparks.createQuestionsCSV = function(data) {
 
   sparks.OscilloscopeView = function () {
     this.$view         = null;
+    this.miniRaphaelCanvas = null;
     this.raphaelCanvas = null;
+    this.miniTraces    = [];
     this.traces        = [];
     this.model         = null;
   };
 
   sparks.OscilloscopeView.prototype = {
 
-    width:    400,
-    height:   320,
+    miniViewConfig: {
+      width: 132,
+      height: 100,
+      tickSize: 2
+    },
+
+    largeViewConfig: {
+      width:    400,
+      height:   320,
+      tickSize: 3
+    },
 
     nVerticalMarks:   8,
     nHorizontalMarks: 10,
     nMinorTicks:      5,
 
     faceplateColor:   '#EEEEEE',
-    displayAreaColor: '#2F85E0',
+    displayAreaColor: '#324569',
     traceBgColor:     '#324569',
     tickColor:        '#9EBDDE',
     textColor:        '#D8E1EB',
@@ -3611,6 +3672,60 @@ sparks.createQuestionsCSV = function(data) {
       this.model = model;
     },
 
+    getMiniView: function () {
+      var $canvasHolder,
+          self = this,
+          conf = this.miniViewConfig;
+
+      this.$view = $('<div>');
+      this.$view.css({
+        position: 'relative',
+        width: conf.width+160,
+        height: conf.height+40
+      });
+
+
+      this.$displayArea = $('<div class="display-area">').css({
+        position: 'absolute',
+        top: 14,
+        left: 19,
+        width:    conf.width,
+        height:   conf.height,
+        backgroundColor: this.displayAreaColor
+      }).appendTo(this.$view);
+
+      $canvasHolder = $('<div class="raphael-holder">').css({
+        position: 'absolute',
+        top:  0,
+        left: 0,
+        backgroundColor: this.traceBgColor
+      }).appendTo(this.$displayArea);
+
+      this.miniRaphaelCanvas = Raphael($canvasHolder[0], conf.width, conf.height);
+
+      this.drawGrid(this.miniRaphaelCanvas, conf);
+
+      var self = this;
+      $('#oscope_mini_overlay').click(function(){
+        $view = self.getView();
+        self.renderSignal(1, true);
+        self.renderSignal(2, true);
+        $view.dialog({
+          width: self.largeViewConfig.width + 150,
+          height: self.largeViewConfig.height + 80,
+          dialogClass: 'tools-dialog oscope_popup',
+          title: "Oscilloscope",
+          closeOnEscape: false,
+          resizable: false
+        }).dialog("widget").position({
+           my: 'left top',
+           at: 'center top',
+           of: $("#breadboard_wrapper")
+        });
+      });
+      return this.$view;
+    },
+
     /**
       @returns $view A jQuery object containing a Raphael canvas displaying the oscilloscope traces.
 
@@ -3618,67 +3733,71 @@ sparks.createQuestionsCSV = function(data) {
     */
     getView: function () {
       var $canvasHolder,
-          self = this;
+          self = this,
+          conf = this.largeViewConfig;
 
       this.$view = $('<div>');
       this.$view.css({
         position: 'relative',
-        width: this.width + 400,
-        height: this.height + 50
+        width: conf.width,
+        height: conf.height
       });
 
 
       this.$displayArea = $('<div class="display-area">').css({
         position: 'absolute',
-        width:    this.width + 100,
-        height:   this.height + 50,
+        top: 25,
+        left: 18,
+        width:    conf.width + 6,
+        height:   conf.height + 30,
         backgroundColor: this.displayAreaColor
       }).appendTo(this.$view);
 
       $canvasHolder = $('<div class="raphael-holder">').css({
         position: 'absolute',
-        top:  10,
-        left: 10,
+        top:  5,
+        left: 7,
+        width:    conf.width,
+        height:   conf.height,
         backgroundColor: this.traceBgColor
       }).appendTo(this.$displayArea);
 
-      this.raphaelCanvas = Raphael($canvasHolder[0], this.width, this.height);
+      this.raphaelCanvas = Raphael($canvasHolder[0], conf.width, conf.height);
 
-      this.drawGrid();
+      this.drawGrid(this.raphaelCanvas, conf);
 
       $('<p>CH1 <span class="vscale channel1"></span>V</p>').css({
         position: 'absolute',
-        top:   15 + this.height,
+        top:   10 + conf.height,
         left:  5,
         color: this.textColor
       }).appendTo(this.$displayArea);
 
       $('<p>CH2 <span class="vscale channel2"></span>V</p>').css({
         position: 'absolute',
-        top:   15 + this.height,
-        left:  5 + this.width / 4,
+        top:   10 + conf.height,
+        left:  5 + conf.width / 4,
         color: this.textColor
       }).appendTo(this.$displayArea);
 
       $('<p>M <span class="hscale"></span>s</p>').css({
         position: 'absolute',
-        top:   15 + this.height,
-        left:  5 + this.width / 2,
+        top:   10 + conf.height,
+        left:  5 + conf.width / 2,
         color: this.textColor
       }).appendTo(this.$displayArea);
 
 
       this.$faceplate = $('<div class="faceplate">').css({
         position: 'absolute',
-        left:   this.width + 100,
-        right: 0,
-        height: this.height + 50,
+        left:   conf.width + 27,
+        top: 15,
         backgroundColor: this.faceplateColor
       }).appendTo(this.$view);
 
       this.$controls = $('<div>').css({
         position: 'absolute',
-        top:      100,
+        top:      30,
         left:     0,
         right:    0,
         height:   200
@@ -3688,7 +3807,7 @@ sparks.createQuestionsCSV = function(data) {
         position:  'absolute',
         top:       10,
         left:      0,
-        width:     150,
+        width:     122,
         height:    100
       }).appendTo(this.$controls);
 
@@ -3708,9 +3827,9 @@ sparks.createQuestionsCSV = function(data) {
 
       this.$channel2 = $('<div>').css({
         position: 'absolute',
-        top:      10,
-        left:     150,
-        width:    150,
+        top:      110,
+        left:     0,
+        width:    122,
         height:   100
       }).appendTo(this.$controls);
 
@@ -3730,9 +3849,9 @@ sparks.createQuestionsCSV = function(data) {
 
       this.$horizontal = $('<div>').css({
         position:  'absolute',
-        top:       100,
-        left:      75,
-        width:     150,
+        top:       220,
+        left:      0,
+        width:     122,
         height:    100
       }).appendTo(this.$controls);
 
@@ -3757,19 +3876,19 @@ sparks.createQuestionsCSV = function(data) {
       $('<button>+</button>').css({
         position: 'absolute',
         top:   25,
-        left:  35,
+        left:  25,
         width: 30
       }).click(plusCallback).appendTo($el);
 
       $('<button>-</button>').css({
         position: 'absolute',
         top:   25,
-        right: 35,
+        right: 25,
         width: 30
       }).click(minusCallback).appendTo($el);
     },
 
-    renderSignal: function (channel) {
+    renderSignal: function (channel, forced) {
       var s = this.model.getSignal(channel),
           t = this.traces[channel],
           horizontalScale,
@@ -3779,22 +3898,24 @@ sparks.createQuestionsCSV = function(data) {
         horizontalScale = this.model.getHorizontalScale();
         verticalScale   = this.model.getVerticalScale(channel);
 
-        if (!t || (t.amplitude !== s.amplitude || t.frequency !== s.frequency || t.phase !== s.phase ||
+        if (!t || forced || (t.amplitude !== s.amplitude || t.frequency !== s.frequency || t.phase !== s.phase ||
                    t.horizontalScale !== horizontalScale || t.verticalScale !== verticalScale)) {
 
           this.removeTrace(channel);
           this.traces[channel] = {
-            amplitude:       s.amplitude,
-            frequency:       s.frequency,
-            phase:           s.phase,
-            horizontalScale: horizontalScale,
-            verticalScale:   verticalScale,
-            raphaelObject:   this.drawTrace(s, channel, horizontalScale, verticalScale)
+            amplitude:          s.amplitude,
+            frequency:          s.frequency,
+            phase:              s.phase,
+            horizontalScale:    horizontalScale,
+            verticalScale:      verticalScale,
+            raphaelObjectMini:  this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, s, channel, horizontalScale, verticalScale),
+            raphaelObject:      this.drawTrace(this.raphaelCanvas, this.largeViewConfig, s, channel, horizontalScale, verticalScale)
           };
         }
 
         if (channel === 1 && this.traces[2]) {
-          this.traces[2].raphaelObject.toFront();
+          if (!!this.traces[2].raphaelObjectMini) this.traces[2].raphaelObjectMini.toFront();
+          if (!!this.traces[2].raphaelObject) this.traces[2].raphaelObject.toFront();
         }
       }
       else {
@@ -3804,6 +3925,7 @@ sparks.createQuestionsCSV = function(data) {
 
     removeTrace: function (channel) {
       if (this.traces[channel]) {
+        if (this.traces[channel].raphaelObjectMini) this.traces[channel].raphaelObjectMini.remove();
         if (this.traces[channel].raphaelObject) this.traces[channel].raphaelObject.remove();
         delete this.traces[channel];
       }
@@ -3840,70 +3962,69 @@ sparks.createQuestionsCSV = function(data) {
       if (this.traces[channel]) this.renderSignal(channel);
     },
 
-    drawGrid: function () {
-      var r = this.raphaelCanvas,
-          path = [],
+    drawGrid: function (r, conf) {
+      var path = [],
           x, dx, y, dy;
 
-      for (x = dx = this.width / this.nHorizontalMarks; x <= this.width - dx; x += dx) {
+      for (x = dx = conf.width / this.nHorizontalMarks; x <= conf.width - dx; x += dx) {
         path.push('M');
         path.push(x);
         path.push(0);
 
         path.push('L');
         path.push(x);
-        path.push(this.height);
+        path.push(conf.height);
       }
 
-      for (y = dy = this.height / this.nVerticalMarks; y <= this.height - dy; y += dy) {
+      for (y = dy = conf.height / this.nVerticalMarks; y <= conf.height - dy; y += dy) {
         path.push('M');
         path.push(0);
         path.push(y);
 
         path.push('L');
-        path.push(this.width);
+        path.push(conf.width);
         path.push(y);
       }
 
-      y = this.height / 2;
+      y = conf.height / 2;
 
-      for (x = dx = this.width / (this.nHorizontalMarks * this.nMinorTicks); x <= this.width - dx; x += dx) {
+      for (x = dx = conf.width / (this.nHorizontalMarks * this.nMinorTicks); x <= conf.width - dx; x += dx) {
         path.push('M');
         path.push(x);
-        path.push(y-3);
+        path.push(y-conf.tickSize);
 
         path.push('L');
         path.push(x);
-        path.push(y+3);
+        path.push(y+conf.tickSize);
       }
 
-      x = this.width / 2;
+      x = conf.width / 2;
 
-      for (y = dy = this.height / (this.nVerticalMarks * this.nMinorTicks); y <= this.height - dy; y += dy) {
+      for (y = dy = conf.height / (this.nVerticalMarks * this.nMinorTicks); y <= conf.height - dy; y += dy) {
         path.push('M');
-        path.push(x-3);
+        path.push(x-conf.tickSize);
         path.push(y);
 
         path.push('L');
-        path.push(x+3);
+        path.push(x+conf.tickSize);
         path.push(y);
       }
 
       return r.path(path.join(' ')).attr({stroke: this.tickColor, opacity: 0.5});
     },
 
-    drawTrace: function (signal, channel, horizontalScale, verticalScale) {
-      var r            = this.raphaelCanvas,
-          path         = [],
-          height       = this.height,
+    drawTrace: function (r, conf, signal, channel, horizontalScale, verticalScale) {
+      if (!r) return;
+      var path         = [],
+          height       = conf.height,
           h            = height / 2,
 
           overscan     = 5,                       // how many pixels to overscan on either side (see below)
-          triggerStart = this.width / 2,          // horizontal position at which the rising edge of a 0-phase signal should cross zero
+          triggerStart = conf.width / 2,          // horizontal position at which the rising edge of a 0-phase signal should cross zero
 
-          radiansPerPixel = (2 * Math.PI * signal.frequency * horizontalScale) / (this.width / this.nHorizontalMarks),
+          radiansPerPixel = (2 * Math.PI * signal.frequency * horizontalScale) / (conf.width / this.nHorizontalMarks),
 
-          pixelsPerVolt = (this.height / this.nVerticalMarks) / verticalScale,
+          pixelsPerVolt = (conf.height / this.nVerticalMarks) / verticalScale,
 
           x,
           raphaelObject,
@@ -3916,7 +4037,7 @@ sparks.createQuestionsCSV = function(data) {
         return y < 0 ? 0 : y > height ? height : y;
       }
 
-      for (x = 0; x < this.width + overscan * 2; x++) {
+      for (x = 0; x < conf.width + overscan * 2; x++) {
         path.push(x ===  0 ? 'M' : 'L');
         path.push(x);
 
@@ -3944,8 +4065,10 @@ sparks.createQuestionsCSV = function(data) {
 
   sparks.FunctionGeneratorView = function (functionGenerator) {
     this.$view         = null;
+    this.miniView      = null;
     this.model         = functionGenerator;
     this.frequencies   = [];
+    this.currentFreqString = "";
   };
 
   sparks.FunctionGeneratorView.prototype = {
@@ -4022,10 +4145,10 @@ sparks.createQuestionsCSV = function(data) {
         if (i > freqs.length-1) i = freqs.length-1;
         var freq = freqs[i];
         self.model.setFrequency(freq);
-        $('#freq_value').text(sparks.mathParser.standardizeUnits(sparks.unit.convertMeasurement(freq + " Hz")))
+        self.setFrequency(freq);
       });
 
-      $('<p id="freq_value">' + sparks.mathParser.standardizeUnits(sparks.unit.convertMeasurement(freqs[0] + " Hz")) + '</p>').css({
+      $('<p id="freq_value"></p>').css({
         position:  'absolute',
         top:       45,
         left:      0,
@@ -4035,11 +4158,42 @@ sparks.createQuestionsCSV = function(data) {
       }).appendTo(this.$frequency);
 
 
+      self.setFrequency(freqs[0]);
+
+
       return this.$view;
     },
 
+    setFrequency: function (freq) {
+      this.currentFreqString = sparks.mathParser.standardizeUnits(sparks.unit.convertMeasurement(freq + " Hz"));
+      if (!!this.$miniView) this.$miniView.text(this.currentFreqString);
+      $('#freq_value').text(this.currentFreqString);
+      return this.currentFreqString;
+    },
+
+    setMiniViewSpan: function($miniDiv, $overlayDiv) {
+      this.$miniView = $miniDiv;
+      $miniDiv.text(this.currentFreqString);
+      var self = this;
+      $overlayDiv.click(function() {
+        $view = self.getView();
+        $view.dialog({
+          width: self.width,
+          height: self.height+30,
+          dialogClass: 'tools-dialog',
+          title: "Function Generator",
+          closeOnEscape: false,
+          resizable: false
+        }).dialog("widget").position({
+           my: 'left top',
+           at: 'left top',
+           offset: '5, 5',
+           of: $("#breadboard_wrapper")
+        });
+      });
+    },
+
     _addSliderControl: function ($el, steps, callback) {
-      console.log("steps = "+steps)
       $("<div id='fg_slider'>").css({
         position: 'absolute',
         top:   25,
@@ -5319,7 +5473,7 @@ sparks.createQuestionsCSV = function(data) {
 
   sparks.reportController = new sparks.ReportController();
 })();
-/*globals console sparks $ breadModel getBreadBoard window */
+/*globals console sparks $ breadModel getBreadBoard window alert*/
 
 (function() {
 
@@ -5336,7 +5490,7 @@ sparks.createQuestionsCSV = function(data) {
 
   sparks.ClassReportController.prototype = {
 
-    getClassData: function(activityId, classId, callback) {
+    getClassData: function(activityId, learnerIds, callback) {
       var reports = this.reports;
 
       var receivedData = function(response){
@@ -5352,7 +5506,7 @@ sparks.createQuestionsCSV = function(data) {
         alert("Failed to load class report");
       };
 
-      sparks.couchDS.loadClassData(activityId, classId, receivedData, fail);
+      sparks.couchDS.loadClassDataWithLearnerIds(activityId, learnerIds, receivedData, fail);
     },
 
     getLevels: function() {
@@ -8439,23 +8593,31 @@ var apMessageBox = apMessageBox || {};
 
     this.initActivity = function () {
         sparks.flash.init();
+        if (!!sparks.activity.view) {
+          sparks.activity.view.setFlashLoaded(true);
+        }
     };
   };
 
   this.loadClassReport = function () {
-    var classId,
+    var classStudents,
+        learnerIds = [],
         activity;
     if (!!sparks.util.readCookie('class')){
       activity = unescape(sparks.util.readCookie('activity_name')).split('#')[1];
-      classId = sparks.util.readCookie('class');
+      classStudents = eval(unescape(sparks.util.readCookie('class_students')).replace(/\+/g," "));
+      for (var i=0, ii=classStudents.length; i < ii; i++){
+        learnerIds.push(classStudents[i].id);
+      }
     } else {
       activity = prompt("Enter the activity id");
-      classId = prompt("Enter a class id", "");
+      classStudents = prompt("Enter a list of learner ids", "");
+      learnerIds = classStudents.split(',');
     }
 
     sparks.classReportController.getClassData(
       activity,
-      classId,
+      learnerIds,
       function(reports) {
         $('#loading').hide();
         var view = new sparks.ClassReportView(),

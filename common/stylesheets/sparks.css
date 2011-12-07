@@ -7,7 +7,7 @@ a.no_deco {
 img.no_border {
   border-style: none;
 }
-form { 
+form {
   width: 100%;
   padding: 3pt;
 }
@@ -180,9 +180,9 @@ table.tablesorter thead tr .headerSortDown {
 }
 
 #framecontentTopLeft{
-  position: absolute; 
-  top: 0; 
-  left: 0; 
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 140px; /*Width of left frame div*/
   height: 120px;
   overflow: visible; /*Disable scrollbars. Set to "scroll" to enable*/
@@ -191,9 +191,9 @@ table.tablesorter thead tr .headerSortDown {
 }
 
 #framecontentTopRight{
-  position: absolute; 
-  top: 0; 
-  right: 0; 
+  position: absolute;
+  top: 0;
+  right: 0;
   width: 60px; /*Width of left frame div*/
   height: 80px;
   overflow: hidden; /*Disable scrollbars. Set to "scroll" to enable*/
@@ -202,9 +202,9 @@ table.tablesorter thead tr .headerSortDown {
 }
 
 #framecontentLeft, #framecontentRight{
-position: absolute; 
-top: 80; 
-left: 0; 
+position: absolute;
+top: 80;
+left: 0;
 width: 140px; /*Width of left frame div*/
 bottom: 0;
 overflow: hidden; /*Disable scrollbars. Set to "scroll" to enable*/
@@ -215,7 +215,7 @@ border-right-style:solid;
 
 #framecontentRight{
 left: auto;
-right: 0; 
+right: 0;
 width: 60px; /*Width of right frame div*/
 overflow: hidden; /*Disable scrollbars. Set to "scroll" to enable*/
 background-color: #f9eec1;
@@ -254,38 +254,106 @@ border-bottom-style:solid;
 }
 
 /* TIMELINE CHARTS */
-.timeline { 
-  font-size: 0.75em; 
-  height: 7em; 
+.timeline {
+  font-size: 0.75em;
+  height: 7em;
 /*  width: 12em;*/
   margin: 0.5em 1em 0.2em 1em;
 }
-.timeline li { 
+.timeline li {
   position: relative;
   float: left;
-  width: 1em; 
+  width: 1em;
   margin: 0 0.1em;
-  height: 6em; 
+  height: 6em;
   background: #FAA;
 }
-.timeline li a { 
+.timeline li a {
   display: block;
-  height: 100%;  
+  height: 100%;
 }
-.timeline li a .count { 
-  display: block; 
-  position: absolute; 
-  bottom: 0; 
-  left: 0; 
-  height: 0; 
-  width: 100%; 
-  background: #AFA; 
-  text-indent: -9999px; 
-  overflow: hidden; 
+.timeline li a .count {
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 0;
+  width: 100%;
+  background: #AFA;
+  text-indent: -9999px;
+  overflow: hidden;
 }
-.timeline li:hover { 
-  background: #E99; 
+.timeline li:hover {
+  background: #E99;
 }
-.timeline li a .count:hover { 
-  background: #8E8; 
+.timeline li a .count:hover {
+  background: #8E8;
+}
+
+#breadboard_wrapper {
+  position: relative;
+}
+
+#oscope_mini {
+  background: url("../images/oscope_mini.png") no-repeat top left;
+  position: absolute;
+  top: 10;
+  left: 420;
+  z-index: 1;
+}
+
+#oscope_mini_overlay {
+  background: url("../images/oscope_mini_overlay.png") no-repeat top left;
+  position: absolute;
+  top: 10;
+  left: 420;
+  height: 150;
+  width: 300;
+  z-index: 2;
+}
+
+#oscope_mini_overlay:hover {
+  background: url("../images/oscope_mini_overlay.png") 0 -150px no-repeat;
+}
+
+.oscope_popup .ui-dialog-content{
+  background: url("../images/oscope_large.png") no-repeat -20 -30;
+}
+
+#fg_mini {
+  background: url("../images/fg_mini.png") no-repeat top left;
+  position: absolute;
+  top: 3;
+  left: -10;
+  width: 200;
+  height: 150;
+  z-index: 1;
+}
+
+#fg_mini_overlay {
+  background: url("../images/fg_mini_overlay.png") no-repeat top left;
+  position: absolute;
+  top: 16px;
+  left: -10;
+  width: 200;
+  height: 120;
+  z-index: 2;
+}
+
+#fg_mini_overlay:hover {
+  background: url("../images/fg_mini_overlay.png") 0 -150px no-repeat;
+}
+
+#fg_value {
+  position: absolute;
+  top: 52;
+  left: 28;
+  color: #30d4f4;
+  font-family: 'Anonymous Pro', sans-serif;
+  font-size: 15px;
+  font-weight:bold;
+}
+
+.tools-dialog .ui-dialog-titlebar {
+  padding: 0;
 }

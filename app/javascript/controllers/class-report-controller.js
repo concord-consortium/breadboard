@@ -1,4 +1,4 @@
-/*globals console sparks $ breadModel getBreadBoard window */
+/*globals console sparks $ breadModel getBreadBoard window alert*/
 
 (function() {
   
@@ -17,7 +17,7 @@
   
   sparks.ClassReportController.prototype = {
     
-    getClassData: function(activityId, classId, callback) {
+    getClassData: function(activityId, learnerIds, callback) {
       var reports = this.reports;
           
       var receivedData = function(response){
@@ -33,7 +33,7 @@
         alert("Failed to load class report");
       };
       
-      sparks.couchDS.loadClassData(activityId, classId, receivedData, fail);
+      sparks.couchDS.loadClassDataWithLearnerIds(activityId, learnerIds, receivedData, fail);
     },
     
     getLevels: function() {
