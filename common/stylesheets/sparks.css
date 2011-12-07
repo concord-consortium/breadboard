@@ -317,7 +317,7 @@ border-bottom-style:solid;
 }
 
 .oscope_popup .ui-dialog-content{
-  background: url("../images/oscope_large.png") no-repeat -20 -30;
+  background: url("../images/oscope_large.png") no-repeat -20px -30px;
 }
 
 #fg_mini {
