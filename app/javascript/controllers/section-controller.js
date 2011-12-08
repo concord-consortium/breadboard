@@ -36,6 +36,7 @@
       section.image = jsonSection.image;
 
       section.circuit = jsonSection.circuit;
+      if (section.circuit) section.circuit.referenceFrequency = jsonSection.referenceFrequency;
       section.faults = jsonSection.faults;
 
       section.hide_circuit = !!jsonSection.hide_circuit;

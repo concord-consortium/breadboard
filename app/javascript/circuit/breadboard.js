@@ -310,8 +310,14 @@
           var newComponent = breadBoard.component(props);
           return newComponent.UID;
         },
-        createCircuit: function(jsonCircuit){
-          $.each(jsonCircuit, function(i, spec){
+        createCircuit: function(jsonCircuit) {
+          var circuitHasReferenceFrequency = typeof jsonCircuit.referenceFrequency === 'number';
+
+          $.each(jsonCircuit, function(i, spec) {
+            // allow each component spec to override the circuit-wide reference frequency, if author desires.
+            if (circuitHasReferenceFrequency && typeof spec.referenceFrequency === 'undefined') {
+              spec.referenceFrequency = jsonCircuit.referenceFrequency;
+            }
             interfaces.insertComponent(spec.type, spec);
           });
 

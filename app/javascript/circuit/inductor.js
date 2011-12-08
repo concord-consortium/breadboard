@@ -1,5 +1,5 @@
 /* FILE inductor.js */
-//= require "component"
+//= require "reactive-component"
 /*globals console sparks */
 
 (function () {
@@ -8,9 +8,14 @@
     sparks.circuit.Inductor.parentConstructor.call(this, props, breadBoard);
   };
 
-  sparks.extend(sparks.circuit.Inductor, sparks.circuit.Component, {
+  sparks.extend(sparks.circuit.Inductor, sparks.circuit.ReactiveComponent, {
+
     getInductance: function () {
-      return this.inductance;
+      return this.getComponentParameter('inductance', this.inductanceFromImpedance);
+    },
+
+    inductanceFromImpedance: function (impedance, frequency) {
+      return impedance / (2 * Math.PI * frequency);
     },
 
     toNetlist: function () {

@@ -4812,6 +4812,7 @@ sparks.createQuestionsCSV = function(data) {
       section.image = jsonSection.image;
 
       section.circuit = jsonSection.circuit;
+      if (section.circuit) section.circuit.referenceFrequency = jsonSection.referenceFrequency;
       section.faults = jsonSection.faults;
 
       section.hide_circuit = !!jsonSection.hide_circuit;
@@ -6200,6 +6201,23 @@ sparks.createQuestionsCSV = function(data) {
       */
       hasValidConnections: function () {
         return this.connections.length === 2;
+      },
+
+      getRequestedImpedance: function (spec) {
+        var min, max;
+
+        if (typeof spec === 'string') {
+          return spec;
+        }
+
+        if (spec[0] !== 'uniform') throw new Error("Only uniformly-distributed random impedances/resistances are supported right now.");
+        if (spec.length < 3) throw new Error("Random impedance/resistance spec does not specify an upper and lower bound");
+        if (typeof spec[1] !== 'number' || typeof spec[2] !== 'number') throw new Error("Random impedance/resistance spec lower and upper bound were not both numeric");
+
+        min = Math.min(spec[1], spec[2]);
+        max = Math.max(spec[1], spec[2]);
+
+        return min + Math.random() * (max - min);
       }
 
     };
@@ -6213,6 +6231,10 @@ sparks.createQuestionsCSV = function(data) {
 
     sparks.circuit.Resistor = function (props, breadBoard) {
       sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);
+
+      if (typeof props.resistance !== 'undefined') {
+        this.resistance = this.getRequestedImpedance( props.resistance );
+      }
 
       if ((this.resistance === undefined) && this.colors){
         this.resistance = this.getResistance( this.colors );
@@ -6688,8 +6710,13 @@ sparks.createQuestionsCSV = function(data) {
           var newComponent = breadBoard.component(props);
           return newComponent.UID;
         },
-        createCircuit: function(jsonCircuit){
-          $.each(jsonCircuit, function(i, spec){
+        createCircuit: function(jsonCircuit) {
+          var circuitHasReferenceFrequency = typeof jsonCircuit.referenceFrequency === 'number';
+
+          $.each(jsonCircuit, function(i, spec) {
+            if (circuitHasReferenceFrequency && typeof spec.referenceFrequency === 'undefined') {
+              spec.referenceFrequency = jsonCircuit.referenceFrequency;
+            }
             interfaces.insertComponent(spec.type, spec);
           });
 
@@ -8028,6 +8055,40 @@ sparks.createQuestionsCSV = function(data) {
 
 })();
 /* FILE inductor.js */
+/* FILE reactive-component.js */
+/*globals console sparks */
+
+(function () {
+
+  sparks.circuit.ReactiveComponent = function (props, breadBoard) {
+    sparks.circuit.ReactiveComponent.parentConstructor.call(this, props, breadBoard);
+    if (typeof props.impedance !== 'undefined') {
+      this.impedance = this.getRequestedImpedance( props.impedance );
+    }
+  };
+
+  sparks.extend(sparks.circuit.ReactiveComponent, sparks.circuit.Component, {
+
+    getComponentParameter: function (componentParameterName, componentParameterFromImpedance) {
+      if (typeof this._componentParameter === 'undefined') {
+        if (typeof this[componentParameterName] !== 'undefined') {
+          this._componentParameter = this[componentParameterName];
+        }
+        else {
+          if (typeof this.impedance === 'undefined' || typeof this.referenceFrequency === 'undefined') {
+            throw new Error("An impedance/referenceFrequency pair is needed, but not defined.");
+          }
+
+          this._componentParameter = componentParameterFromImpedance(this.impedance, this.referenceFrequency);
+        }
+      }
+
+      return this._componentParameter;
+    }
+
+  });
+
+})();
 /*globals console sparks */
 
 (function () {
@@ -8036,9 +8097,14 @@ sparks.createQuestionsCSV = function(data) {
     sparks.circuit.Inductor.parentConstructor.call(this, props, breadBoard);
   };
 
-  sparks.extend(sparks.circuit.Inductor, sparks.circuit.Component, {
+  sparks.extend(sparks.circuit.Inductor, sparks.circuit.ReactiveComponent, {
+
     getInductance: function () {
-      return this.inductance;
+      return this.getComponentParameter('inductance', this.inductanceFromImpedance);
+    },
+
+    inductanceFromImpedance: function (impedance, frequency) {
+      return impedance / (2 * Math.PI * frequency);
     },
 
     toNetlist: function () {
@@ -8063,9 +8129,14 @@ sparks.createQuestionsCSV = function(data) {
     sparks.circuit.Capacitor.parentConstructor.call(this, props, breadBoard);
   };
 
-  sparks.extend(sparks.circuit.Capacitor, sparks.circuit.Component, {
+  sparks.extend(sparks.circuit.Capacitor, sparks.circuit.ReactiveComponent, {
+
     getCapacitance: function () {
-      return this.capacitance;
+      return this.getComponentParameter('capacitance', this.capacitanceFromImpedance);
+    },
+
+    capacitanceFromImpedance: function (impedance, frequency) {
+      return impedance * 2 * Math.PI * frequency;
     },
 
     toNetlist: function () {

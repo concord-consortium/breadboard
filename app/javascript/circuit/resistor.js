@@ -9,6 +9,11 @@
     sparks.circuit.Resistor = function (props, breadBoard) {
       sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);
 
+      // translate the requested resistance (which may be of the form ["uniform", 10, 100] into a real number
+      if (typeof props.resistance !== 'undefined') {
+        this.resistance = this.getRequestedImpedance( props.resistance );
+      }
+
       // if we have colors defined and not resistance
       if ((this.resistance === undefined) && this.colors){
         this.resistance = this.getResistance( this.colors );

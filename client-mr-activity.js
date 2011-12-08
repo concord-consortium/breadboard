@@ -3390,6 +3390,23 @@ sparks.createQuestionsCSV = function(data) {
       */
       hasValidConnections: function () {
         return this.connections.length === 2;
+      },
+
+      getRequestedImpedance: function (spec) {
+        var min, max;
+
+        if (typeof spec === 'string') {
+          return spec;
+        }
+
+        if (spec[0] !== 'uniform') throw new Error("Only uniformly-distributed random impedances/resistances are supported right now.");
+        if (spec.length < 3) throw new Error("Random impedance/resistance spec does not specify an upper and lower bound");
+        if (typeof spec[1] !== 'number' || typeof spec[2] !== 'number') throw new Error("Random impedance/resistance spec lower and upper bound were not both numeric");
+
+        min = Math.min(spec[1], spec[2]);
+        max = Math.max(spec[1], spec[2]);
+
+        return min + Math.random() * (max - min);
       }
 
     };
@@ -3404,6 +3421,10 @@ sparks.createQuestionsCSV = function(data) {
 
     sparks.circuit.Resistor = function (props, breadBoard) {
       sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);
+
+      if (typeof props.resistance !== 'undefined') {
+        this.resistance = this.getRequestedImpedance( props.resistance );
+      }
 
       if ((this.resistance === undefined) && this.colors){
         this.resistance = this.getResistance( this.colors );
