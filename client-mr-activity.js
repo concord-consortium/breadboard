@@ -3314,7 +3314,7 @@ sparks.createQuestionsCSV = function(data) {
         this.label = !!this.UID.split("/")[1] ? this.UID.split("/")[1] : null;
       }
 
-      if (typeof(this.connections) === "string"){
+      if (typeof this.connections === "string") {
         this.connections = this.connections.split(",");
       }
 
@@ -3363,7 +3363,7 @@ sparks.createQuestionsCSV = function(data) {
       },
 
       _ensureInt: function (val) {
-        if (!!this[val] && typeof(this[val]) === "string"){
+        if (this[val] && typeof this[val] === "string") {
           this[val] = parseInt(this[val], 10);
         }
       },
@@ -3375,7 +3375,7 @@ sparks.createQuestionsCSV = function(data) {
       },
 
       getLocation: function () {
-        return this.connections[0].getName() + "," + this.connections[1].getName()
+        return this.connections[0].getName() + "," + this.connections[1].getName();
       },
 
       canInsertIntoNetlist: function () {

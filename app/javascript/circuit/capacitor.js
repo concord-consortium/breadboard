@@ -12,11 +12,11 @@
     getCapacitance: function () {
       return this.capacitance;
     },
-    
+
     toNetlist: function () {
       var capacitance = this.getCapacitance() || 0,
           nodes       = this.getNodes();
-      
+
       return 'C:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' C="' + capacitance + ' F"';
     },
 
