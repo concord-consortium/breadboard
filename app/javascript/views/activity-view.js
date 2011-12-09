@@ -60,7 +60,7 @@
           sparks.flash.sendCommand('set_probe_visibility','true');
         } else if (section.show_oscilloscope){
           var scopeView = new sparks.OscilloscopeView();
-          var $scope = scopeView.getMiniView();
+          var $scope = scopeView.getView();
           this.divs.$scopeDiv.append($scope);
           sparks.flash.sendCommand('set_probe_visibility','true');
           this.doOnFlashLoad(function(){
