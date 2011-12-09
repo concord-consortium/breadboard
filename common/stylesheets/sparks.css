@@ -305,8 +305,8 @@ border-bottom-style:solid;
 #oscope_mini_overlay {
   background: url("../images/oscope_mini_overlay.png") no-repeat top left;
   position: absolute;
-  top: 10px;
-  left: 420px;
+  top: -4px;
+  left: 0;
   height: 150px;
   width: 300px;
   z-index: 2;
@@ -351,6 +351,17 @@ border-bottom-style:solid;
   color: #30d4f4;
   font-family: 'Anonymous Pro', sans-serif;
   font-size: 15px;
+  font-weight:bold;
+}
+
+.fg_popup .ui-dialog-content {
+  background: url("../images/fg_large.png") no-repeat -5px 1px;
+}
+
+.fg_popup #freq_value {
+  color: #30d4f4;
+  font-family: 'Anonymous Pro', sans-serif;
+  font-size: 22px;
   font-weight:bold;
 }
 

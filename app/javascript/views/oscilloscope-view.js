@@ -79,9 +79,10 @@
       this.miniRaphaelCanvas = Raphael($canvasHolder[0], conf.width, conf.height);
 
       this.drawGrid(this.miniRaphaelCanvas, conf);
-
+      
+      $overlayDiv = $('<div id="oscope_mini_overlay"></div>').appendTo(this.$view);
       var self = this;
-      $('#oscope_mini_overlay').click(function(){
+      $overlayDiv.click(function(){
         self.openPopup();
       });
       return this.$view;

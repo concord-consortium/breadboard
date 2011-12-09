@@ -12,7 +12,6 @@
       $questionsDiv:    $('#questions_area'),
       $titleDiv:        $('#title'),
       $scopeDiv:        $('#oscope_mini'),
-      $scopeOverlayDiv: $('#oscope_mini_overlay'),
       $fgDiv:           $('#fg_mini'),
       $fgOverlayDiv:    $('#fg_mini_overlay'),
       $fgValueDiv:      $('#fg_value')
@@ -65,7 +64,6 @@
           sparks.flash.sendCommand('set_probe_visibility','true');
           this.doOnFlashLoad(function(){
             self.divs.$scopeDiv.show();
-            self.divs.$scopeOverlayDiv.show();
           });
           section.meter.setView(scopeView);
         }
