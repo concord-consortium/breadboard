@@ -6243,11 +6243,11 @@ sparks.createQuestionsCSV = function(data) {
     var flash = sparks.flash;
 
     sparks.circuit.Resistor = function (props, breadBoard) {
-      sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);
-
       if (typeof props.resistance !== 'undefined') {
-        this.resistance = this.getRequestedImpedance( props.resistance );
+        props.resistance = this.getRequestedImpedance( props.resistance );
       }
+
+      sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);
 
       if ((this.resistance === undefined) && this.colors){
         this.resistance = this.getResistance( this.colors );
@@ -8070,10 +8070,10 @@ sparks.createQuestionsCSV = function(data) {
 (function () {
 
   sparks.circuit.ReactiveComponent = function (props, breadBoard) {
-    sparks.circuit.ReactiveComponent.parentConstructor.call(this, props, breadBoard);
     if (typeof props.impedance !== 'undefined') {
-      this.impedance = this.getRequestedImpedance( props.impedance );
+      props.impedance = this.getRequestedImpedance( props.impedance );
     }
+    sparks.circuit.ReactiveComponent.parentConstructor.call(this, props, breadBoard);
   };
 
   sparks.extend(sparks.circuit.ReactiveComponent, sparks.circuit.Component, {

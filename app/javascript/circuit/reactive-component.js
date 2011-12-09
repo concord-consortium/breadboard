@@ -5,10 +5,10 @@
 (function () {
 
   sparks.circuit.ReactiveComponent = function (props, breadBoard) {
-    sparks.circuit.ReactiveComponent.parentConstructor.call(this, props, breadBoard);
     if (typeof props.impedance !== 'undefined') {
-      this.impedance = this.getRequestedImpedance( props.impedance );
+      props.impedance = this.getRequestedImpedance( props.impedance );
     }
+    sparks.circuit.ReactiveComponent.parentConstructor.call(this, props, breadBoard);
   };
 
   sparks.extend(sparks.circuit.ReactiveComponent, sparks.circuit.Component, {

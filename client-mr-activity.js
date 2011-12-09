@@ -3422,11 +3422,11 @@ sparks.createQuestionsCSV = function(data) {
     var flash = sparks.flash;
 
     sparks.circuit.Resistor = function (props, breadBoard) {
-      sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);
-
       if (typeof props.resistance !== 'undefined') {
-        this.resistance = this.getRequestedImpedance( props.resistance );
+        props.resistance = this.getRequestedImpedance( props.resistance );
       }
+
+      sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);
 
       if ((this.resistance === undefined) && this.colors){
         this.resistance = this.getResistance( this.colors );
