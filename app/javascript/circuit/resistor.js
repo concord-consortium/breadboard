@@ -7,13 +7,18 @@
     var flash = sparks.flash;
 
     sparks.circuit.Resistor = function (props, breadBoard) {
+      // translate the requested resistance (which may be of the form ["uniform", 10, 100] into a real number
+      if (typeof props.resistance !== 'undefined') {
+        props.resistance = this.getRequestedImpedance( props.resistance );
+      }
+
       sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);
-      
+
       // if we have colors defined and not resistance
       if ((this.resistance === undefined) && this.colors){
         this.resistance = this.getResistance( this.colors );
       }
-      
+
       // if we have neither colors nor resistance
       if ((this.resistance === undefined) && !this.colors) {
         var resistor = new sparks.circuit.Resistor4band(name);
@@ -22,18 +27,18 @@
         this.tolerance = resistor.tolerance;
         this.colors = resistor.colors;
       }
-      
+
       // if we have resistance and no colors
       if (!this.colors){
         this.colors = this.getColors4Band( this.resistance, (!!this.tolerance ? this.tolerance : 0.05));
       }
-      
+
       // at this point, we must have both real resiatance and colors
       // calculate nominal resistance, unless nominalResistance is defined
       if (!this.nominalResistance){
         this.nominalResistance =  this.getResistance( this.colors );
       }
-      
+
       // now that everything has been set, if we have a fault set it now
       if (!!this.open){
         this.resistance = 1e20;
@@ -50,7 +55,7 @@
     sparks.extend(sparks.circuit.Resistor, sparks.circuit.Component,
     {
     	nominalValueMagnitude: -1,
-    	
+
         colorMap: { '-1': 'gold', '-2': 'silver',
             0 : 'black', 1 : 'brown', 2 : 'red', 3 : 'orange',
             4 : 'yellow', 5 : 'green', 6 : 'blue', 7 : 'violet', 8 : 'grey',
@@ -69,23 +74,23 @@
               this.tolerance = 0.0; //tolerance value
               this.colors = []; //colors for each resistor band
         },
-        
+
         getNumBands: function () {
             return this.numBands;
         },
-        
+
         getNominalValue: function () {
             return this.nominalValue;
         },
-        
+
         setNominalValue: function (value) {
             this.nominalValue = value;
         },
-        
+
         getTolerance: function () {
             return this.tolerance;
         },
-        
+
         setTolerance: function(value) {
             this.tolerance = value;
         },
@@ -97,7 +102,7 @@
         setRealValue: function (value) {
             this.realValue = value;
         },
-        
+
         updateColors: function (resistance, tolerance) {
             //console.log('colors=' + this.colors);
             //console.log('Sending colors=' + this.colors.join('|'));
@@ -152,7 +157,7 @@
             }
             return values;
         },
-        
+
         getColors4Band: function (ohms, tolerance) {
             var s = ohms.toString();
             var decIx = s.indexOf('.');
@@ -167,7 +172,7 @@
                      this.toleranceColorMap[tolerance]
                    ];
         },
-        
+
         getColors5Band: function (ohms, tolerance) {
             var s = ohms.toString();
             var decIx = s.indexOf('.');
@@ -182,7 +187,7 @@
                      this.toleranceColorMap[tolerance]
                    ];
         },
-        
+
         colorToNumber: function (color) {
           for (var n in this.colorMap) {
             if (this.colorMap[n] == color) { return parseInt(n,10); }
@@ -193,7 +198,7 @@
           }
           return null;
         },
-        
+
         getResistance: function(colors){
           if (typeof(colors)==="string"){
             colors = colors.split(",");
@@ -205,14 +210,14 @@
           }
           return resistance * Math.pow(10, this.colorToNumber(colors[i]));
         },
-                        
+
         toNetlist: function () {
           var resistance = this.resistance || 0,
               nodes      = this.getNodes();
-          
+
           return 'R:' + this.UID + ' ' + nodes.join(' ') + ' R="' + resistance + ' Ohm"';
         },
-        
+
         // for now, all resistors are 4-band
         getFlashArguments: function() {
           if (this.resistance > 0) {

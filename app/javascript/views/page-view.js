@@ -120,8 +120,9 @@
       $('.report').html('');
       if (!!finalReport){
         sparks.flash.loaded = false;
+        sparks.activity.view.setFlashLoaded(false);
         $('#image').html('');
-        $('#breadboard').html('');
+        $('#breadboard_wrapper').children().html('').hide();
       }
       this.$reportDiv = $('<div>').addClass('report').css('float', 'left').css('padding-top', '15px').css('padding-left', '40px');
       this.$reportDiv.append($report);

@@ -41,13 +41,13 @@ describe 'Using oscope with mock Flash connection'
         updateCalled = true;
       }
       
-      receiveEvent('connect', 'probe|probe_red|a2', 0);
+      receiveEvent('connect', 'probe|probe_oscope|a2', 0);
       
       updateCalled.should.be true
       
       updateCalled = false;
       
-      receiveEvent('disconnect', 'probe|probe_red', 0);
+      receiveEvent('disconnect', 'probe|probe_oscope', 0);
       
       updateCalled.should.be true
       

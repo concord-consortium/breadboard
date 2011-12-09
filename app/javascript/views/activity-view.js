@@ -12,10 +12,7 @@
       $questionsDiv:    $('#questions_area'),
       $titleDiv:        $('#title'),
       $scopeDiv:        $('#oscope_mini'),
-      $scopeOverlayDiv: $('#oscope_mini_overlay'),
-      $fgDiv:           $('#fg_mini'),
-      $fgOverlayDiv:    $('#fg_mini_overlay'),
-      $fgValueDiv:      $('#fg_value')
+      $fgDiv:           $('#fg_mini')
     };
   };
 
@@ -48,26 +45,26 @@
         if (source.frequency) {
           var fgView = new sparks.FunctionGeneratorView(source);
           var $fg = fgView.getView();
-          fgView.setMiniViewSpan(this.divs.$fgValueDiv, this.divs.$fgOverlayDiv);
+          this.divs.$fgDiv.append($fg);
           this.doOnFlashLoad(function(){
             self.divs.$fgDiv.show();
-            self.divs.$fgOverlayDiv.show();
           });
         }
 
         if (section.show_multimeter){
           sparks.flash.sendCommand('set_multimeter_visibility','true');
           sparks.flash.sendCommand('set_probe_visibility','true');
-        } else if (section.show_oscilloscope){
+        } 
+        
+        if (section.show_oscilloscope){
           var scopeView = new sparks.OscilloscopeView();
-          var $scope = scopeView.getMiniView();
+          var $scope = scopeView.getView();
           this.divs.$scopeDiv.append($scope);
-          sparks.flash.sendCommand('set_probe_visibility','true');
+          sparks.flash.sendCommand('set_oscope_probe_visibility','true');
           this.doOnFlashLoad(function(){
             self.divs.$scopeDiv.show();
-            self.divs.$scopeOverlayDiv.show();
           });
-          section.meter.setView(scopeView);
+          section.meter.oscope.setView(scopeView);
         }
       }
 
@@ -84,7 +81,7 @@
     },
 
     loadFlash: function () {
-       this.divs.$breadboardDiv.css("z-index", 0);
+       this.divs.$breadboardDiv.show().css("z-index", 0);
        this.divs.$breadboardDiv.flash({
            src: 'activities/module-2/breadboardActivity1.swf',
            id: 'breadboardActivity1',

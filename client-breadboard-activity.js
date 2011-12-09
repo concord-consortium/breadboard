@@ -2552,8 +2552,6 @@ sparks.createQuestionsCSV = function(data) {
     this.pages = [];
     this.variables = {};
 
-    this.meter = null;        // may become either the dmm or the oscilloscope
-
     this.hide_circuit = false;
     this.show_multimeter = false;
     this.show_oscilloscope = false;
@@ -2569,6 +2567,29 @@ sparks.createQuestionsCSV = function(data) {
   };
 
   sparks.Section.prototype = {
+
+    meter: {
+      dmm: null,
+      oscope: null,
+
+      setProbeLocation: function (probe, loc) {
+        if (this.oscope) {
+          this.oscope.setProbeLocation(probe, loc);
+        }
+        if (this.dmm) {
+          this.dmm.setProbeLocation(probe, loc);
+        }
+      },
+
+      update: function () {
+        if (this.oscope) {
+          this.oscope.update();
+        }
+        if (this.dmm) {
+          this.dmm.update();
+        }
+      }
+    },
 
     toJSON: function () {
       var json = {};
@@ -2866,10 +2887,7 @@ sparks.createQuestionsCSV = function(data) {
       $questionsDiv:    $('#questions_area'),
       $titleDiv:        $('#title'),
       $scopeDiv:        $('#oscope_mini'),
-      $scopeOverlayDiv: $('#oscope_mini_overlay'),
-      $fgDiv:           $('#fg_mini'),
-      $fgOverlayDiv:    $('#fg_mini_overlay'),
-      $fgValueDiv:      $('#fg_value')
+      $fgDiv:           $('#fg_mini')
     };
   };
 
@@ -2902,26 +2920,26 @@ sparks.createQuestionsCSV = function(data) {
         if (source.frequency) {
           var fgView = new sparks.FunctionGeneratorView(source);
           var $fg = fgView.getView();
-          fgView.setMiniViewSpan(this.divs.$fgValueDiv, this.divs.$fgOverlayDiv);
+          this.divs.$fgDiv.append($fg);
           this.doOnFlashLoad(function(){
             self.divs.$fgDiv.show();
-            self.divs.$fgOverlayDiv.show();
           });
         }
 
         if (section.show_multimeter){
           sparks.flash.sendCommand('set_multimeter_visibility','true');
           sparks.flash.sendCommand('set_probe_visibility','true');
-        } else if (section.show_oscilloscope){
+        }
+
+        if (section.show_oscilloscope){
           var scopeView = new sparks.OscilloscopeView();
-          var $scope = scopeView.getMiniView();
+          var $scope = scopeView.getView();
           this.divs.$scopeDiv.append($scope);
-          sparks.flash.sendCommand('set_probe_visibility','true');
+          sparks.flash.sendCommand('set_oscope_probe_visibility','true');
           this.doOnFlashLoad(function(){
             self.divs.$scopeDiv.show();
-            self.divs.$scopeOverlayDiv.show();
           });
-          section.meter.setView(scopeView);
+          section.meter.oscope.setView(scopeView);
         }
       }
 
@@ -2938,7 +2956,7 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     loadFlash: function () {
-       this.divs.$breadboardDiv.css("z-index", 0);
+       this.divs.$breadboardDiv.show().css("z-index", 0);
        this.divs.$breadboardDiv.flash({
            src: 'activities/module-2/breadboardActivity1.swf',
            id: 'breadboardActivity1',
@@ -3140,8 +3158,9 @@ sparks.createQuestionsCSV = function(data) {
       $('.report').html('');
       if (!!finalReport){
         sparks.flash.loaded = false;
+        sparks.activity.view.setFlashLoaded(false);
         $('#image').html('');
-        $('#breadboard').html('');
+        $('#breadboard_wrapper').children().html('').hide();
       }
       this.$reportDiv = $('<div>').addClass('report').css('float', 'left').css('padding-top', '15px').css('padding-left', '40px');
       this.$reportDiv.append($report);
@@ -3640,6 +3659,7 @@ sparks.createQuestionsCSV = function(data) {
     this.miniTraces    = [];
     this.traces        = [];
     this.model         = null;
+    this.popup         = null;
   };
 
   sparks.OscilloscopeView.prototype = {
@@ -3672,7 +3692,7 @@ sparks.createQuestionsCSV = function(data) {
       this.model = model;
     },
 
-    getMiniView: function () {
+    getView: function () {
       var $canvasHolder,
           self = this,
           conf = this.miniViewConfig;
@@ -3705,25 +3725,35 @@ sparks.createQuestionsCSV = function(data) {
 
       this.drawGrid(this.miniRaphaelCanvas, conf);
 
+      $overlayDiv = $('<div id="oscope_mini_overlay"></div>').appendTo(this.$view);
       var self = this;
-      $('#oscope_mini_overlay').click(function(){
-        $view = self.getView();
-        self.renderSignal(1, true);
-        self.renderSignal(2, true);
-        $view.dialog({
-          width: self.largeViewConfig.width + 150,
-          height: self.largeViewConfig.height + 80,
+      $overlayDiv.click(function(){
+        self.openPopup();
+      });
+      return this.$view;
+    },
+
+    openPopup: function () {
+      if (!this.popup) {
+        $view = this.getLargeView();
+        this.renderSignal(1, true);
+        this.renderSignal(2, true);
+        this.popup = $view.dialog({
+          width: this.largeViewConfig.width + 150,
+          height: this.largeViewConfig.height + 80,
           dialogClass: 'tools-dialog oscope_popup',
           title: "Oscilloscope",
           closeOnEscape: false,
-          resizable: false
-        }).dialog("widget").position({
-           my: 'left top',
-           at: 'center top',
-           of: $("#breadboard_wrapper")
+          resizable: false,
+          autoOpen: false
         });
+      }
+
+      this.popup.dialog('open').dialog("widget").position({
+         my: 'left top',
+         at: 'center top',
+         of: $("#breadboard_wrapper")
       });
-      return this.$view;
     },
 
     /**
@@ -3731,7 +3761,7 @@ sparks.createQuestionsCSV = function(data) {
 
       Sets this.$view to be the returned jQuery object.
     */
-    getView: function () {
+    getLargeView: function () {
       var $canvasHolder,
           self = this,
           conf = this.largeViewConfig;
@@ -3868,6 +3898,11 @@ sparks.createQuestionsCSV = function(data) {
       }, function () {
         self.model.bumpHorizontalScale(1);
       });
+
+      this.horizontalScaleChanged();
+      for (i = 1; i <= this.model.N_CHANNELS; i++) {
+        this.verticalScaleChanged(i);
+      }
 
       return this.$view;
     },
@@ -4064,11 +4099,12 @@ sparks.createQuestionsCSV = function(data) {
 (function () {
 
   sparks.FunctionGeneratorView = function (functionGenerator) {
-    this.$view         = null;
-    this.miniView      = null;
-    this.model         = functionGenerator;
-    this.frequencies   = [];
+    this.$view          = null;
+    this.model          = functionGenerator;
+    this.frequencies    = [];
     this.currentFreqString = "";
+    this.freqValueViews = [];
+    this.popup = null;
   };
 
   sparks.FunctionGeneratorView.prototype = {
@@ -4079,12 +4115,47 @@ sparks.createQuestionsCSV = function(data) {
 
     faceplateColor:   '#EEEEEE',
 
-    /**
-      @returns $view A jQuery object containing a Raphael canvas displaying the oscilloscope traces.
-
-      Sets this.$view to be the returned jQuery object.
-    */
     getView: function () {
+      this.$view = $('<div>');
+
+      $freq_value = $("<span id='fg_value'></span").appendTo(this.$view);
+      this.freqValueViews.push($freq_value);
+
+      this.frequencies = this.model.getPossibleFrequencies();
+      this.setFrequency(this.model.frequency);
+
+      $overlayDiv = $('<div id="fg_mini_overlay"></div>').appendTo(this.$view);
+      var self = this;
+      $overlayDiv.click(function(){
+        self.openPopup();
+      })
+
+      return this.$view;
+    },
+
+    openPopup: function () {
+      if (!this.popup) {
+        $view = this.getLargeView();
+        this.popup = $view.dialog({
+          width: this.width + 10,
+          height: this.height+37,
+          dialogClass: 'tools-dialog fg_popup',
+          title: "Function Generator",
+          closeOnEscape: false,
+          resizable: false,
+          autoOpen: false
+        });
+      }
+
+      this.popup.dialog('open').dialog("widget").position({
+         my: 'left top',
+         at: 'left top',
+         offset: '5, 5',
+         of: $("#breadboard_wrapper")
+      });
+    },
+
+    getLargeView: function () {
       var $canvasHolder,
           self = this;
 
@@ -4099,45 +4170,35 @@ sparks.createQuestionsCSV = function(data) {
         position: 'absolute',
         left: 0,
         right: 0,
-        height: this.height,
-        backgroundColor: this.faceplateColor,
-        border: '5px groove'
+        height: this.height
       }).appendTo(this.$view);
 
-      $('<p>Function Generator</p>').css({
-        top:       10,
-        left:      0,
-        right:     0,
+      $freq_value = $('<p id="freq_value">'+this.currentFreqString+'</p>').css({
+        position:  'absolute',
+        top:       15,
+        left:      15,
         height:    20,
-        textAlign: 'center',
-        'font-weight': 'bold'
+        textAlign: 'center'
       }).appendTo(this.$faceplate);
 
-      this.$controls = $('<div>').css({
+      this.freqValueViews.push($freq_value);
+
+      this.$controls = $('<div id="controls">').css({
         position: 'absolute',
-        top:      20,
+        top:      30,
         left:     0,
-        right:    0,
-        height:   100
+        height:   70
       }).appendTo(this.$faceplate);
 
       this.$frequency = $('<div>').css({
         position:  'absolute',
         top:       10,
-        left:      0,
+        left:      10,
         width:     150,
-        height:    100
+        height:    55
       }).appendTo(this.$controls);
 
-      $('<p>Frequency</p>').css({
-        top:       0,
-        left:      0,
-        right:     0,
-        height:    20,
-        textAlign: 'center'
-      }).appendTo(this.$frequency);
-
-      var freqs = self.model.getPossibleFrequencies();
+      var freqs = this.frequencies;
 
       this._addSliderControl(this.$frequency, freqs.length, function (evt, ui) {
         var i = ui.value;
@@ -4148,49 +4209,22 @@ sparks.createQuestionsCSV = function(data) {
         self.setFrequency(freq);
       });
 
-      $('<p id="freq_value"></p>').css({
+      $('<span>Frequency</span>').css({
         position:  'absolute',
         top:       45,
-        left:      0,
-        right:     0,
-        height:    20,
-        textAlign: 'center'
-      }).appendTo(this.$frequency);
-
-
-      self.setFrequency(freqs[0]);
+        left:      45,
+        width:     100,
+        height:    15
+      }).appendTo(this.$controls);
 
 
       return this.$view;
     },
 
     setFrequency: function (freq) {
-      this.currentFreqString = sparks.mathParser.standardizeUnits(sparks.unit.convertMeasurement(freq + " Hz"));
-      if (!!this.$miniView) this.$miniView.text(this.currentFreqString);
-      $('#freq_value').text(this.currentFreqString);
+      currentFreqString = this.currentFreqString = sparks.mathParser.standardizeUnits(sparks.unit.convertMeasurement(freq + " Hz"));
+      this.freqValueViews.forEach(function($view){$view.text(currentFreqString);});
       return this.currentFreqString;
-    },
-
-    setMiniViewSpan: function($miniDiv, $overlayDiv) {
-      this.$miniView = $miniDiv;
-      $miniDiv.text(this.currentFreqString);
-      var self = this;
-      $overlayDiv.click(function() {
-        $view = self.getView();
-        $view.dialog({
-          width: self.width,
-          height: self.height+30,
-          dialogClass: 'tools-dialog',
-          title: "Function Generator",
-          closeOnEscape: false,
-          resizable: false
-        }).dialog("widget").position({
-           my: 'left top',
-           at: 'left top',
-           offset: '5, 5',
-           of: $("#breadboard_wrapper")
-        });
-      });
     },
 
     _addSliderControl: function ($el, steps, callback) {
@@ -4812,6 +4846,7 @@ sparks.createQuestionsCSV = function(data) {
       section.image = jsonSection.image;
 
       section.circuit = jsonSection.circuit;
+      if (section.circuit) section.circuit.referenceFrequency = jsonSection.referenceFrequency;
       section.faults = jsonSection.faults;
 
       section.hide_circuit = !!jsonSection.hide_circuit;
@@ -4820,12 +4855,18 @@ sparks.createQuestionsCSV = function(data) {
       section.disable_multimeter_position = jsonSection.disable_multimeter_position;
 
       if (!section.hide_circuit && section.show_multimeter) {
-        section.meter = new sparks.circuit.Multimeter2();
+        section.meter.dmm = new sparks.circuit.Multimeter2();
         if(section.disable_multimeter_position){
-          section.meter.set_disable_multimeter_position(section.disable_multimeter_position);
+          section.meter.dmm.set_disable_multimeter_position(section.disable_multimeter_position);
         }
-      } else if (!section.hide_circuit && section.show_oscilloscope) {
-        section.meter = new sparks.circuit.Oscilloscope();
+      } else {
+        section.meter.dmm = null;
+      }
+
+      if (!section.hide_circuit && section.show_oscilloscope) {
+        section.meter.oscope = new sparks.circuit.Oscilloscope();
+      } else {
+        section.meter.oscope = null;
       }
 
       section.jsonSection = jsonSection;
@@ -5850,8 +5891,7 @@ sparks.createQuestionsCSV = function(data) {
 
       if (name === 'connect') {
           if (args[0] === 'probe') {
-            var probe_color = args[1] === 'probe_red' ? "red" : "black";
-            section.meter.setProbeLocation(probe_color, args[2]);
+            section.meter.setProbeLocation(args[1], args[2]);
           }
           if (args[0] === 'component') {
               if (!!args[2]){
@@ -5864,8 +5904,7 @@ sparks.createQuestionsCSV = function(data) {
           }
       } else if (name === 'disconnect') {
           if (args[0] === 'probe') {
-            var probe_color = args[1] === 'probe_red' ? "red" : "black";
-            section.meter.setProbeLocation(probe_color, null);
+            section.meter.setProbeLocation(args[1], null);
           } else if (args[0] === 'component') {
             var hole = args[2];
             var newHole = breadModel('getGhostHole', hole+"ghost");
@@ -5917,10 +5956,10 @@ sparks.createQuestionsCSV = function(data) {
 
           $('#popup').dialog('close');
       } else if (name == 'multimeter_dial') {
-          section.meter.dialPosition = value;
+          section.meter.dmm.dialPosition = value;
           section.meter.update();
       } else if (name == 'multimeter_power') {
-          section.meter.powerOn = value == 'true' ? true : false;
+          section.meter.dmm.powerOn = value == 'true' ? true : false;
           section.meter.update();
       }
   }
@@ -6124,7 +6163,7 @@ sparks.createQuestionsCSV = function(data) {
         this.label = !!this.UID.split("/")[1] ? this.UID.split("/")[1] : null;
       }
 
-      if (typeof(this.connections) === "string"){
+      if (typeof this.connections === "string") {
         this.connections = this.connections.split(",");
       }
 
@@ -6173,7 +6212,7 @@ sparks.createQuestionsCSV = function(data) {
       },
 
       _ensureInt: function (val) {
-        if (!!this[val] && typeof(this[val]) === "string"){
+        if (this[val] && typeof this[val] === "string") {
           this[val] = parseInt(this[val], 10);
         }
       },
@@ -6185,7 +6224,7 @@ sparks.createQuestionsCSV = function(data) {
       },
 
       getLocation: function () {
-        return this.connections[0].getName() + "," + this.connections[1].getName()
+        return this.connections[0].getName() + "," + this.connections[1].getName();
       },
 
       canInsertIntoNetlist: function () {
@@ -6200,6 +6239,25 @@ sparks.createQuestionsCSV = function(data) {
       */
       hasValidConnections: function () {
         return this.connections.length === 2;
+      },
+
+      getRequestedImpedance: function (spec) {
+        var min, max;
+
+        if (typeof spec === 'string' || typeof spec === 'number') {
+          return spec;
+        }
+
+        if (spec[0] !== 'uniform') {
+          throw new Error("Only uniformly-distributed random impedances/resistances are supported right now; received " + spec);
+        }
+        if (spec.length < 3) throw new Error("Random impedance/resistance spec does not specify an upper and lower bound");
+        if (typeof spec[1] !== 'number' || typeof spec[2] !== 'number') throw new Error("Random impedance/resistance spec lower and upper bound were not both numeric");
+
+        min = Math.min(spec[1], spec[2]);
+        max = Math.max(spec[1], spec[2]);
+
+        return min + Math.random() * (max - min);
       }
 
     };
@@ -6212,6 +6270,10 @@ sparks.createQuestionsCSV = function(data) {
     var flash = sparks.flash;
 
     sparks.circuit.Resistor = function (props, breadBoard) {
+      if (typeof props.resistance !== 'undefined') {
+        props.resistance = this.getRequestedImpedance( props.resistance );
+      }
+
       sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);
 
       if ((this.resistance === undefined) && this.colors){
@@ -6688,8 +6750,13 @@ sparks.createQuestionsCSV = function(data) {
           var newComponent = breadBoard.component(props);
           return newComponent.UID;
         },
-        createCircuit: function(jsonCircuit){
-          $.each(jsonCircuit, function(i, spec){
+        createCircuit: function(jsonCircuit) {
+          var circuitHasReferenceFrequency = typeof jsonCircuit.referenceFrequency === 'number';
+
+          $.each(jsonCircuit, function(i, spec) {
+            if (circuitHasReferenceFrequency && typeof spec.referenceFrequency === 'undefined') {
+              spec.referenceFrequency = jsonCircuit.referenceFrequency;
+            }
             interfaces.insertComponent(spec.type, spec);
           });
 
@@ -6901,9 +6968,9 @@ sparks.createQuestionsCSV = function(data) {
         },
 
         setProbeLocation: function (probe, location) {
-          if (probe === "red") {
+          if (probe === "probe_red") {
             this.redProbeConnection = location;
-          } else {
+          } else if (probe === "probe_black") {
             this.blackProbeConnection = location;
           }
           this.update();
@@ -7478,15 +7545,11 @@ sparks.createQuestionsCSV = function(data) {
 
         this.view = view;
         this.view.setModel(this);
-        view.horizontalScaleChanged();
-        for (i = 1; i <= this.N_CHANNELS; i++) {
-          view.verticalScaleChanged(i);
-        }
         this.update();         // we can update view immediately with the source trace
       },
 
       setProbeLocation: function(probe, location) {
-        if (probe === "red") {
+        if (probe === "probe_oscope") {
           this.probeLocation = location;
           this.update();
         }
@@ -8028,6 +8091,40 @@ sparks.createQuestionsCSV = function(data) {
 
 })();
 /* FILE inductor.js */
+/* FILE reactive-component.js */
+/*globals console sparks */
+
+(function () {
+
+  sparks.circuit.ReactiveComponent = function (props, breadBoard) {
+    if (typeof props.impedance !== 'undefined') {
+      props.impedance = this.getRequestedImpedance( props.impedance );
+    }
+    sparks.circuit.ReactiveComponent.parentConstructor.call(this, props, breadBoard);
+  };
+
+  sparks.extend(sparks.circuit.ReactiveComponent, sparks.circuit.Component, {
+
+    getComponentParameter: function (componentParameterName, componentParameterFromImpedance) {
+      if (typeof this._componentParameter === 'undefined') {
+        if (typeof this[componentParameterName] !== 'undefined') {
+          this._componentParameter = this[componentParameterName];
+        }
+        else {
+          if (typeof this.impedance === 'undefined' || typeof this.referenceFrequency === 'undefined') {
+            throw new Error("An impedance/referenceFrequency pair is needed, but not defined.");
+          }
+
+          this._componentParameter = componentParameterFromImpedance(this.impedance, this.referenceFrequency);
+        }
+      }
+
+      return this._componentParameter;
+    }
+
+  });
+
+})();
 /*globals console sparks */
 
 (function () {
@@ -8036,9 +8133,14 @@ sparks.createQuestionsCSV = function(data) {
     sparks.circuit.Inductor.parentConstructor.call(this, props, breadBoard);
   };
 
-  sparks.extend(sparks.circuit.Inductor, sparks.circuit.Component, {
+  sparks.extend(sparks.circuit.Inductor, sparks.circuit.ReactiveComponent, {
+
     getInductance: function () {
-      return this.inductance;
+      return this.getComponentParameter('inductance', this.inductanceFromImpedance);
+    },
+
+    inductanceFromImpedance: function (impedance, frequency) {
+      return impedance / (2 * Math.PI * frequency);
     },
 
     toNetlist: function () {
@@ -8063,9 +8165,14 @@ sparks.createQuestionsCSV = function(data) {
     sparks.circuit.Capacitor.parentConstructor.call(this, props, breadBoard);
   };
 
-  sparks.extend(sparks.circuit.Capacitor, sparks.circuit.Component, {
+  sparks.extend(sparks.circuit.Capacitor, sparks.circuit.ReactiveComponent, {
+
     getCapacitance: function () {
-      return this.capacitance;
+      return this.getComponentParameter('capacitance', this.capacitanceFromImpedance);
+    },
+
+    capacitanceFromImpedance: function (impedance, frequency) {
+      return impedance * 2 * Math.PI * frequency;
     },
 
     toNetlist: function () {
@@ -8626,4 +8733,3 @@ var apMessageBox = apMessageBox || {};
       });
   };
 })();
-

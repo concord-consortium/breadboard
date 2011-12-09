@@ -59,8 +59,7 @@
       
       if (name === 'connect') {
           if (args[0] === 'probe') {
-            var probe_color = args[1] === 'probe_red' ? "red" : "black";
-            section.meter.setProbeLocation(probe_color, args[2]);
+            section.meter.setProbeLocation(args[1], args[2]);
           }
           if (args[0] === 'component') {
               // for now, we're just dealing with the situation of replacing one lead that had been lifted
@@ -74,8 +73,7 @@
           }
       } else if (name === 'disconnect') {
           if (args[0] === 'probe') {
-            var probe_color = args[1] === 'probe_red' ? "red" : "black";
-            section.meter.setProbeLocation(probe_color, null);
+            section.meter.setProbeLocation(args[1], null);
           } else if (args[0] === 'component') {
             var hole = args[2];
             var newHole = breadModel('getGhostHole', hole+"ghost");
@@ -128,11 +126,11 @@
 
           $('#popup').dialog('close');
       } else if (name == 'multimeter_dial') {
-          section.meter.dialPosition = value;
+          section.meter.dmm.dialPosition = value;
           section.meter.update();
           // activity.log.add(name, { value: this.multimeter.dialPosition });
       } else if (name == 'multimeter_power') {
-          section.meter.powerOn = value == 'true' ? true : false;
+          section.meter.dmm.powerOn = value == 'true' ? true : false;
           section.meter.update();
           // activity.log.add(name, { value: this.multimeter.powerOn });
           //                 if (value === 'true' && this.multimeter.allConnected()) {

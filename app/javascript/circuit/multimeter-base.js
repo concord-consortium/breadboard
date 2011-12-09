@@ -34,9 +34,9 @@
         // @probe Either "red" or "black"
         // @location hole name (e.g. 'a1') or null
         setProbeLocation: function (probe, location) {
-          if (probe === "red") {
+          if (probe === "probe_red") {
             this.redProbeConnection = location;
-          } else {
+          } else if (probe === "probe_black") {
             this.blackProbeConnection = location;
           }
           this.update();

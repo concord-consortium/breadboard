@@ -9,6 +9,7 @@
     this.miniTraces    = [];
     this.traces        = [];
     this.model         = null;
+    this.popup         = null;
   };
 
   sparks.OscilloscopeView.prototype = {
@@ -45,7 +46,7 @@
       this.model = model;
     },
 
-    getMiniView: function () {
+    getView: function () {
       var $canvasHolder,
           self = this,
           conf = this.miniViewConfig;
@@ -78,26 +79,36 @@
       this.miniRaphaelCanvas = Raphael($canvasHolder[0], conf.width, conf.height);
 
       this.drawGrid(this.miniRaphaelCanvas, conf);
-
+      
+      $overlayDiv = $('<div id="oscope_mini_overlay"></div>').appendTo(this.$view);
       var self = this;
-      $('#oscope_mini_overlay').click(function(){
-        $view = self.getView();
-        self.renderSignal(1, true);
-        self.renderSignal(2, true);
-        $view.dialog({
-          width: self.largeViewConfig.width + 150,
-          height: self.largeViewConfig.height + 80,
+      $overlayDiv.click(function(){
+        self.openPopup();
+      });
+      return this.$view;
+    },
+    
+    openPopup: function () {
+      if (!this.popup) {
+        $view = this.getLargeView();
+        this.renderSignal(1, true);
+        this.renderSignal(2, true);
+        this.popup = $view.dialog({
+          width: this.largeViewConfig.width + 150,
+          height: this.largeViewConfig.height + 80,
           dialogClass: 'tools-dialog oscope_popup',
           title: "Oscilloscope",
           closeOnEscape: false,
-          resizable: false
-        }).dialog("widget").position({
-           my: 'left top',
-           at: 'center top',
-           of: $("#breadboard_wrapper")
+          resizable: false,
+          autoOpen: false
         });
+      }
+      
+      this.popup.dialog('open').dialog("widget").position({
+         my: 'left top',
+         at: 'center top',
+         of: $("#breadboard_wrapper")
       });
-      return this.$view;
     },
 
     /**
@@ -105,7 +116,7 @@
 
       Sets this.$view to be the returned jQuery object.
     */
-    getView: function () {
+    getLargeView: function () {
       var $canvasHolder,
           self = this,
           conf = this.largeViewConfig;
@@ -244,6 +255,11 @@
       }, function () {
         self.model.bumpHorizontalScale(1);
       });
+      
+      this.horizontalScaleChanged();
+      for (i = 1; i <= this.model.N_CHANNELS; i++) {
+        this.verticalScaleChanged(i);
+      }
 
       return this.$view;
     },

@@ -1,5 +1,5 @@
 /* FILE capacitor.js */
-//= require "component"
+//= require "reactive-component"
 /*globals console sparks */
 
 (function () {
@@ -8,15 +8,20 @@
     sparks.circuit.Capacitor.parentConstructor.call(this, props, breadBoard);
   };
 
-  sparks.extend(sparks.circuit.Capacitor, sparks.circuit.Component, {
+  sparks.extend(sparks.circuit.Capacitor, sparks.circuit.ReactiveComponent, {
+
     getCapacitance: function () {
-      return this.capacitance;
+      return this.getComponentParameter('capacitance', this.capacitanceFromImpedance);
     },
-    
+
+    capacitanceFromImpedance: function (impedance, frequency) {
+      return impedance * 2 * Math.PI * frequency;
+    },
+
     toNetlist: function () {
       var capacitance = this.getCapacitance() || 0,
           nodes       = this.getNodes();
-      
+
       return 'C:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' C="' + capacitance + ' F"';
     },
 

@@ -2339,8 +2339,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
 
       if (name === 'connect') {
           if (args[0] === 'probe') {
-            var probe_color = args[1] === 'probe_red' ? "red" : "black";
-            section.meter.setProbeLocation(probe_color, args[2]);
+            section.meter.setProbeLocation(args[1], args[2]);
           }
           if (args[0] === 'component') {
               if (!!args[2]){
@@ -2353,8 +2352,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
           }
       } else if (name === 'disconnect') {
           if (args[0] === 'probe') {
-            var probe_color = args[1] === 'probe_red' ? "red" : "black";
-            section.meter.setProbeLocation(probe_color, null);
+            section.meter.setProbeLocation(args[1], null);
           } else if (args[0] === 'component') {
             var hole = args[2];
             var newHole = breadModel('getGhostHole', hole+"ghost");
@@ -2406,10 +2404,10 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
 
           $('#popup').dialog('close');
       } else if (name == 'multimeter_dial') {
-          section.meter.dialPosition = value;
+          section.meter.dmm.dialPosition = value;
           section.meter.update();
       } else if (name == 'multimeter_power') {
-          section.meter.powerOn = value == 'true' ? true : false;
+          section.meter.dmm.powerOn = value == 'true' ? true : false;
           section.meter.update();
       }
   }
@@ -2837,9 +2835,9 @@ sparks.createQuestionsCSV = function(data) {
         },
 
         setProbeLocation: function (probe, location) {
-          if (probe === "red") {
+          if (probe === "probe_red") {
             this.redProbeConnection = location;
-          } else {
+          } else if (probe === "probe_black") {
             this.blackProbeConnection = location;
           }
           this.update();
@@ -3314,7 +3312,7 @@ sparks.createQuestionsCSV = function(data) {
         this.label = !!this.UID.split("/")[1] ? this.UID.split("/")[1] : null;
       }
 
-      if (typeof(this.connections) === "string"){
+      if (typeof this.connections === "string") {
         this.connections = this.connections.split(",");
       }
 
@@ -3363,7 +3361,7 @@ sparks.createQuestionsCSV = function(data) {
       },
 
       _ensureInt: function (val) {
-        if (!!this[val] && typeof(this[val]) === "string"){
+        if (this[val] && typeof this[val] === "string") {
           this[val] = parseInt(this[val], 10);
         }
       },
@@ -3375,7 +3373,7 @@ sparks.createQuestionsCSV = function(data) {
       },
 
       getLocation: function () {
-        return this.connections[0].getName() + "," + this.connections[1].getName()
+        return this.connections[0].getName() + "," + this.connections[1].getName();
       },
 
       canInsertIntoNetlist: function () {
@@ -3390,6 +3388,25 @@ sparks.createQuestionsCSV = function(data) {
       */
       hasValidConnections: function () {
         return this.connections.length === 2;
+      },
+
+      getRequestedImpedance: function (spec) {
+        var min, max;
+
+        if (typeof spec === 'string' || typeof spec === 'number') {
+          return spec;
+        }
+
+        if (spec[0] !== 'uniform') {
+          throw new Error("Only uniformly-distributed random impedances/resistances are supported right now; received " + spec);
+        }
+        if (spec.length < 3) throw new Error("Random impedance/resistance spec does not specify an upper and lower bound");
+        if (typeof spec[1] !== 'number' || typeof spec[2] !== 'number') throw new Error("Random impedance/resistance spec lower and upper bound were not both numeric");
+
+        min = Math.min(spec[1], spec[2]);
+        max = Math.max(spec[1], spec[2]);
+
+        return min + Math.random() * (max - min);
       }
 
     };
@@ -3403,6 +3420,10 @@ sparks.createQuestionsCSV = function(data) {
     var flash = sparks.flash;
 
     sparks.circuit.Resistor = function (props, breadBoard) {
+      if (typeof props.resistance !== 'undefined') {
+        props.resistance = this.getRequestedImpedance( props.resistance );
+      }
+
       sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);
 
       if ((this.resistance === undefined) && this.colors){

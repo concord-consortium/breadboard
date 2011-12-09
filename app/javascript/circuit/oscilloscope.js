@@ -28,17 +28,13 @@
         
         this.view = view;
         this.view.setModel(this);
-        view.horizontalScaleChanged();
-        for (i = 1; i <= this.N_CHANNELS; i++) {
-          view.verticalScaleChanged(i);
-        }
         this.update();         // we can update view immediately with the source trace
       },
       
       // @probe Name of probe being attached. We ignore everything but "red"
       // @location Hole name, like 'a1' or can be null if probe is lifted
       setProbeLocation: function(probe, location) {
-        if (probe === "red") {
+        if (probe === "probe_oscope") {
           this.probeLocation = location;
           this.update();
         }

@@ -297,18 +297,18 @@ border-bottom-style:solid;
 #oscope_mini {
   background: url("../images/oscope_mini.png") no-repeat top left;
   position: absolute;
-  top: 10;
-  left: 420;
+  top: 10px;
+  left: 310px;
   z-index: 1;
 }
 
 #oscope_mini_overlay {
   background: url("../images/oscope_mini_overlay.png") no-repeat top left;
   position: absolute;
-  top: 10;
-  left: 420;
-  height: 150;
-  width: 300;
+  top: -4px;
+  left: 0;
+  height: 150px;
+  width: 280px;
   z-index: 2;
 }
 
@@ -317,26 +317,26 @@ border-bottom-style:solid;
 }
 
 .oscope_popup .ui-dialog-content{
-  background: url("../images/oscope_large.png") no-repeat -20 -30;
+  background: url("../images/oscope_large.png") no-repeat -20px -30px;
 }
 
 #fg_mini {
   background: url("../images/fg_mini.png") no-repeat top left;
   position: absolute;
-  top: 3;
-  left: -10;
-  width: 200;
-  height: 150;
+  top: 3px;
+  left: -10px;
+  width: 200px;
+  height: 150px;
   z-index: 1;
 }
 
 #fg_mini_overlay {
   background: url("../images/fg_mini_overlay.png") no-repeat top left;
   position: absolute;
-  top: 16px;
-  left: -10;
-  width: 200;
-  height: 120;
+  top: 11px;
+  left: 0px;
+  width: 200px;
+  height: 120px;
   z-index: 2;
 }
 
@@ -346,11 +346,22 @@ border-bottom-style:solid;
 
 #fg_value {
   position: absolute;
-  top: 52;
-  left: 28;
+  top: 52px;
+  left: 28px;
   color: #30d4f4;
   font-family: 'Anonymous Pro', sans-serif;
   font-size: 15px;
+  font-weight:bold;
+}
+
+.fg_popup .ui-dialog-content {
+  background: url("../images/fg_large.png") no-repeat -5px 1px;
+}
+
+.fg_popup #freq_value {
+  color: #30d4f4;
+  font-family: 'Anonymous Pro', sans-serif;
+  font-size: 22px;
   font-weight:bold;
 }
 
