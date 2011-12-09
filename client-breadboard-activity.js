@@ -2552,8 +2552,6 @@ sparks.createQuestionsCSV = function(data) {
     this.pages = [];
     this.variables = {};
 
-    this.meter = null;        // may become either the dmm or the oscilloscope
-
     this.hide_circuit = false;
     this.show_multimeter = false;
     this.show_oscilloscope = false;
@@ -2569,6 +2567,29 @@ sparks.createQuestionsCSV = function(data) {
   };
 
   sparks.Section.prototype = {
+
+    meter: {
+      dmm: null,
+      oscope: null,
+
+      setProbeLocation: function (probe, loc) {
+        if (this.oscope) {
+          this.oscope.setProbeLocation(probe, loc);
+        }
+        if (this.dmm) {
+          this.dmm.setProbeLocation(probe, loc);
+        }
+      },
+
+      update: function () {
+        if (this.oscope) {
+          this.oscope.update();
+        }
+        if (this.dmm) {
+          this.dmm.update();
+        }
+      }
+    },
 
     toJSON: function () {
       var json = {};
@@ -2908,7 +2929,9 @@ sparks.createQuestionsCSV = function(data) {
         if (section.show_multimeter){
           sparks.flash.sendCommand('set_multimeter_visibility','true');
           sparks.flash.sendCommand('set_probe_visibility','true');
-        } else if (section.show_oscilloscope){
+        }
+
+        if (section.show_oscilloscope){
           var scopeView = new sparks.OscilloscopeView();
           var $scope = scopeView.getView();
           this.divs.$scopeDiv.append($scope);
@@ -2916,7 +2939,7 @@ sparks.createQuestionsCSV = function(data) {
           this.doOnFlashLoad(function(){
             self.divs.$scopeDiv.show();
           });
-          section.meter.setView(scopeView);
+          section.meter.oscope.setView(scopeView);
         }
       }
 
@@ -4832,12 +4855,18 @@ sparks.createQuestionsCSV = function(data) {
       section.disable_multimeter_position = jsonSection.disable_multimeter_position;
 
       if (!section.hide_circuit && section.show_multimeter) {
-        section.meter = new sparks.circuit.Multimeter2();
+        section.meter.dmm = new sparks.circuit.Multimeter2();
         if(section.disable_multimeter_position){
-          section.meter.set_disable_multimeter_position(section.disable_multimeter_position);
+          section.meter.dmm.set_disable_multimeter_position(section.disable_multimeter_position);
         }
-      } else if (!section.hide_circuit && section.show_oscilloscope) {
-        section.meter = new sparks.circuit.Oscilloscope();
+      } else {
+        section.meter.dmm = null;
+      }
+
+      if (!section.hide_circuit && section.show_oscilloscope) {
+        section.meter.oscope = new sparks.circuit.Oscilloscope();
+      } else {
+        section.meter.oscope = null;
       }
 
       section.jsonSection = jsonSection;
@@ -5927,10 +5956,10 @@ sparks.createQuestionsCSV = function(data) {
 
           $('#popup').dialog('close');
       } else if (name == 'multimeter_dial') {
-          section.meter.dialPosition = value;
+          section.meter.dmm.dialPosition = value;
           section.meter.update();
       } else if (name == 'multimeter_power') {
-          section.meter.powerOn = value == 'true' ? true : false;
+          section.meter.dmm.powerOn = value == 'true' ? true : false;
           section.meter.update();
       }
   }

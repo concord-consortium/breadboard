@@ -2404,10 +2404,10 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
 
           $('#popup').dialog('close');
       } else if (name == 'multimeter_dial') {
-          section.meter.dialPosition = value;
+          section.meter.dmm.dialPosition = value;
           section.meter.update();
       } else if (name == 'multimeter_power') {
-          section.meter.powerOn = value == 'true' ? true : false;
+          section.meter.dmm.powerOn = value == 'true' ? true : false;
           section.meter.update();
       }
   }

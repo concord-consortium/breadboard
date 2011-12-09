@@ -45,12 +45,18 @@
       section.disable_multimeter_position = jsonSection.disable_multimeter_position;
 
       if (!section.hide_circuit && section.show_multimeter) {
-        section.meter = new sparks.circuit.Multimeter2();
+        section.meter.dmm = new sparks.circuit.Multimeter2();
         if(section.disable_multimeter_position){
-          section.meter.set_disable_multimeter_position(section.disable_multimeter_position);
+          section.meter.dmm.set_disable_multimeter_position(section.disable_multimeter_position);
         }
-      } else if (!section.hide_circuit && section.show_oscilloscope) {
-        section.meter = new sparks.circuit.Oscilloscope();
+      } else {
+        section.meter.dmm = null;
+      }
+      
+      if (!section.hide_circuit && section.show_oscilloscope) {
+        section.meter.oscope = new sparks.circuit.Oscilloscope();
+      } else {
+        section.meter.oscope = null;
       }
 
       section.jsonSection = jsonSection;

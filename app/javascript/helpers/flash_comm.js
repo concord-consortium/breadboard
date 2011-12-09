@@ -126,11 +126,11 @@
 
           $('#popup').dialog('close');
       } else if (name == 'multimeter_dial') {
-          section.meter.dialPosition = value;
+          section.meter.dmm.dialPosition = value;
           section.meter.update();
           // activity.log.add(name, { value: this.multimeter.dialPosition });
       } else if (name == 'multimeter_power') {
-          section.meter.powerOn = value == 'true' ? true : false;
+          section.meter.dmm.powerOn = value == 'true' ? true : false;
           section.meter.update();
           // activity.log.add(name, { value: this.multimeter.powerOn });
           //                 if (value === 'true' && this.multimeter.allConnected()) {

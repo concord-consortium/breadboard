@@ -12,8 +12,6 @@
     this.pages = [];
     this.variables = {};
     
-    this.meter = null;        // may become either the dmm or the oscilloscope
-    
     this.hide_circuit = false;
     this.show_multimeter = false;
     this.show_oscilloscope = false;
@@ -29,6 +27,33 @@
   };
   
   sparks.Section.prototype = {
+    
+    // The generic meter methods setProbeLocation and update can be called
+    // directly through section.meter, and will be routed to any visible meters.
+    // Any non-generic functions or properties should be set directly with
+    // section.meter.dmm or section.meter.oscope
+    meter: {
+      dmm: null,
+      oscope: null,
+      
+      setProbeLocation: function (probe, loc) {
+        if (this.oscope) {
+          this.oscope.setProbeLocation(probe, loc);
+        }
+        if (this.dmm) {
+          this.dmm.setProbeLocation(probe, loc);
+        }
+      },
+      
+      update: function () {
+        if (this.oscope) {
+          this.oscope.update();
+        }
+        if (this.dmm) {
+          this.dmm.update();
+        }
+      }
+    },
     
     toJSON: function () {
       var json = {};

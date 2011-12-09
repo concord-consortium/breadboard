@@ -91,7 +91,8 @@ describe 'Activity Creator'
         };
         
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.activityController.currentSection.meter.should.be null
+      sparks.activityController.currentSection.meter.dmm.should.be null
+      sparks.activityController.currentSection.meter.oscope.should.be null
     end
     
     it 'should set the section.meter property to be a DMM if multimeter is visible'
@@ -108,9 +109,9 @@ describe 'Activity Creator'
         };
         
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.activityController.currentSection.meter.should_not.be null
-      sparks.activityController.currentSection.meter.dialPosition.should_not.be null
-      sparks.activityController.currentSection.meter.PROBE_CHANNEL.should.be undefined
+      sparks.activityController.currentSection.meter.dmm.should_not.be null
+      sparks.activityController.currentSection.meter.dmm.dialPosition.should_not.be null
+      sparks.activityController.currentSection.meter.oscope.should.be null
     end
     
     it 'should set the section.meter property to be an o-scope if o-scope is visible'
@@ -127,9 +128,9 @@ describe 'Activity Creator'
         };
         
       var ac = new sparks.ActivityConstructor(jsonSection);
-      sparks.activityController.currentSection.meter.should_not.be null
-      sparks.activityController.currentSection.meter.PROBE_CHANNEL.should_not.be null
-      sparks.activityController.currentSection.meter.dialPosition.should.be undefined
+      sparks.activityController.currentSection.meter.oscope.should_not.be null
+      sparks.activityController.currentSection.meter.oscope.PROBE_CHANNEL.should_not.be null
+      sparks.activityController.currentSection.meter.dmm.should.be null
     end
     
   end

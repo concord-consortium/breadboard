@@ -54,7 +54,9 @@
         if (section.show_multimeter){
           sparks.flash.sendCommand('set_multimeter_visibility','true');
           sparks.flash.sendCommand('set_probe_visibility','true');
-        } else if (section.show_oscilloscope){
+        } 
+        
+        if (section.show_oscilloscope){
           var scopeView = new sparks.OscilloscopeView();
           var $scope = scopeView.getView();
           this.divs.$scopeDiv.append($scope);
@@ -62,7 +64,7 @@
           this.doOnFlashLoad(function(){
             self.divs.$scopeDiv.show();
           });
-          section.meter.setView(scopeView);
+          section.meter.oscope.setView(scopeView);
         }
       }
 

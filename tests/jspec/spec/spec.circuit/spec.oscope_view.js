@@ -44,7 +44,7 @@ describe 'OScope View'
       var ac = new sparks.ActivityConstructor(jsonSection);
       renderSignalCalled.should.be true
       
-      var oscope = sparks.activityController.currentSection.meter;
+      var oscope = sparks.activityController.currentSection.meter.oscope;
       oscope.signals[1].amplitude.should.be 100
       oscope.signals[1].frequency.should.be 1000
       oscope.signals[1].phase.should.be 0
@@ -70,7 +70,7 @@ describe 'OScope View'
         };
       
       var ac = new sparks.ActivityConstructor(jsonSection);
-      var oscope = sparks.activityController.currentSection.meter;
+      var oscope = sparks.activityController.currentSection.meter.oscope;
       
       // actual QUCS result for above circuit
       mock_request().and_return(
@@ -91,7 +91,7 @@ describe 'OScope View'
         renderSignalCalledTimes++;
       }
       
-      var meter = sparks.activityController.currentSection.meter;
+      var meter = sparks.activityController.currentSection.meter.oscope;
       meter.setProbeLocation("probe_oscope", "left_negative1");
       renderSignalCalledTimes.should.be 2
       
@@ -141,7 +141,7 @@ describe 'OScope View'
         };
       
       var ac = new sparks.ActivityConstructor(jsonSection);
-      var oscope = sparks.activityController.currentSection.meter;
+      var oscope = sparks.activityController.currentSection.meter.oscope;
       
       // actual QUCS result for above circuit
       mock_request().and_return(
@@ -165,7 +165,7 @@ describe 'OScope View'
         renderSignalCalledTimes++;
       }
       
-      var meter = sparks.activityController.currentSection.meter;
+      var meter = sparks.activityController.currentSection.meter.oscope;
       meter.setProbeLocation("probe_oscope", "a1");
       renderSignalCalledTimes.should.be 2
       
@@ -199,7 +199,7 @@ describe 'OScope View'
         };
       
       var ac = new sparks.ActivityConstructor(jsonSection);
-      var oscope = sparks.activityController.currentSection.meter;
+      var oscope = sparks.activityController.currentSection.meter.oscope;
       
       // actual QUCS result for above circuit
       mock_request().and_return(
@@ -227,7 +227,7 @@ describe 'OScope View'
         renderSignalCalledTimes++;
       }
       
-      var meter = sparks.activityController.currentSection.meter;
+      var meter = sparks.activityController.currentSection.meter.oscope;
       meter.setProbeLocation("probe_oscope", "a1");
       renderSignalCalledTimes.should.be 2
       

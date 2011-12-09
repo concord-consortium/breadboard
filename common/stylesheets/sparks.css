@@ -298,7 +298,7 @@ border-bottom-style:solid;
   background: url("../images/oscope_mini.png") no-repeat top left;
   position: absolute;
   top: 10px;
-  left: 420px;
+  left: 310px;
   z-index: 1;
 }
 
@@ -308,7 +308,7 @@ border-bottom-style:solid;
   top: -4px;
   left: 0;
   height: 150px;
-  width: 300px;
+  width: 280px;
   z-index: 2;
 }
 
