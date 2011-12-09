@@ -2339,8 +2339,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
 
       if (name === 'connect') {
           if (args[0] === 'probe') {
-            var probe_color = args[1] === 'probe_red' ? "red" : "black";
-            section.meter.setProbeLocation(probe_color, args[2]);
+            section.meter.setProbeLocation(args[1], args[2]);
           }
           if (args[0] === 'component') {
               if (!!args[2]){
@@ -2353,8 +2352,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
           }
       } else if (name === 'disconnect') {
           if (args[0] === 'probe') {
-            var probe_color = args[1] === 'probe_red' ? "red" : "black";
-            section.meter.setProbeLocation(probe_color, null);
+            section.meter.setProbeLocation(args[1], null);
           } else if (args[0] === 'component') {
             var hole = args[2];
             var newHole = breadModel('getGhostHole', hole+"ghost");
@@ -2837,9 +2835,9 @@ sparks.createQuestionsCSV = function(data) {
         },
 
         setProbeLocation: function (probe, location) {
-          if (probe === "red") {
+          if (probe === "probe_red") {
             this.redProbeConnection = location;
-          } else {
+          } else if (probe === "probe_black") {
             this.blackProbeConnection = location;
           }
           this.update();

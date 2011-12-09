@@ -58,7 +58,7 @@
           var scopeView = new sparks.OscilloscopeView();
           var $scope = scopeView.getView();
           this.divs.$scopeDiv.append($scope);
-          sparks.flash.sendCommand('set_probe_visibility','true');
+          sparks.flash.sendCommand('set_oscope_probe_visibility','true');
           this.doOnFlashLoad(function(){
             self.divs.$scopeDiv.show();
           });

@@ -34,7 +34,7 @@
       // @probe Name of probe being attached. We ignore everything but "red"
       // @location Hole name, like 'a1' or can be null if probe is lifted
       setProbeLocation: function(probe, location) {
-        if (probe === "red") {
+        if (probe === "probe_oscope") {
           this.probeLocation = location;
           this.update();
         }
