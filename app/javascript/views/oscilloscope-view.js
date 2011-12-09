@@ -255,6 +255,11 @@
       }, function () {
         self.model.bumpHorizontalScale(1);
       });
+      
+      this.horizontalScaleChanged();
+      for (i = 1; i <= this.model.N_CHANNELS; i++) {
+        this.verticalScaleChanged(i);
+      }
 
       return this.$view;
     },

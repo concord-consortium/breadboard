@@ -28,10 +28,6 @@
         
         this.view = view;
         this.view.setModel(this);
-        view.horizontalScaleChanged();
-        for (i = 1; i <= this.N_CHANNELS; i++) {
-          view.verticalScaleChanged(i);
-        }
         this.update();         // we can update view immediately with the source trace
       },
       

@@ -3876,6 +3876,11 @@ sparks.createQuestionsCSV = function(data) {
         self.model.bumpHorizontalScale(1);
       });
 
+      this.horizontalScaleChanged();
+      for (i = 1; i <= this.model.N_CHANNELS; i++) {
+        this.verticalScaleChanged(i);
+      }
+
       return this.$view;
     },
 
@@ -7511,10 +7516,6 @@ sparks.createQuestionsCSV = function(data) {
 
         this.view = view;
         this.view.setModel(this);
-        view.horizontalScaleChanged();
-        for (i = 1; i <= this.N_CHANNELS; i++) {
-          view.verticalScaleChanged(i);
-        }
         this.update();         // we can update view immediately with the source trace
       },
 
