@@ -2933,7 +2933,7 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     loadFlash: function () {
-       this.divs.$breadboardDiv.css("z-index", 0);
+       this.divs.$breadboardDiv.show().css("z-index", 0);
        this.divs.$breadboardDiv.flash({
            src: 'activities/module-2/breadboardActivity1.swf',
            id: 'breadboardActivity1',
@@ -3135,8 +3135,9 @@ sparks.createQuestionsCSV = function(data) {
       $('.report').html('');
       if (!!finalReport){
         sparks.flash.loaded = false;
+        sparks.activity.view.setFlashLoaded(false);
         $('#image').html('');
-        $('#breadboard').html('');
+        $('#breadboard_wrapper').children().html('').hide();
       }
       this.$reportDiv = $('<div>').addClass('report').css('float', 'left').css('padding-top', '15px').css('padding-left', '40px');
       this.$reportDiv.append($report);
