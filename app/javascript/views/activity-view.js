@@ -12,9 +12,7 @@
       $questionsDiv:    $('#questions_area'),
       $titleDiv:        $('#title'),
       $scopeDiv:        $('#oscope_mini'),
-      $fgDiv:           $('#fg_mini'),
-      $fgOverlayDiv:    $('#fg_mini_overlay'),
-      $fgValueDiv:      $('#fg_value')
+      $fgDiv:           $('#fg_mini')
     };
   };
 
@@ -47,10 +45,9 @@
         if (source.frequency) {
           var fgView = new sparks.FunctionGeneratorView(source);
           var $fg = fgView.getView();
-          fgView.setMiniViewSpan(this.divs.$fgValueDiv, this.divs.$fgOverlayDiv);
+          this.divs.$fgDiv.append($fg);
           this.doOnFlashLoad(function(){
             self.divs.$fgDiv.show();
-            self.divs.$fgOverlayDiv.show();
           });
         }
 

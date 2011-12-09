@@ -3,11 +3,12 @@
 (function () {
 
   sparks.FunctionGeneratorView = function (functionGenerator) {
-    this.$view         = null;
-    this.miniView      = null;
-    this.model         = functionGenerator;
-    this.frequencies   = [];
+    this.$view          = null;
+    this.model          = functionGenerator;
+    this.frequencies    = [];
     this.currentFreqString = "";
+    this.freqValueViews = [];
+    this.popup = null;
   };
 
   sparks.FunctionGeneratorView.prototype = {
@@ -17,13 +18,48 @@
     nMinorTicks:      5,
 
     faceplateColor:   '#EEEEEE',
-
-    /**
-      @returns $view A jQuery object containing a Raphael canvas displaying the oscilloscope traces.
-
-      Sets this.$view to be the returned jQuery object.
-    */
+    
     getView: function () {
+      this.$view = $('<div>');
+      
+      $freq_value = $("<span id='fg_value'></span").appendTo(this.$view);
+      this.freqValueViews.push($freq_value);
+      
+      this.frequencies = this.model.getPossibleFrequencies();
+      this.setFrequency(this.model.frequency);
+      
+      $overlayDiv = $('<div id="fg_mini_overlay"></div>').appendTo(this.$view);
+      var self = this;
+      $overlayDiv.click(function(){
+        self.openPopup();
+      })
+      
+      return this.$view;
+    },
+    
+    openPopup: function () {
+      if (!this.popup) {
+        $view = this.getLargeView();
+        this.popup = $view.dialog({
+          width: this.width + 10,
+          height: this.height+37,
+          dialogClass: 'tools-dialog fg_popup',
+          title: "Function Generator",
+          closeOnEscape: false,
+          resizable: false,
+          autoOpen: false
+        });
+      }
+      
+      this.popup.dialog('open').dialog("widget").position({
+         my: 'left top',
+         at: 'left top',
+         offset: '5, 5',
+         of: $("#breadboard_wrapper")
+      });
+    },
+    
+    getLargeView: function () {
       var $canvasHolder,
           self = this;
 
@@ -39,46 +75,36 @@
         position: 'absolute',
         left: 0,
         right: 0,
-        height: this.height,
-        backgroundColor: this.faceplateColor,
-        border: '5px groove'
+        height: this.height
       }).appendTo(this.$view);
-
-      $('<p>Function Generator</p>').css({
-        top:       10,
-        left:      0,
-        right:     0,
+      
+      $freq_value = $('<p id="freq_value">'+this.currentFreqString+'</p>').css({
+        position:  'absolute',
+        top:       15,
+        left:      15,
         height:    20,
-        textAlign: 'center',
-        'font-weight': 'bold'
+        textAlign: 'center'
       }).appendTo(this.$faceplate);
+      
+      this.freqValueViews.push($freq_value);
 
-      this.$controls = $('<div>').css({
+      this.$controls = $('<div id="controls">').css({
         position: 'absolute',
-        top:      20,
+        top:      30,
         left:     0,
-        right:    0,
-        height:   100
+        height:   70
       }).appendTo(this.$faceplate);
 
       this.$frequency = $('<div>').css({
         position:  'absolute',
         top:       10,
-        left:      0,
+        left:      10,
         width:     150,
-        height:    100
+        height:    55
       }).appendTo(this.$controls);
-
-      $('<p>Frequency</p>').css({
-        top:       0,
-        left:      0,
-        right:     0,
-        height:    20,
-        textAlign: 'center'
-      }).appendTo(this.$frequency);
-
-      var freqs = self.model.getPossibleFrequencies();
-
+      
+      var freqs = this.frequencies;
+      
       this._addSliderControl(this.$frequency, freqs.length, function (evt, ui) {
         var i = ui.value;
         if (i < 0) i = 0;
@@ -87,18 +113,14 @@
         self.model.setFrequency(freq);
         self.setFrequency(freq);
       });
-
-      $('<p id="freq_value"></p>').css({
+      
+      $('<span>Frequency</span>').css({
         position:  'absolute',
         top:       45,
-        left:      0,
-        right:     0,
-        height:    20,
-        textAlign: 'center'
-      }).appendTo(this.$frequency);
-
-
-      self.setFrequency(freqs[0]);
+        left:      45,
+        width:     100,
+        height:    15
+      }).appendTo(this.$controls);
 
       // this.$amplitude = $('<div>').css({
       //   position: 'absolute',
@@ -126,32 +148,9 @@
     },
 
     setFrequency: function (freq) {
-      this.currentFreqString = sparks.mathParser.standardizeUnits(sparks.unit.convertMeasurement(freq + " Hz"));
-      if (!!this.$miniView) this.$miniView.text(this.currentFreqString);
-      $('#freq_value').text(this.currentFreqString);
+      currentFreqString = this.currentFreqString = sparks.mathParser.standardizeUnits(sparks.unit.convertMeasurement(freq + " Hz"));
+      this.freqValueViews.forEach(function($view){$view.text(currentFreqString);});
       return this.currentFreqString;
-    },
-
-    setMiniViewSpan: function($miniDiv, $overlayDiv) {
-      this.$miniView = $miniDiv;
-      $miniDiv.text(this.currentFreqString);
-      var self = this;
-      $overlayDiv.click(function() {
-        $view = self.getView();
-        $view.dialog({
-          width: self.width,
-          height: self.height+30,
-          dialogClass: 'tools-dialog',
-          title: "Function Generator",
-          closeOnEscape: false,
-          resizable: false
-        }).dialog("widget").position({
-           my: 'left top',
-           at: 'left top',
-           offset: '5, 5',
-           of: $("#breadboard_wrapper")
-        });
-      });
     },
 
     _addSliderControl: function ($el, steps, callback) {

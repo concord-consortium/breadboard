@@ -333,8 +333,8 @@ border-bottom-style:solid;
 #fg_mini_overlay {
   background: url("../images/fg_mini_overlay.png") no-repeat top left;
   position: absolute;
-  top: 16px;
-  left: -10px;
+  top: 11px;
+  left: 0px;
   width: 200px;
   height: 120px;
   z-index: 2;
