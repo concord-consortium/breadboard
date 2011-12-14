@@ -38,6 +38,19 @@
     if ('undefined' === typeof this.frequency || this.frequency === null) {
       throw new Error("FunctionGenerator: initialFrequency is undefined and an initial frequency could not be inferred from frequency range specification.");
     }
+    
+    amplitude = props.amplitude;
+    if ('number' === typeof amplitude){
+      this.amplitude = amplitude;
+    } else if (amplitude.length && amplitude.length >= 2) {
+      this.minAmplitude = amplitude[0];
+      this.maxAmplitude = amplitude[1];
+      if (amplitude[2]) {
+        this.amplitude = amplitude[2];
+      } else {
+        this.amplitude = (this.minAmplitude + this.maxAmplitude) / 2;
+      }
+    }
   };
 
   sparks.extend(sparks.circuit.FunctionGenerator, sparks.circuit.Component, {
