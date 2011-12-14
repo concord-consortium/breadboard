@@ -376,3 +376,7 @@ border-bottom-style:solid;
 .ui-slider-horizontal .ui-slider-handle {
   top: -.5em;
 }
+
+#easyTooltip {
+  z-index: 5000;
+}
