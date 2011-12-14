@@ -62,7 +62,14 @@
                     } else if (measurement === 'resistance') {
                       result = 1 / result;
                     } else if (measurement === "ac_voltage"){
+                      // if we are  handling a function generator, scale by the appropriate scale factor
+                      if (!!source.amplitudeScaleFactor || source.amplitudeScaleFactor === 0){
+                        result = result * source.amplitudeScaleFactor;
+                      }
+                      
+                      // RMS voltage
                       result = result / Math.sqrt(2);
+
                     }
                     result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
                       

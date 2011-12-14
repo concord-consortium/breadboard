@@ -56,7 +56,7 @@
         }
         
         sourceSignal = {
-          amplitude: source.amplitude,
+          amplitude: source.amplitude * source.amplitudeScaleFactor,
           frequency: source.frequency,
           phase: 0
         };
@@ -82,7 +82,7 @@
 
           if (result) {
             probeSignal = {
-              amplitude: result.magnitude,
+              amplitude: result.magnitude * source.amplitudeScaleFactor,
               frequency: source.frequency,
               phase:     result.angle
             };

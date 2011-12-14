@@ -90,14 +90,14 @@
 
       this.$controls = $('<div id="controls">').css({
         position: 'absolute',
-        top:      30,
+        top:      28,
         left:     0,
         height:   70
       }).appendTo(this.$faceplate);
 
       this.$frequency = $('<div>').css({
         position:  'absolute',
-        top:       10,
+        top:       12,
         left:      10,
         width:     150,
         height:    55
@@ -105,7 +105,7 @@
       
       var freqs = this.frequencies;
       
-      this._addSliderControl(this.$frequency, freqs.length, function (evt, ui) {
+      this._addSliderControl(this.$frequency, freqs.length, 0, function (evt, ui) {
         var i = ui.value;
         if (i < 0) i = 0;
         if (i > freqs.length-1) i = freqs.length-1;
@@ -116,33 +116,44 @@
       
       $('<span>Frequency</span>').css({
         position:  'absolute',
-        top:       45,
+        top:       43,
         left:      45,
         width:     100,
         height:    15
       }).appendTo(this.$controls);
+      
+      if (this.model.maxAmplitude){
+        this.$amplitude = $('<div>').css({
+          position: 'absolute',
+          top:      35,
+          left:     10,
+          width:    150,
+          height:   55
+        }).appendTo(this.$controls);
+        
+        var minAmp = this.model.minAmplitude,
+            maxAmp = this.model.maxAmplitude,
+            amplitude = this.model.amplitude,
+            range = maxAmp - minAmp,
+            steps = 30,
+            value = ((amplitude - minAmp) / range) * steps;
+        this._addSliderControl(this.$amplitude, steps, value, function (evt, ui) {
+          var i = ui.value;
+          if (i < 0) i = 0;
+          if (i > steps) i = steps;
+          var amp = ((i / steps) * range) + minAmp;
+          self.model.setAmplitude(amp);
+        });
 
-      // this.$amplitude = $('<div>').css({
-      //   position: 'absolute',
-      //   top:      10,
-      //   left:     150,
-      //   width:    150,
-      //   height:   100
-      // }).appendTo(this.$controls);
-      //
-      // $('<p>Amplitude</p>').css({
-      //   top:    0,
-      //   left:   0,
-      //   right:  0,
-      //   height: 20,
-      //   textAlign: 'center'
-      // }).appendTo(this.$amplitude);
-      //
-      // this._addScaleControl(this.$amplitude, function () {
-      //   self.model.setAmplitude(self.model.amplitude * 1.1);
-      // }, function () {
-      //   self.model.setAmplitude(self.model.amplitude / 1.1);
-      // });
+        $('<span>Amplitude</span>').css({
+          position: 'absolute',
+          top:    66,
+          left:   45,
+          right:  100,
+          height: 15,
+          textAlign: 'center'
+        }).appendTo(this.$controls);
+      }
 
       return this.$view;
     },
@@ -153,29 +164,13 @@
       return this.currentFreqString;
     },
 
-    _addSliderControl: function ($el, steps, callback) {
+    _addSliderControl: function ($el, steps, value, callback) {
       $("<div id='fg_slider'>").css({
         position: 'absolute',
         top:   25,
         left:  10,
         right: 10
-      }).slider({ max: steps, slide: callback }).appendTo($el);
-    },
-
-    _addScaleControl: function ($el, minusCallback, plusCallback) {
-      $('<button>+</button>').css({
-        position: 'absolute',
-        top:   25,
-        left:  35,
-        width: 30
-      }).click(plusCallback).appendTo($el);
-
-      $('<button>-</button>').css({
-        position: 'absolute',
-        top:   25,
-        right: 35,
-        width: 30
-      }).click(minusCallback).appendTo($el);
+      }).slider({ max: steps, slide: callback, value: value }).appendTo($el);
     }
   };
 

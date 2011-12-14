@@ -7,6 +7,8 @@
   sparks.circuit.FunctionGenerator = function (props, breadBoard) {
     sparks.circuit.FunctionGenerator.parentConstructor.call(this, props, breadBoard);
     
+    this.amplitudeScaleFactor = 1;
+    
     // NOTE on validation of initialFrequency.
     //
     // If the initial frequency is not in the frequencies we request QUCS to simulate, we only find out after we call 
@@ -36,6 +38,19 @@
     if ('undefined' === typeof this.frequency || this.frequency === null) {
       throw new Error("FunctionGenerator: initialFrequency is undefined and an initial frequency could not be inferred from frequency range specification.");
     }
+    
+    amplitude = props.amplitude;
+    if ('number' === typeof amplitude){
+      this.amplitude = amplitude;
+    } else if (amplitude.length && amplitude.length >= 2) {
+      this.minAmplitude = amplitude[0];
+      this.maxAmplitude = amplitude[1];
+      if (amplitude[2]) {
+        this.amplitude = amplitude[2];
+      } else {
+        this.amplitude = (this.minAmplitude + this.maxAmplitude) / 2;
+      }
+    }
   };
 
   sparks.extend(sparks.circuit.FunctionGenerator, sparks.circuit.Component, {
@@ -48,8 +63,11 @@
       }
     },
     
-    setAmplitude: function(amplitude) {
-      this.amplitude = amplitude;
+    // instead of modifying the base amplitude, which would cause us to re-ask QUCS for new values,
+    // we simply modify a scale factor, which is read by all meters. This works so long as we have
+    // linear circuits -- we'll need to revisit this for nonlinear circuits.
+    setAmplitude: function(newAmplitude) {
+      this.amplitudeScaleFactor = newAmplitude / this.amplitude;
       if (sparks.activityController.currentSection.meter) {
         sparks.activityController.currentSection.meter.update();
       }
