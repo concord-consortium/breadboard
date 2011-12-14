@@ -165,12 +165,17 @@
     },
 
     _addSliderControl: function ($el, steps, value, callback) {
-      $("<div id='fg_slider'>").css({
+      $slider = $("<div id='fg_slider'>").css({
         position: 'absolute',
         top:   25,
         left:  10,
         right: 10
       }).slider({ max: steps, slide: callback, value: value }).appendTo($el);
+      if (steps < 2) {
+        $slider.easyTooltip({
+           content: "You can't change this frequency in this activity"
+        });
+      }
     }
   };
 
