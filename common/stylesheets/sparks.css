@@ -368,3 +368,11 @@ border-bottom-style:solid;
 .tools-dialog .ui-dialog-titlebar {
   padding: 0;
 }
+
+.ui-slider-horizontal {
+  height: 0.5em;
+}
+
+.ui-slider-horizontal .ui-slider-handle {
+  top: -.5em;
+}
