@@ -7468,13 +7468,12 @@ sparks.createQuestionsCSV = function(data) {
                       result = 0;
                     } else if (measurement === 'resistance') {
                       result = 1 / result;
-                    } else if (measurement === "ac_voltage"){
+                    } else if (measurement === "ac_voltage" ||
+                                (measurement === 'current' && source && source.getQucsSimulationType().indexOf(".AC") > -1)){
                       if (!!source.amplitudeScaleFactor || source.amplitudeScaleFactor === 0){
                         result = result * source.amplitudeScaleFactor;
                       }
-
-                      result = result / Math.sqrt(2);
-
+                      result = result / Math.sqrt(2);         // RMS voltage or RMS cureent
                     }
                     result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
 
