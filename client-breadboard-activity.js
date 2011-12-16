@@ -2688,6 +2688,8 @@ sparks.createQuestionsCSV = function(data) {
 
     this.not_scored = false;
 
+    this.beforeScript = null;
+
     this.view = null;
   };
 
@@ -2926,21 +2928,8 @@ sparks.createQuestionsCSV = function(data) {
           });
         }
 
-        if (section.show_multimeter){
-          sparks.flash.sendCommand('set_multimeter_visibility','true');
-          sparks.flash.sendCommand('set_probe_visibility','true');
-        }
-
-        if (section.show_oscilloscope){
-          var scopeView = new sparks.OscilloscopeView();
-          var $scope = scopeView.getView();
-          this.divs.$scopeDiv.append($scope);
-          sparks.flash.sendCommand('set_oscope_probe_visibility','true');
-          this.doOnFlashLoad(function(){
-            self.divs.$scopeDiv.show();
-          });
-          section.meter.oscope.setView(scopeView);
-        }
+        this.showDMM(section.show_multimeter);
+        this.showOScope(section.show_oscilloscope);
       }
 
       this.layoutPage();
@@ -2986,6 +2975,29 @@ sparks.createQuestionsCSV = function(data) {
        } else {
          this.flashQueue.push(func);
        }
+     },
+
+     showOScope: function(visible) {
+       this.divs.$scopeDiv.html('');
+
+       if (visible) {
+         var scopeView = new sparks.OscilloscopeView();
+         var $scope = scopeView.getView();
+         this.divs.$scopeDiv.append($scope);
+         var self = this;
+         this.doOnFlashLoad(function(){
+           self.divs.$scopeDiv.show();
+         });
+         sparks.activityController.currentSection.meter.oscope.setView(scopeView);
+       }
+
+
+       sparks.flash.sendCommand('set_oscope_probe_visibility',visible.toString());
+     },
+
+     showDMM: function(visible) {
+       sparks.flash.sendCommand('set_multimeter_visibility',visible.toString());
+       sparks.flash.sendCommand('set_probe_visibility',visible.toString());
      },
 
      setEmbeddingTargets: function(targets) {
@@ -3134,6 +3146,10 @@ sparks.createQuestionsCSV = function(data) {
         self.enableView(view, false);
       });
       self.enableView(self.questionViews[question.id], true);
+
+      if (!!question.beforeScript) {
+        sparks.questionController.runQuestionScript(question.beforeScript, question);
+      }
     },
 
     enableView: function($view, enable) {
@@ -4608,6 +4624,8 @@ sparks.createQuestionsCSV = function(data) {
 
         question.scoring = jsonQuestion.scoring;
 
+        question.beforeScript = jsonQuestion.beforeScript;
+
         questionsArray.push(question);
 
         question.prompt = oldPrompt;
@@ -4999,6 +5017,29 @@ sparks.createQuestionsCSV = function(data) {
     nextId: function() {
       this.id = this.id + 1;
       return this.id;
+    },
+
+    setDMMVisibility: function(visible) {
+      var section = sparks.activityController.currentSection;
+      if (visible) {
+        section.meter.dmm = new sparks.circuit.Multimeter2();
+        if(section.disable_multimeter_position){
+          section.meter.dmm.set_disable_multimeter_position(section.disable_multimeter_position);
+        }
+      } else {
+        section.meter.dmm = null;
+      }
+      sparks.activity.view.showDMM(visible);
+    },
+
+    setOScopeVisibility: function(visible) {
+      var section = sparks.activityController.currentSection;
+      if (visible) {
+        section.meter.oscope = new sparks.circuit.Oscilloscope();
+      } else {
+        section.meter.oscope = null;
+      }
+      sparks.activity.view.showOScope(visible);
     }
 
   };
@@ -7461,6 +7502,8 @@ sparks.createQuestionsCSV = function(data) {
                     result = result.magnitude;
 
                     result = Math.abs(result);
+
+
                     var source = getBreadBoard().components.source;
                     if (!!source &&
                        ((measurement === 'voltage' && source.getQucsSimulationType().indexOf(".AC") > -1) ||

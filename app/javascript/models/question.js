@@ -38,6 +38,8 @@
     
     this.not_scored = false;
     
+    this.beforeScript = null;
+    
     this.view = null;
   };
   

@@ -96,6 +96,10 @@
         self.enableView(view, false);
       });
       self.enableView(self.questionViews[question.id], true);
+      
+      if (!!question.beforeScript) {
+        sparks.questionController.runQuestionScript(question.beforeScript, question);
+      }
     },
     
     enableView: function($view, enable) {
