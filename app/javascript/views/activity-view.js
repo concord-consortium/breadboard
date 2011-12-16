@@ -51,21 +51,8 @@
           });
         }
 
-        if (section.show_multimeter){
-          sparks.flash.sendCommand('set_multimeter_visibility','true');
-          sparks.flash.sendCommand('set_probe_visibility','true');
-        } 
-        
-        if (section.show_oscilloscope){
-          var scopeView = new sparks.OscilloscopeView();
-          var $scope = scopeView.getView();
-          this.divs.$scopeDiv.append($scope);
-          sparks.flash.sendCommand('set_oscope_probe_visibility','true');
-          this.doOnFlashLoad(function(){
-            self.divs.$scopeDiv.show();
-          });
-          section.meter.oscope.setView(scopeView);
-        }
+        this.showDMM(section.show_multimeter);
+        this.showOScope(section.show_oscilloscope);
       }
 
       this.layoutPage();
@@ -111,6 +98,29 @@
        } else {
          this.flashQueue.push(func);
        }
+     },
+     
+     showOScope: function(visible) {
+       this.divs.$scopeDiv.html('');
+       
+       if (visible) {
+         var scopeView = new sparks.OscilloscopeView();
+         var $scope = scopeView.getView();
+         this.divs.$scopeDiv.append($scope);
+         var self = this;
+         this.doOnFlashLoad(function(){
+           self.divs.$scopeDiv.show();
+         });
+         sparks.activityController.currentSection.meter.oscope.setView(scopeView);
+       }
+       
+       
+       sparks.flash.sendCommand('set_oscope_probe_visibility',visible.toString());
+     },
+     
+     showDMM: function(visible) {
+       sparks.flash.sendCommand('set_multimeter_visibility',visible.toString());
+       sparks.flash.sendCommand('set_probe_visibility',visible.toString());
      },
 
      // not usually necessary. Justs for tests?
