@@ -3390,8 +3390,8 @@ sparks.createQuestionsCSV = function(data) {
         return this.connections.length === 2;
       },
 
-      getRequestedImpedance: function (spec) {
-        var min, max;
+      getRequestedImpedance: function (spec, steps) {
+        var min, max, factor, step, choosableSteps, i, len;
 
         if (typeof spec === 'string' || typeof spec === 'number') {
           return spec;
@@ -3405,6 +3405,28 @@ sparks.createQuestionsCSV = function(data) {
 
         min = Math.min(spec[1], spec[2]);
         max = Math.max(spec[1], spec[2]);
+
+        if (steps) {
+          steps = steps.slice().sort();
+
+          factor = Math.pow(10, Math.orderOfMagnitude(min) - Math.orderOfMagnitude(steps[0]));
+          choosableSteps = [];
+          i = 0;
+          len = steps.length;
+          do {
+            step = steps[i++] * factor;
+            if (min <= step && step <= max) choosableSteps.push(step);
+
+            if (i >= len) {
+              factor *= 10;
+              i = 0;
+            }
+          } while (step < max);
+
+          if (choosableSteps.length > 0) {
+            return choosableSteps[ Math.floor(Math.random() * choosableSteps.length) ];
+          }
+        }
 
         return min + Math.random() * (max - min);
       }
@@ -3420,8 +3442,12 @@ sparks.createQuestionsCSV = function(data) {
     var flash = sparks.flash;
 
     sparks.circuit.Resistor = function (props, breadBoard) {
+      var tolerance, steps;
+
       if (typeof props.resistance !== 'undefined') {
-        props.resistance = this.getRequestedImpedance( props.resistance );
+        tolerance = props.tolerance || 0.05;
+        steps = (tolerance === 0.05) ? sparks.circuit.r_values.r_values4band5pct : sparks.circuit.r_values.r_values4band10pct;
+        props.resistance = this.getRequestedImpedance( props.resistance, steps );
       }
 
       sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);
@@ -4238,6 +4264,11 @@ sparks.createQuestionsCSV = function(data) {
 
      Math.log10 = function(x){
        return Math.log(x)/Math.LN10;
+     };
+
+     Math.orderOfMagnitude = function(x) {
+       if (x === 0) return 0;
+       return Math.floor( Math.log(Math.abs(x))/Math.LN10 );
      };
 
      Math.powNdigits = function(x,n){

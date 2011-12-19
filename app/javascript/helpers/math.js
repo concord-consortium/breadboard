@@ -81,7 +81,12 @@
      Math.log10 = function(x){
        return Math.log(x)/Math.LN10;
      };
-     
+
+     Math.orderOfMagnitude = function(x) {
+       if (x === 0) return 0;
+       return Math.floor( Math.log(Math.abs(x))/Math.LN10 );
+     };
+
      Math.powNdigits = function(x,n){
        return Math.pow(10,Math.floor(Math.log(x)/Math.LN10-n+1));
      };
