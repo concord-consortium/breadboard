@@ -234,5 +234,57 @@ describe 'Authored Scripts'
      end
      
    end
+   
+   describe 'Before-Question Scripts'
+   
+      before_each
+        breadModel('clear');
+        sparks.sectionController.reset();
+        sparks.activityController.reset();
+      end
+
+       it 'should be able to run a script when a question is enabled'
+
+         var jsonSection =
+           {
+             "circuit": [
+               {
+                  "type": "resistor",
+                  "UID": "r1",
+                  "connections": "b2,b3"
+                }
+             ],
+             "pages":[
+               {
+                 "questions": [
+                   {
+                     "prompt": "What is the resistance of R1?",
+                     "beforeScript": "sparks.vars.test = 'a'"
+                   },
+                   {
+                     "prompt": "What is the resistance of R2?",
+                     "beforeScript": "sparks.vars.test = 'b'"
+                   }
+                 ]
+               }
+             ]
+           };
+
+            var $breadboardDiv = $("<div>").attr('id','breadboard');
+            var $questionsDiv = $("<div>").attr('id','questions_area');
+            $(document.body).append($breadboardDiv);
+            $(document.body).append($questionsDiv);
+
+            var ac = new sparks.ActivityConstructor(jsonSection);
+            sparks.activity.view.layoutCurrentSection();
+            
+            sparks.vars.test.should.be "a"
+
+            $buttons = $questionsDiv.find(':button');
+            $($buttons[0]).click();
+            
+            sparks.vars.test.should.be "b"
+       end
+    end
  
 end
