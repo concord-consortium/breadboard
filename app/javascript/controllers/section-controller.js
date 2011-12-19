@@ -176,6 +176,29 @@
     nextId: function() {
       this.id = this.id + 1;
       return this.id;
+    },
+    
+    setDMMVisibility: function(visible) {
+      var section = sparks.activityController.currentSection;
+      if (visible) {
+        section.meter.dmm = new sparks.circuit.Multimeter2();
+        if(section.disable_multimeter_position){
+          section.meter.dmm.set_disable_multimeter_position(section.disable_multimeter_position);
+        }
+      } else {
+        section.meter.dmm = null;
+      }
+      sparks.activity.view.showDMM(visible);
+    },
+    
+    setOScopeVisibility: function(visible) {
+      var section = sparks.activityController.currentSection;
+      if (visible) {
+        section.meter.oscope = new sparks.circuit.Oscilloscope();
+      } else {
+        section.meter.oscope = null;
+      }
+      sparks.activity.view.showOScope(visible);
     }
 
   };

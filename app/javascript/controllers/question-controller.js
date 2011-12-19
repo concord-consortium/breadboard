@@ -109,6 +109,8 @@
         
         question.scoring = jsonQuestion.scoring;
         
+        question.beforeScript = jsonQuestion.beforeScript;
+        
         // for now we put it in both places.
         questionsArray.push(question);
         
