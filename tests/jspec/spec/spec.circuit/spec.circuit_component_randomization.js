@@ -152,34 +152,34 @@ describe "Constructing circuits with randomized reactances"
     end
 
     describe "the inductance, when that component is an inductor"
-      it "should follow Z = |jwL| = wL, where w is the referenceFrequency converted to an angular value"
+      it "should follow Z = |jwL| = wL, where w is the referenceFrequency converted to an angular value and L is rounded to 3 significant figures"
         var circuit = [{
           "type": "inductor",
           "UID": "L1",
           "connections": "c3,b4",
-          "impedance": "500"
+          "impedance": "1.23456"
         }];
-        circuit.referenceFrequency = 1000;
+        circuit.referenceFrequency =  1000  / (2 * Math.PI);  // w = 1000
 
         breadModel("createCircuit", circuit);
-
-        (getBreadBoard().components['L1'].getInductance() * 2 * Math.PI * 1000).should_be 500
+        // L = Z/w = 1.23456/1000, rounded to 3 sig figs
+        getBreadBoard().components['L1'].getInductance().should.be 0.00123
       end
     end
 
     describe "the capacitance, when that component is an inductor"
-      it "should follow Z = |-j/wC| = 1/wC, where w is the referenceFrequency converted to an angular value"
+      it "should follow Z = |-j/wC| = 1/wC, where w is the referenceFrequency converted to an angular value and C is rounded to 3 significant figures"
         var circuit = [{
           "type": "capacitor",
           "UID": "C1",
           "connections": "c3,b4",
-          "impedance": "500"
+          "impedance": 1/0.456789
         }];
-        circuit.referenceFrequency = 1000;
+        circuit.referenceFrequency = 1000 / (2 * Math.PI);  // w = 1000
 
         breadModel("createCircuit", circuit);
-
-        (getBreadBoard().components['C1'].getCapacitance() / (2 * Math.PI * 1000)).should_be 500
+        // C = 1/Zw = (1/Z)*(1/w), rounded to 3 sig figs
+        getBreadBoard().components['C1'].getCapacitance().should.be 0.000457
       end
     end
 

@@ -8209,7 +8209,7 @@ sparks.createQuestionsCSV = function(data) {
             throw new Error("An impedance/referenceFrequency pair is needed, but not defined.");
           }
 
-          this._componentParameter = componentParameterFromImpedance(this.impedance, this.referenceFrequency);
+          this._componentParameter = sparks.math.roundToSigDigits(componentParameterFromImpedance(this.impedance, this.referenceFrequency), 3);
         }
       }
 
@@ -8266,7 +8266,7 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     capacitanceFromImpedance: function (impedance, frequency) {
-      return impedance * 2 * Math.PI * frequency;
+      return 1 / (impedance * 2 * Math.PI * frequency);
     },
 
     toNetlist: function () {

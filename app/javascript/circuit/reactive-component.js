@@ -28,7 +28,7 @@
             throw new Error("An impedance/referenceFrequency pair is needed, but not defined.");
           }
 
-          this._componentParameter = componentParameterFromImpedance(this.impedance, this.referenceFrequency);
+          this._componentParameter = sparks.math.roundToSigDigits(componentParameterFromImpedance(this.impedance, this.referenceFrequency), 3);
         }
       }
 
