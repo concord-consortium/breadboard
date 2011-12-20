@@ -136,7 +136,7 @@
         }
 
         // if no steps were specified, or none were available between the requested min and max
-        return sparks.math.roundToSigDigits(min + Math.random() * (max - min), 3);
+        return min + Math.random() * (max - min);
       }
 
     };

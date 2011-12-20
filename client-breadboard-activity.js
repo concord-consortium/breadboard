@@ -6341,7 +6341,7 @@ sparks.createQuestionsCSV = function(data) {
           }
         }
 
-        return sparks.math.roundToSigDigits(min + Math.random() * (max - min), 3);
+        return min + Math.random() * (max - min);
       }
 
     };
