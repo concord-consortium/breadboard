@@ -110,9 +110,9 @@ describe "Constructing circuits with randomized reactances"
     describe "when passed a value of the type ['uniform', <min>, <max>]"
 
       describe "and not passed a list of magnitude steps"
-        it "should return a random numeric value chosen from between min and max"
-          stub(Math, 'random').and_return(0.6)
-          getRequestedImpedance(["uniform", 0, 10]).should_be 6
+        it "should return a random numeric value chosen from between min and max, rounded to 3 significant digits"
+          stub(Math, 'random').and_return(0.654321)
+          getRequestedImpedance(["uniform", 0, 10]).should_be 6.54
         end
       end
 
