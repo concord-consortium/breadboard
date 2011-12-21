@@ -95,8 +95,8 @@
         return this.connections.length === 2;
       },
 
-      getRequestedImpedance: function (spec) {
-        var min, max;
+      getRequestedImpedance: function (spec, steps) {
+        var min, max, factor, step, choosableSteps, i, len;
 
         if (typeof spec === 'string' || typeof spec === 'number') {
           return spec;
@@ -111,6 +111,31 @@
         min = Math.min(spec[1], spec[2]);
         max = Math.max(spec[1], spec[2]);
 
+        // if steps array exists, it specifies allowable values, up to the order of magnitude
+        if (steps) {
+          // copy 'steps' array before sorting it so we don't modify the passed-in array
+          steps = steps.slice().sort();
+
+          factor = Math.pow(10, Math.orderOfMagnitude(min) - Math.orderOfMagnitude(steps[0]));
+          choosableSteps = [];
+          i = 0;
+          len = steps.length;
+          do {
+            step = steps[i++] * factor;
+            if (min <= step && step <= max) choosableSteps.push(step);
+
+            if (i >= len) {
+              factor *= 10;
+              i = 0;
+            }
+          } while (step < max);
+
+          if (choosableSteps.length > 0) {
+            return choosableSteps[ Math.floor(Math.random() * choosableSteps.length) ];
+          }
+        }
+
+        // if no steps were specified, or none were available between the requested min and max
         return min + Math.random() * (max - min);
       }
 

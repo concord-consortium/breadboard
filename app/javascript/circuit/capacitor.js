@@ -15,7 +15,7 @@
     },
 
     capacitanceFromImpedance: function (impedance, frequency) {
-      return impedance * 2 * Math.PI * frequency;
+      return 1 / (impedance * 2 * Math.PI * frequency);
     },
 
     toNetlist: function () {

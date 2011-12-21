@@ -7,9 +7,13 @@
     var flash = sparks.flash;
 
     sparks.circuit.Resistor = function (props, breadBoard) {
+      var tolerance, steps;
+
       // translate the requested resistance (which may be of the form ["uniform", 10, 100] into a real number
       if (typeof props.resistance !== 'undefined') {
-        props.resistance = this.getRequestedImpedance( props.resistance );
+        tolerance = props.tolerance || 0.05;
+        steps = (tolerance === 0.05) ? sparks.circuit.r_values.r_values4band5pct : sparks.circuit.r_values.r_values4band10pct;
+        props.resistance = this.getRequestedImpedance( props.resistance, steps );
       }
 
       sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);

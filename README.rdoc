@@ -8,20 +8,20 @@
 Sparks uses Sprockets (http://getsprockets.org) to manage the javascript code.  Sprockets combines the individual JS files into a single file per activity. To avoid duplication, these files aren't managed by git.
 
 To build the combined JS files:
- 
+
  // Setup rvm to use Ruby 1.8.7 and a gemset named sparks
  rvm use 1.8.7
  rvm gemset create sparks
  echo "rvm use 1.8.7@sparks" > .rvmrc
  cd .
- 
+
  // install bundler and the necessary gems
  gem install bundler
  bundle install --binstubs
- 
+
  // build using sprockets, from top folder
  bin/rake
- 
+
 "rake" will need to be called each time a Javascript file is changed.
 
 === Setting up the server
@@ -31,11 +31,11 @@ SPARKS needs to be running from a server even when running locally, so it can ac
 The simplest way to do this is to modify the file proxy/apache.conf.sample with your information (modify the paths at the bottom of the file to point to the location of your local sparks directory), and then save the file as apache.conf (i.e. remove the .sample from the file name). You can then start a local Apache server by running
 
  apachectl -f "`pwd`/proxy/apache.conf" -k start
- 
+
  // or simply
  ./start.sh
 
-from your Sparks directory (though you first need to copy start.sample.sh to start.sh and modify the contents accordingly). Now you will be able to navigate to the html files in the project by pointing your browser to 
+from your Sparks directory (though you first need to copy start.sample.sh to start.sh and modify the contents accordingly). Now you will be able to navigate to the html files in the project by pointing your browser to
 
  http://localhost:1234
  http://localhost:1234/activities.html
@@ -56,17 +56,17 @@ Go to http://localhost:1234/ (or whatever port you set in the step above) in you
 This application is mostly tested using JSPEC. You can install JSPEC with
 
  gem install jspec
- 
+
 To run the tests on the command line with Rhino:
 
  // optinally run bin/rake to rebuild the files
  cd tests/jspec
  java -jar spec/support/js.jar -opt -1 spec/rhino-terminal.js
- 
+
  // or just run
  cd tests/jspec
  ./test.sh
- 
+
 To run the tests in the browser, visit
 
  http://localhost:1234/tests/jspec/spec/dom.html
@@ -75,19 +75,23 @@ Note that some of the tests, 'Measuring breadboard components with QUCS' and 'Us
 
 == Deployment
 
-This whole sparks folder should be embedded into the sparks branch of the
-rigse portal.
+This whole sparks folder needs to be deployed to the public folder of the sparks portal. This requires ssh'ing into the virtual server ruby-vm7.concord.org as the deploy user, finding the right folder, and git pulling. If you don't have permission to ssh as the deploy user, see someone.
 
-So either manually or with capistrano tasks, rigse should be first cloned 
-from http://github.com/stepheneb/rigse/tree/sparks.
+==== Deploying to staging
 
-Then clone sparks under the "public" folder and rename the "spark" folder to
-"sparks-content".
+// first push your changes to the 'master' branch
 
-from rigse/
-  cap sparks-production import:create_or_update_sparks_content
-  
-This will put the content in seyomour:/web/production/sparks/current/public/sparks-content
+ssh deploy@ruby-vm7.concord.org
+cd /web/staging/current/public/sparks-content/
+git pull
+
+==== Deploying to production
+
+// first push your changes to the 'production' branch
+
+ssh deploy@ruby-vm7.concord.org
+cd /web/portal/current/public/sparks-content/
+git pull
 
 == Activities
 
@@ -159,18 +163,18 @@ JSpec home: "http://visionmedia.github.com/jspec/":http://visionmedia.github.com
 # Add the following to Source path:
 ** ./actionscript
 ** ../../common/actionscript
- 
+
 ==== Actions for the main FLA
 
-Open Actions of the frame #1 of the "actions" laye and make sure the script instantiates the activity. 
-e.g. 
+Open Actions of the frame #1 of the "actions" laye and make sure the script instantiates the activity.
+e.g.
  <code>
  import org.concord.sparks.Activity;
  import org.concord.sparks.activities.ResistorColors;
- 
+
  var topDir == '/sparks-content'; //for rails
  //var topDir == '../..'; //for standalone testing
- 
+
  var activity:Activity == new ResistorColors('Resistor Colors', root, topDir);
  </code>
 
@@ -208,7 +212,7 @@ sparks-content/lib::         third-party code,such as jQuery
 ==== Flash:
 
 
-Note to set classpath information in activity 
+Note to set classpath information in activity
 Publish Settings -> Flash -> ActionScript
 Classpath should be
  .
@@ -255,6 +259,6 @@ or, if you build qucs locally, modify file  /javascript/circuit/qucsator.js (aja
 ==== Reports
 
 When updating rubrics, just update locally, then go to /rubrics in Rails portal and edit/replace by hand
- 
+
 
 test
