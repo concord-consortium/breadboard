@@ -104,8 +104,8 @@
       }).appendTo(this.$controls);
       
       var freqs = this.frequencies;
-      
-      this._addSliderControl(this.$frequency, freqs.length, 0, function (evt, ui) {
+      var initialStep = sparks.util.getClosestIndex(freqs, this.model.frequency, false);
+      this._addSliderControl(this.$frequency, freqs.length, initialStep, function (evt, ui) {
         var i = ui.value;
         if (i < 0) i = 0;
         if (i > freqs.length-1) i = freqs.length-1;

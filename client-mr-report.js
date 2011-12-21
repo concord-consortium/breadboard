@@ -918,6 +918,19 @@ sparks.util.getKeys = function (json) {
   return keys;
 };
 
+sparks.util.getClosestIndex = function(array, actual, isComplex) {
+  var minDiff = Infinity,
+      index;
+  for (var i = 0, ii = array.length; i < ii; i++){
+    var diff = isComplex ? Math.abs(array[i].real - actual) : Math.abs(array[i] - actual);
+    if (diff < minDiff){
+      minDiff = diff;
+      index = i;
+    }
+  }
+  return index;
+};
+
 
 sparks.data;
 

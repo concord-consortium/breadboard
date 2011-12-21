@@ -2283,6 +2283,19 @@ sparks.util.getKeys = function (json) {
   return keys;
 };
 
+sparks.util.getClosestIndex = function(array, actual, isComplex) {
+  var minDiff = Infinity,
+      index;
+  for (var i = 0, ii = array.length; i < ii; i++){
+    var diff = isComplex ? Math.abs(array[i].real - actual) : Math.abs(array[i] - actual);
+    if (diff < minDiff){
+      minDiff = diff;
+      index = i;
+    }
+  }
+  return index;
+};
+
 
 sparks.data;
 
@@ -4215,8 +4228,8 @@ sparks.createQuestionsCSV = function(data) {
       }).appendTo(this.$controls);
 
       var freqs = this.frequencies;
-
-      this._addSliderControl(this.$frequency, freqs.length, 0, function (evt, ui) {
+      var initialStep = sparks.util.getClosestIndex(freqs, this.model.frequency, false);
+      this._addSliderControl(this.$frequency, freqs.length, initialStep, function (evt, ui) {
         var i = ui.value;
         if (i < 0) i = 0;
         if (i > freqs.length-1) i = freqs.length-1;
@@ -7602,7 +7615,7 @@ sparks.createQuestionsCSV = function(data) {
           var i = 0,
               source = getBreadBoard().components.source;
           if (source && source.setFrequency && results.acfrequency){
-            i = sparks.circuit.Oscilloscope.prototype._getClosestQucsFrequencyIndex(results.acfrequency, source.frequency);
+            i = sparks.util.getClosestIndex(results.acfrequency, source.frequency, true);
           }
           return i;
         }
@@ -7683,7 +7696,7 @@ sparks.createQuestionsCSV = function(data) {
           data = breadModel('query');
 
           freqs = data.acfrequency;
-          dataIndex = this._getClosestQucsFrequencyIndex(freqs, source.frequency);
+          dataIndex = sparks.util.getClosestIndex(freqs, source.frequency, true);
           result = data[probeNode].v[dataIndex];
 
           if (result) {
@@ -7779,19 +7792,6 @@ sparks.createQuestionsCSV = function(data) {
         } else {
           return scale;
         }
-      },
-
-      _getClosestQucsFrequencyIndex: function(frequencies, actual) {
-        var minDiff = Infinity,
-            index;
-        for (var i = 0, ii = frequencies.length; i < ii; i++){
-          var diff = Math.abs(frequencies[i].real - actual);
-          if (diff < minDiff){
-            minDiff = diff;
-            index = i;
-          }
-        }
-        return index;
       }
 
     };
@@ -8329,10 +8329,17 @@ sparks.createQuestionsCSV = function(data) {
     if ( ('undefined' === typeof this.frequency || this.frequency === null) && props.frequencies ) {
       if ('number' === typeof props.frequencies[0]) {
         this.frequency = props.frequencies[0];
-        this.possibleFrequencies = props.frequencies;
       }
       else if (props.frequencies[0] === 'linear' || props.frequencies[0] === 'logarithmic') {
         this.frequency = props.frequencies[1];
+      }
+    }
+
+    if (props.frequencies) {
+      if ('number' === typeof props.frequencies[0]) {
+        this.possibleFrequencies = props.frequencies;
+      }
+      else if (props.frequencies[0] === 'linear' || props.frequencies[0] === 'logarithmic') {
         this.possibleFrequencies = this._calcPossibleFrequencies(props);
       }
     }
