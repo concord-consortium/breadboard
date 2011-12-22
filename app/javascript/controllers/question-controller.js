@@ -1,50 +1,50 @@
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
-  
+
   /*
    * Sparks Page Controller can be accessed by the
    * singleton variable sparks.questionController
    */
   sparks.QuestionController = function(){
   };
-  
+
   sparks.QuestionController.prototype = {
-    
+
     reset: function() {
       this._id = 0;
       this._subquestionId = 0;
       this._shownId = 0;
     },
-    
+
     createQuestionsArray: function(jsonQuestions) {
       var questionsArray = [];
       var self = this;
       $.each(jsonQuestions, function(i, jsonQuestion){
         self.createQuestion(jsonQuestion, questionsArray);
       });
-      
+
       return questionsArray;
     },
-    
+
     _id: 0,
-    
+
     _subquestionId: 0,
-    
+
     _shownId: 0,
-    
+
     createQuestion: function(jsonQuestion, questionsArray) {
       var self = this;
-      
-      
+
+
       function addSingleQuestion(jsonQuestion, preprompt){
         var question = new sparks.Question();
-        
+
         question.id = self._id;
         question.answer = '';
         question.shownId = self._shownId;
         self._id++;
-        
+
         var oldPrompt = jsonQuestion.prompt;
         if (!!preprompt){
           question.prompt = preprompt + " " + jsonQuestion.prompt;
@@ -54,13 +54,13 @@
         } else {
           question.prompt = jsonQuestion.prompt;
         }
-        
+
         question.shortPrompt = !!jsonQuestion.shortPrompt ? jsonQuestion.shortPrompt : question.prompt;
-        
+
         function html_entity_decode(str) {
           return $("<div>").html(str).text();
         }
-        
+
         // convert correct_answer (and units, if approp) to engineering format
         if (!!jsonQuestion.correct_units){
           // if auth specified units separately, we have to do it in two steps
@@ -73,11 +73,11 @@
         } else if (!!jsonQuestion.correct_answer){
           question.correct_answer = sparks.mathParser.calculateMeasurement(jsonQuestion.correct_answer);
         }
-        
+
         if (!!question.correct_units){
           question.correct_units = question.correct_units.replace("ohms",html_entity_decode("&#x2126;"));
         }
-        
+
         if (!!jsonQuestion.options){
           question.options = [];
           $.each(jsonQuestion.options, function(i, choice){
@@ -100,25 +100,26 @@
           question.keepOrder = !!jsonQuestion.keepOrder;
           question.not_scored = !!jsonQuestion.not_scored;
         }
-        
+
         question.points = (!!jsonQuestion.points ?  jsonQuestion.points : 1);
         question.image = jsonQuestion.image;
         question.top_tutorial = jsonQuestion.tutorial;
-        
+
         question.category = sparks.tutorialController.setQuestionCategory(question);
-        
+
         question.scoring = jsonQuestion.scoring;
-        
+
         question.beforeScript = jsonQuestion.beforeScript;
-        
+        question.show_read_multimeter_button = jsonQuestion.show_read_multimeter_button;
+
         // for now we put it in both places.
         questionsArray.push(question);
-        
+
         question.prompt = oldPrompt;
-        
+
         question.view = new sparks.QuestionView(question);
       }
-      
+
       if (!jsonQuestion.subquestions){
         addSingleQuestion(jsonQuestion);
       } else {
@@ -129,7 +130,7 @@
       }
       this._shownId++;
     },
-    
+
     gradeQuestion: function(question) {
       if (!!question.not_scored){
         return;
@@ -139,7 +140,7 @@
       } else if (!question.options || !question.options[0].option) {
         if (""+question.answer === ""+question.correct_answer){
           question.points_earned = question.points;
-        } else {  
+        } else {
           question.points_earned = 0;
         }
       } else {
@@ -153,7 +154,7 @@
             } else {
               question.tutorial = question.top_tutorial;
             }
-            
+
           }
           var points = option.points;
           if (points > maxPoints){
@@ -163,30 +164,30 @@
           }
         });
       }
-      
+
       question.answerIsCorrect = (question.points_earned >= question.points);
-      
+
       if (!question.answerIsCorrect && !question.tutorial) {
         question.tutorial = question.top_tutorial;
       }
-      
+
       if (question.answerIsCorrect){
         question.tutorial = null;
       }
-      
+
       if (question.points_earned < 0) {
         question.points_earned = 0;
       }
     },
-    
+
     runQuestionScript: function (script, question){
       var parsedScript = sparks.mathParser.replaceCircuitVariables(script);
       var functionScript;
       eval("var functionScript = function(question, log){" + parsedScript + "}");
       functionScript(question, sparks.logController.currentLog);
     }
-    
+
   };
-  
+
   sparks.questionController = new sparks.QuestionController();
 })();

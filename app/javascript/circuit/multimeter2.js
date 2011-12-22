@@ -131,7 +131,7 @@
           var i = 0,
               source = getBreadBoard().components.source;
           if (source && source.setFrequency && results.acfrequency){
-            i = sparks.circuit.Oscilloscope.prototype._getClosestQucsFrequencyIndex(results.acfrequency, source.frequency);
+            i = sparks.util.getClosestIndex(results.acfrequency, source.frequency, true);
           }
           return i;
         }

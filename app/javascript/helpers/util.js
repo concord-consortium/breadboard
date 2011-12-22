@@ -202,6 +202,31 @@ sparks.util.getKeys = function (json) {
   return keys;
 };
 
+// When we define, say, a logaritmic sweep of frequencies, we calculate them on our end
+// for the function generator, and QUCS generates them on its end after being given a
+// simulation type. These two series may not be exactly the same after accounting for
+// different precisions, so we want to pick the QUCS value that's closest to what we
+// think we're generating. So, if we think we're generating 1002.2 Hz, and QUCS comes back
+// with [1000, 1002.22222, 1003.33333], we want to return the index '1'
+//
+// @array an array of numbers, complex or real
+// @actual the number we want
+// @isComplex whether the numbers in the array are complex or real
+sparks.util.getClosestIndex = function(array, actual, isComplex) {
+  var minDiff = Infinity,
+      index;
+  // this could be shortened as a CS exercise, but it takes 0 ms over an array of
+  // 10,000 so it's not really worth it...
+  for (var i = 0, ii = array.length; i < ii; i++){
+    var diff = isComplex ? Math.abs(array[i].real - actual) : Math.abs(array[i] - actual);
+    if (diff < minDiff){
+      minDiff = diff;
+      index = i;
+    }
+  }
+  return index;
+};
+
 ////// data work
 
 sparks.data;

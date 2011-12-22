@@ -24,10 +24,18 @@
     if ( ('undefined' === typeof this.frequency || this.frequency === null) && props.frequencies ) {
       if ('number' === typeof props.frequencies[0]) {
         this.frequency = props.frequencies[0];
-        this.possibleFrequencies = props.frequencies;
       }
       else if (props.frequencies[0] === 'linear' || props.frequencies[0] === 'logarithmic') {
         this.frequency = props.frequencies[1];
+      }
+    }
+    
+    // store (and generate, if nec.) the set of possible frequencies, so that the view can slide through these
+    if (props.frequencies) {
+      if ('number' === typeof props.frequencies[0]) {
+        this.possibleFrequencies = props.frequencies;
+      }
+      else if (props.frequencies[0] === 'linear' || props.frequencies[0] === 'logarithmic') {
         this.possibleFrequencies = this._calcPossibleFrequencies(props);
       }
     }

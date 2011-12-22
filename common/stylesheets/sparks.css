@@ -380,3 +380,12 @@ border-bottom-style:solid;
 #easyTooltip {
   z-index: 5000;
 }
+
+.passive-input {
+  width: 5em;
+  margin-left: 1em;
+  border: 1px solid black;
+  background-color: #DDD;
+  display: inline-block;
+}
+
