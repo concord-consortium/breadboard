@@ -62,17 +62,16 @@
               question.answer = reading;
             }
           });
-
-          $question.append($readMultimeterButton).append($multimeterReading);
+          $input = $('<div style="display: inline-block">').append($readMultimeterButton).append($multimeterReading);
         }
         else {
           $input = $("<input>").attr("id",question.id+"_input");
           $input.change(function(args){
             self.valueChanged(args);
           });
-
-          $question.append($input);
         }
+
+        $question.append($input);
 
       } else {
 
