@@ -3303,12 +3303,49 @@ sparks.createQuestionsCSV = function(data) {
 
       var self = this;
 
-      if (!question.options){
-        var $input = $("<input>").attr("id",question.id+"_input");
-        $question.append($input);
-        $input.change(function(args){
-          self.valueChanged(args);
-        });
+      if (!question.options) {
+
+        if (question.show_read_multimeter_button) {
+          var $readMultimeterButton = $('<button>Read Multimeter &rarr;</button>'),
+              $multimeterReading = $('<div class="passive-input">&nbsp;</div>'),
+              $input;
+
+          delete question.answer;
+
+          $readMultimeterButton.click( function(e) {
+            var board = getBreadBoard(),
+                reading,
+                amplitude,
+                frequency;
+
+            e.preventDefault();
+
+            sparks.activityController.currentSection.meter.dmm.update();
+            reading = sparks.activityController.currentSection.meter.dmm.absoluteValue;
+
+            $multimeterReading.text(sparks.math.roundToSigDigits(reading, 3));
+
+            if (board.components.source && typeof board.components.source.frequency !== 'undefined') {
+              amplitude = board.components.source.amplitude;
+              frequency = board.components.source.frequency;
+              question.answer = { reading: reading, frequency: frequency, amplitude: amplitude };
+            }
+            else {
+              question.answer = reading;
+            }
+          });
+
+          $question.append($readMultimeterButton).append($multimeterReading);
+        }
+        else {
+          $input = $("<input>").attr("id",question.id+"_input");
+          $input.change(function(args){
+            self.valueChanged(args);
+          });
+
+          $question.append($input);
+        }
+
       } else {
 
         if (!question.keepOrder){
@@ -3386,7 +3423,6 @@ sparks.createQuestionsCSV = function(data) {
   };
 
 })();
-
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
@@ -4638,6 +4674,7 @@ sparks.createQuestionsCSV = function(data) {
         question.scoring = jsonQuestion.scoring;
 
         question.beforeScript = jsonQuestion.beforeScript;
+        question.show_read_multimeter_button = jsonQuestion.show_read_multimeter_button;
 
         questionsArray.push(question);
 

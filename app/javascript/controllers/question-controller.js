@@ -110,6 +110,7 @@
         question.scoring = jsonQuestion.scoring;
 
         question.beforeScript = jsonQuestion.beforeScript;
+        question.show_read_multimeter_button = jsonQuestion.show_read_multimeter_button;
 
         // for now we put it in both places.
         questionsArray.push(question);
