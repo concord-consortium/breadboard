@@ -362,7 +362,69 @@ describe 'Activity Interactions'
      section.pages[0].questions[1].meta.frequency.should.be 2000
      section.pages[0].questions[1].meta.amplitude.should.be 50
     end
+    
+    it 'should record circuit metadata in all subquestions when a user clicks submit'
+    
+      jsonSection = {
+       "title": "woo",
+       "circuit": [
+          {
+            "type": "function generator",
+            "UID": "source",
+            "frequencies": [1000, 2000],
+            "amplitude": 100
+          },
+          {
+            "type": "resistor",
+            "UID": "r1",
+            "connections": "b2,b3"
+          }
+       ],
+       "pages": [
+          {
+            "questions": [
+               {
+                 "prompt": "Question 1",
+                 "subquestions": [
+                  {
+                    "prompt": "Question 1a",
+                    "correct_answer": ""
+                  },
+                  {
+                    "prompt": "Question 1b",
+                    "correct_answer": ""
+                  }
+                 ]
+               }
+             ]
+          }
+       ]
+     };
   
+     var $breadboardDiv = $("<div>").attr('id','breadboard');
+     var $questionsDiv = $("<div>").attr('id','questions_area');
+     $(document.body).append($breadboardDiv);
+     $(document.body).append($questionsDiv);
+  
+     var ac = new sparks.ActivityConstructor(jsonSection);
+     sparks.activity.view.layoutCurrentSection();
+     
+     var components = getBreadBoard().components;
+  
+     $submitButtons = $questionsDiv.find(':button');
+     
+     getBreadBoard().components.source.setFrequency(2000);
+      
+     $($submitButtons[0]).click();
+     
+     var section = sparks.activityController.currentSection;
+     
+     section.pages[0].questions[0].meta.should.not.be null
+     section.pages[0].questions[0].meta.frequency.should.be 2000
+     
+     section.pages[0].questions[1].meta.should.not.be null
+     section.pages[0].questions[1].meta.frequency.should.be 2000
+    end
   end
 
 end
