@@ -52,14 +52,13 @@
 
             $multimeterReading.text(sparks.math.roundToSigDigits(reading, 3));
 
+            question.answer = reading;
+
             // save meta information about source frequency and amplitude if this is an AC reading
             if (board.components.source && typeof board.components.source.frequency !== 'undefined') {
-              amplitude = board.components.source.amplitude;
-              frequency = board.components.source.frequency;
-              question.answer = { reading: reading, frequency: frequency, amplitude: amplitude };
-            }
-            else {
-              question.answer = reading;
+              amplitude = board.components.source.getAmplitude();
+              frequency = board.components.source.getFrequency();
+              question.meta = { frequency: frequency, amplitude: amplitude };
             }
           });
           $input = $('<div style="display: inline-block">').append($readMultimeterButton).append($multimeterReading);

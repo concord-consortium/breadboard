@@ -72,7 +72,7 @@
         $form.find('.submit').unbind('click');          // remove any previously-added listeners
         $form.find('.submit').click(function (event) {
           event.preventDefault();
-          self.submitButtonClicked(event);
+          self.submitButtonClicked(question);
         });
         
         self.questionViews[question.id] = $form;
@@ -203,9 +203,18 @@
       this.$reportDiv.append($buttonDiv);      
     },
     
-    submitButtonClicked: function (event) {
+    submitButtonClicked: function (question) {
+      // save meta info if it hasn't happened already
+      var board = getBreadBoard();
+      if (board && board.components.source && typeof board.components.source.frequency !== 'undefined') {
+        // save meta information about source frequency and amplitude if this is an AC reading
+        var amplitude = board.components.source.getAmplitude(),
+            frequency = board.components.source.getFrequency();
+        question.meta = { frequency: frequency, amplitude: amplitude };
+      }
+
       sparks.pageController.completedQuestion(this.page);
     }
-    
+
   };
 })();

@@ -29,7 +29,7 @@ describe 'Using oscope with mock Flash connection'
       receiveEvent('disconnect', 'probe|probe_red', 0);
     end
     
-    it "should call update when a red probe is added or removed"
+    it "should call update when an oscope probe is added or removed"
      
       // we add a 100 ohm resistor
       breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
@@ -55,7 +55,7 @@ describe 'Using oscope with mock Flash connection'
       
     end
     
-    it "should not call update when a black probe is added or removed"
+    it "should not call update when a black or red probe is added or removed"
      
       // we add a 100 ohm resistor
       breadModel('insertComponent', 'resistor', {"connections": 'a1,a2', "colors": 'brown,black,brown,gold'});
@@ -72,6 +72,10 @@ describe 'Using oscope with mock Flash connection'
       updateCalled.should.be false
       
       receiveEvent('connect', 'probe|probe_black|a2', 0);
+      
+      updateCalled.should.be false
+      
+      receiveEvent('connect', 'probe|probe_red|a1', 0);
       
       updateCalled.should.be false
       

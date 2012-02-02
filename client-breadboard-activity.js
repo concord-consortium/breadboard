@@ -3135,7 +3135,7 @@ sparks.createQuestionsCSV = function(data) {
         $form.find('.submit').unbind('click');          // remove any previously-added listeners
         $form.find('.submit').click(function (event) {
           event.preventDefault();
-          self.submitButtonClicked(event);
+          self.submitButtonClicked(question);
         });
 
         self.questionViews[question.id] = $form;
@@ -3265,7 +3265,16 @@ sparks.createQuestionsCSV = function(data) {
       this.$reportDiv.append($buttonDiv);
     },
 
-    submitButtonClicked: function (event) {
+    submitButtonClicked: function (question) {
+      console.log("click!")
+      var board = getBreadBoard();
+      if (board && board.components.source && typeof board.components.source.frequency !== 'undefined') {
+        console.log("amp = "+board.components.source.getAmplitude());
+        amplitude = board.components.source.getAmplitude();
+        frequency = board.components.source.getFrequency();
+        question.meta = { frequency: frequency, amplitude: amplitude };
+      }
+
       sparks.pageController.completedQuestion(this.page);
     }
 
@@ -3325,13 +3334,12 @@ sparks.createQuestionsCSV = function(data) {
 
             $multimeterReading.text(sparks.math.roundToSigDigits(reading, 3));
 
+            question.answer = reading
+
             if (board.components.source && typeof board.components.source.frequency !== 'undefined') {
-              amplitude = board.components.source.amplitude;
-              frequency = board.components.source.frequency;
-              question.answer = { reading: reading, frequency: frequency, amplitude: amplitude };
-            }
-            else {
-              question.answer = reading;
+              amplitude = board.components.source.getAmplitude();
+              frequency = board.components.source.getFrequency();
+              question.meta = { frequency: frequency, amplitude: amplitude };
             }
           });
           $input = $('<div style="display: inline-block">').append($readMultimeterButton).append($multimeterReading);
@@ -8386,7 +8394,7 @@ sparks.createQuestionsCSV = function(data) {
       throw new Error("FunctionGenerator: initialFrequency is undefined and an initial frequency could not be inferred from frequency range specification.");
     }
 
-    amplitude = props.amplitude;
+    var amplitude = props.amplitude;
     if ('number' === typeof amplitude){
       this.amplitude = amplitude;
     } else if (amplitude.length && amplitude.length >= 2) {
@@ -8414,6 +8422,14 @@ sparks.createQuestionsCSV = function(data) {
       if (sparks.activityController.currentSection.meter) {
         sparks.activityController.currentSection.meter.update();
       }
+    },
+
+    getFrequency: function() {
+      return this.frequency;
+    },
+
+    getAmplitude: function() {
+      return this.amplitude * this.amplitudeScaleFactor;
     },
 
     getPossibleFrequencies: function() {

@@ -292,11 +292,75 @@ describe 'Activity Interactions'
      
      bothResistorsAreTheSame.should.not.be true
      
-    var newres1 = components.r1.resistance;
-    var newres2 = components.r2.resistance;
-      
+     var newres1 = components.r1.resistance;
+     var newres2 = components.r2.resistance;
      
-      
+    end
+  
+  end
+  
+  
+  describe 'Circuits and Questions'
+    
+    it 'should record circuit metadata when a user clicks submit'
+    
+      jsonSection = {
+       "title": "woo",
+       "circuit": [
+          {
+            "type": "function generator",
+            "UID": "source",
+            "frequencies": [1000, 2000],
+            "amplitude": 100
+          },
+          {
+            "type": "resistor",
+            "UID": "r1",
+            "connections": "b2,b3"
+          }
+       ],
+       "pages": [
+          {
+            "questions": [
+               {
+                 "prompt": "Question 1",
+                 "correct_answer": ""
+               },
+               {
+                  "prompt": "Question 2",
+                  "correct_answer": ""
+                }
+             ]
+          }
+       ]
+     };
+  
+     var $breadboardDiv = $("<div>").attr('id','breadboard');
+     var $questionsDiv = $("<div>").attr('id','questions_area');
+     $(document.body).append($breadboardDiv);
+     $(document.body).append($questionsDiv);
+  
+     var ac = new sparks.ActivityConstructor(jsonSection);
+     sparks.activity.view.layoutCurrentSection();
+     
+     var components = getBreadBoard().components;
+  
+     $submitButtons = $questionsDiv.find(':button');
+     $($submitButtons[0]).click();
+     
+     getBreadBoard().components.source.setFrequency(2000);
+     getBreadBoard().components.source.setAmplitude(50);
+     
+     $($submitButtons[1]).click();
+     
+     var section = sparks.activityController.currentSection;
+     
+     section.pages[0].questions[0].meta.should.not.be null
+     section.pages[0].questions[0].meta.frequency.should.be 1000
+     section.pages[0].questions[0].meta.amplitude.should.be 100
+     
+     section.pages[0].questions[1].meta.frequency.should.be 2000
+     section.pages[0].questions[1].meta.amplitude.should.be 50
     end
   
   end
