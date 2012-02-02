@@ -209,8 +209,16 @@
       if (board && board.components.source && typeof board.components.source.frequency !== 'undefined') {
         // save meta information about source frequency and amplitude if this is an AC reading
         var amplitude = board.components.source.getAmplitude(),
-            frequency = board.components.source.getFrequency();
-        question.meta = { frequency: frequency, amplitude: amplitude };
+            frequency = board.components.source.getFrequency(),
+            meta = { frequency: frequency, amplitude: amplitude };
+        if (question.isSubQuestion) {
+          var questions = sparks.pageController.getSisterSubquestionsOf(sparks.sectionController.currentPage, question);
+          $.each(questions, function(i, subquestion){
+            subquestion.meta = meta;
+          });
+        } else {
+          question.meta = meta;
+        }
       }
 
       sparks.pageController.completedQuestion(this.page);

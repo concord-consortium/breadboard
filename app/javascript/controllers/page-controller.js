@@ -70,6 +70,18 @@
       sparks.reportController.saveData();
       var $report = sparks.report.view.getSessionReportView(sessionReport);
       page.view.showReport($report);
+    },
+    
+    getSisterSubquestionsOf: function(page, question){
+      var subquestionId = question.subquestionId,
+          questions = [];
+      
+      for (var i = 0; i < page.questions.length; i++){
+        if (page.questions[i].subquestionId === subquestionId) {
+          questions.push(page.questions[i]);
+        }
+      }
+      return questions;
     }
     
   };

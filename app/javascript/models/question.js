@@ -40,6 +40,8 @@
     
     this.beforeScript = null;
     
+    this.meta = null;       // storage for extra info, like circuit state
+    
     this.view = null;
   };
   

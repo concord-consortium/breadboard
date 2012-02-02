@@ -2703,6 +2703,8 @@ sparks.createQuestionsCSV = function(data) {
 
     this.beforeScript = null;
 
+    this.meta = null;       // storage for extra info, like circuit state
+
     this.view = null;
   };
 
@@ -3266,13 +3268,19 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     submitButtonClicked: function (question) {
-      console.log("click!")
       var board = getBreadBoard();
       if (board && board.components.source && typeof board.components.source.frequency !== 'undefined') {
-        console.log("amp = "+board.components.source.getAmplitude());
-        amplitude = board.components.source.getAmplitude();
-        frequency = board.components.source.getFrequency();
-        question.meta = { frequency: frequency, amplitude: amplitude };
+        var amplitude = board.components.source.getAmplitude(),
+            frequency = board.components.source.getFrequency(),
+            meta = { frequency: frequency, amplitude: amplitude };
+        if (question.isSubQuestion) {
+          var questions = sparks.pageController.getSisterSubquestionsOf(sparks.sectionController.currentPage, question);
+          $.each(questions, function(i, subquestion){
+            subquestion.meta = meta;
+          });
+        } else {
+          question.meta = meta;
+        }
       }
 
       sparks.pageController.completedQuestion(this.page);
@@ -3334,7 +3342,7 @@ sparks.createQuestionsCSV = function(data) {
 
             $multimeterReading.text(sparks.math.roundToSigDigits(reading, 3));
 
-            question.answer = reading
+            question.answer = reading;
 
             if (board.components.source && typeof board.components.source.frequency !== 'undefined') {
               amplitude = board.components.source.getAmplitude();
@@ -4832,6 +4840,18 @@ sparks.createQuestionsCSV = function(data) {
       sparks.reportController.saveData();
       var $report = sparks.report.view.getSessionReportView(sessionReport);
       page.view.showReport($report);
+    },
+
+    getSisterSubquestionsOf: function(page, question){
+      var subquestionId = question.subquestionId,
+          questions = [];
+
+      for (var i = 0; i < page.questions.length; i++){
+        if (page.questions[i].subquestionId === subquestionId) {
+          questions.push(page.questions[i]);
+        }
+      }
+      return questions;
     }
 
   };
