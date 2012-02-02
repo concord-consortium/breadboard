@@ -65,7 +65,10 @@
         }
         else {
           $input = $("<input>").attr("id",question.id+"_input");
-          $input.change(function(args){
+          $input.keyup(function(args){
+            self.valueChanged(args);
+          });
+          $input.blur(function(args){
             self.valueChanged(args);
           });
         }
@@ -96,7 +99,7 @@
             $question.append($input);
             $question.append("<span> " + answer_option + "</span>");
 
-            $input.change(function(args){
+            $input.blur(function(args){
               self.valueChanged(args);
             });
           });
@@ -115,7 +118,7 @@
             $select.append($("<option>").attr("value", answer_option).html(answer_option).attr("defaultSelected",false));
           });
           $question.append($select, "   ");
-          $select.change(function(args){
+          $select.blur(function(args){
             self.valueChanged(args);
           });
         }
