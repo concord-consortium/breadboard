@@ -10,20 +10,26 @@
 
     var circuit = sparks.circuit;
     var flash = sparks.flash;
-    
+
     /*
      * Digital Multimeter for breadboard activities
-     * 
+     *
      */
     circuit.Multimeter2 = function () {
         circuit.Multimeter2.uber.init.apply(this);
-        this.dialPosition = 'dcv_20';
-        this.powerOn = true;
-        this.update();
+        this.reset();
     };
 
     sparks.extend(circuit.Multimeter2, circuit.MultimeterBase, {
-            
+
+        reset: function() {
+          this.dialPosition = 'dcv_20';
+          this.powerOn = true;
+          this.redProbeConnection = null;
+          this.blackProbeConnection = null;
+          this.update();
+        },
+
         update: function () {
             if (this.redProbeConnection && this.blackProbeConnection) {
                 var measurement = null;
@@ -36,21 +42,21 @@
                 } else if (this.dialPosition.indexOf('acv_') > -1){
                   measurement = "ac_voltage";
                 }
-                
+
                 if (!!measurement){
                   var resultsBlob = this.makeMeasurement(measurement),
                       meterKey = (measurement === 'voltage' || measurement === 'ac_voltage') ? 'v' : 'i';
-                  
+
                   if (!!meterKey && !!resultsBlob.meter[meterKey]){
-                    
+
                     // get the index of the data we want from the returned QUCS array
                     var index = this._getResultsIndex(resultsBlob);
-                    
+
                     var result = resultsBlob.meter[meterKey][index];
-                    
+
                     // result is a complex number. for the DMM, we only care about the magnitude
                     result = result.magnitude;
-                    
+
                     // process the absolute value
                     result = Math.abs(result);
 
@@ -74,9 +80,9 @@
                       result = result / Math.sqrt(2);         // RMS voltage or RMS cureent
                     }
                     result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
-                      
+
                     this.absoluteValue = result;
-                  
+
                     if (measurement === "current"){
                       if (this.absoluteValue > 0.44){
                         this.blowFuse();
@@ -90,24 +96,24 @@
             else {
                 this.absoluteValue = 0;
             }
-            
+
             this.updateDisplay();
-            
+
             if (this.redProbeConnection && this.blackProbeConnection) {
               sparks.logController.addEvent(sparks.LogEvent.DMM_MEASUREMENT, {
-                "measurement": measurement, 
+                "measurement": measurement,
                 "dial_position": this.dialPosition,
                 "red_probe": this.redProbeConnection,
                 "black_probe": this.blackProbeConnection,
                 "result": this.displayText});
             }
         },
-        
+
         makeMeasurement: function(measurementType) {
             var measurement = breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection);
             return measurement;
         },
-        
+
         blowFuse: function() {
           sparks.flash.sendCommand('mouse_up');
           apMessageBox.error({
@@ -122,11 +128,11 @@
         },
 
         allConnected: function () {
-            return this.redProbeConnection !== null && 
+            return this.redProbeConnection !== null &&
                 this.blackProbeConnection !== null &&
                 this.powerOn;
         },
-        
+
         _getResultsIndex: function (results) {
           var i = 0,
               source = getBreadBoard().components.source;

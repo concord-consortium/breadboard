@@ -54,11 +54,11 @@ describe 'Page Reports'
 
         var $input = $questionsDiv.find('input');
         $input.val("test");
-        $input.change();
+        $input.blur();
         
         var $select = $questionsDiv.find('select');
         $select.val("200");
-        $select.change();
+        $select.blur();
         
         section.pages[0].questions[0].answer.should.be "test"
         section.pages[0].questions[1].answer.should.be "200"
@@ -122,11 +122,11 @@ describe 'Page Reports'
 
         var $input = $questionsDiv.find('input');
         $input.val("100");                          // sets val of both open-response q's
-        $input.change();
+        $input.blur();
         
         var $select = $questionsDiv.find('select');
         $select.val("200");                         // sets val of both selects
-        $select.change();
+        $select.blur();
         
         var section = sparks.activityController.currentSection;
         $.each(section.pages[0].questions, function(i, question){
@@ -191,7 +191,7 @@ describe 'Page Reports'
           var $choice = $(choice);
           if ($choice.attr('value') === "200" || $choice.attr('value') === "300"){
             $choice.attr('selected', true);
-            $choice.change();
+            $choice.blur();
           }
         });
         
@@ -264,11 +264,11 @@ describe 'Page Reports'
 
         var $input = $questionsDiv.find('input');
         $input.val("100");                          // sets val of both open-response q's
-        $input.change();
+        $input.blur();
         
         var $select = $questionsDiv.find('select');
         $select.val("100");                         // sets val of both selects
-        $select.change();
+        $select.blur();
         
         var section = sparks.activityController.currentSection;
         var qc = sparks.questionController;
@@ -349,11 +349,11 @@ describe 'Page Reports'
 
       var $input = $questionsDiv.find('input');
       $input.val("100");                          // sets val of both open-response q's
-      $input.change();
+      $input.blur();
       
       var $select = $questionsDiv.find('select');
       $select.val("200");                         // sets value of both selects
-      $select.change();
+      $select.blur();
       
       var section = sparks.activityController.currentSection;
       sparks.reportController.addNewSessionReport(section.pages[0]);
@@ -386,7 +386,7 @@ describe 'Page Reports'
 
       var $input = $questionsDiv.find('input');
       $($input[0]).val("100");                          // sets q0 to correct answer
-      $($input[0]).change();
+      $($input[0]).blur();
       
       var section = sparks.activityController.currentSection;
       var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
@@ -413,7 +413,7 @@ describe 'Page Reports'
 
       var $input = $questionsDiv.find('input');
       $($input[0]).val("100");                          // sets q0 to correct answer
-      $($input[0]).change();
+      $($input[0]).blur();
       
       var section = sparks.activityController.currentSection;
       
@@ -424,16 +424,16 @@ describe 'Page Reports'
       sessionReport.score.should.be 1
       
       $($input[1]).val("100");                          // sets q1 to correct answer
-      $($input[1]).change();
+      $($input[1]).blur();
     
       var sessionReport2 = sparks.reportController.addNewSessionReport(page);
       
       sessionReport2.score.should.be 2
       
       $($input[0]).val("0");                          // sets q0 and q1 back to incorrect answer
-      $($input[0]).change();
+      $($input[0]).blur();
       $($input[1]).val("0");
-      $($input[1]).change();
+      $($input[1]).blur();
     
       var sessionReport3 = sparks.reportController.addNewSessionReport(page);
       
@@ -471,14 +471,14 @@ describe 'Page Reports'
       
       var $input = $questionsDiv.find('input');
       $($input[0]).val("100");                          // sets q0 to correct answer
-      $($input[0]).change();
+      $($input[0]).blur();
       $($input[1]).val("100");                          // sets q1 to correct answer
-      $($input[1]).change();
+      $($input[1]).blur();
       
       sparks.reportController.addNewSessionReport(page);
       
       $($input[1]).val("0");                          // sets q1 to incorrect answer (second try is worse)
-      $($input[1]).change();
+      $($input[1]).blur();
       sparks.reportController.addNewSessionReport(page);
       
       sparks.sectionController.nextPage();
@@ -486,7 +486,7 @@ describe 'Page Reports'
       
       var $input = $questionsDiv.find('input');
       $($input[2]).val("100");                          // sets q2 of page 2 to correct answer
-      $($input[2]).change();
+      $($input[2]).blur();
       sparks.reportController.addNewSessionReport(page);
       
       var totalScore = sparks.reportController.getTotalScoreForSection(sparks.activityController.currentSection);
@@ -527,7 +527,7 @@ describe 'Page Reports'
 
       var $input = $questionsDiv.find('input');
       $input.val("100");                          // sets val of both open-response q's
-      $input.change();
+      $input.blur();
       
       var section = sparks.activityController.currentSection;
       var report = sparks.reportController.addNewSessionReport(section.pages[0]);
@@ -606,7 +606,7 @@ describe 'Page Reports'
 
       var $input = $questionsDiv.find('input');
       $input.val("100");                          // get one question correct
-      $input.change();
+      $input.blur();
       
       var section = sparks.activityController.currentSection;
       var report = sparks.reportController.addNewSessionReport(section.pages[0]);
@@ -619,7 +619,7 @@ describe 'Page Reports'
       // get both q's correct
       sparks.logController.startNewSession();
       $($input[1]).val("200");
-      $($input[1]).change();
+      $($input[1]).blur();
       
       sparks.logController.endSession();
       var report = sparks.reportController.addNewSessionReport(section.pages[0]);
@@ -695,11 +695,11 @@ describe 'Page Reports'
 
       var $input = $questionsDiv.find('input');
       $input.val("100");                          // sets val of both open-response q's
-      $input.change();
+      $input.blur();
       
       var $select = $questionsDiv.find('select');
       $select.val("200");                         // sets val of both selects
-      $select.change();
+      $select.blur();
       
       var section = sparks.activityController.currentSection;
       var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
@@ -779,7 +779,7 @@ describe 'Page Reports'
 
       var $input = $questionsDiv.find('input');
       $input.val("100");                          // sets val of both open-response q's
-      $input.change();
+      $input.blur();
       
       var section = sparks.activityController.currentSection;
       
@@ -788,11 +788,11 @@ describe 'Page Reports'
       var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
       // get answer wrong
       $input.val("0");                          // sets val of both open-response q's
-      $input.change();
+      $input.blur();
       var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
       // and do it right once more
       $input.val("100");                          // sets val of both open-response q's
-      $input.change();
+      $input.blur();
       var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
 
       var $report = sparks.report.view.getSessionReportView(sessionReport);
@@ -834,7 +834,7 @@ describe 'Page Reports'
 
       var $input = $questionsDiv.find('input');
       $input.val("100");
-      $input.change();
+      $input.blur();
       
       var section = sparks.activityController.currentSection;
       var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
@@ -875,7 +875,7 @@ describe 'Page Reports'
       
       // pretend we got below threshold
       $input.val("0");
-      $input.change();
+      $input.blur();
       sparks.logController.startNewSession();
       sparks.logController.endSession();
       sparks.logController.currentLog.endTime = sparks.logController.currentLog.startTime + 20000
@@ -918,14 +918,14 @@ describe 'Page Reports'
 
       var $input = $questionsDiv.find('input');
       $($input[0]).val("100");                          // sets q0 to correct answer
-      $($input[0]).change();
+      $($input[0]).blur();
       $($input[1]).val("100");                          // sets q1 to correct answer
-      $($input[1]).change();
+      $($input[1]).blur();
       
       sparks.reportController.addNewSessionReport(page);
       
       $($input[1]).val("0");                          // sets q1 to incorrect answer (second try is worse)
-      $($input[1]).change();
+      $($input[1]).blur();
       sparks.reportController.addNewSessionReport(page);
       
       sparks.sectionController.nextPage();
@@ -933,7 +933,7 @@ describe 'Page Reports'
       
       var $input = $questionsDiv.find('input');
       $($input[2]).val("100");                          // sets q2 of page 2 to correct answer
-      $($input[2]).change();
+      $($input[2]).blur();
       sparks.reportController.addNewSessionReport(page);
       
       var $report = sparks.report.view.getActivityReportView();
@@ -1017,7 +1017,7 @@ describe 'Page Reports'
 
       var $select = $questionsDiv.find('select');
       $select.val("200");
-      $select.change();
+      $select.blur();
     
       var section = sparks.activityController.currentSection;
       var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
@@ -1076,7 +1076,7 @@ describe 'Page Reports'
 
       var $select = $questionsDiv.find('select');
       $select.val("200");
-      $select.change();
+      $select.blur();
     
       var section = sparks.activityController.currentSection;
       var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);

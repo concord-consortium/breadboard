@@ -53,6 +53,8 @@
 
         this.showDMM(section.show_multimeter);
         this.showOScope(section.show_oscilloscope);
+
+        section.meter.reset();
       }
 
       this.layoutPage();

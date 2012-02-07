@@ -2601,6 +2601,15 @@ sparks.createQuestionsCSV = function(data) {
         if (this.dmm) {
           this.dmm.update();
         }
+      },
+
+      reset: function() {
+        if (this.oscope && this.oscope.reset) {
+          this.oscope.reset();
+        }
+        if (this.dmm && this.dmm.reset) {
+          this.dmm.reset();
+        }
       }
     },
 
@@ -2945,6 +2954,8 @@ sparks.createQuestionsCSV = function(data) {
 
         this.showDMM(section.show_multimeter);
         this.showOScope(section.show_oscilloscope);
+
+        section.meter.reset();
       }
 
       this.layoutPage();
@@ -3354,7 +3365,10 @@ sparks.createQuestionsCSV = function(data) {
         }
         else {
           $input = $("<input>").attr("id",question.id+"_input");
-          $input.change(function(args){
+          $input.keyup(function(args){
+            self.valueChanged(args);
+          });
+          $input.blur(function(args){
             self.valueChanged(args);
           });
         }
@@ -3383,7 +3397,7 @@ sparks.createQuestionsCSV = function(data) {
             $question.append($input);
             $question.append("<span> " + answer_option + "</span>");
 
-            $input.change(function(args){
+            $input.blur(function(args){
               self.valueChanged(args);
             });
           });
@@ -3402,7 +3416,7 @@ sparks.createQuestionsCSV = function(data) {
             $select.append($("<option>").attr("value", answer_option).html(answer_option).attr("defaultSelected",false));
           });
           $question.append($select, "   ");
-          $select.change(function(args){
+          $select.blur(function(args){
             self.valueChanged(args);
           });
         }
@@ -7572,12 +7586,18 @@ sparks.createQuestionsCSV = function(data) {
      */
     circuit.Multimeter2 = function () {
         circuit.Multimeter2.uber.init.apply(this);
-        this.dialPosition = 'dcv_20';
-        this.powerOn = true;
-        this.update();
+        this.reset();
     };
 
     sparks.extend(circuit.Multimeter2, circuit.MultimeterBase, {
+
+        reset: function() {
+          this.dialPosition = 'dcv_20';
+          this.powerOn = true;
+          this.redProbeConnection = null;
+          this.blackProbeConnection = null;
+          this.update();
+        },
 
         update: function () {
             if (this.redProbeConnection && this.blackProbeConnection) {

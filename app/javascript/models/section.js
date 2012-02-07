@@ -52,6 +52,15 @@
         if (this.dmm) {
           this.dmm.update();
         }
+      },
+
+      reset: function() {
+        if (this.oscope && this.oscope.reset) {
+          this.oscope.reset();
+        }
+        if (this.dmm && this.dmm.reset) {
+          this.dmm.reset();
+        }
       }
     },
     
