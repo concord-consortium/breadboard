@@ -2601,6 +2601,15 @@ sparks.createQuestionsCSV = function(data) {
         if (this.dmm) {
           this.dmm.update();
         }
+      },
+
+      reset: function() {
+        if (this.oscope && this.oscope.reset) {
+          this.oscope.reset();
+        }
+        if (this.dmm && this.dmm.reset) {
+          this.dmm.reset();
+        }
       }
     },
 
@@ -2945,6 +2954,8 @@ sparks.createQuestionsCSV = function(data) {
 
         this.showDMM(section.show_multimeter);
         this.showOScope(section.show_oscilloscope);
+
+        section.meter.reset();
       }
 
       this.layoutPage();
@@ -7575,12 +7586,18 @@ sparks.createQuestionsCSV = function(data) {
      */
     circuit.Multimeter2 = function () {
         circuit.Multimeter2.uber.init.apply(this);
-        this.dialPosition = 'dcv_20';
-        this.powerOn = true;
-        this.update();
+        this.reset();
     };
 
     sparks.extend(circuit.Multimeter2, circuit.MultimeterBase, {
+
+        reset: function() {
+          this.dialPosition = 'dcv_20';
+          this.powerOn = true;
+          this.redProbeConnection = null;
+          this.blackProbeConnection = null;
+          this.update();
+        },
 
         update: function () {
             if (this.redProbeConnection && this.blackProbeConnection) {
