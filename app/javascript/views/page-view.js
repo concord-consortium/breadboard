@@ -114,7 +114,8 @@
     
     showReport: function($report, finalReport){
       
-      if (!!finalReport){
+      if (finalReport){
+          sparks.activity.view.hidePopups();
           $('body').scrollTop(0);
       }
       
