@@ -2962,6 +2962,7 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     layoutPage: function() {
+      this.hidePopups();
       if (!!sparks.sectionController.currentPage){
         this.divs.$questionsDiv.html('');
         var $page = sparks.sectionController.currentPage.view.getView();
@@ -3024,6 +3025,10 @@ sparks.createQuestionsCSV = function(data) {
      showDMM: function(visible) {
        sparks.flash.sendCommand('set_multimeter_visibility',visible.toString());
        sparks.flash.sendCommand('set_probe_visibility',visible.toString());
+     },
+
+     hidePopups: function() {
+       $('.ui-dialog').remove();
      },
 
      setEmbeddingTargets: function(targets) {
@@ -3190,7 +3195,8 @@ sparks.createQuestionsCSV = function(data) {
 
     showReport: function($report, finalReport){
 
-      if (!!finalReport){
+      if (finalReport){
+          sparks.activity.view.hidePopups();
           $('body').scrollTop(0);
       }
 
@@ -3843,6 +3849,11 @@ sparks.createQuestionsCSV = function(data) {
         });
       }
 
+      var self = this;
+      this.popup.bind('remove', function() {
+        self.popup = null;
+      });
+
       this.popup.dialog('open').dialog("widget").position({
          my: 'left top',
          at: 'center top',
@@ -4240,6 +4251,12 @@ sparks.createQuestionsCSV = function(data) {
           autoOpen: false
         });
       }
+
+      var self = this;
+      this.popup.bind('remove', function() {
+        $('#fg_value').html('');
+        self.popup = null;
+      });
 
       this.popup.dialog('open').dialog("widget").position({
          my: 'left top',

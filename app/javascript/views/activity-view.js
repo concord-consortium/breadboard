@@ -61,6 +61,7 @@
     },
 
     layoutPage: function() {
+      this.hidePopups();
       if (!!sparks.sectionController.currentPage){
         this.divs.$questionsDiv.html('');
         var $page = sparks.sectionController.currentPage.view.getView();
@@ -123,6 +124,10 @@
      showDMM: function(visible) {
        sparks.flash.sendCommand('set_multimeter_visibility',visible.toString());
        sparks.flash.sendCommand('set_probe_visibility',visible.toString());
+     },
+     
+     hidePopups: function() {
+       $('.ui-dialog').remove();
      },
 
      // not usually necessary. Justs for tests?

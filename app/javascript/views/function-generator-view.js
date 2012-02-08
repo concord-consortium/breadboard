@@ -51,6 +51,12 @@
         });
       }
       
+      var self = this;
+      this.popup.bind('remove', function() {
+        $('#fg_value').html('');
+        self.popup = null;
+      });
+      
       this.popup.dialog('open').dialog("widget").position({
          my: 'left top',
          at: 'left top',
