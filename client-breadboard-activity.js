@@ -7682,7 +7682,7 @@ sparks.createQuestionsCSV = function(data) {
           	title: "POW!",
           	message: "<b>You just blew the fuse in your multimeter!</b><br><br> Remember not to pass too much current through it."+
           	" We've replaced your fuse for you, but you lost some time.",
-          	errorImage: "../lib/error-32x32.png",
+          	errorImage: "lib/error-32x32.png",
           	width: 400,
           	height: 300
           });
