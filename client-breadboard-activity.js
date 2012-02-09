@@ -3826,7 +3826,7 @@ sparks.createQuestionsCSV = function(data) {
       this.drawGrid(this.miniRaphaelCanvas, conf);
 
       $overlayDiv = $('<div id="oscope_mini_overlay"></div>').appendTo(this.$view);
-      var self = this;
+
       $overlayDiv.click(function(){
         self.openPopup();
       });
@@ -4028,28 +4028,28 @@ sparks.createQuestionsCSV = function(data) {
       }).click(minusCallback).appendTo($el);
     },
 
-    renderSignal: function (channel, forced) {
+    renderSignal: function (channel, forced, phaseOffset) {
       var s = this.model.getSignal(channel),
           t = this.traces[channel],
           horizontalScale,
-          verticalScale;
+          verticalScale,
+          phaseOffset = phaseOffset || 0;
 
       if (s) {
         horizontalScale = this.model.getHorizontalScale();
         verticalScale   = this.model.getVerticalScale(channel);
 
-        if (!t || forced || (t.amplitude !== s.amplitude || t.frequency !== s.frequency || t.phase !== s.phase ||
+        if (!t || forced || (t.amplitude !== s.amplitude || t.frequency !== s.frequency || t.phase !== (s.phase + phaseOffset) ||
                    t.horizontalScale !== horizontalScale || t.verticalScale !== verticalScale)) {
-
           this.removeTrace(channel);
           this.traces[channel] = {
             amplitude:          s.amplitude,
             frequency:          s.frequency,
-            phase:              s.phase,
+            phase:              (s.phase + phaseOffset),
             horizontalScale:    horizontalScale,
             verticalScale:      verticalScale,
-            raphaelObjectMini:  this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, s, channel, horizontalScale, verticalScale),
-            raphaelObject:      this.drawTrace(this.raphaelCanvas, this.largeViewConfig, s, channel, horizontalScale, verticalScale)
+            raphaelObjectMini:  this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset),
+            raphaelObject:      this.drawTrace(this.raphaelCanvas, this.largeViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset)
           };
         }
 
@@ -4153,7 +4153,7 @@ sparks.createQuestionsCSV = function(data) {
       return r.path(path.join(' ')).attr({stroke: this.tickColor, opacity: 0.5});
     },
 
-    drawTrace: function (r, conf, signal, channel, horizontalScale, verticalScale) {
+    drawTrace: function (r, conf, signal, channel, horizontalScale, verticalScale, phaseOffset) {
       if (!r) return;
       var path         = [],
           height       = conf.height,
@@ -4181,7 +4181,7 @@ sparks.createQuestionsCSV = function(data) {
         path.push(x ===  0 ? 'M' : 'L');
         path.push(x);
 
-        path.push(clip(h - signal.amplitude * pixelsPerVolt * Math.sin((x - overscan - triggerStart) * radiansPerPixel + signal.phase)));
+        path.push(clip(h - signal.amplitude * pixelsPerVolt * Math.sin((x - overscan - triggerStart) * radiansPerPixel + (signal.phase + phaseOffset))));
       }
       path = path.join(' ');
 
