@@ -4223,6 +4223,7 @@ sparks.createQuestionsCSV = function(data) {
     getView: function () {
       this.$view = $('<div>');
 
+      $("#fg_value").remove();
       $freq_value = $("<span id='fg_value'></span").appendTo(this.$view);
       this.freqValueViews.push($freq_value);
 
@@ -4254,7 +4255,6 @@ sparks.createQuestionsCSV = function(data) {
 
       var self = this;
       this.popup.bind('remove', function() {
-        $('#fg_value').html('');
         self.popup = null;
       });
 
