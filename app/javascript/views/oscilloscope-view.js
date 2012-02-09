@@ -153,6 +153,24 @@
         backgroundColor: this.traceBgColor
       }).appendTo(this.$displayArea);
 
+      // add drag handler to canvasHolder
+      $canvasHolder
+        .drag(function( ev, dd ){
+          var viewWidth   = this.getBoundingClientRect().width,
+              perc        = dd.deltaX / viewWidth,
+              phaseOffset = (-2*Math.PI) * perc;
+
+          self.renderSignal(1, false, phaseOffset);
+          self.renderSignal(2, false, phaseOffset);
+        })
+        .drag("dragend", function (ev, dd) {
+          var viewWidth   = this.getBoundingClientRect().width,
+              perc        = dd.deltaX / viewWidth,
+              phaseOffset = (-2*Math.PI) * perc;
+
+          self.previousPhaseOffset += phaseOffset;
+        });
+
       this.raphaelCanvas = Raphael($canvasHolder[0], conf.width, conf.height);
 
       this.drawGrid(this.raphaelCanvas, conf);
@@ -285,12 +303,14 @@
       }).click(minusCallback).appendTo($el);
     },
 
-    renderSignal: function (channel, forced, phaseOffset) {
+    previousPhaseOffset: 0,
+
+    renderSignal: function (channel, forced, _phaseOffset) {
       var s = this.model.getSignal(channel),
           t = this.traces[channel],
           horizontalScale,
           verticalScale,
-          phaseOffset = phaseOffset || 0;
+          phaseOffset = (_phaseOffset || 0) + this.previousPhaseOffset;
 
       if (s) {
         horizontalScale = this.model.getHorizontalScale();
