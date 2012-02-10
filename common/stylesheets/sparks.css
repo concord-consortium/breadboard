@@ -248,6 +248,10 @@ border-bottom-style:solid;
   margin: 10px 0 10px 0;
 }
 
+.raphael-holder {
+  cursor: url(http://www.google.com/intl/en_ALL/mapfiles/openhand.cur), move;
+}
+
 #oscope .display-area p {
   font-family: 'Anonymous Pro', sans-serif;
   font-size: 16px;

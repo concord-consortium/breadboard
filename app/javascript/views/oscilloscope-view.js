@@ -79,15 +79,15 @@
       this.miniRaphaelCanvas = Raphael($canvasHolder[0], conf.width, conf.height);
 
       this.drawGrid(this.miniRaphaelCanvas, conf);
-      
+
       $overlayDiv = $('<div id="oscope_mini_overlay"></div>').appendTo(this.$view);
-      var self = this;
+
       $overlayDiv.click(function(){
         self.openPopup();
       });
       return this.$view;
     },
-    
+
     openPopup: function () {
       if (!this.popup) {
         $view = this.getLargeView();
@@ -103,12 +103,12 @@
           autoOpen: false
         });
       }
-      
+
       var self = this;
       this.popup.bind('remove', function() {
         self.popup = null;
       });
-      
+
       this.popup.dialog('open').dialog("widget").position({
          my: 'left top',
          at: 'center top',
@@ -152,6 +152,24 @@
         height:   conf.height,
         backgroundColor: this.traceBgColor
       }).appendTo(this.$displayArea);
+
+      // add drag handler to canvasHolder
+      $canvasHolder
+        .drag(function( ev, dd ){
+          var viewWidth   = this.getBoundingClientRect().width,
+              perc        = dd.deltaX / viewWidth,
+              phaseOffset = (-2*Math.PI) * perc;
+
+          self.renderSignal(1, false, phaseOffset);
+          self.renderSignal(2, false, phaseOffset);
+        })
+        .drag("dragend", function (ev, dd) {
+          var viewWidth   = this.getBoundingClientRect().width,
+              perc        = dd.deltaX / viewWidth,
+              phaseOffset = (-2*Math.PI) * perc;
+
+          self.previousPhaseOffset += phaseOffset;
+        });
 
       this.raphaelCanvas = Raphael($canvasHolder[0], conf.width, conf.height);
 
@@ -260,7 +278,7 @@
       }, function () {
         self.model.bumpHorizontalScale(1);
       });
-      
+
       this.horizontalScaleChanged();
       for (i = 1; i <= this.model.N_CHANNELS; i++) {
         this.verticalScaleChanged(i);
@@ -285,29 +303,31 @@
       }).click(minusCallback).appendTo($el);
     },
 
-    renderSignal: function (channel, forced) {
+    previousPhaseOffset: 0,
+
+    renderSignal: function (channel, forced, _phaseOffset) {
       var s = this.model.getSignal(channel),
           t = this.traces[channel],
           horizontalScale,
-          verticalScale;
+          verticalScale,
+          phaseOffset = (_phaseOffset || 0) + this.previousPhaseOffset;
 
       if (s) {
         horizontalScale = this.model.getHorizontalScale();
         verticalScale   = this.model.getVerticalScale(channel);
 
         // don't render the signal if we've already drawn it at the same scale
-        if (!t || forced || (t.amplitude !== s.amplitude || t.frequency !== s.frequency || t.phase !== s.phase ||
+        if (!t || forced || (t.amplitude !== s.amplitude || t.frequency !== s.frequency || t.phase !== (s.phase + phaseOffset) ||
                    t.horizontalScale !== horizontalScale || t.verticalScale !== verticalScale)) {
-
           this.removeTrace(channel);
           this.traces[channel] = {
             amplitude:          s.amplitude,
             frequency:          s.frequency,
-            phase:              s.phase,
+            phase:              (s.phase + phaseOffset),
             horizontalScale:    horizontalScale,
             verticalScale:      verticalScale,
-            raphaelObjectMini:  this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, s, channel, horizontalScale, verticalScale),
-            raphaelObject:      this.drawTrace(this.raphaelCanvas, this.largeViewConfig, s, channel, horizontalScale, verticalScale)
+            raphaelObjectMini:  this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset),
+            raphaelObject:      this.drawTrace(this.raphaelCanvas, this.largeViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset)
           };
         }
 
@@ -416,7 +436,7 @@
       return r.path(path.join(' ')).attr({stroke: this.tickColor, opacity: 0.5});
     },
 
-    drawTrace: function (r, conf, signal, channel, horizontalScale, verticalScale) {
+    drawTrace: function (r, conf, signal, channel, horizontalScale, verticalScale, phaseOffset) {
       if (!r) return;
       var path         = [],
           height       = conf.height,
@@ -451,7 +471,7 @@
         // Avoid worrying about the odd appearance of the left and right edges of the trace by "overscanning" the trace
         // a few pixels to either side of the scope window; we will translate the path the same # of pixels to the
         // left later. (Done this way we don't have negative, i.e., invalid, x-coords in the path string.)
-        path.push(clip(h - signal.amplitude * pixelsPerVolt * Math.sin((x - overscan - triggerStart) * radiansPerPixel + signal.phase)));
+        path.push(clip(h - signal.amplitude * pixelsPerVolt * Math.sin((x - overscan - triggerStart) * radiansPerPixel + (signal.phase + phaseOffset))));
       }
       path = path.join(' ');
 

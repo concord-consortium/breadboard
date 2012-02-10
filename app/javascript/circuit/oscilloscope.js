@@ -23,6 +23,14 @@
       INITIAL_HORIZONTAL_SCALE: 1e-5,
       INITIAL_VERTICAL_SCALE:   5,
       
+      reset: function() {
+        this.probeLocation = null;
+        this.signals = [];
+        this._verticalScale = [];
+        this._horizontalScale = null;
+        this.update();
+      },
+      
       setView: function(view) {
         var i;
         
