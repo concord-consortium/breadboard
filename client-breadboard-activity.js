@@ -2568,6 +2568,7 @@ sparks.createQuestionsCSV = function(data) {
 
     this.image = null;
     this.circuit = null;
+    this.meter = new sparks.Meter();
     this.pages = [];
     this.variables = {};
 
@@ -2587,37 +2588,7 @@ sparks.createQuestionsCSV = function(data) {
 
   sparks.Section.prototype = {
 
-    meter: {
-      dmm: null,
-      oscope: null,
-
-      setProbeLocation: function (probe, loc) {
-        if (this.oscope) {
-          this.oscope.setProbeLocation(probe, loc);
-        }
-        if (this.dmm) {
-          this.dmm.setProbeLocation(probe, loc);
-        }
-      },
-
-      update: function () {
-        if (this.oscope) {
-          this.oscope.update();
-        }
-        if (this.dmm) {
-          this.dmm.update();
-        }
-      },
-
-      reset: function() {
-        if (this.oscope && this.oscope.reset) {
-          this.oscope.reset();
-        }
-        if (this.dmm && this.dmm.reset) {
-          this.dmm.reset();
-        }
-      }
-    },
+    meter: null,
 
     toJSON: function () {
       var json = {};
@@ -2643,6 +2614,40 @@ sparks.createQuestionsCSV = function(data) {
       return index;
     }
 
+  };
+
+  sparks.Meter = function() {};
+
+  sparks.Meter.prototype = {
+    dmm: null,
+    oscope: null,
+
+    setProbeLocation: function (probe, loc) {
+      if (this.oscope) {
+        this.oscope.setProbeLocation(probe, loc);
+      }
+      if (this.dmm) {
+        this.dmm.setProbeLocation(probe, loc);
+      }
+    },
+
+    update: function () {
+      if (this.oscope) {
+        this.oscope.update();
+      }
+      if (this.dmm) {
+        this.dmm.update();
+      }
+    },
+
+    reset: function() {
+      if (this.oscope && this.oscope.reset) {
+        this.oscope.reset();
+      }
+      if (this.dmm && this.dmm.view) {
+        this.dmm.reset();
+      }
+    }
   };
 
 })();
