@@ -1,53 +1,56 @@
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>SPARKS: Measuring Current in Series-Parallel Circuits</title>
 <link rel="stylesheet" href="tutorials.css">
 </head>
 
-<body lang=EN-US>
+<body lang="EN-US">
 
-<font face = "verdana, arial, sans-serif"> 
-<a href="index.html"><img src="sparks_tut_logo.jpg"></a> 
-<h3 id="tutorial_title">Measuring Current in Series-Parallel Circuits</h3> 
+<div id="framecontent"> <!-- Title and logo at top --> <a href="index.html" title="View all tutorials"><img src="sparks_tut_logo.jpg" alt="SPARKS Tutorial Logo"></a>
+<a href="#" onclick="window.print(); return false;" id="print-link">print this</a>
+
+</div>
+
+<div id="maincontent"> <!-- content window -->
+<h3>Measuring Current in Series-Parallel Circuits</h3>
+
 <p>
 
-
-
-
 <table cellpadding="10" align="right">
-	<tr>
-		<td align="center" valign="top">
-		<p><img src="series-parallel-I-R1.png" width="300" height="138">
-		<p><img src="series-parallel-measuring-I-R1.jpg" width="300" height="185">
-		<p><font size="-1"><b>Figure 1.</b> Measuring  current through series resistor <b>R<sub>1</sub></b></font>
-		</td>
+	<tbody><tr>
+		<td valign="top">
+		<p><img src="series-parallel-I-R1.png" width="300" height="138"><br>
+   	<img src="series-parallel-measuring-I-R1.jpg" width="300" height="185"><br>
+		<b>Figure 1.</b> Measuring  current through series resistor <b>R<sub>1</sub></b>
+		</p></td>
 	</tr>
 	<tr>
-		<td align="center" valign="top">
-		<p><img src="series-parallel-I-R3.png" width="300" height="136">
-		<p><img src="series-parallel-measuring-I-R3.jpg" width="300" height="185">
-		<p><font size="-1"><b>Figure 2.</b> Measuring  current through parallel resistor <b>R<sub>3</sub></b></font>
-		<br><br>
-		</td>
+		<td valign="top">
+		<p><img src="series-parallel-I-R3.png" width="300" height="136"><br>
+		<img src="series-parallel-measuring-I-R3.jpg" width="300" height="185"><br>
+		<b>Figure 2.</b> Measuring  current through parallel resistor <b>R<sub>3</sub></b>
+		</p></td>
 	</tr>
-</table>
+</tbody></table>
 
 
-<p>Measuring current through resistances in series-parallel circuits requires current-measuring skills used in both series and parallel circuits.
+</p><p>Measuring current through resistances in series-parallel circuits requires current-measuring skills used in both series and parallel circuits.
 
-<p>Figure 1 shows a measurement of the current <b>I<sub>R</sub><font size="-1"><sub>1</sub></font></b>. Notice that we lift the <b>R<sub>1</sub></b> lead and insert the meter to intercept all the current flowing into <b>R<sub>1</sub></b>, just as with regular series circuits. Here all the current out of the parallel branches flows into <b>R<sub>1</sub></b>. 
+</p><p>Figure 1 shows a measurement of the current <b>I<sub>R<font size="-1"><sub>1</sub></font></sub></b>. Notice that we lift the <b>R<sub>1</sub></b> lead and insert the meter to intercept all the current flowing into <b>R<sub>1</sub></b>, just as with regular series circuits. Here all the current out of the parallel branches flows into <b>R<sub>1</sub></b>. 
 
-<p>In contrast, to measure the current <b>I<sub>R</sub><font size="-1"><sub>3</sub></font></b> in the lower parallel branch, look closely at Figure 2. Notice that the <b>R<sub>1</sub></b> lead is replaced, we lift the <b>R<sub>3</sub></b> lead, and insert the ammeter to intercept all the current out of <b>R<sub>3</sub></b>, just as with regular parallel circuits. Similarly, to measure the current <b>I<sub>R</sub><font size="-1"><sub>2</sub></font></b>, we would replace the <b>R<sub>3</sub></b> lead, lift only the <b>R<sub>2</sub></b> lead, and insert the DMM ammeter leads to intercept the current out of <b>R<sub>2</sub></b>.
+</p><p>In contrast, to measure the current <b>I<sub>R<font size="-1"><sub>3</sub></font></sub></b> in the lower parallel branch, look closely at Figure 2. Notice that the <b>R<sub>1</sub></b> lead is replaced, we lift the <b>R<sub>3</sub></b> lead, and insert the ammeter to intercept all the current out of <b>R<sub>3</sub></b>, just as with regular parallel circuits. Similarly, to measure the current <b>I<sub>R<font size="-1"><sub>2</sub></font></sub></b>, we would replace the <b>R<sub>3</sub></b> lead, lift only the <b>R<sub>2</sub></b> lead, and insert the DMM ammeter leads to intercept the current out of <b>R<sub>2</sub></b>.
 
-<p><b>NOTE:</b> When measuring the parallel branch currents, we must <b>not</b> lift the <b>R<sub>1</sub></b> lead. What if <i>both</i> the <b>R<sub>1</sub></b> and <b>R<sub>3</sub></b> leads are lifted and the DMM probes connected to them? In that case, the <b>R<sub>2</sub></b> current has no way out. <b>R<sub>2</sub></b> is effectively disconnected. The resulting circuit is simply a series connection of <b>R<sub>1</sub></b> and <b>R<sub>3</sub></b>! Probably not what you were expecting!
+</p><p><b>NOTE:</b> When measuring the parallel branch currents, we must <b>not</b> lift the <b>R<sub>1</sub></b> lead. What if <i>both</i> the <b>R<sub>1</sub></b> and <b>R<sub>3</sub></b> leads are lifted and the DMM probes connected to them? In that case, the <b>R<sub>2</sub></b> current has no way out. <b>R<sub>2</sub></b> is effectively disconnected. The resulting circuit is simply a series connection of <b>R<sub>1</sub></b> and <b>R<sub>3</sub></b>! Probably not what you were expecting!
 
-<p><b>Self-check:</b> The <b>total circuit current</b> through the series resistor <b>R<sub>1</sub></b> must come out of the <b>R<sub>2</sub></b> and <b>R<sub>3</sub></b> parallel branches. So, this is a way you can verify your current measurements:
-<p align="center"><b>I<sub>R</sub><font size="-1"><sub>1</sub></font></b> = <b>I<sub>R</sub><font size="-1"><sub>2</sub></font></b> + <b>I<sub>R</sub><font size="-1"><sub>3</sub></font></b></p>
+</p><p><b>Self-check:</b> The <b>total circuit current</b> through the series resistor <b>R<sub>1</sub></b> must come out of the <b>R<sub>2</sub></b> and <b>R<sub>3</sub></b> parallel branches. So, this is a way you can verify your current measurements:
+</p><p align="center"><b>I<sub>R<font size="-1"><sub>1</sub></font></sub></b> = <b>I<sub>R<font size="-1"><sub>2</sub></font></sub></b> + <b>I<sub>R<font size="-1"><sub>3</sub></font></sub></b></p>
 
-<p><b>Caution:</b> Lifting leads in series-parallel circuits can be tricky. You must be careful to avoid blowing the DMM fuse. If the DMM ammeter is accidentally inserted between two leads connected to full power, the result is&mdash;<b><font color="Red">POW!</font></b>&mdash;a blown DMM fuse!
+<p><b>Caution:</b> Lifting leads in series-parallel circuits can be tricky. You must be careful to avoid blowing the DMM fuse. If the DMM ammeter is accidentally inserted between two leads connected to full power, the result is—<b><font color="Red">POW!</font></b>—a blown DMM fuse!
 
 
 
-</body>
 
-</html>
+
+
+</p></font></body></html>
