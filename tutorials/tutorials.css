@@ -1,72 +1,53 @@
-
-body{
+body {
+	font-family: verdana, arial, sans-serif;
 	margin: 0;
 	padding: 0;
-	border: 0;
-	overflow: hidden;
 	height: 100%; 
 	max-height: 100%; 
 	}
 
 #framecontent{
-	position: fixed; /* banner frame at top of window */
-   	top: 5px;
-   	left: 10px;
 	height: 100px; /*Fixed height of banner frame */
-   	width: 98%;
-	overflow: hidden; /* Disable scrollbars */
+	padding: 10px;
+	position: relative;
 	}
-	
-#framecontent img{
+#framecontent img {
 	border: none;
 	}
-
+#maincontent {
+	padding: 10px;
+	}
 #print-link {
 	background: url(print.png) no-repeat 0 0;
 	display: block;
-	height: 12px;
+	height: 15px;
+	padding: 0;
 	position: absolute;
 	right: 20px;
 	text-indent: -999em;
 	top: 20px;
 	width: 50px;
 	}
-#print-link:hover { background-position: 0 -16px; }
-
-#maincontent{
-	position: fixed; 
-	top: 110px; /*start top of this frame beneath banner frame*/
-	left: 10px;
-	right: 0px;
-	bottom: 3px;
-	overflow: auto; /* Scroll bars appear if needed */
-	}
-
-p,h1,h2,h3,li,td {font-family: verdana, arial, sans-serif;}
-
+#print-link:hover { background-position: 0 -19px; }
 h3 {
 	margin-top:0;
 	}
-	
 li {
 	margin-top:10px;
 	}
-	
 sup {
 	vertical-align:sup;
 	}
-
 #highlight {
    color:#0070C0;
    }
-
 td {
-	text-align:center;
-	padding:3px;
 	font-size: small;
-  }
+	padding: 3px;
+	text-align: center;
+	}
 
-@media print {
+@media print { /* print-only styles */
 	body {margin: 10%;}
 	#print-link { display: none; }
 	}
