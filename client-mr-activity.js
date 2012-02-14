@@ -3442,6 +3442,11 @@ sparks.createQuestionsCSV = function(data) {
         }
 
         return min + Math.random() * (max - min);
+      },
+
+      addThisToFaults: function() {
+        var breadBoard = getBreadBoard();
+        if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
       }
 
     };
@@ -3666,11 +3671,6 @@ sparks.createQuestionsCSV = function(data) {
             this.open = false;
             this.shorted = false;
           }
-        },
-
-        addThisToFaults: function() {
-          var breadBoard = getBreadBoard();
-          if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
         }
     });
 

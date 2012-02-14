@@ -6480,6 +6480,11 @@ sparks.createQuestionsCSV = function(data) {
         }
 
         return min + Math.random() * (max - min);
+      },
+
+      addThisToFaults: function() {
+        var breadBoard = getBreadBoard();
+        if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
       }
 
     };
@@ -6703,11 +6708,6 @@ sparks.createQuestionsCSV = function(data) {
             this.open = false;
             this.shorted = false;
           }
-        },
-
-        addThisToFaults: function() {
-          var breadBoard = getBreadBoard();
-          if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
         }
     });
 
@@ -6924,7 +6924,7 @@ sparks.createQuestionsCSV = function(data) {
             while (randomComponent === null) {
               var rand = Math.floor(Math.random() * componentKeys.length);
               var component = this.components[componentKeys[rand]];
-              if (!!component.resistance && (sparks.util.contains(this.faultyComponents, component) === -1)){
+              if (!!component.applyFaults && (sparks.util.contains(this.faultyComponents, component) === -1)){
                 randomComponent = component;
               }
             }

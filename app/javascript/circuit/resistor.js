@@ -233,11 +233,6 @@
             this.open = false;
             this.shorted = false;
           }
-        },
-        
-        addThisToFaults: function() {
-          var breadBoard = getBreadBoard();
-          if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
         }
     });
 
