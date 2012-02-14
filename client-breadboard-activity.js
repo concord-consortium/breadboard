@@ -8719,11 +8719,7 @@ var apMessageBox = apMessageBox || {};
 							}
 						}
 					},
-					buttons: {
-						Ok: function() {
-							$(this).dialog("close");
-						}
-					}
+					buttons: __config.buttons
 				}).css("z-index","100");
 
 			});
@@ -8798,7 +8794,12 @@ var apMessageBox = apMessageBox || {};
 			height: 200,
 			message: "",
 			callback: null,
-			scope: null
+			scope: null,
+			buttons: {                          // NB: if you write your own buttons, add '$(this).dialog("close");' to the functions.
+				Ok: function() {
+					$(this).dialog("close");
+				}
+			}
 		}, config);
 		var __this = this;
 
