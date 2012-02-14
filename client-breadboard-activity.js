@@ -8343,7 +8343,10 @@ sparks.createQuestionsCSV = function(data) {
     if (typeof props.impedance !== 'undefined') {
       props.impedance = this.getRequestedImpedance( props.impedance );
     }
+
     sparks.circuit.ReactiveComponent.parentConstructor.call(this, props, breadBoard);
+
+    this.applyFaults();
   };
 
   sparks.extend(sparks.circuit.ReactiveComponent, sparks.circuit.Component, {
@@ -8363,6 +8366,29 @@ sparks.createQuestionsCSV = function(data) {
       }
 
       return this._componentParameter;
+    },
+
+    applyFaults: function () {
+      if (!!this.open){
+        this.resistance = 1e20;
+        this.addThisToFaults();
+      } else if (!!this.shorted) {
+        this.resistance = 1e-6;
+        this.addThisToFaults();
+      } else {
+        this.open = false;
+        this.shorted = false;
+      }
+
+      if (this.resistance > 0) {
+        var self = this;
+        this.toNetlist = function () {
+          var resistance = self.resistance,
+              nodes      = self.getNodes();
+
+          return 'R:' + this.UID + ' ' + nodes.join(' ') + ' R="' + resistance + ' Ohm"';
+        };
+      }
     }
 
   });

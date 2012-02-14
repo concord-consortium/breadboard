@@ -559,6 +559,73 @@ describe 'Circuit Constructor'
       firstFaultyComponent.UID.should.be "r2"
   
     end
+    
+    it 'should be able to create LC components with simple faults'
+      var jsonCircuit = [
+        {
+          "type": "inductor",
+          "UID": "l1",
+          "connections": "c3,b4",
+          "open": true
+        },
+        {
+          "type": "capacitor",
+          "UID": "c1",
+          "connections": "c4,b5",
+          "shorted": true
+        }
+      ];
+      breadModel("createCircuit", jsonCircuit);
+
+      var components = getBreadBoard().components;
+      
+      components['l1'].open.should.be true
+      components['l1'].resistance.should.be 1e20
+      components['l1'].toNetlist().should.be 'R:l1 L3 L4 R="100000000000000000000 Ohm"'
+      components['c1'].shorted.should.be true
+      components['c1'].resistance.should.be 1e-6
+      components['c1'].toNetlist().should.be 'R:c1 L4 L5 R="0.000001 Ohm"'
+  
+    end
+    
+    it 'should be able to author a fault on a random RC component'
+      var jsonCircuit = [
+        {
+          "type": "inductor",
+          "UID": "l1",
+          "inductance": 1,
+          "connections": "c3,b4"
+        },
+        {
+          "type": "capacitor",
+          "UID": "c1",
+          "capacitance": 1,
+          "connections": "c4,b5"
+        }
+      ];
+      breadModel("createCircuit", jsonCircuit);
+      
+      faults = [
+        {
+          "type": "open",
+          "count": 1
+        }
+      ];
+      breadModel("addFaults", faults);
+
+      var components = getBreadBoard().components;
+      
+      var oneResIsOpen = false;
+      if ((components['l1'].open && !components['c1'].open) ||
+            (!components['l1'].open && components['c1'].open)) {
+        oneResIsOpen = true;
+      }
+      oneResIsOpen.should.be true
+      
+      var board = getBreadBoard();
+      var netlist = sparks.circuit.qucsator.makeNetlist(board);
+      netlist.search(/R="100000000000000000000 Ohm/).should.be_at_least 0
+    end
   
   end
     
