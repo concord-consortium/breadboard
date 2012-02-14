@@ -263,11 +263,12 @@
         if (type === "open") {
           component.open = true;
           component.shorted = false;
-          component.resistance = 1e20;
         } else if (type === "shorted") {
           component.shorted = true;
           component.open = false;
-          component.resistance = 1e-6;
+        }
+        if (component.applyFaults) {
+          component.applyFaults();
         }
 
         this.faultyComponents.push(component);

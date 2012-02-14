@@ -6485,7 +6485,7 @@ sparks.createQuestionsCSV = function(data) {
     };
 
 })();
-/*globals console sparks */
+/*globals console sparks getBreadBoard */
 
 (function () {
 
@@ -6522,16 +6522,7 @@ sparks.createQuestionsCSV = function(data) {
         this.nominalResistance =  this.getResistance( this.colors );
       }
 
-      if (!!this.open){
-        this.resistance = 1e20;
-        breadBoard.faultyComponents.push(this);
-      } else if (!!this.shorted) {
-        this.resistance = 1e-6;
-        breadBoard.faultyComponents.push(this);
-      } else {
-        this.open = false;
-        this.shorted = false;
-      }
+      this.applyFaults();
     };
 
     sparks.extend(sparks.circuit.Resistor, sparks.circuit.Component,
@@ -6699,6 +6690,24 @@ sparks.createQuestionsCSV = function(data) {
           } else {
             return ['resistor', this.UID, this.getLocation(), 'wire', this.label, null];
           }
+        },
+
+        applyFaults: function() {
+          if (!!this.open){
+            this.resistance = 1e20;
+            this.addThisToFaults();
+          } else if (!!this.shorted) {
+            this.resistance = 1e-6;
+            this.addThisToFaults();
+          } else {
+            this.open = false;
+            this.shorted = false;
+          }
+        },
+
+        addThisToFaults: function() {
+          var breadBoard = getBreadBoard();
+          if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
         }
     });
 
@@ -6935,11 +6944,12 @@ sparks.createQuestionsCSV = function(data) {
         if (type === "open") {
           component.open = true;
           component.shorted = false;
-          component.resistance = 1e20;
         } else if (type === "shorted") {
           component.shorted = true;
           component.open = false;
-          component.resistance = 1e-6;
+        }
+        if (component.applyFaults) {
+          component.applyFaults();
         }
 
         this.faultyComponents.push(component);

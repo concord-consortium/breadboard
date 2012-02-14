@@ -1,6 +1,6 @@
 /* FILE resistor.js */
 //= require "component"
-/*globals console sparks */
+/*globals console sparks getBreadBoard */
 
 (function () {
 
@@ -44,16 +44,7 @@
       }
 
       // now that everything has been set, if we have a fault set it now
-      if (!!this.open){
-        this.resistance = 1e20;
-        breadBoard.faultyComponents.push(this);
-      } else if (!!this.shorted) {
-        this.resistance = 1e-6;
-        breadBoard.faultyComponents.push(this);
-      } else {
-        this.open = false;
-        this.shorted = false;
-      }
+      this.applyFaults();
     };
 
     sparks.extend(sparks.circuit.Resistor, sparks.circuit.Component,
@@ -229,6 +220,24 @@
           } else {
             return ['resistor', this.UID, this.getLocation(), 'wire', this.label, null];
           }
+        },
+        
+        applyFaults: function() {
+          if (!!this.open){
+            this.resistance = 1e20;
+            this.addThisToFaults();
+          } else if (!!this.shorted) {
+            this.resistance = 1e-6;
+            this.addThisToFaults();
+          } else {
+            this.open = false;
+            this.shorted = false;
+          }
+        },
+        
+        addThisToFaults: function() {
+          var breadBoard = getBreadBoard();
+          if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
         }
     });
 
