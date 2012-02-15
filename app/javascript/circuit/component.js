@@ -137,6 +137,11 @@
 
         // if no steps were specified, or none were available between the requested min and max
         return min + Math.random() * (max - min);
+      },
+
+      addThisToFaults: function() {
+        var breadBoard = getBreadBoard();
+        if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
       }
 
     };

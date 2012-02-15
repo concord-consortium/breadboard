@@ -2532,6 +2532,100 @@ sparks.createQuestionsCSV = function(data) {
         return (value * 100) + ' %';
     };
 
+    u.unitEquivalents = {
+      "V": ["v", "volts", "volt", "vol", "vs"],
+      "A": ["a", "amps", "amp", "amper", "ampers", "as"],
+      "Ohms": ["ohms", "oms", "o", "Ω", "os"],
+      "deg": ["deg", "degs", "degree", "degrees", "º"],
+      "F": ["f", "farads", "farad", "fs"],
+      "H": ["h", "henries", "henry", "henrys", "hs"],
+      "Hz": ["hz", "herz", "hertz"]
+    }
+
+    u.prefixEquivalents = {
+      "pico": ["pico", "picco", "p"],
+      "nano": ["nano", "nanno", "n"],
+      "micro": ["micro", "micron", "μ"],
+      "milli": ["mili", "milli", "millli"],
+      "kilo": ["kilo", "killo", "killlo", "k"],
+      "mega": ["mega", "meg"],
+      "giga": ["giga", "gigga", "g"]
+    };
+
+    u.prefixValues = {
+      "pico": 1E-12,
+      "nano": 1E-9,
+      "micro": 1E-6,
+      "milli": 1E-3,
+      "kilo": 1E3,
+      "mega": 1E6,
+      "giga": 1E9
+    };
+
+    u.parse = function(string) {
+      var value, units, prefix, currPrefix, unit, equivalents, equiv, regex;
+
+      string = string.replace(/ /g, '');                  // rm all whitespace
+      string = string.replace(/['";:,\/?\\-]/g, '');      // rm all non-period puncutation
+      string = string.replace(/[^\d.]*(\d.*)/, '$1');      // if there are numbers, if there are letters before them remove them
+      value =  string.match(/[\d\.]+/);                   // find all numbers before the first letter, parse them to a number, store it
+      if (value) {
+        value = parseFloat(value[0]);
+      }
+      units = string.replace(/[\d\.]*/, '');              // everything after the first value is the units
+
+      for (currPrefix in this.prefixEquivalents) {                 // if we can find a prefix at the start of the string, store it and delete it
+        equivalents = this.prefixEquivalents[currPrefix];
+        if (equivalents.length > 0) {
+          for (var i = 0, ii = equivalents.length; i<ii; i++) {
+            equiv = equivalents[i];
+            regex = new RegExp('^('+equiv+').*', 'i');
+            prefixes = units.match(regex);
+            if (prefixes && prefixes.length > 1){
+              prefix = currPrefix;
+              units = units.replace(prefixes[1], '');
+              break;
+            }
+          }
+        }
+        if (prefix) {
+          break;
+        }
+      }
+
+      if (!prefix) {                                      // if we haven't found a prefix yet, check for case-sensitive m or M at start
+        if (units.match(/^m/)) {
+          prefix = "milli";
+          units = units.replace(/^m/, "");
+        } else if (units.match(/^M/)){
+          prefix = "mega";
+          units = units.replace(/^M/, "");
+        }
+      }
+
+      if (prefix) {
+        value = value * this.prefixValues[prefix];        // if we have a prefix, multiply by that;
+      }
+
+      for (unit in this.unitEquivalents) {                // if the unit can be found in the equivalents table, replace
+        equivalents = this.unitEquivalents[unit];
+        if (equivalents.length > 0) {
+          for (var i = 0, ii = equivalents.length; i<ii; i++) {
+            equiv = equivalents[i];
+            if (units.toLowerCase() == equiv){
+              units = unit;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!value) {
+        value = NaN;
+      }
+      return {val: value, units: units}
+    };
+
 
 })();
 /*globals console sparks $ breadModel getBreadBoard */
@@ -6480,12 +6574,17 @@ sparks.createQuestionsCSV = function(data) {
         }
 
         return min + Math.random() * (max - min);
+      },
+
+      addThisToFaults: function() {
+        var breadBoard = getBreadBoard();
+        if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
       }
 
     };
 
 })();
-/*globals console sparks */
+/*globals console sparks getBreadBoard */
 
 (function () {
 
@@ -6522,16 +6621,7 @@ sparks.createQuestionsCSV = function(data) {
         this.nominalResistance =  this.getResistance( this.colors );
       }
 
-      if (!!this.open){
-        this.resistance = 1e20;
-        breadBoard.faultyComponents.push(this);
-      } else if (!!this.shorted) {
-        this.resistance = 1e-6;
-        breadBoard.faultyComponents.push(this);
-      } else {
-        this.open = false;
-        this.shorted = false;
-      }
+      this.applyFaults();
     };
 
     sparks.extend(sparks.circuit.Resistor, sparks.circuit.Component,
@@ -6698,6 +6788,19 @@ sparks.createQuestionsCSV = function(data) {
             return ['resistor', this.UID, this.getLocation(), '4band', this.label, this.colors];
           } else {
             return ['resistor', this.UID, this.getLocation(), 'wire', this.label, null];
+          }
+        },
+
+        applyFaults: function() {
+          if (!!this.open){
+            this.resistance = 1e20;
+            this.addThisToFaults();
+          } else if (!!this.shorted) {
+            this.resistance = 1e-6;
+            this.addThisToFaults();
+          } else {
+            this.open = false;
+            this.shorted = false;
           }
         }
     });
@@ -6915,7 +7018,7 @@ sparks.createQuestionsCSV = function(data) {
             while (randomComponent === null) {
               var rand = Math.floor(Math.random() * componentKeys.length);
               var component = this.components[componentKeys[rand]];
-              if (!!component.resistance && (sparks.util.contains(this.faultyComponents, component) === -1)){
+              if (!!component.applyFaults && (sparks.util.contains(this.faultyComponents, component) === -1)){
                 randomComponent = component;
               }
             }
@@ -6935,11 +7038,12 @@ sparks.createQuestionsCSV = function(data) {
         if (type === "open") {
           component.open = true;
           component.shorted = false;
-          component.resistance = 1e20;
         } else if (type === "shorted") {
           component.shorted = true;
           component.open = false;
-          component.resistance = 1e-6;
+        }
+        if (component.applyFaults) {
+          component.applyFaults();
         }
 
         this.faultyComponents.push(component);
@@ -8333,7 +8437,10 @@ sparks.createQuestionsCSV = function(data) {
     if (typeof props.impedance !== 'undefined') {
       props.impedance = this.getRequestedImpedance( props.impedance );
     }
+
     sparks.circuit.ReactiveComponent.parentConstructor.call(this, props, breadBoard);
+
+    this.applyFaults();
   };
 
   sparks.extend(sparks.circuit.ReactiveComponent, sparks.circuit.Component, {
@@ -8353,6 +8460,29 @@ sparks.createQuestionsCSV = function(data) {
       }
 
       return this._componentParameter;
+    },
+
+    applyFaults: function () {
+      if (!!this.open){
+        this.resistance = 1e20;
+        this.addThisToFaults();
+      } else if (!!this.shorted) {
+        this.resistance = 1e-6;
+        this.addThisToFaults();
+      } else {
+        this.open = false;
+        this.shorted = false;
+      }
+
+      if (this.resistance > 0) {
+        var self = this;
+        this.toNetlist = function () {
+          var resistance = self.resistance,
+              nodes      = self.getNodes();
+
+          return 'R:' + this.UID + ' ' + nodes.join(' ') + ' R="' + resistance + ' Ohm"';
+        };
+      }
     }
 
   });
@@ -8719,11 +8849,7 @@ var apMessageBox = apMessageBox || {};
 							}
 						}
 					},
-					buttons: {
-						Ok: function() {
-							$(this).dialog("close");
-						}
-					}
+					buttons: __config.buttons
 				}).css("z-index","100");
 
 			});
@@ -8798,7 +8924,12 @@ var apMessageBox = apMessageBox || {};
 			height: 200,
 			message: "",
 			callback: null,
-			scope: null
+			scope: null,
+			buttons: {                          // NB: if you write your own buttons, add '$(this).dialog("close");' to the functions.
+				Ok: function() {
+					$(this).dialog("close");
+				}
+			}
 		}, config);
 		var __this = this;
 
@@ -8914,11 +9045,17 @@ var apMessageBox = apMessageBox || {};
        return sigFigs > Math.log(num) * Math.LOG10E ? num : ""+parseFloat(num);
      };
 
+     Math.close = function(num, expected, perc) {
+       var perc = perc || 10,
+            dif = expected / perc;
+       return (num >= (expected-dif) && num <= (expected+dif));
+     };
+
 })();
 
 /* FILE init.js */
 
-/*globals console sparks $ document window onDocumentReady unescape prompt*/
+/*globals console sparks $ document window onDocumentReady unescape prompt apMessageBox*/
 
 (function () {
 
@@ -8937,6 +9074,7 @@ var apMessageBox = apMessageBox || {};
     } else {
       this.loadActivity();
     }
+    this.setupQuitButton();
   };
 
   this.loadActivity = function () {
@@ -8999,5 +9137,33 @@ var apMessageBox = apMessageBox || {};
             $report = view.getClassReportView(reports);
         $('#report').append($report);
       });
+  };
+
+  this.setupQuitButton = function () {
+    $('#return_to_portal').click(function() {
+      if (!!sparks.couchDS.user) {
+        sparks.reportController.saveData();
+        apMessageBox.information({
+        	title: "Ready to leave?",
+        	message: "All your work up until this page has been saved.",
+        	informationImage: "lib/information-32x32.png",
+        	width: 400,
+        	height: 200,
+        	buttons: {
+        	  "Go to the portal": function () {
+        	    $(this).dialog("close");
+        	    window.onbeforeunload = null;
+              window.location.href = "http://sparks.portal.concord.org";
+        	  },
+        	  "Keep working": function() {
+        	    $(this).dialog("close");
+        	  }
+        	}
+        });
+      } else {
+        window.onbeforeunload = null;
+        window.location.href = "http://sparks.portal.concord.org";
+      }
+    });
   };
 })();

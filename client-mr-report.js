@@ -1110,6 +1110,12 @@ sparks.createQuestionsCSV = function(data) {
        return sigFigs > Math.log(num) * Math.LOG10E ? num : ""+parseFloat(num);
      };
 
+     Math.close = function(num, expected, perc) {
+       var perc = perc || 10,
+            dif = expected / perc;
+       return (num >= (expected-dif) && num <= (expected+dif));
+     };
+
 })();
 /* FILE unit.js */
 
@@ -1271,6 +1277,100 @@ sparks.createQuestionsCSV = function(data) {
 
     u.pct_str = function (value) {
         return (value * 100) + ' %';
+    };
+
+    u.unitEquivalents = {
+      "V": ["v", "volts", "volt", "vol", "vs"],
+      "A": ["a", "amps", "amp", "amper", "ampers", "as"],
+      "Ohms": ["ohms", "oms", "o", "Ω", "os"],
+      "deg": ["deg", "degs", "degree", "degrees", "º"],
+      "F": ["f", "farads", "farad", "fs"],
+      "H": ["h", "henries", "henry", "henrys", "hs"],
+      "Hz": ["hz", "herz", "hertz"]
+    }
+
+    u.prefixEquivalents = {
+      "pico": ["pico", "picco", "p"],
+      "nano": ["nano", "nanno", "n"],
+      "micro": ["micro", "micron", "μ"],
+      "milli": ["mili", "milli", "millli"],
+      "kilo": ["kilo", "killo", "killlo", "k"],
+      "mega": ["mega", "meg"],
+      "giga": ["giga", "gigga", "g"]
+    };
+
+    u.prefixValues = {
+      "pico": 1E-12,
+      "nano": 1E-9,
+      "micro": 1E-6,
+      "milli": 1E-3,
+      "kilo": 1E3,
+      "mega": 1E6,
+      "giga": 1E9
+    };
+
+    u.parse = function(string) {
+      var value, units, prefix, currPrefix, unit, equivalents, equiv, regex;
+
+      string = string.replace(/ /g, '');                  // rm all whitespace
+      string = string.replace(/['";:,\/?\\-]/g, '');      // rm all non-period puncutation
+      string = string.replace(/[^\d.]*(\d.*)/, '$1');      // if there are numbers, if there are letters before them remove them
+      value =  string.match(/[\d\.]+/);                   // find all numbers before the first letter, parse them to a number, store it
+      if (value) {
+        value = parseFloat(value[0]);
+      }
+      units = string.replace(/[\d\.]*/, '');              // everything after the first value is the units
+
+      for (currPrefix in this.prefixEquivalents) {                 // if we can find a prefix at the start of the string, store it and delete it
+        equivalents = this.prefixEquivalents[currPrefix];
+        if (equivalents.length > 0) {
+          for (var i = 0, ii = equivalents.length; i<ii; i++) {
+            equiv = equivalents[i];
+            regex = new RegExp('^('+equiv+').*', 'i');
+            prefixes = units.match(regex);
+            if (prefixes && prefixes.length > 1){
+              prefix = currPrefix;
+              units = units.replace(prefixes[1], '');
+              break;
+            }
+          }
+        }
+        if (prefix) {
+          break;
+        }
+      }
+
+      if (!prefix) {                                      // if we haven't found a prefix yet, check for case-sensitive m or M at start
+        if (units.match(/^m/)) {
+          prefix = "milli";
+          units = units.replace(/^m/, "");
+        } else if (units.match(/^M/)){
+          prefix = "mega";
+          units = units.replace(/^M/, "");
+        }
+      }
+
+      if (prefix) {
+        value = value * this.prefixValues[prefix];        // if we have a prefix, multiply by that;
+      }
+
+      for (unit in this.unitEquivalents) {                // if the unit can be found in the equivalents table, replace
+        equivalents = this.unitEquivalents[unit];
+        if (equivalents.length > 0) {
+          for (var i = 0, ii = equivalents.length; i<ii; i++) {
+            equiv = equivalents[i];
+            if (units.toLowerCase() == equiv){
+              units = unit;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!value) {
+        value = NaN;
+      }
+      return {val: value, units: units}
     };
 
 

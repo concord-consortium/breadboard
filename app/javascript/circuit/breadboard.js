@@ -241,7 +241,7 @@
             while (randomComponent === null) {
               var rand = Math.floor(Math.random() * componentKeys.length);
               var component = this.components[componentKeys[rand]];
-              if (!!component.resistance && (sparks.util.contains(this.faultyComponents, component) === -1)){
+              if (!!component.applyFaults && (sparks.util.contains(this.faultyComponents, component) === -1)){
                 randomComponent = component;
               }
             }
@@ -263,11 +263,12 @@
         if (type === "open") {
           component.open = true;
           component.shorted = false;
-          component.resistance = 1e20;
         } else if (type === "shorted") {
           component.shorted = true;
           component.open = false;
-          component.resistance = 1e-6;
+        }
+        if (component.applyFaults) {
+          component.applyFaults();
         }
 
         this.faultyComponents.push(component);

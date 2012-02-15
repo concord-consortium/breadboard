@@ -237,6 +237,18 @@ color: #c71a1f;
 border-bottom-style:solid;
 }
 
+#return_to_portal {
+  position: absolute;
+  bottom: 15px;
+  right: 35px;
+  cursor: pointer;
+}
+
+#return_to_portal img {
+  position: absolute;
+  left: -20px;
+}
+
 #easyTooltip{
 	padding:5px 10px;
 	border:1px solid #195fa4;

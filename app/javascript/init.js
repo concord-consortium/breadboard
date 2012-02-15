@@ -56,7 +56,7 @@
 
 /* FILE init.js */
 
-/*globals console sparks $ document window onDocumentReady unescape prompt*/
+/*globals console sparks $ document window onDocumentReady unescape prompt apMessageBox*/
 
 (function () {
 
@@ -75,6 +75,7 @@
     } else {
       this.loadActivity();
     }
+    this.setupQuitButton();
   };
 
   this.loadActivity = function () {
@@ -139,5 +140,33 @@
             $report = view.getClassReportView(reports);
         $('#report').append($report);
       });
+  };
+  
+  this.setupQuitButton = function () {
+    $('#return_to_portal').click(function() {
+      if (!!sparks.couchDS.user) {
+        sparks.reportController.saveData();
+        apMessageBox.information({
+        	title: "Ready to leave?",
+        	message: "All your work up until this page has been saved.",
+        	informationImage: "lib/information-32x32.png",
+        	width: 400,
+        	height: 200,
+        	buttons: {
+        	  "Go to the portal": function () {
+        	    $(this).dialog("close");
+        	    window.onbeforeunload = null;
+              window.location.href = "http://sparks.portal.concord.org";
+        	  },
+        	  "Keep working": function() {
+        	    $(this).dialog("close");
+        	  }
+        	}
+        });
+      } else {
+        window.onbeforeunload = null;
+        window.location.href = "http://sparks.portal.concord.org";
+      }
+    });
   };
 })();

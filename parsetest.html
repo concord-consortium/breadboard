@@ -19,6 +19,31 @@
     <script type="text/javascript">
       sparks.config.qucsate_server_url = "/sparks/qucsator/solve";
     </script>
+    <script type="text/javascript">
+      $(document).ready(function () {
+          $("#parsetest").keyup(function(event){
+              if(event.keyCode == 13){
+                $("#result_val").hide();
+                $("#result_units").hide();
+                testValue();
+              }
+          });
+      });
+
+      testValue = function() {
+        val = $("#parsetest").val();
+        result = sparks.unit.parse(val);
+        if (isNaN(result.val)) result.val = "";
+        $("#result_val").text(result.val).fadeIn();
+        $("#result_units").text(result.units).fadeIn("slow");
+
+        $("#results_title").text("Results")
+        var row = $("<tr>").append("<td>"+val.replace(" ", "&nbsp;")+"</td>").append("<td>"+result.val+" "+"<b>"+result.units+"</b></td>");
+        $('#table').append(row);
+
+        window.setTimeout(function() {$("#parsetest").val("")}, 1500);
+      };
+    </script>
   </head>
   <body>
 
@@ -28,40 +53,19 @@
           <img class='no_border' src='common/icons/sparks-left-logo.png' style="float:left; height: 90px; margin: 5px"/>
         </a>
         <h1 style="padding: 25px; margin-left: 90px">
-          <span id="title"></span>
+          <span>Testing measurement parsing</span>
         </h1>
       </div>
       <div id="primary">
-
-        <div id="loading">
-          <img src="common/icons/ajax-loader.gif" style="float: left; padding: 10px"/>
-          <div id="loading-text" style="padding-top: 17px">
-            Loading activity
-          </div>
-        </div>
-
-        <div id="breadboard_wrapper">
-          <div id="oscope_mini" style="display: none;"></div>
-          <div id="fg_mini" style="display: none;"></div>
-          <div id="breadboard">
-          </div>
-        </div>
-        <div id="image">
-        </div>
-        <div id="oscope">
-        </div>
-        <div id="function_generator">
-        </div>
-
-        <br style="clear:both" />
-        <p/>
-
-        <p/>
-
-        <div id="questions_area">
-        </div>
-
-
+        <p style="padding-top: 25px;">
+          Enter a value the way you think a student might, and the hit Enter to see the parsed value.
+        </p>
+        <input id="parsetest" size="12" style="margin: 10px; margin-left: 80px; padding: 5px;">
+        <span id="result_val" style="margin-left: 30px;color: Green;font-size: 1.3em;"></span>
+        <span id="result_units" style="margin-left: 20px;color: Red;font-size: 1.3em;font-weight: bold;"></span>
+        <h2 id="results_title" style="margin: 40px"></h3>
+        <table id="table" style="margin: 30px; margin-top: -20px">
+        </table>
       </div>
       <div id="footer">
         <span id="return_to_portal"><img src="common/icons/return.png">Return to the SPARKS Portal</span>
