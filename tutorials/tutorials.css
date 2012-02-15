@@ -48,6 +48,6 @@ td {
 	}
 
 @media print { /* print-only styles */
-	body {margin: 10%;}
+	@page { margin: 5%; }
 	#print-link { display: none; }
 	}
