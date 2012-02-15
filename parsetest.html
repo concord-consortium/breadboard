@@ -33,7 +33,7 @@
       testValue = function() {
         val = $("#parsetest").val();
         result = sparks.unit.parse(val);
-        if (isNaN(result.val) results.val = "";
+        if (isNaN(result.val)) result.val = "";
         $("#result_val").text(result.val).fadeIn();
         $("#result_units").text(result.units).fadeIn("slow");
 
