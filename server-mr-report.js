@@ -283,17 +283,23 @@
     }
 
     u.prefixEquivalents = {
+      "pico": ["pico", "picco", "p"],
+      "nano": ["nano", "nanno", "n"],
       "micro": ["micro", "micron", "μ"],
       "milli": ["mili", "milli", "millli"],
       "kilo": ["kilo", "killo", "killlo", "k"],
-      "mega": ["mega", "meg"]
+      "mega": ["mega", "meg"],
+      "giga": ["giga", "gigga", "g"]
     };
 
     u.prefixValues = {
-      "micro": 0.000001,
-      "milli": 0.001,
-      "kilo": 1000,
-      "mega": 1000000
+      "pico": 1E-12,
+      "nano": 1E-9,
+      "micro": 1E-6,
+      "milli": 1E-3,
+      "kilo": 1E3,
+      "mega": 1E6,
+      "giga": 1E9
     };
 
     u.parse = function(string) {
@@ -313,7 +319,7 @@
         if (equivalents.length > 0) {
           for (var i = 0, ii = equivalents.length; i<ii; i++) {
             equiv = equivalents[i];
-            regex = new RegExp('('+equiv+').*', 'i');
+            regex = new RegExp('^('+equiv+').*', 'i');
             prefixes = units.match(regex);
             if (prefixes && prefixes.length > 1){
               prefix = currPrefix;

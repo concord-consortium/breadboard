@@ -132,6 +132,7 @@ describe 'Units'
       "2,000.1 volts":    "2000.1  V",
       "it's 200 volts":   "200  V",
       "200 degrees":      "200  deg",
+      "2 nf":             "2e-9  F",
       "2 kilocats":       "2000  cats",
       "200 degreses":     "200  degreses",
       "it's 300 degreses": "300  degreses"
