@@ -167,12 +167,12 @@
     };
     
     u.unitEquivalents = {
-      "V": ["v", "volts", "volt", "vol"],
-      "A": ["a", "amps", "amp", "amper", "ampers"],
-      "Ohms": ["ohms", "oms", "o", "Ω"],
+      "V": ["v", "volts", "volt", "vol", "vs"],
+      "A": ["a", "amps", "amp", "amper", "ampers", "as"],
+      "Ohms": ["ohms", "oms", "o", "Ω", "os"],
       "deg": ["deg", "degs", "degree", "degrees", "º"],
-      "F": ["f", "farads", "farad"],
-      "H": ["h", "henries", "henry", "henrys"]
+      "F": ["f", "farads", "farad", "fs"],
+      "H": ["h", "henries", "henry", "henrys", "hs"]
     }
     
     u.prefixEquivalents = {
