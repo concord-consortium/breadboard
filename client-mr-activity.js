@@ -4476,7 +4476,7 @@ sparks.createQuestionsCSV = function(data) {
       "A": ["a", "amps", "amp", "amper", "ampers", "as"],
       "Ohms": ["ohms", "oms", "o", "Ω", "os"],
       "deg": ["deg", "degs", "degree", "degrees", "º"],
-      "F": ["f", "farads", "farad", "fared", "fareds", "fered", "fereds", "feret", "ferets", "fs"],
+      "F": ["f", "farads", "farad", "fared", "fareds", "fered", "fereds", "feret", "ferets", "ferret", "ferrets", "fs"],
       "H": ["h", "henries", "henry", "henrys", "hs"],
       "Hz": ["hz", "herz", "hertz"],
       "%": ["%", "perc", "percent"]
