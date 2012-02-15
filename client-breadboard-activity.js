@@ -2532,6 +2532,99 @@ sparks.createQuestionsCSV = function(data) {
         return (value * 100) + ' %';
     };
 
+    u.unitEquivalents = {
+      "V": ["v", "volts", "volt", "vol"],
+      "A": ["a", "amps", "amp", "amper", "ampers"],
+      "Ohms": ["ohms", "oms", "o", "Ω"],
+      "deg": ["deg", "degs", "degree", "degrees", "º"],
+      "F": ["f", "farads", "farad"],
+      "H": ["h", "henries", "henry", "henrys"]
+    }
+
+    u.prefixEquivalents = {
+      "micro": ["micro", "μ"],
+      "milli": ["mili", "milli"],
+      "kilo": ["kilo", "killo", "k"],
+      "mega": ["mega", "meg"]
+    };
+
+    u.prefixValues = {
+      "micro": 0.000001,
+      "milli": 0.001,
+      "kilo": 1000,
+      "mega": 1000000
+    };
+
+    u.parse = function(string) {
+      var value, units, prefix, currPrefix, unit, equivalents, equiv, regex;
+
+      string = string.replace(/ /g, '');                  // rm all whitespace
+      string = string.replace(/,/g, '');                  // rm all commas
+      string = string.replace(/[^\d]*(\d.*)/, '$1');      // if there are numbers, if there are letters before them remove them
+      value =  string.match(/[\d\.]+/);                // find all numbers before the first letter, parse them to a number, store it
+      if (value) {
+        value = parseFloat(value[0]);
+      }
+      units = string.replace(/[\d\.]*/, '');              // everything after the first value is the units
+
+      for (currPrefix in this.prefixEquivalents) {                 // if we can find a prefix at the start of the string, store it and delete it
+        equivalents = this.prefixEquivalents[currPrefix];
+        if (equivalents.length > 0) {
+          for (var i = 0, ii = equivalents.length; i<ii; i++) {
+            equiv = equivalents[i];
+            regex = new RegExp('('+equiv+').*', 'i');
+            prefixes = units.match(regex);
+            if (prefixes && prefixes.length > 1){
+              prefix = currPrefix;
+              console.log("found a prefix! "+prefix)
+              units = units.replace(prefixes[1], '');
+              console.log("units are now "+units)
+              break;
+            }
+          }
+        }
+        if (prefix) {
+          break;
+        }
+      }
+
+      if (!prefix) {
+        console.log("don't have a prefix")
+        var isMili = units.match(/^m/);
+        if (isMili) {
+          prefix = "milli";
+          units = units.replace(/^m/, "");
+        } else {
+          var isMega = units.match(/^M/);
+          if (isMega) {
+            prefix = "mega";
+            units = units.replace(/^M/, "");
+          }
+        }
+      }
+
+      if (prefix) {
+        console.log("prefix is "+prefix)
+        console.log("will be multiplying by "+this.prefixValues[prefix])
+        console.log(value +" * "+this.prefixValues[prefix]+" = "+(value * this.prefixValues[prefix]))
+        value = value * this.prefixValues[prefix];
+      }
+
+      for (unit in this.unitEquivalents) {                // if the unit can be found in the equivalents table, replace
+        equivalents = this.unitEquivalents[unit];
+        if (equivalents.length > 0) {
+          for (var i = 0, ii = equivalents.length; i<ii; i++) {
+            equiv = equivalents[i];
+            if (units.toLowerCase() == equiv){
+              units = unit;
+              break;
+            }
+          }
+        }
+      }
+      return {val: value, units: units}
+    };
+
 
 })();
 /*globals console sparks $ breadModel getBreadBoard */
