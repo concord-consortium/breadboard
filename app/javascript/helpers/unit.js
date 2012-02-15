@@ -195,7 +195,7 @@
       
       string = string.replace(/ /g, '');                  // rm all whitespace
       string = string.replace(/['";:,\/?\\-]/g, '');      // rm all non-period puncutation
-      string = string.replace(/[^\d]*(\d.*)/, '$1');      // if there are numbers, if there are letters before them remove them
+      string = string.replace(/[^\d.]*(\d.*)/, '$1');      // if there are numbers, if there are letters before them remove them
       value =  string.match(/[\d\.]+/);                   // find all numbers before the first letter, parse them to a number, store it
       if (value) {
         value = parseFloat(value[0]);
