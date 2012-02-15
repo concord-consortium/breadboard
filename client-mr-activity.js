@@ -4304,7 +4304,7 @@ sparks.createQuestionsCSV = function(data) {
 
      Math.close = function(num, expected, perc) {
        var perc = perc || 10,
-            dif = expected / perc;
+            dif = expected * (perc/100);
        return (num >= (expected-dif) && num <= (expected+dif));
      };
 
