@@ -282,9 +282,9 @@
     }
 
     u.prefixEquivalents = {
-      "micro": ["micro", "μ"],
-      "milli": ["mili", "milli"],
-      "kilo": ["kilo", "killo", "k"],
+      "micro": ["micro", "micron", "μ"],
+      "milli": ["mili", "milli", "millli"],
+      "kilo": ["kilo", "killo", "killlo", "k"],
       "mega": ["mega", "meg"]
     };
 
@@ -301,7 +301,7 @@
       string = string.replace(/ /g, '');                  // rm all whitespace
       string = string.replace(/,/g, '');                  // rm all commas
       string = string.replace(/[^\d]*(\d.*)/, '$1');      // if there are numbers, if there are letters before them remove them
-      value =  string.match(/[\d\.]+/);                // find all numbers before the first letter, parse them to a number, store it
+      value =  string.match(/[\d\.]+/);                   // find all numbers before the first letter, parse them to a number, store it
       if (value) {
         value = parseFloat(value[0]);
       }
@@ -316,9 +316,7 @@
             prefixes = units.match(regex);
             if (prefixes && prefixes.length > 1){
               prefix = currPrefix;
-              console.log("found a prefix! "+prefix)
               units = units.replace(prefixes[1], '');
-              console.log("units are now "+units)
               break;
             }
           }
@@ -328,26 +326,18 @@
         }
       }
 
-      if (!prefix) {
-        console.log("don't have a prefix")
-        var isMili = units.match(/^m/);
-        if (isMili) {
+      if (!prefix) {                                      // if we haven't found a prefix yet, check for case-sensitive m or M at start
+        if (units.match(/^m/)) {
           prefix = "milli";
           units = units.replace(/^m/, "");
-        } else {
-          var isMega = units.match(/^M/);
-          if (isMega) {
-            prefix = "mega";
-            units = units.replace(/^M/, "");
-          }
+        } else if (units.match(/^M/)){
+          prefix = "mega";
+          units = units.replace(/^M/, "");
         }
       }
 
       if (prefix) {
-        console.log("prefix is "+prefix)
-        console.log("will be multiplying by "+this.prefixValues[prefix])
-        console.log(value +" * "+this.prefixValues[prefix]+" = "+(value * this.prefixValues[prefix]))
-        value = value * this.prefixValues[prefix];
+        value = value * this.prefixValues[prefix];        // if we have a prefix, multiply by that;
       }
 
       for (unit in this.unitEquivalents) {                // if the unit can be found in the equivalents table, replace
@@ -361,6 +351,10 @@
             }
           }
         }
+      }
+
+      if (!value) {
+        value = NaN;
       }
       return {val: value, units: units}
     };

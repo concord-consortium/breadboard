@@ -246,6 +246,10 @@
           }
         }
       }
+      
+      if (!value) {
+        value = NaN;
+      }
       return {val: value, units: units}
     };
 
