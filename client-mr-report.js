@@ -1110,6 +1110,12 @@ sparks.createQuestionsCSV = function(data) {
        return sigFigs > Math.log(num) * Math.LOG10E ? num : ""+parseFloat(num);
      };
 
+     Math.close = function(num, expected, perc) {
+       var perc = perc || 10,
+            dif = expected / perc;
+       return (num >= (expected-dif) && num <= (expected+dif));
+     };
+
 })();
 /* FILE unit.js */
 
