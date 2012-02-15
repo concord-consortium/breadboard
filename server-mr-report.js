@@ -278,7 +278,8 @@
       "Ohms": ["ohms", "oms", "o", "Ω", "os"],
       "deg": ["deg", "degs", "degree", "degrees", "º"],
       "F": ["f", "farads", "farad", "fs"],
-      "H": ["h", "henries", "henry", "henrys", "hs"]
+      "H": ["h", "henries", "henry", "henrys", "hs"],
+      "Hz": ["hz", "herz", "hertz"]
     }
 
     u.prefixEquivalents = {
