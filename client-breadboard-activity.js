@@ -2537,9 +2537,10 @@ sparks.createQuestionsCSV = function(data) {
       "A": ["a", "amps", "amp", "amper", "ampers", "as"],
       "Ohms": ["ohms", "oms", "o", "Ω", "os"],
       "deg": ["deg", "degs", "degree", "degrees", "º"],
-      "F": ["f", "farads", "farad", "fs"],
+      "F": ["f", "farads", "farad", "fared", "fareds", "fered", "fereds", "feret", "ferets", "fs"],
       "H": ["h", "henries", "henry", "henrys", "hs"],
-      "Hz": ["hz", "herz", "hertz"]
+      "Hz": ["hz", "herz", "hertz"],
+      "%": ["%", "perc", "percent"]
     }
 
     u.prefixEquivalents = {
@@ -2565,14 +2566,38 @@ sparks.createQuestionsCSV = function(data) {
     u.parse = function(string) {
       var value, units, prefix, currPrefix, unit, equivalents, equiv, regex;
 
-      string = string.replace(/ /g, '');                  // rm all whitespace
-      string = string.replace(/['";:,\/?\\-]/g, '');      // rm all non-period puncutation
-      string = string.replace(/[^\d.]*(\d.*)/, '$1');      // if there are numbers, if there are letters before them remove them
-      value =  string.match(/[\d\.]+/);                   // find all numbers before the first letter, parse them to a number, store it
+      string = string.replace(/ /g, '');                    // rm all whitespace
+      string = string.replace(/['";:,\/?\\]/g, '');         // rm all non-period, non-dash puncutation
+      string = string.replace(/[^\d\.-]*(\d.*)/, '$1');      // if there are numbers, if there are letters before them remove them
+      value =  string.match(/^-?[\d\.]+/);                  // find all numbers before the first letter, parse them to a number, store it
       if (value) {
         value = parseFloat(value[0]);
       }
-      units = string.replace(/[\d\.]*/, '');              // everything after the first value is the units
+      string = string.replace(/^-?[\d\.]*/, '');             // everything after the first value is the units
+      string = string.replace(/['";:,\.\/?\\-]/g, '');       // rm all puncutation
+
+      for (unit in this.unitEquivalents) {                // if the unit can be found in the equivalents table, replace
+        equivalents = this.unitEquivalents[unit];
+        if (equivalents.length > 0) {
+          for (var i = 0, ii = equivalents.length; i<ii; i++) {
+            equiv = equivalents[i];
+            regex = new RegExp('.*('+equiv+')$', 'i');
+            hasUnits =string.match(regex)
+            if (hasUnits && hasUnits.length > 1){
+              units = unit;
+              string = string.replace(hasUnits[1], '');
+              break;
+            }
+          }
+        }
+        if (units) {
+          break;
+        }
+      }
+
+      if (!units) {
+        units = string;
+      }
 
       for (currPrefix in this.prefixEquivalents) {                 // if we can find a prefix at the start of the string, store it and delete it
         equivalents = this.prefixEquivalents[currPrefix];
@@ -2580,7 +2605,7 @@ sparks.createQuestionsCSV = function(data) {
           for (var i = 0, ii = equivalents.length; i<ii; i++) {
             equiv = equivalents[i];
             regex = new RegExp('^('+equiv+').*', 'i');
-            prefixes = units.match(regex);
+            prefixes = string.match(regex);
             if (prefixes && prefixes.length > 1){
               prefix = currPrefix;
               units = units.replace(prefixes[1], '');
@@ -2594,10 +2619,10 @@ sparks.createQuestionsCSV = function(data) {
       }
 
       if (!prefix) {                                      // if we haven't found a prefix yet, check for case-sensitive m or M at start
-        if (units.match(/^m/)) {
+        if (string.match(/^m/)) {
           prefix = "milli";
           units = units.replace(/^m/, "");
-        } else if (units.match(/^M/)){
+        } else if (string.match(/^M/)){
           prefix = "mega";
           units = units.replace(/^M/, "");
         }
@@ -2607,22 +2632,10 @@ sparks.createQuestionsCSV = function(data) {
         value = value * this.prefixValues[prefix];        // if we have a prefix, multiply by that;
       }
 
-      for (unit in this.unitEquivalents) {                // if the unit can be found in the equivalents table, replace
-        equivalents = this.unitEquivalents[unit];
-        if (equivalents.length > 0) {
-          for (var i = 0, ii = equivalents.length; i<ii; i++) {
-            equiv = equivalents[i];
-            if (units.toLowerCase() == equiv){
-              units = unit;
-              break;
-            }
-          }
-        }
-      }
-
       if (!value) {
         value = NaN;
       }
+
       return {val: value, units: units}
     };
 
