@@ -183,8 +183,12 @@
     runQuestionScript: function (script, question){
       var parsedScript = sparks.mathParser.replaceCircuitVariables(script);
       var functionScript;
-      eval("var functionScript = function(question, log){" + parsedScript + "}");
-      functionScript(question, sparks.logController.currentLog);
+      eval("var functionScript = function(question, log, parse, close){" + parsedScript + "}");
+      
+      var parse = function(string){
+        return sparks.unit.parse.call(sparks.unit, string);
+      }
+      functionScript(question, sparks.logController.currentLog, parse, Math.close);
     }
 
   };
