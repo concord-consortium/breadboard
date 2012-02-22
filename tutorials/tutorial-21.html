@@ -1,0 +1,122 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>SPARKS: AC Voltage Measures</title>
+<link rel="stylesheet" href="tutorials.css">
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(document).ready(function()
+{
+  // enable animated gifs to restart with mouse-over
+  hoverImage("id1", "pic1.gif")
+  
+   // for object id, (re)load img1 with mouse-over, optionally restore img2 after mouseover 
+   function hoverImage(id, img1, img2) {$("#"+id).hover(function(){$(this).attr("src", img1);},function(){if (img2) $(this).attr("src", img2);});}});
+</script>
+
+</head>
+
+<body lang="EN-US">
+
+<div id="framecontent">
+<!-- Title and logo at top -->
+<a href="index.html" title="View all tutorials"><img src="sparks_tut_logo.jpg" alt="SPARKS Tutorial Logo"></a>
+<a href="#" onclick="window.print(); return false;" id="print-link">print this</a>
+</div>
+
+
+<div id="maincontent"> <!-- content window -->
+<h3>AC Voltage Measures</h3>
+
+<table border=0 align=right width=325>
+ <tr>
+  <td width=325>
+  <img src="oscope-meas-4b.jpg" width="325" height="228" alt="oscope-meas-4b.jpg">
+  </td>
+ </tr>
+ <tr>
+  <td width=325>
+  <p style="margin-right:70px"><b>Figure 1.</b> Count the divisions and calculate the peak-to-peak voltage.<br><br>
+  </td>
+ </tr>
+ <tr>
+  <td width=325>
+	<img src="oscope-meas-5.jpg" width="325" height="228" alt="oscope-meas-5.jpg">
+  </td>
+ </tr>
+ <tr>
+  <td width=325>
+  <p style="margin-right:70px"><b>Figure 2.</b> The value for <b>V</b><b><sub>P</sub></b>
+  is simply half the peak-to-peak voltage.<br><br>
+  </td>
+ </tr>
+ <tr>
+  <td width=325>
+  <img src="oscope-meas-6.jpg" width="325" height="228" alt="oscope-meas-6.jpg">
+  </td>
+ </tr>
+ <tr>
+  <td width=325>
+  <p style="margin-right:70px"><b>Figure 3.</b> The value for <b>V</b><b><sub>RMS</sub></b>
+  is about 0.707 <b>V</b><b><sub>P</sub></b>.
+  </td>
+ </tr>
+</table>
+
+<p>Since AC signals vary like a <b><span style='color:#0070C0'>sine wave</span></b>,
+between <b>positive</b> and <b>negative</b> values, special methods are needed to define their <b>voltage.</b> You will encounter three main measures.</p>
+
+<p><b>Peak-to-Peak Voltage, V<sub>P-P</sub></b></p>
+
+<p>The simplest measure is the <b><span style='color:#0070C0'>peak-to-peak
+voltage</span></b>: a measure of the full swing of values, from
+the smallest dip to the largest peak. With an oscilloscope trace, you can easily see and measure this.</p>
+
+<p>In Figure&nbsp;1, you can count 4.0&nbsp;divisions between the top
+and bottom of the wave. This display is set to show 5.00&nbsp;volts/div, 
+so we can calculate the peak-to-peak voltage.</p>
+
+<p align="center"><img src="Eq21-1.gif" width="392" height="91" alt="Eq21-1"></p>
+
+<p><b>Peak Voltage, V<sub>P</sub></b></p>
+
+<p>A more useful value is the <b><span style='color:#0070C0'>peak voltage</span></b>: 
+the maximum voltage value. Almost always the reference is zero volts&mdash;exactly 
+half-way between the high and low values. So, the value of <b>V<sub>P</sub></b> 
+is simply &frac12;<font size="-3">&nbsp;</font><b>V<sub>P-P</sub></b>, as shown in Figure&nbsp;2.</p>
+
+<p align="center"><img src="Eq21-2.gif" width="272" height="90" alt="Eq21-2"></p>
+
+<p>The value <b>V<sub>P</sub></b> occurs in many applications, for example,
+calculating safe distances from high-voltage power lines.</p>
+
+<p><b>RMS Voltage, V<sub>RMS</sub></b></p>
+
+<p>The most common way to measure and report AC voltage is known as <b>V<sub>RMS</sub></b>,
+or <b><span style='color:#0070C0'>RMS-voltage</span></b>. 
+Technically, <b>V<sub>RMS</sub></b> is a mathematical result that depends on the shape of 
+the curve, and will generally be slightly less than <b>V<sub>P</sub></b>,
+as shown in Figure&nbsp;3. In practical terms, for waves shaped like sine-waves, 
+we can simply calculate <b>V<sub>RMS</sub></b> from the value of <b>V<sub>P</sub></b>.</p>
+
+<p align="center"><img src="Eq21-3.gif" width="362" height="89" alt="Eq21-3"></p>
+
+<p><b>Which of these three does your DMM report? </b></p>
+
+<p><b>V<sub>RMS</sub></b> is the value most often reported by AC
+voltmeters and digital multimeters.</p>
+
+<p>For inquiring minds, &quot;RMS&quot; stands for &quot;root mean
+squared.&quot; <b>V<sub>RMS</sub></b> is the result of 1)&nbsp;squaring the
+positive and negative AC values over one complete cycle, 2)&nbsp;calculating
+the average (or mean) of those values, and 3)&nbsp;taking the square root of
+that result. So, do you see where we get the three terms &quot;root mean
+squared?&quot;</p>
+
+<p>
+
+</body>
+
+</html>
