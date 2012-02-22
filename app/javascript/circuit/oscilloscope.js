@@ -7,8 +7,10 @@
       this.probeLocation = null;
       this.view = null;
       this.signals = [];
-      this._verticalScale = [];
-      this._horizontalScale = null;
+      var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
+          initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
+      this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
+      this._horizontalScale = initHorizontalScale;
     };
 
     sparks.circuit.Oscilloscope.prototype = {
@@ -26,8 +28,10 @@
       reset: function() {
         this.probeLocation = null;
         this.signals = [];
-        this._verticalScale = [];
-        this._horizontalScale = null;
+        var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
+            initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
+        this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
+        this._horizontalScale = initHorizontalScale;
         this.update();
       },
       
@@ -96,6 +100,10 @@
             };
 
             this.setSignal(this.PROBE_CHANNEL, probeSignal);
+            
+            sparks.logController.addEvent(sparks.LogEvent.OSCOPE_MEASUREMENT, {
+                "probe": probeNode
+              });
           } else {
             this.clearSignal(this.PROBE_CHANNEL);
           }
@@ -123,6 +131,10 @@
         if (this.view) {
           this.view.horizontalScaleChanged();
         }
+        
+        sparks.logController.addEvent(sparks.LogEvent.OSCOPE_T_SCALE_CHANGED, {
+            "scale": scale
+          });
       },
       
       getHorizontalScale: function() {
@@ -138,6 +150,11 @@
         if (this.view) {
           this.view.verticalScaleChanged(channel);
         }
+        
+        var logEvent = channel == 1 ? sparks.LogEvent.OSCOPE_V1_SCALE_CHANGED : sparks.LogEvent.OSCOPE_V2_SCALE_CHANGED;
+        sparks.logController.addEvent(logEvent, {
+            "scale": scale
+          });
       },
       
       getVerticalScale: function(channel) {

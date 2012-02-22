@@ -2892,6 +2892,10 @@ sparks.createQuestionsCSV = function(data) {
   sparks.LogEvent.BLEW_FUSE = "Blew fuse";
   sparks.LogEvent.DMM_MEASUREMENT = "DMM measurement";
   sparks.LogEvent.CHANGED_CIRCUIT = "Changed circuit";
+  sparks.LogEvent.OSCOPE_MEASUREMENT = "OScope measurement";
+  sparks.LogEvent.OSCOPE_V1_SCALE_CHANGED = "OScope V1 scale changed";
+  sparks.LogEvent.OSCOPE_V2_SCALE_CHANGED = "OScope V2 scale changed";
+  sparks.LogEvent.OSCOPE_T_SCALE_CHANGED = "OScope T scale changed";
 
   sparks.Log.prototype = {
 
@@ -7885,8 +7889,10 @@ sparks.createQuestionsCSV = function(data) {
       this.probeLocation = null;
       this.view = null;
       this.signals = [];
-      this._verticalScale = [];
-      this._horizontalScale = null;
+      var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
+          initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
+      this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
+      this._horizontalScale = initHorizontalScale;
     };
 
     sparks.circuit.Oscilloscope.prototype = {
@@ -7904,8 +7910,10 @@ sparks.createQuestionsCSV = function(data) {
       reset: function() {
         this.probeLocation = null;
         this.signals = [];
-        this._verticalScale = [];
-        this._horizontalScale = null;
+        var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
+            initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
+        this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
+        this._horizontalScale = initHorizontalScale;
         this.update();
       },
 
@@ -7969,6 +7977,10 @@ sparks.createQuestionsCSV = function(data) {
             };
 
             this.setSignal(this.PROBE_CHANNEL, probeSignal);
+
+            sparks.logController.addEvent(sparks.LogEvent.OSCOPE_MEASUREMENT, {
+                "probe": probeNode
+              });
           } else {
             this.clearSignal(this.PROBE_CHANNEL);
           }
@@ -7996,6 +8008,10 @@ sparks.createQuestionsCSV = function(data) {
         if (this.view) {
           this.view.horizontalScaleChanged();
         }
+
+        sparks.logController.addEvent(sparks.LogEvent.OSCOPE_T_SCALE_CHANGED, {
+            "scale": scale
+          });
       },
 
       getHorizontalScale: function() {
@@ -8010,6 +8026,11 @@ sparks.createQuestionsCSV = function(data) {
         if (this.view) {
           this.view.verticalScaleChanged(channel);
         }
+
+        var logEvent = channel == 1 ? sparks.LogEvent.OSCOPE_V1_SCALE_CHANGED : sparks.LogEvent.OSCOPE_V2_SCALE_CHANGED;
+        sparks.logController.addEvent(logEvent, {
+            "scale": scale
+          });
       },
 
       getVerticalScale: function(channel) {

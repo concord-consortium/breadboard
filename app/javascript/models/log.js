@@ -33,6 +33,10 @@
   sparks.LogEvent.BLEW_FUSE = "Blew fuse";
   sparks.LogEvent.DMM_MEASUREMENT = "DMM measurement";
   sparks.LogEvent.CHANGED_CIRCUIT = "Changed circuit";
+  sparks.LogEvent.OSCOPE_MEASUREMENT = "OScope measurement";
+  sparks.LogEvent.OSCOPE_V1_SCALE_CHANGED = "OScope V1 scale changed";
+  sparks.LogEvent.OSCOPE_V2_SCALE_CHANGED = "OScope V2 scale changed";
+  sparks.LogEvent.OSCOPE_T_SCALE_CHANGED = "OScope T scale changed";
   
   sparks.Log.prototype = {
     
