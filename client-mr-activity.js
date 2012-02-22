@@ -4303,7 +4303,7 @@ sparks.createQuestionsCSV = function(data) {
      };
 
      Math.close = function(num, expected, perc) {
-       var perc = perc || 10,
+       var perc = perc || 5,
             dif = expected * (perc/100);
        return (num >= (expected-dif) && num <= (expected+dif));
      };
@@ -4483,6 +4483,7 @@ sparks.createQuestionsCSV = function(data) {
     }
 
     u.prefixEquivalents = {
+      "femto": ["femto", "fempto", "f"],
       "pico": ["pico", "picco", "p"],
       "nano": ["nano", "nanno", "n"],
       "micro": ["micro", "micron", "μ"],
@@ -4493,6 +4494,7 @@ sparks.createQuestionsCSV = function(data) {
     };
 
     u.prefixValues = {
+      "femto": 1E-15,
       "pico": 1E-12,
       "nano": 1E-9,
       "micro": 1E-6,

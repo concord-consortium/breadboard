@@ -2544,6 +2544,7 @@ sparks.createQuestionsCSV = function(data) {
     }
 
     u.prefixEquivalents = {
+      "femto": ["femto", "fempto", "f"],
       "pico": ["pico", "picco", "p"],
       "nano": ["nano", "nanno", "n"],
       "micro": ["micro", "micron", "μ"],
@@ -2554,6 +2555,7 @@ sparks.createQuestionsCSV = function(data) {
     };
 
     u.prefixValues = {
+      "femto": 1E-15,
       "pico": 1E-12,
       "nano": 1E-9,
       "micro": 1E-6,
@@ -2890,6 +2892,10 @@ sparks.createQuestionsCSV = function(data) {
   sparks.LogEvent.BLEW_FUSE = "Blew fuse";
   sparks.LogEvent.DMM_MEASUREMENT = "DMM measurement";
   sparks.LogEvent.CHANGED_CIRCUIT = "Changed circuit";
+  sparks.LogEvent.OSCOPE_MEASUREMENT = "OScope measurement";
+  sparks.LogEvent.OSCOPE_V1_SCALE_CHANGED = "OScope V1 scale changed";
+  sparks.LogEvent.OSCOPE_V2_SCALE_CHANGED = "OScope V2 scale changed";
+  sparks.LogEvent.OSCOPE_T_SCALE_CHANGED = "OScope T scale changed";
 
   sparks.Log.prototype = {
 
@@ -4929,8 +4935,12 @@ sparks.createQuestionsCSV = function(data) {
     runQuestionScript: function (script, question){
       var parsedScript = sparks.mathParser.replaceCircuitVariables(script);
       var functionScript;
-      eval("var functionScript = function(question, log){" + parsedScript + "}");
-      functionScript(question, sparks.logController.currentLog);
+      eval("var functionScript = function(question, log, parse, close){" + parsedScript + "}");
+
+      var parse = function(string){
+        return sparks.unit.parse.call(sparks.unit, string);
+      }
+      functionScript(question, sparks.logController.currentLog, parse, Math.close);
     }
 
   };
@@ -7879,8 +7889,10 @@ sparks.createQuestionsCSV = function(data) {
       this.probeLocation = null;
       this.view = null;
       this.signals = [];
-      this._verticalScale = [];
-      this._horizontalScale = null;
+      var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
+          initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
+      this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
+      this._horizontalScale = initHorizontalScale;
     };
 
     sparks.circuit.Oscilloscope.prototype = {
@@ -7898,8 +7910,10 @@ sparks.createQuestionsCSV = function(data) {
       reset: function() {
         this.probeLocation = null;
         this.signals = [];
-        this._verticalScale = [];
-        this._horizontalScale = null;
+        var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
+            initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
+        this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
+        this._horizontalScale = initHorizontalScale;
         this.update();
       },
 
@@ -7963,6 +7977,10 @@ sparks.createQuestionsCSV = function(data) {
             };
 
             this.setSignal(this.PROBE_CHANNEL, probeSignal);
+
+            sparks.logController.addEvent(sparks.LogEvent.OSCOPE_MEASUREMENT, {
+                "probe": probeNode
+              });
           } else {
             this.clearSignal(this.PROBE_CHANNEL);
           }
@@ -7990,6 +8008,10 @@ sparks.createQuestionsCSV = function(data) {
         if (this.view) {
           this.view.horizontalScaleChanged();
         }
+
+        sparks.logController.addEvent(sparks.LogEvent.OSCOPE_T_SCALE_CHANGED, {
+            "scale": scale
+          });
       },
 
       getHorizontalScale: function() {
@@ -8004,6 +8026,11 @@ sparks.createQuestionsCSV = function(data) {
         if (this.view) {
           this.view.verticalScaleChanged(channel);
         }
+
+        var logEvent = channel == 1 ? sparks.LogEvent.OSCOPE_V1_SCALE_CHANGED : sparks.LogEvent.OSCOPE_V2_SCALE_CHANGED;
+        sparks.logController.addEvent(logEvent, {
+            "scale": scale
+          });
       },
 
       getVerticalScale: function(channel) {
@@ -9059,7 +9086,7 @@ var apMessageBox = apMessageBox || {};
      };
 
      Math.close = function(num, expected, perc) {
-       var perc = perc || 10,
+       var perc = perc || 5,
             dif = expected * (perc/100);
        return (num >= (expected-dif) && num <= (expected+dif));
      };
