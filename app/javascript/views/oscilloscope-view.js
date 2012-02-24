@@ -202,7 +202,10 @@
         position: 'absolute',
         left:   conf.width + 27,
         top: 15,
-        backgroundColor: this.faceplateColor
+        backgroundColor: 'none',
+        width: 122,
+        height: 340,
+        overflow: 'hidden'
       }).appendTo(this.$view);
 
       this.$controls = $('<div>').css({
@@ -212,16 +215,24 @@
         right:    0,
         height:   200
       }).appendTo(this.$faceplate);
+      
+      $('<p class="oscope-label">volts/div</p>').css({
+        top:       -33,
+        left:      14,
+        right:     0,
+        height:    20,
+        position: 'absolute'
+      }).appendTo(this.$controls);
 
       this.$channel1 = $('<div>').css({
         position:  'absolute',
-        top:       10,
-        left:      0,
+        top:       19,
+        left:      11,
         width:     122,
         height:    100
       }).appendTo(this.$controls);
 
-      $('<p>Channel 1</p>').css({
+      $('<p>CH 1</p>').css({
         top:       0,
         left:      0,
         right:     0,
@@ -237,15 +248,15 @@
 
       this.$channel2 = $('<div>').css({
         position: 'absolute',
-        top:      110,
-        left:     0,
+        top:      121,
+        left:     9,
         width:    122,
         height:   100
       }).appendTo(this.$controls);
 
-      $('<p>Channel 2</p>').css({
-        top:    0,
-        left:   0,
+      $('<p>CH 2</p>').css({
+        top:    234,
+        left:   11,
         right:  0,
         height: 20,
         textAlign: 'center'
@@ -256,22 +267,22 @@
       }, function () {
         self.model.bumpVerticalScale(2, 1);
       });
+      
+      $('<p class="oscope-label">time/div</p>').css({
+        top:       179,
+        left:      16,
+        right:     0,
+        height:    20,
+        position:  'absolute'
+      }).appendTo(this.$controls);
 
       this.$horizontal = $('<div>').css({
         position:  'absolute',
-        top:       220,
-        left:      0,
+        top:       229,
+        left:      11,
         width:     122,
         height:    100
       }).appendTo(this.$controls);
-
-      $('<p>Horizontal</p>').css({
-        top:    0,
-        left:   0,
-        right:  0,
-        height: 20,
-        textAlign: 'center'
-      }).appendTo(this.$horizontal);
 
       this._addScaleControl(this.$horizontal, function () {
         self.model.bumpHorizontalScale(-1);
@@ -295,7 +306,7 @@
         width: 30
       }).click(plusCallback).appendTo($el);
 
-      $('<button>-</button>').css({
+      $('<button>&mdash;</button>').css({
         position: 'absolute',
         top:   25,
         right: 25,

@@ -264,9 +264,16 @@ border-bottom-style:solid;
   cursor: url(http://www.google.com/intl/en_ALL/mapfiles/openhand.cur), move;
 }
 
-#oscope .display-area p {
+.display-area p {
   font-family: 'Anonymous Pro', sans-serif;
   font-size: 16px;
+}
+
+.oscope-label {
+  text-align: center;
+  font-variant: small-caps;
+  font-size: 1.3em;
+  font-weight: bold;
 }
 
 /* TIMELINE CHARTS */
