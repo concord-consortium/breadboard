@@ -196,7 +196,8 @@
           $('<th>').text("Your answer"),
           $('<th>').text("Correct answer"),
           $('<th>').text("Score"),
-          $('<th>').text("Notes")
+          $('<th>').text("Notes"),
+          $('<th>').text("Tutorials")
         )
       );
         
@@ -231,8 +232,15 @@
         
         var $tutorialButton = null;
         if (!!question.tutorial){
-          $tutorialButton = $("<button>").text("Tutorial").css('padding-left', "10px")
+          $tutorialButton = $("<button>").text(question.tutorial.replace(/-/g, ' ').capFirst()).css('padding-left', "10px")
                               .css('padding-right', "10px").css('margin-left', "20px");
+          
+          sparks.tutorialController.getTutorialTitle(question.tutorial, function(title){
+            var rolloverText = "Click to view "+title;
+            $tutorialButton.easyTooltip({
+               content: rolloverText
+            });
+          });
           $tutorialButton.click(function(){
             sparks.tutorialController.showTutorial(question.tutorial);
           });
@@ -245,7 +253,8 @@
             $('<td>').html(answer),
             $('<td>').html(correctAnswer),
             $('<td>').html(score +"/" + question.points),
-            $('<td>').html(feedback).append($tutorialButton)
+            $('<td>').html(feedback),
+            $('<td>').append($tutorialButton)
           ).addClass(question.answerIsCorrect ? "correct" : "incorrect")
         );
       });
@@ -282,6 +291,7 @@
             $('<th>').text(""),
             $('<th>').text(""),
             $('<th>').text(sessionReport.score + "/" + sessionReport.maxScore),
+            $('<th>').text(""),
             $('<th>').text("")
           )
         );

@@ -25,6 +25,11 @@
     };
 
 
+    String.prototype.capFirst = function() {
+        return this.charAt(0).toUpperCase() + this.slice(1);
+    }
+
+
 })();
 
 /*globals console sparks */

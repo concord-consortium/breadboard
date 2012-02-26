@@ -42,7 +42,7 @@ describe 'Logging'
 
       var $select = $questionsDiv.find('select');
       $select.val("200");
-      $select.change();
+      $select.blur();
       
       var section = sparks.activityController.currentSection;
       var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
@@ -50,8 +50,9 @@ describe 'Logging'
       var $trs = $report.find('tr');
 
       var $tds1 = $($trs[1]).find('td');
-      $tds1[4].innerHTML.should.be("Wrong!<button>Tutorial</button>");
-      $button = $($tds1[4]).find('button');
+      $tds1[4].innerHTML.should.be("Wrong!");
+      $tds1[5].innerHTML.should.be("<button>/example.html</button>");
+      $button = $($tds1[5]).find('button');
       $button.click();
       
       var log = sessionReport.log;
