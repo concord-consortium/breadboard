@@ -5,14 +5,15 @@
 <title>SPARKS: Using an Oscilloscope</title>
 <link rel="stylesheet" href="tutorials.css">
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script src="tutorialScript.js"></script>
 <script type="text/javascript">
 $(document).ready(function()
 {
   // enable animated gifs to restart with mouse-over
   hoverImage("volt-knob-adjust", "volt-knob-adjust2.gif")
   hoverImage("time-knob-adjust", "time-knob-adjust2.gif")
-  
-   // for object id, (re)load img1 with mouse-over, optionally restore img2 after mouseover 
+
+   // for object id, (re)load img1 with mouse-over, optionally restore img2 after mouseover
    function hoverImage(id, img1, img2) {$("#"+id).hover(function(){$(this).attr("src", img1);},function(){if (img2) $(this).attr("src", img2);});}});
 </script>
 </head>

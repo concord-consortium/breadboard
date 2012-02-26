@@ -2889,6 +2889,7 @@ sparks.createQuestionsCSV = function(data) {
   };
 
   sparks.LogEvent.CLICKED_TUTORIAL = "Clicked tutorial";
+  sparks.LogEvent.CHANGED_TUTORIAL = "Changed tutorial";
   sparks.LogEvent.BLEW_FUSE = "Blew fuse";
   sparks.LogEvent.DMM_MEASUREMENT = "DMM measurement";
   sparks.LogEvent.CHANGED_CIRCUIT = "Changed circuit";
@@ -5930,9 +5931,12 @@ sparks.createQuestionsCSV = function(data) {
 
     showTutorial: function(filename) {
       var url = this._getURL(filename);
-      window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
+      this.tutorialWindow = window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
+      this.tutorialWindow.moveActionCallback = this.tutorialMoveActionCallback;
       sparks.logController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
     },
+
+    tutorialWindow: null,
 
     setQuestionCategory: function(question) {
       var tutorialFilename = question.top_tutorial;
@@ -5964,6 +5968,16 @@ sparks.createQuestionsCSV = function(data) {
       } else {
         return filename;
       }
+    },
+
+    tutorialMoveActionCallback: function() {
+      setTimeout(function() {
+        var win = sparks.tutorialController.tutorialWindow;
+        if (win && win.location) {
+          sparks.logController.addEvent(sparks.LogEvent.CHANGED_TUTORIAL, win.location.pathname.replace("/",""));
+          win.moveActionCallback = sparks.tutorialController.tutorialMoveActionCallback
+        }
+      }, 1000);
     }
 
 

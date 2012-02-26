@@ -30,6 +30,7 @@
   };
   
   sparks.LogEvent.CLICKED_TUTORIAL = "Clicked tutorial";
+  sparks.LogEvent.CHANGED_TUTORIAL = "Changed tutorial";
   sparks.LogEvent.BLEW_FUSE = "Blew fuse";
   sparks.LogEvent.DMM_MEASUREMENT = "DMM measurement";
   sparks.LogEvent.CHANGED_CIRCUIT = "Changed circuit";
