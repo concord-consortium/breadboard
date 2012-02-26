@@ -236,7 +236,7 @@
                               .css('padding-right', "10px").css('margin-left', "20px");
           
           sparks.tutorialController.getTutorialTitle(question.tutorial, function(title){
-            var rolloverText = "Click to view "+title;
+            var rolloverText = "Click to view \""+title+"\"";
             $tutorialButton.easyTooltip({
                content: rolloverText
             });

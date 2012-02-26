@@ -3817,7 +3817,7 @@ sparks.createQuestionsCSV = function(data) {
                               .css('padding-right', "10px").css('margin-left', "20px");
 
           sparks.tutorialController.getTutorialTitle(question.tutorial, function(title){
-            var rolloverText = "Click to view "+title;
+            var rolloverText = "Click to view \""+title+"\"";
             $tutorialButton.easyTooltip({
                content: rolloverText
             });
@@ -5953,6 +5953,11 @@ sparks.createQuestionsCSV = function(data) {
         var $title = $(data).find('#tutorial_title');
         if ($title.length > 0){
           title = $title[0].innerHTML;
+        } else {
+          $title = $(data).find('h3');
+          if ($title.length > 0){
+            title = $title[0].innerHTML;
+          }
         }
         callback(title);
       });

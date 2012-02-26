@@ -39,6 +39,11 @@
         var $title = $(data).find('#tutorial_title');
         if ($title.length > 0){
           title = $title[0].innerHTML;
+        } else {
+          $title = $(data).find('h3');
+          if ($title.length > 0){
+            title = $title[0].innerHTML;
+          }
         }
         callback(title);
       });
