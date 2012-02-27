@@ -1026,7 +1026,8 @@ describe 'Page Reports'
       var $trs = $report.find('tr');
     
       var $tds1 = $($trs[1]).find('td');
-      $tds1[4].innerHTML.should.be("Wrong!<button>Tutorial</button>");
+      $tds1[4].innerHTML.should.be("Wrong!");
+      $tds1[5].innerHTML.should.be("<button>/example.html</button>")
       var $tds2 = $($trs[2]).find('td');
       $tds2[4].innerHTML.should.be("");
     
@@ -1034,7 +1035,7 @@ describe 'Page Reports'
       window.open = function(){};
     
       window.should.receive('open', 'once').with_args("/example.html", "", "menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no")
-      $button = $($tds1[4]).find('button');
+      $button = $($tds1[5]).find('button');
       $button.click();
     
       window.open = oldOpen;
@@ -1085,13 +1086,13 @@ describe 'Page Reports'
       var $trs = $report.find('tr');
     
       var $tds1 = $($trs[1]).find('td');
-      $tds1[4].innerHTML.should.be("Wrong!<button>Tutorial</button>");
+      $tds1[5].innerHTML.should.be("<button>/example2.html</button>");
     
       var oldOpen = window.open;
       window.open = function(){};
     
       window.should.receive('open', 'once').with_args("/example2.html", "", "menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no")
-      $button = $($tds1[4]).find('button');
+      $button = $($tds1[5]).find('button');
       $button.click();
     
       window.open = oldOpen;
@@ -1137,13 +1138,13 @@ describe 'Page Reports'
       var $trs = $report.find('tr');
     
       var $tds1 = $($trs[1]).find('td');
-      $tds1[4].innerHTML.should.be("<button>Tutorial</button>");
+      $tds1[5].innerHTML.should.be("<button>/example.html</button>");
     
       var oldOpen = window.open;
       window.open = function(){};
     
       window.should.receive('open', 'once').with_args("/example.html", "", "menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no")
-      $button = $($tds1[4]).find('button');
+      $button = $($tds1[5]).find('button');
       $button.click();
     
       window.open = oldOpen;

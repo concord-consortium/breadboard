@@ -18,7 +18,9 @@
     showTutorial: function(filename) {
       var url = this._getURL(filename);
       this.tutorialWindow = window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
-      this.tutorialWindow.moveActionCallback = this.tutorialMoveActionCallback;
+      if (this.tutorialWindow) {
+        this.tutorialWindow.moveActionCallback = this.tutorialMoveActionCallback;
+      }
       sparks.logController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
     },
     
