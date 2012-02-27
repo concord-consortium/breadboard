@@ -200,6 +200,40 @@
         } else {
           return scale;
         }
+      },
+
+      // returns how "good" the current scale is, from 0-1.
+      // For a single trace, a perfect scale is 1 full wave across the screen and an amplitude
+      // that is exactly the screen's height. This will return a 1.0 if the scale is within 20%
+      // of these parameters, and 0.0 if it's 200% away from the perfect scale (i.e. if it's 3 times
+      // as big or 1/3 as big).
+      // There are two scale factors per trace. The goodness ranking for the entire trace is the average
+      // of the two with the lower value weighted three times as much.
+      // If there are two traces showing, this will return the lower of the two values.
+      //
+      getGoodnessOfScale: function() {
+        var self = this;
+        var goodnessOfScale = function(channel) {
+          var timeScale  = self.signals[channel].frequency * (self._horizontalScale * 10),            // 0-inf, best is 1
+              ampScale   = (self.signals[channel].amplitude * 2) / (self._verticalScale[channel] * 8),
+              timeGoodness  = timeScale > 1 ? 1/timeScale : timeScale,                                // 0-1, best is 1
+              ampGoodness   = ampScale > 1 ? 1/ampScale : ampScale,
+              timeScore  = (timeGoodness - 0.3) / 0.5,                                                // scaled such that 0.3 = 0 and 0.8 = 1
+              ampScore   = (ampGoodness - 0.3) / 0.5,
+              minScore = Math.max(0,Math.min(timeScore, ampScore, 1)),                                // smallest of the two, no less than 0
+              maxScore = Math.min(1,Math.max(timeScore, ampScore, 0));                                // largest of the two, no greater than 1
+          return ((minScore * 3) + maxScore) / 4;
+        }
+
+        var goodnesses = [];
+        if (this.signals[this.SOURCE_CHANNEL]) {
+          goodnesses.push(goodnessOfScale([this.SOURCE_CHANNEL]));
+        }
+
+        if (this.signals[this.PROBE_CHANNEL]) {
+          goodnesses.push(goodnessOfScale([this.PROBE_CHANNEL]));
+        }
+        return Array.min(goodnesses);
       }
       
     };

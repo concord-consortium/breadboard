@@ -120,6 +120,14 @@
        return (num >= (expected-dif) && num <= (expected+dif));
      };
 
+
+     Array.max = function( array ){
+         return Math.max.apply( Math, array );
+     };
+     Array.min = function( array ){
+         return Math.min.apply( Math, array );
+     };
+
 })();
 /* FILE unit.js */
 

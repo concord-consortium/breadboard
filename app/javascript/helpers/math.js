@@ -103,5 +103,14 @@
             dif = expected * (perc/100);
        return (num >= (expected-dif) && num <= (expected+dif));
      };
+
+     // *** extend the Array object with useful methods ***
+
+     Array.max = function( array ){
+         return Math.max.apply( Math, array );
+     };
+     Array.min = function( array ){
+         return Math.min.apply( Math, array );
+     };
     
 })();

@@ -8122,6 +8122,31 @@ sparks.createQuestionsCSV = function(data) {
         } else {
           return scale;
         }
+      },
+
+      getGoodnessOfScale: function() {
+        var self = this;
+        var goodnessOfScale = function(channel) {
+          var timeScale  = self.signals[channel].frequency * (self._horizontalScale * 10),            // 0-inf, best is 1
+              ampScale   = (self.signals[channel].amplitude * 2) / (self._verticalScale[channel] * 8),
+              timeGoodness  = timeScale > 1 ? 1/timeScale : timeScale,                                // 0-1, best is 1
+              ampGoodness   = ampScale > 1 ? 1/ampScale : ampScale,
+              timeScore  = (timeGoodness - 0.3) / 0.5,                                                // scaled such that 0.3 = 0 and 0.8 = 1
+              ampScore   = (ampGoodness - 0.3) / 0.5,
+              minScore = Math.max(0,Math.min(timeScore, ampScore, 1)),                                // smallest of the two, no less than 0
+              maxScore = Math.min(1,Math.max(timeScore, ampScore, 0));                                // largest of the two, no greater than 1
+          return ((minScore * 3) + maxScore) / 4;
+        }
+
+        var goodnesses = [];
+        if (this.signals[this.SOURCE_CHANNEL]) {
+          goodnesses.push(goodnessOfScale([this.SOURCE_CHANNEL]));
+        }
+
+        if (this.signals[this.PROBE_CHANNEL]) {
+          goodnesses.push(goodnessOfScale([this.PROBE_CHANNEL]));
+        }
+        return Array.min(goodnesses);
       }
 
     };
@@ -9136,6 +9161,14 @@ var apMessageBox = apMessageBox || {};
        var perc = perc || 5,
             dif = expected * (perc/100);
        return (num >= (expected-dif) && num <= (expected+dif));
+     };
+
+
+     Array.max = function( array ){
+         return Math.max.apply( Math, array );
+     };
+     Array.min = function( array ){
+         return Math.min.apply( Math, array );
      };
 
 })();
