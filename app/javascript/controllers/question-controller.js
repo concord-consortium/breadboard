@@ -181,14 +181,19 @@
     },
 
     runQuestionScript: function (script, question){
-      var parsedScript = sparks.mathParser.replaceCircuitVariables(script);
       var functionScript;
-      eval("var functionScript = function(question, log, parse, close){" + parsedScript + "}");
+      var parsedScript = sparks.mathParser.replaceCircuitVariables(script),
+          goodness     = null;
+
+      eval("var functionScript = function(question, log, parse, close, goodness){" + parsedScript + "}");
       
       var parse = function(string){
         return sparks.unit.parse.call(sparks.unit, string);
       }
-      functionScript(question, sparks.logController.currentLog, parse, Math.close);
+      if (sparks.activityController.currentSection.meter.oscope) {
+        goodness = sparks.activityController.currentSection.meter.oscope.getGoodnessOfScale();
+      }
+      functionScript(question, sparks.logController.currentLog, parse, Math.close, goodness);
     }
 
   };

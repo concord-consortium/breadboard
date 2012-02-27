@@ -295,6 +295,15 @@
         this.verticalScaleChanged(i);
       }
 
+      // for testing the goodnessOfScale measurement
+      $('<p class="goodnessOfScale"></p>').css({
+        top:       294,
+        left:      29,
+        right:     0,
+        height:    20,
+        position:  'absolute'
+      }).appendTo(this.$controls);
+
       return this.$view;
     },
 
@@ -346,6 +355,11 @@
         if (channel === 1 && this.traces[2]) {
           if (!!this.traces[2].raphaelObjectMini) this.traces[2].raphaelObjectMini.toFront();
           if (!!this.traces[2].raphaelObject) this.traces[2].raphaelObject.toFront();
+        }
+
+        // testing goodness of scale
+        if (sparks.testGoodnessOfScale) {
+          $(".goodnessOfScale").html(sparks.math.roundToSigDigits(this.model.getGoodnessOfScale(),4));
         }
       }
       else {

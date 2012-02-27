@@ -133,7 +133,8 @@
         }
         
         sparks.logController.addEvent(sparks.LogEvent.OSCOPE_T_SCALE_CHANGED, {
-            "scale": scale
+            "scale": scale,
+            "goodnessOfScale": this.getGoodnessOfScale()
           });
       },
       
@@ -153,7 +154,8 @@
         
         var logEvent = channel == 1 ? sparks.LogEvent.OSCOPE_V1_SCALE_CHANGED : sparks.LogEvent.OSCOPE_V2_SCALE_CHANGED;
         sparks.logController.addEvent(logEvent, {
-            "scale": scale
+            "scale": scale,
+            "goodnessOfScale": this.getGoodnessOfScale()
           });
       },
       

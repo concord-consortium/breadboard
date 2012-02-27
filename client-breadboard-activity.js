@@ -4172,6 +4172,14 @@ sparks.createQuestionsCSV = function(data) {
         this.verticalScaleChanged(i);
       }
 
+      $('<p class="goodnessOfScale"></p>').css({
+        top:       294,
+        left:      29,
+        right:     0,
+        height:    20,
+        position:  'absolute'
+      }).appendTo(this.$controls);
+
       return this.$view;
     },
 
@@ -4221,6 +4229,10 @@ sparks.createQuestionsCSV = function(data) {
         if (channel === 1 && this.traces[2]) {
           if (!!this.traces[2].raphaelObjectMini) this.traces[2].raphaelObjectMini.toFront();
           if (!!this.traces[2].raphaelObject) this.traces[2].raphaelObject.toFront();
+        }
+
+        if (sparks.testGoodnessOfScale) {
+          $(".goodnessOfScale").html(sparks.math.roundToSigDigits(this.model.getGoodnessOfScale(),4));
         }
       }
       else {
@@ -4955,14 +4967,19 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     runQuestionScript: function (script, question){
-      var parsedScript = sparks.mathParser.replaceCircuitVariables(script);
       var functionScript;
-      eval("var functionScript = function(question, log, parse, close){" + parsedScript + "}");
+      var parsedScript = sparks.mathParser.replaceCircuitVariables(script),
+          goodness     = null;
+
+      eval("var functionScript = function(question, log, parse, close, goodness){" + parsedScript + "}");
 
       var parse = function(string){
         return sparks.unit.parse.call(sparks.unit, string);
       }
-      functionScript(question, sparks.logController.currentLog, parse, Math.close);
+      if (sparks.activityController.currentSection.meter.oscope) {
+        goodness = sparks.activityController.currentSection.meter.oscope.getGoodnessOfScale();
+      }
+      functionScript(question, sparks.logController.currentLog, parse, Math.close, goodness);
     }
 
   };
@@ -8057,7 +8074,8 @@ sparks.createQuestionsCSV = function(data) {
         }
 
         sparks.logController.addEvent(sparks.LogEvent.OSCOPE_T_SCALE_CHANGED, {
-            "scale": scale
+            "scale": scale,
+            "goodnessOfScale": this.getGoodnessOfScale()
           });
       },
 
@@ -8076,7 +8094,8 @@ sparks.createQuestionsCSV = function(data) {
 
         var logEvent = channel == 1 ? sparks.LogEvent.OSCOPE_V1_SCALE_CHANGED : sparks.LogEvent.OSCOPE_V2_SCALE_CHANGED;
         sparks.logController.addEvent(logEvent, {
-            "scale": scale
+            "scale": scale,
+            "goodnessOfScale": this.getGoodnessOfScale()
           });
       },
 
