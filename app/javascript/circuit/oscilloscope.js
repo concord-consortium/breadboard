@@ -11,6 +11,8 @@
           initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
       this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
       this._horizontalScale = initHorizontalScale;
+	  this.showAminusB = false;
+	  this.showAplusB = false;
     };
 
     sparks.circuit.Oscilloscope.prototype = {
@@ -184,7 +186,21 @@
           this.setVerticalScale(channel, newScale);
         }
       },
-      
+
+      toggleShowAminusB: function() {
+        this.showAminusB = !this.showAminusB;
+        if (this.showAminusB) {
+          this.showAplusB = false;
+        }
+      },
+
+      toggleShowAplusB: function() {
+        this.showAplusB = !this.showAplusB;
+        if (this.showAplusB) {
+          this.showAminusB = false;
+        }
+      },
+
       _getNextScaleFromList: function(scale, scales, direction) {
         var i, len, prevIndex;
         

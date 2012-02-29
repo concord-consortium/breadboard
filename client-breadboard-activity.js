@@ -3920,8 +3920,8 @@ sparks.createQuestionsCSV = function(data) {
     traceBgColor:     '#324569',
     tickColor:        '#9EBDDE',
     textColor:        '#D8E1EB',
-    traceOuterColors: ['#FFFF4A', '#FF5C4A'],
-    traceInnerColors: ['#FFFFFF', '#FFD3CF'],
+    traceOuterColors: ['#FFFF4A', '#FF5C4A', '#33FF33'],
+    traceInnerColors: ['#FFFFFF', '#FFD3CF', '#EEFFEE'],
 
     setModel: function (model) {
       this.model = model;
@@ -4053,24 +4053,31 @@ sparks.createQuestionsCSV = function(data) {
 
       this.drawGrid(this.raphaelCanvas, conf);
 
-      $('<p>CH1 <span class="vscale channel1"></span>V</p>').css({
+      $('<p>CHA <span class="vscale channel1"></span>V</p>').css({
         position: 'absolute',
         top:   10 + conf.height,
         left:  5,
         color: this.textColor
       }).appendTo(this.$displayArea);
 
-      $('<p>CH2 <span class="vscale channel2"></span>V</p>').css({
+      $('<p>CHB <span class="vscale channel2"></span>V</p>').css({
         position: 'absolute',
         top:   10 + conf.height,
         left:  5 + conf.width / 4,
         color: this.textColor
       }).appendTo(this.$displayArea);
 
-      $('<p>M <span class="hscale"></span>s</p>').css({
+      $('<p id="chc">CHC <span class="vscale channel2"></span>V</p>').css({
         position: 'absolute',
         top:   10 + conf.height,
         left:  5 + conf.width / 2,
+        color: this.textColor
+      }).appendTo(this.$displayArea).hide();
+
+      $('<p>M <span class="hscale"></span>s</p>').css({
+        position: 'absolute',
+        top:   10 + conf.height,
+        left:  5 + (conf.width*3)/4,
         color: this.textColor
       }).appendTo(this.$displayArea);
 
@@ -4081,7 +4088,7 @@ sparks.createQuestionsCSV = function(data) {
         top: 15,
         backgroundColor: 'none',
         width: 122,
-        height: 340,
+        height: 364,
         overflow: 'hidden'
       }).appendTo(this.$view);
 
@@ -4109,12 +4116,13 @@ sparks.createQuestionsCSV = function(data) {
         height:    100
       }).appendTo(this.$controls);
 
-      $('<p>CH 1</p>').css({
-        top:       0,
-        left:      0,
+      $('<p>CH A</p>').css({
+        top:       -2,
+        left:      -2,
         right:     0,
         height:    20,
-        textAlign: 'center'
+        textAlign: 'center',
+    position:  'absolute'
       }).appendTo(this.$channel1);
 
       this._addScaleControl(this.$channel1, function () {
@@ -4126,17 +4134,18 @@ sparks.createQuestionsCSV = function(data) {
       this.$channel2 = $('<div>').css({
         position: 'absolute',
         top:      121,
-        left:     9,
+        left:     11,
         width:    122,
         height:   100
       }).appendTo(this.$controls);
 
-      $('<p>CH 2</p>').css({
-        top:    234,
-        left:   11,
+      $('<p>CH B</p>').css({
+        top:    -2,
+        left:   -2,
         right:  0,
         height: 20,
-        textAlign: 'center'
+        textAlign: 'center',
+    position: 'absolute'
       }).appendTo(this.$channel2);
 
       this._addScaleControl(this.$channel2, function () {
@@ -4172,9 +4181,31 @@ sparks.createQuestionsCSV = function(data) {
         this.verticalScaleChanged(i);
       }
 
+      $('<button id="AminusB">A-B</button>').css({
+        top:       298,
+        left:      33,
+        height:    23,
+        width:     36,
+        position:  'absolute'
+      }).click(function(){
+      self._toggleComboButton(true);
+      }).appendTo(this.$controls);
+
+      $('<button id="AplusB">A+B</button>').css({
+        top:       298,
+        left:      74,
+        height:    23,
+        width:     36,
+        position:  'absolute'
+      }).click(function(){
+      self._toggleComboButton(false);
+      }).appendTo(this.$controls);
+
+
+
       $('<p class="goodnessOfScale"></p>').css({
-        top:       294,
-        left:      29,
+        top:       229,
+        left:      63,
         right:     0,
         height:    20,
         position:  'absolute'
@@ -4182,6 +4213,21 @@ sparks.createQuestionsCSV = function(data) {
 
       return this.$view;
     },
+
+  _toggleComboButton: function (isAminusB) {
+    if (isAminusB) {
+        this.model.toggleShowAminusB();
+    } else {
+        this.model.toggleShowAplusB();
+    }
+    this.renderComboTrace(this.previousPhaseOffset);
+    $('#AminusB').css({
+      backgroundColor: this.model.showAminusB ? '#4F4' : ''
+    });
+    $('#AplusB').css({
+      backgroundColor: this.model.showAplusB ? '#4F4' : ''
+    });
+  },
 
     _addScaleControl: function ($el, minusCallback, plusCallback) {
       $('<button>+</button>').css({
@@ -4238,6 +4284,32 @@ sparks.createQuestionsCSV = function(data) {
       else {
         this.removeTrace(channel);
       }
+      this.renderComboTrace(phaseOffset);
+    },
+
+    renderComboTrace: function (phaseOffset) {
+      this.removeTrace(3);
+      if ((this.model.showAminusB || this.model.showAplusB) && this.model.getSignal(1) && this.model.getSignal(2)) {
+        var a  = this.model.getSignal(1),
+            b  = this.model.getSignal(2),
+            bPhase = this.model.showAplusB ? b.phase : (b.phase + Math.PI),     // offset b's phase by Pi if we're subtracting
+            rA = a.amplitude * Math.sin(a.phase),
+            iA = a.amplitude * Math.cos(a.phase),
+            rB = b.amplitude * Math.sin(bPhase),
+            iB = b.amplitude * Math.cos(bPhase),
+            combo = {
+                amplitude: Math.sqrt(Math.pow(rA+rB, 2) + Math.pow(iA+iB, 2)),
+                phase: Math.atan((rA+rB) / (iA+iB)) + phaseOffset,
+                frequency: a.frequency
+            };
+        this.traces[3] = {
+            raphaelObjectMini: this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, combo, 3, this.model.getHorizontalScale(), this.model.getVerticalScale(2), 0),
+            raphaelObject: this.drawTrace(this.raphaelCanvas, this.largeViewConfig, combo, 3, this.model.getHorizontalScale(), this.model.getVerticalScale(2), 0)
+        };
+        $('#chc').show();
+      } else {
+        $('#chc').hide();
+      }
     },
 
     removeTrace: function (channel) {
@@ -4245,6 +4317,9 @@ sparks.createQuestionsCSV = function(data) {
         if (this.traces[channel].raphaelObjectMini) this.traces[channel].raphaelObjectMini.remove();
         if (this.traces[channel].raphaelObject) this.traces[channel].raphaelObject.remove();
         delete this.traces[channel];
+      }
+      if (channel !== 3) {
+        this.renderComboTrace(this.previousPhaseOffset);
       }
     },
 
@@ -7957,6 +8032,8 @@ sparks.createQuestionsCSV = function(data) {
           initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
       this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
       this._horizontalScale = initHorizontalScale;
+	  this.showAminusB = false;
+	  this.showAplusB = false;
     };
 
     sparks.circuit.Oscilloscope.prototype = {
@@ -8121,6 +8198,20 @@ sparks.createQuestionsCSV = function(data) {
 
         if (newScale !== currentScale) {
           this.setVerticalScale(channel, newScale);
+        }
+      },
+
+      toggleShowAminusB: function() {
+        this.showAminusB = !this.showAminusB;
+        if (this.showAminusB) {
+          this.showAplusB = false;
+        }
+      },
+
+      toggleShowAplusB: function() {
+        this.showAplusB = !this.showAplusB;
+        if (this.showAplusB) {
+          this.showAminusB = false;
         }
       },
 
