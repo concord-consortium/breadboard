@@ -233,11 +233,12 @@
       }).appendTo(this.$controls);
 
       $('<p>CH 1</p>').css({
-        top:       0,
-        left:      0,
+        top:       -2,
+        left:      -2,
         right:     0,
         height:    20,
-        textAlign: 'center'
+        textAlign: 'center',
+		position:  'absolute'
       }).appendTo(this.$channel1);
 
       this._addScaleControl(this.$channel1, function () {
@@ -249,17 +250,18 @@
       this.$channel2 = $('<div>').css({
         position: 'absolute',
         top:      121,
-        left:     9,
+        left:     11,
         width:    122,
         height:   100
       }).appendTo(this.$controls);
 
       $('<p>CH 2</p>').css({
-        top:    234,
-        left:   11,
+        top:    -2,
+        left:   -2,
         right:  0,
         height: 20,
-        textAlign: 'center'
+        textAlign: 'center',
+		position: 'absolute'
       }).appendTo(this.$channel2);
 
       this._addScaleControl(this.$channel2, function () {
@@ -297,8 +299,8 @@
 
       // for testing the goodnessOfScale measurement
       $('<p class="goodnessOfScale"></p>').css({
-        top:       294,
-        left:      29,
+        top:       229,
+        left:      63,
         right:     0,
         height:    20,
         position:  'absolute'
