@@ -102,6 +102,9 @@
             $input.blur(function(args){
               self.valueChanged(args);
             });
+            $input.change(function(args){
+              self.valueChanged(args);
+            });
           });
           $question.append('&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
         } else {
