@@ -419,11 +419,11 @@
       if ((this.model.showAminusB || this.model.showAplusB) && this.model.getSignal(1) && this.model.getSignal(2)) {
         var a  = this.model.getSignal(1),
             b  = this.model.getSignal(2),
-            bPhase = this.model.showAplusB ? b.phase : (b.phase + Math.PI),     // offset b's phase by Pi if we're subtracting
-            rA = a.amplitude * Math.sin(a.phase),
-            iA = a.amplitude * Math.cos(a.phase),
-            rB = b.amplitude * Math.sin(bPhase),
-            iB = b.amplitude * Math.cos(bPhase),
+            aPhase = this.model.showAplusB ? a.phase : (a.phase + Math.PI),     // offset a's phase by Pi if we're subtracting
+            rA = a.amplitude * Math.sin(aPhase),
+            iA = a.amplitude * Math.cos(aPhase),
+            rB = b.amplitude * Math.sin(b.phase),
+            iB = b.amplitude * Math.cos(b.phase),
             combo = {
                 amplitude: Math.sqrt(Math.pow(rA+rB, 2) + Math.pow(iA+iB, 2)),
                 phase: Math.atan((rA+rB) / (iA+iB)) + phaseOffset,
