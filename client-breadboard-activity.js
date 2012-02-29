@@ -3814,7 +3814,7 @@ sparks.createQuestionsCSV = function(data) {
         var $tutorialButton = null;
         if (!!question.tutorial){
           $tutorialButton = $("<button>").text(question.tutorial.replace(/-/g, ' ').capFirst()).css('padding-left', "10px")
-                              .css('padding-right', "10px").css('margin-left', "20px");
+                              .css('padding-right', "10px").css('margin-left', "20px").css('width', "100px");
 
           sparks.tutorialController.getTutorialTitle(question.tutorial, function(title){
             var rolloverText = "Click to view \""+title+"\"";
