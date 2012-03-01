@@ -1,0 +1,130 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>SPARKS: Measuring Voltage in AC Circuits</title>
+<link rel="stylesheet" href="tutorials.css">
+<script src="tutorialScript.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(document).ready(function()
+{
+  // enable animated gifs to restart with mouse-over
+  hoverImage("id1", "pic1.gif")
+  
+   // for object id, (re)load img1 with mouse-over, optionally restore img2 after mouseover 
+   function hoverImage(id, img1, img2) {$("#"+id).hover(function(){$(this).attr("src", img1);},function(){if (img2) $(this).attr("src", img2);});}});
+</script>
+
+</head>
+
+<body lang="EN-US">
+
+<div id="framecontent">
+<!-- Title and logo at top -->
+<a href="index.html" title="View all tutorials"><img src="sparks_tut_logo.jpg" alt="SPARKS Tutorial Logo"></a>
+<a href="#" onclick="window.print(); return false;" id="print-link">print this</a>
+</div>
+
+
+<div id="maincontent"> <!-- content window -->
+<h3>Measuring Voltage in AC Circuits</h3>
+
+<table border=0 align=right width=325>
+ <tr>
+  <td width=325>
+  <img src="schematic-RL-meas-R.jpg" width="325" height="168" alt="schematic-RL-meas-R">
+  </td>
+ </tr>
+ <tr>
+  <td width=325>
+  <p><b>Figure 1.</b> Measuring voltage <b>V<sub>R</sub></b>
+  dropped across <b>R</b> in an AC&nbsp;circuit.<br><br>
+  </td>
+ </tr>
+</table>
+
+
+<p>As discussed in another
+tutorial, there are three different measures of AC voltage: <b>V<sub>P-P</sub></b>,
+<b>V<sub>P</sub></b>, and <b>V<sub>RMS</sub></b>. The last one, <b>V<sub>RMS</sub></b>,
+is usually measured with an AC voltmeter. Here we will consider the peak
+voltage, <b>V<sub>P</sub></b>, measured with an oscilloscope.</p>
+
+<p><b>Where to Measure?</span></b></p>
+
+<p>In most AC circuits, the
+reference point is the circuit ground. In SPARKS circuits, the negative oscilloscope
+probe is already connected to the circuit ground&mdash;the same as the function
+generator ground.</p>
+
+<p>Consider the simple AC
+circuit in Figure&nbsp;1. We can connect the voltmeter probe to three possible points:</p>
+
+<ul>
+<li><font color="Blue"><b>Point 1:</b></font> This will read the voltage of the power source (function generator).
+
+<li><font color="Blue"><b>Point 2:</b></font> This will read the voltage drop across the resistor.
+
+<li><font color="Blue"><b>Point 3:</b></font> This will read a constant zero, since it is at the same potential as ground.
+</ul>
+
+<p>In the SPARKS oscilloscope,
+Channel&nbsp;A automatically shows the signal at Point&nbsp;1&mdash;the power source. So, placing
+the Channel&nbsp;B probe on Point&nbsp;2 (or similar) is the only other meaningful
+measurement. </p>
+
+<p>Although the example here
+uses a resistor-inductor (RL) circuit, the same principles apply to the other
+AC circuits in SPARKS.</p>
+
+<p><b>Measuring an RL circuit</span></b></p>
+
+<table border=0 align=right width=400>
+ <tr>
+  <td width=400>
+  <img src="oscope-RL-meas-R-labeled.jpg" width="400" height="300" alt="oscope-RL-meas-R-labeled">
+  </td>
+ </tr>
+ <tr>
+  <td width=400>
+  <p style="margin-right:50px"><b>Figure 2.</b> Supply voltage leads voltage <b>V<sub>R</sub></b> by phase&nbsp;angle&nbsp;<i>&phi;</i>.<br><br>
+  </td>
+ </tr>
+</table>
+
+
+<p>Consider the circuit in
+Figure&nbsp;1 and the measurement at Point&nbsp;2 shown in Figure&nbsp;2. Notice
+that:</p>
+
+<ul>
+<li>Resistor <b>R</b> is connected to ground, so&hellip;
+<li>The oscilloscope probe placed at Point&nbsp;2 measures the voltage drop, <b>V<sub>R</sub></b>.
+<li>The <b>V<sub>R</sub></b> curve shows less voltage than the supply voltage <b>E</b>.
+<li>The supply voltage <b>E leads V<sub>R</sub></b> by a <b><span
+style='color:#0070C0'>phase difference</span>&nbsp;<i>&phi;</i></b>.
+</ul>
+
+<p>Using the volts/division
+values and the vertical position of the peaks, we can calculate the voltage measure
+for each channel. Here, both are displayed with the vertical scale of 5.00&nbsp;V/div. Channel&nbsp;B shows that <b>V<sub>R</sub></b> has a peak voltage of about 1.1 divisions&nbsp;&times;&nbsp;5.00&nbsp;V/div&nbsp;=&nbsp;5.5&nbsp;V.</p>
+
+<p>What causes the voltage <b>V<sub>R</sub></b>
+in Figure&nbsp;1? It is the result of the circuit current. Thus, when measuring
+<b>V<sub>R</sub></b>, by Ohm's Law we learn something about the alternating circuit
+current: <b>I&nbsp;=&nbsp;V<sub>R</sub>/R</b>.</p>
+
+<p>For example, we can observe the phase difference of this circuit's current. See the spacing between two similar
+points where the curves rise and cross the horizontal axis? Here we see that the
+source voltage <b>E</b> on Channel&nbsp;A is <b><span style='color:#0070C0'>leading</span></b>
+<b>V<sub>R</sub></b> on Channel&nbsp;B (same as the circuit current <b>I</b>) by about 50&nbsp;<i>&mu;</i>s. As expected, 
+<b>in an inductive series circuit, the <span style='color:#0070C0'>voltage E leads the
+current I</span>.</b> (Remember: <b>ELI</b> the ICEman.) 
+How would you expect the curves to be different with a series <i>capacitive</i> circuit? </p>
+
+<p>&nbsp;</p>
+
+</body>
+
+</html>
