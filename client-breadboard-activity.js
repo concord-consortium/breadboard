@@ -8070,7 +8070,7 @@ sparks.createQuestionsCSV = function(data) {
       },
 
       setProbeLocation: function(probe, location) {
-        if (probe === "probe_oscope") {
+        if (probe === "probe_pink") {
           this.probeLocation = location;
           this.update();
         }
