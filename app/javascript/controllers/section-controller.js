@@ -42,6 +42,7 @@
       section.hide_circuit = !!jsonSection.hide_circuit;
       section.show_multimeter = !(!(jsonSection.show_multimeter) || jsonSection.show_multimeter === "false");     // may be a string
       section.show_oscilloscope = !(!(jsonSection.show_oscilloscope) || jsonSection.show_oscilloscope === "false");
+      section.allow_move_yellow_probe = !(!(jsonSection.allow_move_yellow_probe) || jsonSection.allow_move_yellow_probe === "false");
       section.disable_multimeter_position = jsonSection.disable_multimeter_position;
 
       if (!section.hide_circuit && section.show_multimeter) {

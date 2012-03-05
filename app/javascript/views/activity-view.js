@@ -53,6 +53,7 @@
 
         this.showDMM(section.show_multimeter);
         this.showOScope(section.show_oscilloscope);
+        this.allowMoveYellowProbe(section.allow_move_yellow_probe);
 
         section.meter.reset();
       }
@@ -124,6 +125,10 @@
      showDMM: function(visible) {
        sparks.flash.sendCommand('set_multimeter_visibility',visible.toString());
        sparks.flash.sendCommand('set_probe_visibility',visible.toString());
+     },
+     
+     allowMoveYellowProbe: function(allow) {
+       sparks.flash.sendCommand('enable_probe_dragging', "yellow", allow);
      },
      
      hidePopups: function() {

@@ -16,6 +16,7 @@
     this.hide_circuit = false;
     this.show_multimeter = false;
     this.show_oscilloscope = false;
+    this.allow_move_yellow_probe = false;
     
     this.section_url = "";
     this.images_url = "";

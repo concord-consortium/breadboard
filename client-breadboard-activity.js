@@ -2684,6 +2684,7 @@ sparks.createQuestionsCSV = function(data) {
     this.hide_circuit = false;
     this.show_multimeter = false;
     this.show_oscilloscope = false;
+    this.allow_move_yellow_probe = false;
 
     this.section_url = "";
     this.images_url = "";
@@ -3079,6 +3080,7 @@ sparks.createQuestionsCSV = function(data) {
 
         this.showDMM(section.show_multimeter);
         this.showOScope(section.show_oscilloscope);
+        this.allowMoveYellowProbe(section.allow_move_yellow_probe);
 
         section.meter.reset();
       }
@@ -3150,6 +3152,10 @@ sparks.createQuestionsCSV = function(data) {
      showDMM: function(visible) {
        sparks.flash.sendCommand('set_multimeter_visibility',visible.toString());
        sparks.flash.sendCommand('set_probe_visibility',visible.toString());
+     },
+
+     allowMoveYellowProbe: function(allow) {
+       sparks.flash.sendCommand('enable_probe_dragging', "yellow", allow);
      },
 
      hidePopups: function() {
@@ -5263,6 +5269,7 @@ sparks.createQuestionsCSV = function(data) {
       section.hide_circuit = !!jsonSection.hide_circuit;
       section.show_multimeter = !(!(jsonSection.show_multimeter) || jsonSection.show_multimeter === "false");     // may be a string
       section.show_oscilloscope = !(!(jsonSection.show_oscilloscope) || jsonSection.show_oscilloscope === "false");
+      section.allow_move_yellow_probe = !(!(jsonSection.allow_move_yellow_probe) || jsonSection.allow_move_yellow_probe === "false");
       section.disable_multimeter_position = jsonSection.disable_multimeter_position;
 
       if (!section.hide_circuit && section.show_multimeter) {
