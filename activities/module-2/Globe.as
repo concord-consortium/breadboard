@@ -11,7 +11,6 @@
 		public static var probeBlackLocation:String = null;
 		public static var resistance;
 		public static var enable_component_dragging:Boolean = true;
-		public static var enable_probe_dragging:Boolean = true;
 		
 		public static var dragYellowProbe:Boolean = false;
 		public static var dragPinkProbe:Boolean = true;

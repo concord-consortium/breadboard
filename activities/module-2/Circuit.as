@@ -28,6 +28,11 @@
 	import ComponentCapacitor;
 	import ComponentInductor;
 	import ComponentSlider;
+	import ComponentPowerWireBlack;
+	import ComponentPowerWireRed;
+	
+	import Probe;
+	import Globe;
 
 
     public class Circuit {
@@ -89,6 +94,7 @@ sparks.flash.sendCommand('insert_component', 'resistor', "woo", "f30,f24", '4ban
 
 sparks.flash.sendCommand('insert_component', 'capacitor', "woo", "f30,f24", "r1");
 */
+
 
 		
 		public function insertComponent(componentKind:String, componentName:String, position:String, ...values):String {
@@ -161,6 +167,33 @@ sparks.flash.sendCommand('insert_component', 'capacitor', "woo", "f30,f24", "r1"
 					
 					//breadboard.getComponentLayer().setChildIndex(components[newSlider], breadboard.getComponentLayer().numChildren - 1);
 				break;
+				case 'blackPowerWire':
+					var newBlackPowerWire:int = components.length;
+					//var componentLabel5:String = values[0];
+					
+					components[newBlackPowerWire] = new powerWireBlack_mc;
+					components[newBlackPowerWire].name = componentName;
+					positionComponent(componentKind, components[newBlackPowerWire], position);
+					//components[newBlack].setLabel(componentLabel3);			
+					breadboard.getComponentLayer().addChild(components[newBlackPowerWire]);
+					breadboard.sortZindexByVerticalPosition(breadboard.getComponentLayer());
+					
+					//breadboard.getComponentLayer().setChildIndex(components[newInductor], breadboard.getComponentLayer().numChildren - 1);
+				break;
+				case 'redPowerWire':
+					var newRedPowerWire:int = components.length;
+					//var componentLabel6:String = values[0];
+					
+					components[newRedPowerWire] = new powerWireRed_mc;
+					components[newRedPowerWire].name = componentName;
+					positionComponent(componentKind, components[newRedPowerWire], position);
+					//components[newBlack].setLabel(componentLabel3);			
+					breadboard.getComponentLayer().addChild(components[newRedPowerWire]);
+					breadboard.sortZindexByVerticalPosition(breadboard.getComponentLayer());
+					
+					//breadboard.getComponentLayer().setChildIndex(components[newInductor], breadboard.getComponentLayer().numChildren - 1);
+				break;
+	
 				case 'multimeter':
 				break;
 				case 'battery':
@@ -168,6 +201,7 @@ sparks.flash.sendCommand('insert_component', 'capacitor', "woo", "f30,f24", "r1"
 				case 'wire':
 					var wireColor:String = values[0];
 					var newWire:int = components.length;
+					
 					components.push(new ComponentWire(breadboard));
 					components[newWire].name = componentName;
 					positionComponent(componentKind, components[newWire], position);
@@ -183,6 +217,7 @@ sparks.flash.sendCommand('insert_component', 'capacitor', "woo", "f30,f24", "r1"
 		private function parseCoordinates(coordinateStr:String):Array { //takes a string of two coordinates and outputs in a two dimensional array with row/hole count, such that [0][0] = x1, [0][1] = y1, [1][0] = x2, [1][1] = y2
 			var tempCoordinates:Array = coordinateStr.split(",");  // 'a6,a12' -> ['a6','a12']
 			var coordinatesArr:Array = new Array();
+			trace("KPC PARSING COORDINATES");
 			for(var i:int = 0; i<2; i++){
 				var coordinate:String = tempCoordinates[i];
 				
@@ -213,6 +248,7 @@ sparks.flash.sendCommand('insert_component', 'capacitor', "woo", "f30,f24", "r1"
 				}
 			}
 			return coordinatesArr;
+			trace("coordinatesArr="+coordinatesArr);
 		}
 		
 		private function positionComponent(componentKind:String, componentObj:MovieClip, position:String) {  //  ( 'resistor', [object] , 'a6,b12' )
@@ -352,6 +388,152 @@ sparks.flash.sendCommand('insert_component', 'capacitor', "woo", "f30,f24", "r1"
 					componentObj.dimensionSlider(0,0, x2Pos-xPos, y2Pos-yPos); //sets dimensions of the bounding box KPC
 				break;
 				
+				case 'blackPowerWire':
+					coordinates = parseCoordinates(position); // string 'a6,b12' -> 2d array [0][0] = 1, [0][1] = 6, [1][0] = 2, [1][1] = 12
+					//trace('coordinates '+coordinates);
+					
+					for(var q:int=0; q<2; q++){
+						if(String(coordinates[r][0]).indexOf('pos') != -1) {
+							boardSection[q] = 'pos';
+							if(String(coordinates[q][0]) == 'pos1') {
+								coordinates[q][0] = 1;
+							} else {
+								coordinates[q][0] = 2;
+							}
+						} else if(String(coordinates[q][0]).indexOf('neg') != -1) {
+							if(String(coordinates[q][0]) == 'neg1') {
+								coordinates[q][0] = 1;
+							} else {
+								coordinates[q][0] = 2;
+							}
+							boardSection[q] = 'neg';
+						} else {
+							boardSection[q] = 'main';
+						}
+						if(q==0){
+							holeNum = coordinates[0][1];
+							rowNum = coordinates[0][0];
+							//trace('row#  coordinates[0][0] '+coordinates[0][0]);
+							//trace('hole# coordinates[0][1] '+coordinates[0][1]);							
+						}
+						if(q==1){
+							hole2Num = coordinates[1][1];
+							row2Num = coordinates[1][0];
+							//trace('row#  coordinates[1][0] '+coordinates[1][0]);
+							//trace('hole# coordinates[1][1] '+coordinates[1][1]);							
+						}
+						switch(boardSection[q]) {
+							case 'pos':
+								if(q==0){
+									xPos = breadboard.getPosRows()[rowNum][holeNum].x + breadboard.holeSize/2;
+									yPos = breadboard.getPosRows()[rowNum][holeNum].y + breadboard.holeSize/2;
+								}
+								if(q==1){
+									x2Pos = breadboard.getPosRows()[row2Num][hole2Num].x + breadboard.holeSize/2;
+									y2Pos = breadboard.getPosRows()[row2Num][hole2Num].y + breadboard.holeSize/2;
+								}
+							break;	
+							case 'neg':
+								if(q==0){
+									xPos = breadboard.getNegRows()[rowNum][holeNum].x + breadboard.holeSize/2;
+									yPos = breadboard.getNegRows()[rowNum][holeNum].y + breadboard.holeSize/2;
+								}
+								if(q==1){
+									x2Pos = breadboard.getNegRows()[row2Num][hole2Num].x + breadboard.holeSize/2;
+									y2Pos = breadboard.getNegRows()[row2Num][hole2Num].y + breadboard.holeSize/2;
+								}
+							break;
+							case 'main':				
+								trace('main');
+								if(q==0){
+									xPos = breadboard.getRows()[rowNum][holeNum].x + breadboard.holeSize/2;
+									yPos = breadboard.getRows()[rowNum][holeNum].y + breadboard.holeSize/2;
+								}
+								if(q==1){
+									x2Pos = breadboard.getRows()[row2Num][hole2Num].x + breadboard.holeSize/2;
+									y2Pos = breadboard.getRows()[row2Num][hole2Num].y + breadboard.holeSize/2;
+								}
+							break;
+						}
+					}
+					componentObj.x = xPos; //6
+					componentObj.y = yPos;  //a
+					componentObj.dimensionBlackPowerWire(0,0, x2Pos-xPos, y2Pos-yPos); //sets dimensions of the bounding box KPC
+				break;
+				
+				case 'redPowerWire':
+					coordinates = parseCoordinates(position); // string 'a6,b12' -> 2d array [0][0] = 1, [0][1] = 6, [1][0] = 2, [1][1] = 12
+					//trace('coordinates '+coordinates);
+					
+					for(var r:int=0; r<2; r++){
+						if(String(coordinates[r][0]).indexOf('pos') != -1) {
+							boardSection[r] = 'pos';
+							if(String(coordinates[r][0]) == 'pos1') {
+								coordinates[r][0] = 1;
+							} else {
+								coordinates[r][0] = 2;
+							}
+						} else if(String(coordinates[r][0]).indexOf('neg') != -1) {
+							if(String(coordinates[r][0]) == 'neg1') {
+								coordinates[r][0] = 1;
+							} else {
+								coordinates[r][0] = 2;
+							}
+							boardSection[r] = 'neg';
+						} else {
+							boardSection[r] = 'main';
+						}
+						if(r==0){
+							holeNum = coordinates[0][1];
+							rowNum = coordinates[0][0];
+							//trace('row#  coordinates[0][0] '+coordinates[0][0]);
+							//trace('hole# coordinates[0][1] '+coordinates[0][1]);							
+						}
+						if(r==1){
+							hole2Num = coordinates[1][1];
+							row2Num = coordinates[1][0];
+							//trace('row#  coordinates[1][0] '+coordinates[1][0]);
+							//trace('hole# coordinates[1][1] '+coordinates[1][1]);							
+						}
+						switch(boardSection[r]) {
+							case 'pos':
+								if(r==0){
+									xPos = breadboard.getPosRows()[rowNum][holeNum].x + breadboard.holeSize/2;
+									yPos = breadboard.getPosRows()[rowNum][holeNum].y + breadboard.holeSize/2;
+								}
+								if(r==1){
+									x2Pos = breadboard.getPosRows()[row2Num][hole2Num].x + breadboard.holeSize/2;
+									y2Pos = breadboard.getPosRows()[row2Num][hole2Num].y + breadboard.holeSize/2;
+								}
+							break;	
+							case 'neg':
+								if(r==0){
+									xPos = breadboard.getNegRows()[rowNum][holeNum].x + breadboard.holeSize/2;
+									yPos = breadboard.getNegRows()[rowNum][holeNum].y + breadboard.holeSize/2;
+								}
+								if(r==1){
+									x2Pos = breadboard.getNegRows()[row2Num][hole2Num].x + breadboard.holeSize/2;
+									y2Pos = breadboard.getNegRows()[row2Num][hole2Num].y + breadboard.holeSize/2;
+								}
+							break;
+							case 'main':				
+								trace('main');
+								if(r==0){
+									xPos = breadboard.getRows()[rowNum][holeNum].x + breadboard.holeSize/2;
+									yPos = breadboard.getRows()[rowNum][holeNum].y + breadboard.holeSize/2;
+								}
+								if(r==1){
+									x2Pos = breadboard.getRows()[row2Num][hole2Num].x + breadboard.holeSize/2;
+									y2Pos = breadboard.getRows()[row2Num][hole2Num].y + breadboard.holeSize/2;
+								}
+							break;
+						}
+					}
+					componentObj.x = xPos; //6
+					componentObj.y = yPos;  //a
+					componentObj.dimensionRedPowerWire(0,0, x2Pos-xPos, y2Pos-yPos); //sets dimensions of the bounding box KPC
+				break;
+				
 				
 				
 				case 'wire':
@@ -432,6 +614,84 @@ sparks.flash.sendCommand('insert_component', 'capacitor', "woo", "f30,f24", "r1"
 				case 'battery':
 				break;
 			}
+		}
+	
+		
+	public function enableProbeDragging(probeColor:String, statStr:String)  {
+		switch(probeColor) {
+			case "red": 
+				switch((statStr).toLowerCase()) {
+				case "true":
+				case "1":
+				case "yes":
+				//default:
+					Globe.dragRedProbe = true;
+					break;
+				case "false":
+				case "0":
+				case "no":
+					Globe.dragRedProbe = false;
+					break;
+				}
+			this.redProbe.set_dragability();
+			trace("Globe.dragRedProbe="+Globe.dragRedProbe);
+			break;
+			
+			case 'black':
+			switch((statStr).toLowerCase()) {
+				case "true":
+				case "1":
+				case "yes":
+				//default:
+					Globe.dragBlackProbe = true;
+					break;
+				case "false":
+				case "0":
+				case "no":
+					Globe.dragBlackProbe = false;
+					break;
+				}
+			this.blackProbe.set_dragability();
+			break;
+			
+			case 'yellow':
+				switch((statStr).toLowerCase()) {
+				case "true":
+				case "1":
+				case "yes":
+				//default:
+					Globe.dragYellowProbe = true;
+					this.yellowProbe.buttonMode == true;
+					break;
+				case "false":
+				case "0":
+				case "no":
+					Globe.dragYellowProbe = false;
+					break;
+				}
+			this.yellowProbe.set_dragability();
+			break;
+			
+			case 'pink':
+				switch((statStr).toLowerCase()) {
+				case "true":
+				case "1":
+				case "yes":
+				//default:
+					Globe.dragPinkProbe = true;
+					break;
+				case "false":
+				case "0":
+				case "no":
+					Globe.dragPinkProbe = false;
+					break;
+				}
+			this.pinkProbe.set_dragability();
+			break;
+			
+			}
+		//trace("Globe.dragRedProbe= "+Globe.dragRedProbe);
+		return '';
 		}
 										   
         public function getResistor(id:String) {
