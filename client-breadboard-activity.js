@@ -6697,7 +6697,7 @@ sparks.createQuestionsCSV = function(data) {
         to check, for example, that the two connections map to different nodes, etc.
       */
       hasValidConnections: function () {
-        return this.connections.length === 2;
+        return this.connections.length === 2 || (this.type === "powerLead" && this.connections.length === 1);
       },
 
       getRequestedImpedance: function (spec, steps) {
@@ -7116,6 +7116,9 @@ sparks.createQuestionsCSV = function(data) {
           if (props.kind === 'wire') {
             return new sparks.circuit.Wire(props, breadBoard);
           }
+          if (props.kind === 'powerLead') {
+            return new sparks.circuit.PowerLead(props, breadBoard);
+          }
           return new sparks.circuit.Component(props, breadBoard);
         }
       };
@@ -7263,6 +7266,17 @@ sparks.createQuestionsCSV = function(data) {
             }
             interfaces.insertComponent("battery", battery);
           }
+
+          interfaces.insertComponent("powerLead", {
+            UID: "redPowerLead",
+            type: "powerLead",
+            connections: "left_positive21"
+          });
+          interfaces.insertComponent("powerLead", {
+            UID: "blackPowerLead",
+            type: "powerLead",
+            connections: "left_negative21"
+          });
         },
         addFaults: function(jsonFaults){
           $.each(jsonFaults, function(i, fault){
@@ -8979,6 +8993,41 @@ sparks.createQuestionsCSV = function(data) {
 
     getFlashArguments: function () {
       return ['wire', this.UID, this.getLocation(), this.getColor()];
+    }
+  });
+
+})();
+/* FILE powerlead.js */
+/*globals console sparks */
+
+(function () {
+
+  sparks.circuit.PowerLead = function (props, breadBoard) {
+    sparks.circuit.PowerLead.parentConstructor.call(this, props, breadBoard);
+  };
+
+  sparks.extend(sparks.circuit.PowerLead, sparks.circuit.Component, {
+
+    getColor: function () {
+      var location = this.getLocation();
+      if (location.indexOf("positive") > -1) {
+        return "redPowerWire";
+      } else {
+        return "blackPowerWire";
+      }
+    },
+
+    getLocation: function () {
+      return this.connections[0].getName() + ",a1";       // Flash coding issue means we need to give this a second argument...
+    },
+
+    toNetlist: function () {
+      return '';
+    },
+
+    getFlashArguments: function () {
+      debugger
+      return [this.getColor(), this.UID, this.getLocation()];
     }
   });
 

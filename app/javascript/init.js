@@ -51,6 +51,7 @@
 //= require <circuit/battery>
 //= require <circuit/function-generator>
 //= require <circuit/wire>
+//= require <circuit/power-lead>
 //= require <apMessageBox>
 //= require <helpers/math>
 

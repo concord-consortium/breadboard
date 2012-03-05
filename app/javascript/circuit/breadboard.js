@@ -160,6 +160,9 @@
           if (props.kind === 'wire') {
             return new sparks.circuit.Wire(props, breadBoard);
           }
+          if (props.kind === 'powerLead') {
+            return new sparks.circuit.PowerLead(props, breadBoard);
+          }
           return new sparks.circuit.Component(props, breadBoard);
         }
       };
@@ -331,6 +334,18 @@
             }
             interfaces.insertComponent("battery", battery);
           }
+          
+          // add default power leads
+          interfaces.insertComponent("powerLead", {
+            UID: "redPowerLead",
+            type: "powerLead",
+            connections: "left_positive21"
+          });
+          interfaces.insertComponent("powerLead", {
+            UID: "blackPowerLead",
+            type: "powerLead",
+            connections: "left_negative21"
+          });
         },
         addFaults: function(jsonFaults){
           $.each(jsonFaults, function(i, fault){
