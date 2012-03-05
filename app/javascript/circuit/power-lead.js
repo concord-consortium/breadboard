@@ -28,7 +28,6 @@
     },
     
     getFlashArguments: function () {
-      debugger
       return [this.getColor(), this.UID, this.getLocation()];
     }
   });

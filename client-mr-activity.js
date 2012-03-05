@@ -3405,7 +3405,7 @@ sparks.createQuestionsCSV = function(data) {
         to check, for example, that the two connections map to different nodes, etc.
       */
       hasValidConnections: function () {
-        return this.connections.length === 2;
+        return this.connections.length === 2 || (this.type === "powerLead" && this.connections.length === 1);
       },
 
       getRequestedImpedance: function (spec, steps) {
