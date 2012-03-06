@@ -4,7 +4,9 @@
 (function () {
 
     sparks.circuit.Oscilloscope = function () {
-      this.probeLocation = null;
+      this.probeLocation = [];
+      this.probeLocation[0] = null;     // pink probe
+      this.probeLocation[1] = null;     // yellow probe
       this.view = null;
       this.signals = [];
       var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
@@ -18,8 +20,7 @@
     sparks.circuit.Oscilloscope.prototype = {
 
       N_CHANNELS:     2,
-      SOURCE_CHANNEL: 1,
-      PROBE_CHANNEL:  2,
+      PROBE_CHANNEL:  [1, 2],
 
       HORIZONTAL_SCALES: [1e-3, 5e-4, 2.5e-4, 1e-4, 5e-5, 2.5e-5, 1e-5, 5e-6, 2.5e-6, 1e-6],  // sec/div
       VERTICAL_SCALES:   [100,  50,   25,     10,   5,    2.5,    1,    0.5,  0.25,    0.1],  // V/div
@@ -28,7 +29,9 @@
       INITIAL_VERTICAL_SCALE:   5,
 
       reset: function() {
-        this.probeLocation = null;
+        this.probeLocation[0] = null;     // pink probe
+        this.probeLocation[1] = null;     // yellow probe
+        this.setProbeLocation("probe_yellow", "left_positive22");
         this.signals = [];
         var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
             initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
@@ -48,8 +51,9 @@
       // @probe Name of probe being attached. We ignore everything but "red"
       // @location Hole name, like 'a1' or can be null if probe is lifted
       setProbeLocation: function(probe, location) {
-        if (probe === "probe_pink") {
-          this.probeLocation = location;
+        if (probe === "probe_yellow" || probe === "probe_pink") {
+          var probeIndex = probe === "probe_yellow" ? 0 : 1;
+          this.probeLocation[probeIndex] = location;
           this.update();
         }
       },
@@ -69,48 +73,43 @@
           return;                                     // we must have a source with a freq and an amplitude
         }
 
-        sourceSignal = {
-          amplitude: source.amplitude * source.amplitudeScaleFactor,
-          frequency: source.frequency,
-          phase: 0
-        };
+        for (var probeIndex = 0; probeIndex < 2; probeIndex++) {
+          if (this.probeLocation[probeIndex]) {
+            probeNode = getBreadBoard().getHole(this.probeLocation[probeIndex]).nodeName();
 
-        this.setSignal(this.SOURCE_CHANNEL, sourceSignal);
+            if (probeNode === 'gnd') {
+              // short-circuit this operation and just return a flat trace
+              this.setSignal(this.PROBE_CHANNEL[probeIndex], {amplitude: 0, frequency: 0, phase: 0});
+              return;
+            }
 
-        if (this.probeLocation) {
-          probeNode = getBreadBoard().getHole(this.probeLocation).nodeName();
+            data = breadModel('query');
 
-          if (probeNode === 'gnd') {
-            // short-circuit this operation and just return a flat trace
-            this.setSignal(this.PROBE_CHANNEL, {amplitude: 0, frequency: 0, phase: 0});
-            return;
-          }
+            // first go through the returned frequencies, and find the one that matches our source frequency
+            freqs = data.acfrequency;
+            dataIndex = sparks.util.getClosestIndex(freqs, source.frequency, true);
+            // find the same index in our data
+            result = data[probeNode].v[dataIndex];
 
-          data = breadModel('query');
+            if (result) {
+              probeSignal = {
+                amplitude: result.magnitude * source.amplitudeScaleFactor,
+                frequency: source.frequency,
+                phase:     result.angle
+              };
 
-          // first go through the returned frequencies, and find the one that matches our source frequency
-          freqs = data.acfrequency;
-          dataIndex = sparks.util.getClosestIndex(freqs, source.frequency, true);
-          // find the same index in our data
-          result = data[probeNode].v[dataIndex];
+              this.setSignal(this.PROBE_CHANNEL[probeIndex], probeSignal);
 
-          if (result) {
-            probeSignal = {
-              amplitude: result.magnitude * source.amplitudeScaleFactor,
-              frequency: source.frequency,
-              phase:     result.angle
-            };
-
-            this.setSignal(this.PROBE_CHANNEL, probeSignal);
-
-            sparks.logController.addEvent(sparks.LogEvent.OSCOPE_MEASUREMENT, {
-                "probe": probeNode
-              });
+              sparks.logController.addEvent(sparks.LogEvent.OSCOPE_MEASUREMENT, {
+                  "probe": probeNode
+                });
+            } else {
+              this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
+            }
           } else {
-            this.clearSignal(this.PROBE_CHANNEL);
+            this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
           }
-        } else {
-          this.clearSignal(this.PROBE_CHANNEL);
+
         }
       },
 
