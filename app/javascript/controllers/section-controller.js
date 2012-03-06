@@ -53,7 +53,7 @@
       } else {
         section.meter.dmm = null;
       }
-      
+
       if (!section.hide_circuit && section.show_oscilloscope) {
         section.meter.oscope = new sparks.circuit.Oscilloscope();
       } else {
@@ -110,6 +110,8 @@
 
       sparks.logController.startNewSession();
       sparks.reportController.startNewSection(section);
+
+      sparks.GAHelper.userStartedLevel(section.title);
     },
 
     areMorePage: function() {
@@ -178,7 +180,7 @@
       this.id = this.id + 1;
       return this.id;
     },
-    
+
     setDMMVisibility: function(visible) {
       var section = sparks.activityController.currentSection;
       if (visible) {
@@ -191,7 +193,7 @@
       }
       sparks.activity.view.showDMM(visible);
     },
-    
+
     setOScopeVisibility: function(visible) {
       var section = sparks.activityController.currentSection;
       if (visible) {

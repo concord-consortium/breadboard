@@ -5345,6 +5345,8 @@ sparks.createQuestionsCSV = function(data) {
 
       sparks.logController.startNewSession();
       sparks.reportController.startNewSection(section);
+
+      sparks.GAHelper.userStartedLevel(section.title);
     },
 
     areMorePage: function() {
@@ -9357,6 +9359,36 @@ var apMessageBox = apMessageBox || {};
      };
 
 })();
+(function () {
+sparks.GAHelper = {};
+
+_gaq = window._gaq;
+
+sparks.GAHelper.USER_TYPE = 1;
+sparks.GAHelper.STARTED_LEVEL = 2;
+
+sparks.GAHelper.setUserLoggedIn = function (isLoggedIn) {
+  var userType = isLoggedIn ? "Member" : "Visitor";
+
+  _gaq.push(['_setCustomVar',
+    sparks.GAHelper.USER_TYPE,      // This custom var is set to slot #1.  Required parameter.
+    'User Type',                    // The name of the custom variable.  Required parameter.
+    userType,                       // Sets the value of "User Type" to "Member" or "Visitor" depending on status.  Required parameter.
+    2                               // Sets the scope to session-level.  Optional parameter.
+   ]);
+};
+
+sparks.GAHelper.userStartedLevel = function (levelName) {
+  _gaq.push(['_setCustomVar',
+    sparks.GAHelper.STARTED_LEVEL,
+    'Started level',
+    levelName,
+    2
+   ]);
+};
+
+
+})();
 
 /* FILE init.js */
 
@@ -9368,6 +9400,8 @@ var apMessageBox = apMessageBox || {};
   sparks.activity_base_url = "http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/";
   sparks.activity_images_base_url = "http://couchdb.cosmos.concord.org/sparks/";
   sparks.tutorial_base_url = "tutorials/";
+
+  window._gaq = window._gaq || [];      // in case this script loads before the GA queue is created
 
   $(document).ready(function () {
       onDocumentReady();
@@ -9396,6 +9430,8 @@ var apMessageBox = apMessageBox || {};
        };
        window.onbeforeunload = askConfirm;
     }
+
+    sparks.GAHelper.setUserLoggedIn(!!learner_id);
 
     var activityName = window.location.hash;
     activityName = activityName.substring(1,activityName.length);
