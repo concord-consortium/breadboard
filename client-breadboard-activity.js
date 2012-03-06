@@ -4230,12 +4230,13 @@ sparks.createQuestionsCSV = function(data) {
         this.model.toggleShowAplusB();
     }
     this.renderComboTrace(this.previousPhaseOffset);
-    $('#AminusB').css({
-      backgroundColor: this.model.showAminusB ? '#4F4' : ''
-    });
-    $('#AplusB').css({
-      backgroundColor: this.model.showAplusB ? '#4F4' : ''
-    });
+    if (this.model.showAminusB) {
+      $('#AminusB').addClass('active');
+      $('#AplusB').removeClass('active');
+    } else if (this.model.showAplusB) {
+      $('#AminusB').removeClass('active');
+      $('#AplusB').addClass('active');
+    }
   },
 
     _addScaleControl: function ($el, minusCallback, plusCallback) {

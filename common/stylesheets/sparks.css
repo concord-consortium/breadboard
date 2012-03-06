@@ -343,6 +343,19 @@ border-bottom-style:solid;
   background: url("../images/oscope_large.png") no-repeat -20px -30px;
 }
 
+.faceplate button {
+  border-radius: 8px;
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+}
+  
+.faceplate button.active {
+  background-color: #4D4;
+  box-shadow: 0 0 10px #4F4;
+  -webkit-box-shadow: 0 0 10px #4F4;
+  -moz-box-shadow: 0 0 10px #4F4;
+}
+
 #fg_mini {
   background: url("../images/fg_mini.png") no-repeat top left;
   position: absolute;
