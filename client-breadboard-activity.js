@@ -3931,7 +3931,7 @@ sparks.createQuestionsCSV = function(data) {
     textColor:        '#D8E1EB',
     traceOuterColors: ['#FFFF4A', '#FF5C4A', '#33FF33'],
     traceInnerColors: ['#FFFFFF', '#FFD3CF', '#EEFFEE'],
-
+    traceLabelColors: ['#FFFF99', '#FC8F85', '#99FC7B'],
     setModel: function (model) {
       this.model = model;
     },
@@ -4066,14 +4066,14 @@ sparks.createQuestionsCSV = function(data) {
         position: 'absolute',
         top:   10 + conf.height,
         left:  5,
-        color: this.textColor
+        color: this.traceLabelColors[0]
       }).appendTo(this.$displayArea);
 
       $('<p id="chb"><span class="chname">CHB</span> <span class="vscale channel2"></span>V</p>').css({
         position: 'absolute',
         top:   10 + conf.height,
         left:  5 + conf.width / 4,
-        color: this.textColor
+        color: this.traceLabelColors[1]
       }).appendTo(this.$displayArea);
 
       $('<p>M <span class="hscale"></span>s</p>').css({
@@ -4320,8 +4320,10 @@ sparks.createQuestionsCSV = function(data) {
             raphaelObject: this.drawTrace(this.raphaelCanvas, this.largeViewConfig, combo, 3, this.model.getHorizontalScale(), this.model.getVerticalScale(1), 0)
         };
         $('#cha .chname').html(this.model.showAminusB? "A-B" : "A+B");
+        $('#cha').css({color: this.traceLabelColors[2]});
       } else {
         $('#cha .chname').html("CHA");
+        $('#cha').css({color: this.traceLabelColors[0]});
       }
     },
 
