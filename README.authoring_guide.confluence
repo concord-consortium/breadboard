@@ -514,8 +514,10 @@ By default, all questions are open-response. That is, if the only thing specifie
 | | tutorial | A link to the appropriate tutorial: a button will show in the report table if the question is answered incorrectly |
 | | correct_answer | *Only for open-response questions*. If a correct answer is specified, an exact match will be scored as correct. |
 | | points | *Only for open-response questions*. Max points for this question, given to student if answer is correct |
-| | category | Marks the question as being a member of a category, for reporting back to the student and teacher |
+| | category | *deprecated* Marks the question as being a member of a category, for reporting back to the student and teacher. *NOTE*: Now just setting the tutorial will automatically set the category |
 | | show_read_multimeter_button | Adds a "read multimeter" button, instead of a text box, that reads the multimeter into the answer box. If the circuit is an AC circuit, the frequency and amplitude of the source are additionally (but invisibly) recorded as part of the answer and are available to question scripts; see below. |
+| | scoring | A script used to grade a question and provide feedback. See *Question scoring scripts* below |
+| | beforeScript | A script run when the question is first enabled. See *Question before scripts* below |
 
 h3. Multi-choice questions
 
@@ -768,6 +770,41 @@ Scripts have access to the student log, and can get the current log through the 
 || connectionBreaks() | number of times student broke a connection (lifted a lead) ||
 || connectionMakes() | replaced a lead ||
 || blownFuses() | number of times student blew the fuse ||
+
+h3. Parsing written answers
+
+Two in-built script functions are available to help authors decipher and score hand-written answers, "parse" and "close".
+
+*parse(question.answer)* will take the student's answer and return an object. That's object's *val* is the parsed value, and *units* is the parsed units.
+
+*close(num1, num3, optionalPercent)* will return *true* if num1 is close to num2. By default, closeness is considered to be within 5%. You can optionally put in a third parameter, so *close(100, 120, 20)* will return true, because 120 is within 20% of 100.
+
+Example:
+
+{code}
+var parsedAnswer = parse(question.answer); 
+var valueCorrect = close(parsedAnswer.val, 5010);
+if (valueCorrect) {
+  question.points_earned = 10;
+}
+{code}
+
+h2. Question before scripts
+
+The "beforeScript" in a question is run the moment that question is enabled. So for the first question on a page, it is run immediately when the user flips to that page, and for later questions on the page it is run when the user hits "Submit" on the question above.
+
+You can do anything in these scripts, but two common actions are showing or hiding the DMM or OScope:
+
+{code}
+{
+  "prompt": "Look, now the DMM has appeared! What is the rated resistance of R1?",
+  "beforeScript": "sparks.sectionController.setDMMVisibility(true)",
+},
+{
+  "prompt": "Awww... now the OScope has gone!",
+  "beforeScript": "sparks.sectionController.setOScopeVisibility(false)",
+}
+{code}
 
 h1. General scripting tips and strategies
 
