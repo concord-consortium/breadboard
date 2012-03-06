@@ -72,7 +72,8 @@
             pinkProbe.setCircuit(this);
 			yellowProbe = breadboard.probe_yellow;
             yellowProbe.setCircuit(this);
-            
+          
+			
             multimeter.setDisplayText('  9.0 0');
 			
 			breadboardMC = root.outer_breadboard_mc;
@@ -615,6 +616,35 @@ sparks.flash.sendCommand('insert_component', 'capacitor', "woo", "f30,f24", "r1"
 				break;
 			}
 		}
+		
+	public function connectProbe(probeColor:String) {
+		switch(probeColor) {
+			case "yellow":
+				setProbeConnection(yellowProbe, false);
+				yellowProbe._dragging = false;
+				yellowProbe.stopDrag();
+				break;
+				
+			case "pink":
+				setProbeConnection(pinkProbe, false);
+				pinkProbe._dragging = false;
+				pinkProbe.stopDrag();
+				break;
+				
+			case "red":
+				setProbeConnection(redProbe, false);
+				redProbe._dragging = false;
+				redProbe.stopDrag();
+				break;
+			
+			case "black":
+				setProbeConnection(blackProbe, false);
+				blackProbe._dragging = false;
+				blackProbe.stopDrag();
+				break;
+		}
+		return '';
+	}
 	
 		
 	public function enableProbeDragging(probeColor:String, statStr:String)  {
@@ -755,7 +785,7 @@ sparks.flash.sendCommand('insert_component', 'capacitor', "woo", "f30,f24", "r1"
 
 
 
-        public function setProbeConnection(probe:Probe):void {  //same as update probe connection, but with a smaller hit area (to ensure that the probe doesn't fall out of the hit area when a component's leads are lifted and lowered)
+        public function setProbeConnection(probe:Probe, playSound:Boolean):void {  //same as update probe connection, but with a smaller hit area (to ensure that the probe doesn't fall out of the hit area when a component's leads are lifted and lowered)
             trace('ENTER Circuit#updateProbeConnection');
             var oldConnection:Object = probe.getConnection();
             var connection:Object = null;
@@ -787,7 +817,9 @@ sparks.flash.sendCommand('insert_component', 'capacitor', "woo", "f30,f24", "r1"
             }
             
             if (connection !== oldConnection) {
+              if (playSound) {
                 clickSound();
+              }
                 probe.setConnection(connection);
 				JavaScript.instance().sendEvent('connect', 'probe', probe.getId(), connection.getLocation());
                 if(connection != null) {
