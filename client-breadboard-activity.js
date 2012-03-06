@@ -4062,26 +4062,19 @@ sparks.createQuestionsCSV = function(data) {
 
       this.drawGrid(this.raphaelCanvas, conf);
 
-      $('<p>CHA <span class="vscale channel1"></span>V</p>').css({
+      $('<p id="cha"><span class="chname">CHA</span> <span class="vscale channel1"></span>V</p>').css({
         position: 'absolute',
         top:   10 + conf.height,
         left:  5,
         color: this.textColor
       }).appendTo(this.$displayArea);
 
-      $('<p>CHB <span class="vscale channel2"></span>V</p>').css({
+      $('<p id="chb"><span class="chname">CHB</span> <span class="vscale channel2"></span>V</p>').css({
         position: 'absolute',
         top:   10 + conf.height,
         left:  5 + conf.width / 4,
         color: this.textColor
       }).appendTo(this.$displayArea);
-
-      $('<p id="chc">CHC <span class="vscale channel2"></span>V</p>').css({
-        position: 'absolute',
-        top:   10 + conf.height,
-        left:  5 + conf.width / 2,
-        color: this.textColor
-      }).appendTo(this.$displayArea).hide();
 
       $('<p>M <span class="hscale"></span>s</p>').css({
         position: 'absolute',
@@ -4131,7 +4124,7 @@ sparks.createQuestionsCSV = function(data) {
         right:     0,
         height:    20,
         textAlign: 'center',
-    position:  'absolute'
+        position:  'absolute'
       }).appendTo(this.$channel1);
 
       this._addScaleControl(this.$channel1, function () {
@@ -4190,7 +4183,7 @@ sparks.createQuestionsCSV = function(data) {
         this.verticalScaleChanged(i);
       }
 
-      $('<button id="AminusB">A-B</button>').css({
+      $('<button id="AminusB" class="comboButton">A-B</button>').css({
         top:       298,
         left:      33,
         height:    23,
@@ -4200,7 +4193,7 @@ sparks.createQuestionsCSV = function(data) {
         self._toggleComboButton(true);
       }).appendTo(this.$controls);
 
-      $('<button id="AplusB">A+B</button>').css({
+      $('<button id="AplusB" class="comboButton">A+B</button>').css({
         top:       298,
         left:      74,
         height:    23,
@@ -4234,16 +4227,17 @@ sparks.createQuestionsCSV = function(data) {
     this.renderSignal(2, true, this.previousPhaseOffset);
 
 
-    $('#AminusB').removeClass('active');
-    $('#AplusB').removeClass('active');
-    $('.channelA button').removeClass('active')
+    $('.comboButton').removeClass('active');
+
+    $('.channelA button').addClass('active')
+    $('.vscale.channel2').html($('.vscale.channel1').html());
 
     if (this.model.showAminusB) {
       $('#AminusB').addClass('active');
-      $('.channelA button').addClass('active')
     } else if (this.model.showAplusB) {
       $('#AplusB').addClass('active');
-      $('.channelA button').addClass('active')
+    } else {
+      $('.channelA button').removeClass('active');
     }
   },
 
@@ -4325,9 +4319,9 @@ sparks.createQuestionsCSV = function(data) {
             raphaelObjectMini: this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, combo, 3, this.model.getHorizontalScale(), this.model.getVerticalScale(1), 0),
             raphaelObject: this.drawTrace(this.raphaelCanvas, this.largeViewConfig, combo, 3, this.model.getHorizontalScale(), this.model.getVerticalScale(1), 0)
         };
-        $('#chc').show();
+        $('#cha .chname').html(this.model.showAminusB? "A-B" : "A+B");
       } else {
-        $('#chc').hide();
+        $('#cha .chname').html("CHA");
       }
     },
 
@@ -4371,7 +4365,6 @@ sparks.createQuestionsCSV = function(data) {
 
       this.$view.find('.vscale.channel'+channel).html(this.humanizeUnits(scale));
       if (this.traces[channel]) this.renderSignal(channel);
-      if (channel === 1 && (this.model.showAminusB || this.model.showAplusB)) this.renderSignal(2);
     },
 
     drawGrid: function (r, conf) {
@@ -8201,16 +8194,25 @@ sparks.createQuestionsCSV = function(data) {
       },
 
       setVerticalScale: function(channel, scale) {
+        if (this.showAminusB || this.showAplusB){
+          if (channel === 1) {
+            this._verticalScale[2] = scale;
+          } else {
+            return;
+          }
+        }
+
         this._verticalScale[channel] = scale;
         if (this.view) {
-          this.view.verticalScaleChanged(channel);
+          this.view.verticalScaleChanged(1);
+          this.view.verticalScaleChanged(2);
         }
 
         var logEvent = channel == 1 ? sparks.LogEvent.OSCOPE_V1_SCALE_CHANGED : sparks.LogEvent.OSCOPE_V2_SCALE_CHANGED;
         sparks.logController.addEvent(logEvent, {
-            "scale": scale,
-            "goodnessOfScale": this.getGoodnessOfScale()
-          });
+          "scale": scale,
+          "goodnessOfScale": this.getGoodnessOfScale()
+        });
       },
 
       getVerticalScale: function(channel) {

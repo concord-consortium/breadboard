@@ -175,26 +175,19 @@
 
       this.drawGrid(this.raphaelCanvas, conf);
 
-      $('<p>CHA <span class="vscale channel1"></span>V</p>').css({
+      $('<p id="cha"><span class="chname">CHA</span> <span class="vscale channel1"></span>V</p>').css({
         position: 'absolute',
         top:   10 + conf.height,
         left:  5,
         color: this.textColor
       }).appendTo(this.$displayArea);
 
-      $('<p>CHB <span class="vscale channel2"></span>V</p>').css({
+      $('<p id="chb"><span class="chname">CHB</span> <span class="vscale channel2"></span>V</p>').css({
         position: 'absolute',
         top:   10 + conf.height,
         left:  5 + conf.width / 4,
         color: this.textColor
       }).appendTo(this.$displayArea);
-
-      $('<p id="chc">CHC <span class="vscale channel2"></span>V</p>').css({
-        position: 'absolute',
-        top:   10 + conf.height,
-        left:  5 + conf.width / 2,
-        color: this.textColor
-      }).appendTo(this.$displayArea).hide();
 
       $('<p>M <span class="hscale"></span>s</p>').css({
         position: 'absolute',
@@ -245,7 +238,7 @@
         right:     0,
         height:    20,
         textAlign: 'center',
-    position:  'absolute'
+        position:  'absolute'
       }).appendTo(this.$channel1);
 
       this._addScaleControl(this.$channel1, function () {
@@ -304,7 +297,7 @@
         this.verticalScaleChanged(i);
       }
 
-      $('<button id="AminusB">A-B</button>').css({
+      $('<button id="AminusB" class="comboButton">A-B</button>').css({
         top:       298,
         left:      33,
         height:    23,
@@ -314,7 +307,7 @@
         self._toggleComboButton(true);
       }).appendTo(this.$controls);
 
-      $('<button id="AplusB">A+B</button>').css({
+      $('<button id="AplusB" class="comboButton">A+B</button>').css({
         top:       298,
         left:      74,
         height:    23,
@@ -351,16 +344,17 @@
     this.renderSignal(2, true, this.previousPhaseOffset);
 
 
-    $('#AminusB').removeClass('active');
-    $('#AplusB').removeClass('active');
-    $('.channelA button').removeClass('active')
-
+    $('.comboButton').removeClass('active');
+    
+    $('.channelA button').addClass('active')
+    $('.vscale.channel2').html($('.vscale.channel1').html());
+    
     if (this.model.showAminusB) {
       $('#AminusB').addClass('active');
-      $('.channelA button').addClass('active')
     } else if (this.model.showAplusB) {
       $('#AplusB').addClass('active');
-      $('.channelA button').addClass('active')
+    } else {
+      $('.channelA button').removeClass('active');
     }
   },
 
@@ -445,9 +439,9 @@
             raphaelObjectMini: this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, combo, 3, this.model.getHorizontalScale(), this.model.getVerticalScale(1), 0),
             raphaelObject: this.drawTrace(this.raphaelCanvas, this.largeViewConfig, combo, 3, this.model.getHorizontalScale(), this.model.getVerticalScale(1), 0)
         };
-        $('#chc').show();
+        $('#cha .chname').html(this.model.showAminusB? "A-B" : "A+B");
       } else {
-        $('#chc').hide();
+        $('#cha .chname').html("CHA");
       }
     },
 
@@ -495,7 +489,6 @@
 
       this.$view.find('.vscale.channel'+channel).html(this.humanizeUnits(scale));
       if (this.traces[channel]) this.renderSignal(channel);
-      if (channel === 1 && (this.model.showAminusB || this.model.showAplusB)) this.renderSignal(2);
     },
 
     drawGrid: function (r, conf) {

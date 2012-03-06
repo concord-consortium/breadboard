@@ -148,16 +148,25 @@
       },
 
       setVerticalScale: function(channel, scale) {
+        if (this.showAminusB || this.showAplusB){
+          if (channel === 1) {
+            this._verticalScale[2] = scale;
+          } else {
+            return;
+          }
+        }
+        
         this._verticalScale[channel] = scale;
         if (this.view) {
-          this.view.verticalScaleChanged(channel);
+          this.view.verticalScaleChanged(1);
+          this.view.verticalScaleChanged(2);
         }
 
         var logEvent = channel == 1 ? sparks.LogEvent.OSCOPE_V1_SCALE_CHANGED : sparks.LogEvent.OSCOPE_V2_SCALE_CHANGED;
         sparks.logController.addEvent(logEvent, {
-            "scale": scale,
-            "goodnessOfScale": this.getGoodnessOfScale()
-          });
+          "scale": scale,
+          "goodnessOfScale": this.getGoodnessOfScale()
+        });
       },
 
       getVerticalScale: function(channel) {
