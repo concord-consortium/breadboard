@@ -4,7 +4,10 @@ sparks.GAHelper = {};
 _gaq = window._gaq;
 
 sparks.GAHelper.USER_TYPE = 1;
-sparks.GAHelper.STARTED_LEVEL = 2;
+
+sparks.GAHelper.Category = {
+  NAVIGATION: "Navigation"
+}
 
 sparks.GAHelper.setUserLoggedIn = function (isLoggedIn) {
   var userType = isLoggedIn ? "Member" : "Visitor";
@@ -18,13 +21,21 @@ sparks.GAHelper.setUserLoggedIn = function (isLoggedIn) {
 };
 
 sparks.GAHelper.userStartedLevel = function (levelName) {
-  _gaq.push(['_setCustomVar',
-    sparks.GAHelper.STARTED_LEVEL,
-    'Started level',              
-    levelName,                    
-    2                             
+   _gaq.push(['_trackEvent',
+      sparks.GAHelper.Category.NAVIGATION, // category of activity
+      'Started new activity', // Action
+      levelName,
    ]);
 };
+
+sparks.GAHelper.userRepeatedLevel = function (levelName) {
+   _gaq.push(['_trackEvent',
+      sparks.GAHelper.Category.NAVIGATION, // category of activity
+      'Repeated activity', // Action
+      levelName,
+   ]);
+};
+
 
 
 })();

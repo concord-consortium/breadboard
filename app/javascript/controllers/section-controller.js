@@ -142,6 +142,7 @@
 
     // if page is null, currentPage will be used
     repeatPage: function(page) {
+      sparks.GAHelper.userRepeatedLevel(section.title);
       sparks.reportController.saveData();
 
       if (!!page){
@@ -163,6 +164,7 @@
     },
 
     repeatSection: function(section) {
+      sparks.GAHelper.userRepeatedLevel(section.title);
       if (!!section){
         sparks.activityController.currentSection = section;
       }
