@@ -4197,7 +4197,7 @@ sparks.createQuestionsCSV = function(data) {
         width:     36,
         position:  'absolute'
       }).click(function(){
-      self._toggleComboButton(true);
+        self._toggleComboButton(true);
       }).appendTo(this.$controls);
 
       $('<button id="AplusB">A+B</button>').css({
@@ -4207,7 +4207,7 @@ sparks.createQuestionsCSV = function(data) {
         width:     36,
         position:  'absolute'
       }).click(function(){
-      self._toggleComboButton(false);
+        self._toggleComboButton(false);
       }).appendTo(this.$controls);
 
 
@@ -4229,12 +4229,17 @@ sparks.createQuestionsCSV = function(data) {
     } else {
         this.model.toggleShowAplusB();
     }
-    this.renderComboTrace(this.previousPhaseOffset);
+
+    this.renderSignal(1, true, this.previousPhaseOffset);
+    this.renderSignal(2, true, this.previousPhaseOffset);
+
+
+    $('#AminusB').removeClass('active');
+    $('#AplusB').removeClass('active');
+
     if (this.model.showAminusB) {
       $('#AminusB').addClass('active');
-      $('#AplusB').removeClass('active');
     } else if (this.model.showAplusB) {
-      $('#AminusB').removeClass('active');
       $('#AplusB').addClass('active');
     }
   },
@@ -4262,7 +4267,8 @@ sparks.createQuestionsCSV = function(data) {
           t = this.traces[channel],
           horizontalScale,
           verticalScale,
-          phaseOffset = (_phaseOffset || 0) + this.previousPhaseOffset;
+          phaseOffset = (_phaseOffset || 0) + this.previousPhaseOffset,
+          isFaint = (this.model.showAminusB || this.model.showAplusB);
 
       if (s) {
         horizontalScale = this.model.getHorizontalScale();
@@ -4277,8 +4283,8 @@ sparks.createQuestionsCSV = function(data) {
             phase:              (s.phase + phaseOffset),
             horizontalScale:    horizontalScale,
             verticalScale:      verticalScale,
-            raphaelObjectMini:  this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset),
-            raphaelObject:      this.drawTrace(this.raphaelCanvas, this.largeViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset)
+            raphaelObjectMini:  this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset, isFaint),
+            raphaelObject:      this.drawTrace(this.raphaelCanvas, this.largeViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset, isFaint)
           };
         }
 
@@ -4415,7 +4421,7 @@ sparks.createQuestionsCSV = function(data) {
       return r.path(path.join(' ')).attr({stroke: this.tickColor, opacity: 0.5});
     },
 
-    drawTrace: function (r, conf, signal, channel, horizontalScale, verticalScale, phaseOffset) {
+    drawTrace: function (r, conf, signal, channel, horizontalScale, verticalScale, phaseOffset, _isFaint) {
       if (!r) return;
       var path         = [],
           height       = conf.height,
@@ -4427,6 +4433,9 @@ sparks.createQuestionsCSV = function(data) {
           radiansPerPixel = (2 * Math.PI * signal.frequency * horizontalScale) / (conf.width / this.nHorizontalMarks),
 
           pixelsPerVolt = (conf.height / this.nVerticalMarks) / verticalScale,
+
+          isFaint = _isFaint || false,
+          opacity = isFaint ? 0.3 : 1,
 
           x,
           raphaelObject,
@@ -4448,8 +4457,8 @@ sparks.createQuestionsCSV = function(data) {
       path = path.join(' ');
 
       paths = [];
-      paths.push(r.path(path).attr({stroke: this.traceOuterColors[channel-1], 'stroke-width': 4.5}));
-      paths.push(r.path(path).attr({stroke: this.traceInnerColors[channel-1], 'stroke-width': 2}));
+      paths.push(r.path(path).attr({stroke: this.traceOuterColors[channel-1], 'stroke-width': 4.5, opacity: opacity}));
+      paths.push(r.path(path).attr({stroke: this.traceInnerColors[channel-1], 'stroke-width': 2, opacity: opacity}));
 
       raphaelObject = r.set.apply(r, paths);
 
