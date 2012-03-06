@@ -4117,7 +4117,7 @@ sparks.createQuestionsCSV = function(data) {
         position: 'absolute'
       }).appendTo(this.$controls);
 
-      this.$channel1 = $('<div>').css({
+      this.$channel1 = $('<div class="channelA">').css({
         position:  'absolute',
         top:       19,
         left:      11,
@@ -4236,11 +4236,14 @@ sparks.createQuestionsCSV = function(data) {
 
     $('#AminusB').removeClass('active');
     $('#AplusB').removeClass('active');
+    $('.channelA button').removeClass('active')
 
     if (this.model.showAminusB) {
       $('#AminusB').addClass('active');
+      $('.channelA button').addClass('active')
     } else if (this.model.showAplusB) {
       $('#AplusB').addClass('active');
+      $('.channelA button').addClass('active')
     }
   },
 
@@ -4268,11 +4271,11 @@ sparks.createQuestionsCSV = function(data) {
           horizontalScale,
           verticalScale,
           phaseOffset = (_phaseOffset || 0) + this.previousPhaseOffset,
-          isFaint = (this.model.showAminusB || this.model.showAplusB);
+          isComboActive = (this.model.showAminusB || this.model.showAplusB);
 
       if (s) {
         horizontalScale = this.model.getHorizontalScale();
-        verticalScale   = this.model.getVerticalScale(channel);
+        verticalScale   = isComboActive? this.model.getVerticalScale(1) : this.model.getVerticalScale(channel);
 
         if (!t || forced || (t.amplitude !== s.amplitude || t.frequency !== s.frequency || t.phase !== (s.phase + phaseOffset) ||
                    t.horizontalScale !== horizontalScale || t.verticalScale !== verticalScale)) {
@@ -4283,8 +4286,8 @@ sparks.createQuestionsCSV = function(data) {
             phase:              (s.phase + phaseOffset),
             horizontalScale:    horizontalScale,
             verticalScale:      verticalScale,
-            raphaelObjectMini:  this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset, isFaint),
-            raphaelObject:      this.drawTrace(this.raphaelCanvas, this.largeViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset, isFaint)
+            raphaelObjectMini:  this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset, isComboActive),
+            raphaelObject:      this.drawTrace(this.raphaelCanvas, this.largeViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset, isComboActive)
           };
         }
 
@@ -4319,8 +4322,8 @@ sparks.createQuestionsCSV = function(data) {
                 frequency: a.frequency
             };
         this.traces[3] = {
-            raphaelObjectMini: this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, combo, 3, this.model.getHorizontalScale(), this.model.getVerticalScale(2), 0),
-            raphaelObject: this.drawTrace(this.raphaelCanvas, this.largeViewConfig, combo, 3, this.model.getHorizontalScale(), this.model.getVerticalScale(2), 0)
+            raphaelObjectMini: this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, combo, 3, this.model.getHorizontalScale(), this.model.getVerticalScale(1), 0),
+            raphaelObject: this.drawTrace(this.raphaelCanvas, this.largeViewConfig, combo, 3, this.model.getHorizontalScale(), this.model.getVerticalScale(1), 0)
         };
         $('#chc').show();
       } else {
@@ -4368,6 +4371,7 @@ sparks.createQuestionsCSV = function(data) {
 
       this.$view.find('.vscale.channel'+channel).html(this.humanizeUnits(scale));
       if (this.traces[channel]) this.renderSignal(channel);
+      if (channel === 1 && (this.model.showAminusB || this.model.showAplusB)) this.renderSignal(2);
     },
 
     drawGrid: function (r, conf) {
