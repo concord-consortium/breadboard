@@ -3148,7 +3148,7 @@ sparks.createQuestionsCSV = function(data) {
        sparks.flash.sendCommand('set_oscope_probe_visibility',visible.toString());
 
        if (visible) {
-         setTimeout(function() {sparks.flash.sendCommand('connect_probe', "yellow");},2000);
+         this.doOnFlashLoad(function() {setTimeout(function() {sparks.flash.sendCommand('connect_probe', "yellow");},1000)});
        }
      },
 

@@ -122,7 +122,7 @@
 
        if (visible) {
           // we have to force the connection of the yellow probe the first time
-         setTimeout(function() {sparks.flash.sendCommand('connect_probe', "yellow");},2000);
+         this.doOnFlashLoad(function() {setTimeout(function() {sparks.flash.sendCommand('connect_probe', "yellow");},1000)});
        }
      },
 
