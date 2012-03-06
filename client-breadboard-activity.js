@@ -3145,8 +3145,11 @@ sparks.createQuestionsCSV = function(data) {
          sparks.activityController.currentSection.meter.oscope.setView(scopeView);
        }
 
-
        sparks.flash.sendCommand('set_oscope_probe_visibility',visible.toString());
+
+       if (visible) {
+         setTimeout(function() {sparks.flash.sendCommand('connect_probe', "yellow");},2000);
+       }
      },
 
      showDMM: function(visible) {

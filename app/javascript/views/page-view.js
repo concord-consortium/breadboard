@@ -203,7 +203,7 @@
       
       this.$reportDiv.append($buttonDiv);      
     },
-    
+
     submitButtonClicked: function (question) {
       // save meta info if it hasn't happened already
       var board = getBreadBoard();

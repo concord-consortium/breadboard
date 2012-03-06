@@ -103,10 +103,10 @@
          this.flashQueue.push(func);
        }
      },
-     
+
      showOScope: function(visible) {
        this.divs.$scopeDiv.html('');
-       
+
        if (visible) {
          var scopeView = new sparks.OscilloscopeView();
          var $scope = scopeView.getView();
@@ -117,20 +117,24 @@
          });
          sparks.activityController.currentSection.meter.oscope.setView(scopeView);
        }
-       
-       
+
        sparks.flash.sendCommand('set_oscope_probe_visibility',visible.toString());
+
+       if (visible) {
+          // we have to force the connection of the yellow probe the first time
+         setTimeout(function() {sparks.flash.sendCommand('connect_probe', "yellow");},2000);
+       }
      },
-     
+
      showDMM: function(visible) {
        sparks.flash.sendCommand('set_multimeter_visibility',visible.toString());
        sparks.flash.sendCommand('set_probe_visibility',visible.toString());
      },
-     
+
      allowMoveYellowProbe: function(allow) {
        sparks.flash.sendCommand('enable_probe_dragging', "yellow", allow);
      },
-     
+
      hidePopups: function() {
        $('.ui-dialog').remove();
      },
