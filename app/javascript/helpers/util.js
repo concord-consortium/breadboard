@@ -132,6 +132,14 @@ sparks.util.formatDate = function (date) {
     return s;
 };
 
+sparks.util.todaysDate = function() {
+  var monthNames = ["January","February","March","April","May","June","July",
+                    "August","September","October","November","December"];
+
+  var now = new Date();
+  return monthNames[now.getMonth()] + " " +  now.getDate() + ", " + now.getFullYear();
+}
+
 // Pretty print an object. Mainly intended for debugging JSON objects
 sparks.util.prettyPrint = function (obj, indent) {
     var t = '';

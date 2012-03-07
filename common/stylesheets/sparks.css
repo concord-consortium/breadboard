@@ -425,3 +425,10 @@ border-bottom-style:solid;
   display: inline-block;
 }
 
+#date {
+  position: absolute;
+  right: 40px;
+  top: 150px;
+  color: #EE864E;
+}
+

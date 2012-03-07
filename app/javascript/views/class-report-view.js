@@ -13,6 +13,7 @@
       var $div = $('<div>');
       
       $div.append('<h1>Class results</h1>');
+      $div.append('<span id="date">' + sparks.util.todaysDate() + "</span>");
       $div.append(this.createLevelsTable(reports));
       $div.append('<p>');
       

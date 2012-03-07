@@ -2221,6 +2221,14 @@ sparks.util.formatDate = function (date) {
     return s;
 };
 
+sparks.util.todaysDate = function() {
+  var monthNames = ["January","February","March","April","May","June","July",
+                    "August","September","October","November","December"];
+
+  var now = new Date();
+  return monthNames[now.getMonth()] + " " +  now.getDate() + ", " + now.getFullYear();
+}
+
 sparks.util.prettyPrint = function (obj, indent) {
     var t = '';
     if (typeof obj === 'object') {
@@ -4674,6 +4682,7 @@ sparks.createQuestionsCSV = function(data) {
       var $div = $('<div>');
 
       $div.append('<h1>Class results</h1>');
+      $div.append('<span id="date">' + sparks.util.todaysDate() + "</span>");
       $div.append(this.createLevelsTable(reports));
       $div.append('<p>');
 
