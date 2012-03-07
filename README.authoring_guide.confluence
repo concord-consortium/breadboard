@@ -108,6 +108,7 @@ The following is a list of all the top-level properties a level may have. Each p
 || hide_circuit | See _Showing and hiding Flash elements_ ||
 || show_multimeter | Adds a DMM to the circuit. ||
 || show_oscilloscope | Adds an oscilloscope to the circuit. Only one of the previous two properties may be set. ||
+|| allow_move_yellow_probe | Allows the yellow probe that is normally stuck to the positive rail to be moved by the student ||
 || disable_multimeter_position | See _Showing and hiding Flash elements_ ||
 || referenceFrequency | Frequency, in Hz, to be used when calculating inductance or capacitance of reactive components from a desired impedance. ||
 
@@ -518,6 +519,7 @@ By default, all questions are open-response. That is, if the only thing specifie
 | | show_read_multimeter_button | Adds a "read multimeter" button, instead of a text box, that reads the multimeter into the answer box. If the circuit is an AC circuit, the frequency and amplitude of the source are additionally (but invisibly) recorded as part of the answer and are available to question scripts; see below. |
 | | scoring | A script used to grade a question and provide feedback. See *Question scoring scripts* below |
 | | beforeScript | A script run when the question is first enabled. See *Question before scripts* below |
+| | meta | An object that may contain more information about the answer for author scripts. Not settable by author, it is instead filled when a user answers a question. See *The question meta object* below |
 
 h3. Multi-choice questions
 
@@ -736,27 +738,27 @@ The following are the properties that might be relevant to a script author:
 || points_earned | The points the student scored for this question. If equal to 'points', the question is marked correct ||
 || feedback | The feedback to be displayed (won't show if the question is answered correctly) ||
 || tutorial | The link to the tutorial button ||
+|| meta | An object containing additional information. See below ||
 
-h4. Using the multimeter reading
+h4. The question meta object
 
-If the question used the "Read Multimeter" button (by setting the property {tt}show_read_multimeter_button{tt} of the question object to true), *and* the circuit is an AC circuit, then the property {tt}answer{tt} is not a number, but a 3-valued object. These values have to accessed and scored by a question script (as in this circumstance, the "correct answer" is probably defined by a mathematical relationship among these reading, frequency, and source amplitude, rather than by a single value.)
+Whenever a student answers a question, additional information may be saved in the question.meta object, such as the state of the circuit when the user hit "submit".
 
 || Property || Meaning ||
-|| reading | The multimeter reading the student submitted. The rounded value of this property is what the student sees in the box next to the "Read Multimeter" button. ||
-|| frequency | The frequency generator frequency, in Hz, at the moment the reading was made. ||
-|| amplitude | The frequency generator amplitude (Vpeak), in V, at the moment the reading was made. ||
+|| question.meta.frequency | The frequency of the power source when the user hit submit (AC only) ||
+|| question.meta.amplitude | The amplitude of the power source when the user hit submit (AC only) ||
+|| question.meta.val | Used for multimeter-button readings (below) ||
+|| question.meta.units | Used for multimeter-button readings (below)||
 
-Example (which reports any meter reading as correct, and constructs a string describing all the data collected with it):
+h4. Using the multimeter button
 
-{code}
-if (question.answer) {
-  var a = question.answer.reading + 'V at frequency ' + question.answer.frequency +'Hz and source amplitude V = ' + question.answer.amplitude +'V.';
-  question.correct_answer = a;
-  question.answer = a;        // this overwrites question.answer so it shows up correctly on the results page.
-  question.points_earned = 1;
-}
-{code}
+If the question used the "Read Multimeter" button (by setting the property {tt}show_read_multimeter_button{tt} of the question object to true), the user will be shown a button allowing them to directly enter the value from the multimeter. The question's answer property will be set to a string representing what was seen on the DMM (e.g. "20 mA"). However, just like parsing an answer (see Parsing written answers), the question will also save two additional properties in the meta object: question.meta.val will be the actual value of the reading at the base SI unit, and question.meta.units will be the units.
 
+So if a student presses "Read Multimeter" when the DMM is showing "20 mA", the following properties will be saved:
+|| Property || Value given input of "20 mA" ||
+|| question.answer | "20 mA" ||
+|| question.meta.val | 0.02 ||
+|| question.meta.units | "A" ||
 
 h3. The log object
 
