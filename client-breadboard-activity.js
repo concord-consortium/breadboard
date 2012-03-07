@@ -3504,6 +3504,7 @@ sparks.createQuestionsCSV = function(data) {
             $multimeterReading.text(reading);
 
             var parsedAnswer = sparks.unit.parse(reading);
+            question.meta = question.meta || {};
             question.meta.val = parsedAnswer.val;
             question.meta.units = parsedAnswer.units;
 
@@ -3513,7 +3514,9 @@ sparks.createQuestionsCSV = function(data) {
             if (board.components.source && typeof board.components.source.frequency !== 'undefined') {
               amplitude = board.components.source.getAmplitude();
               frequency = board.components.source.getFrequency();
-              question.meta = { frequency: frequency, amplitude: amplitude };
+              question.meta = question.meta || {};
+              question.meta.frequency =  frequency;
+              question.meta.amplitude = amplitude ;
             }
           });
           $input = $('<div style="display: inline-block">').append($readMultimeterButton).append($multimeterReading);
