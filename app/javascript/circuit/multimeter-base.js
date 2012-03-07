@@ -3,7 +3,7 @@
 (function () {
 
     var flash = sparks.flash;
-    
+
     /*
      * Digital Multimeter
      * Base for the Centech DMM
@@ -12,14 +12,14 @@
     };
 
     sparks.circuit.MultimeterBase.prototype = {
-            
+
         modes : { ohmmeter : 0, voltmeter : 1, ammeter : 2 },
-        
+
         init: function () {
             this.mode = this.modes.ohmmeter;
-            
+
             this.absoluteValue = 0;   //current meter value
-            
+
             this.displayText = '       ';
 
             this.redProbeConnection = null;
@@ -30,7 +30,7 @@
             this.powerOn = false;
             this.disabledPositions = [];
         },
-        
+
         // @probe Either "red" or "black"
         // @location hole name (e.g. 'a1') or null
         setProbeLocation: function (probe, location) {
@@ -64,7 +64,8 @@
                     else {
                         text = ' 1 .   ';
                     }
-                    
+                    this.currentUnits = "V";
+
                 } else if (this.dialPosition === 'dcv_200') {
                     if (this.absoluteValue < 199.95) {
                         text = (Math.round(this.absoluteValue * 10) * 0.1).toString();
@@ -73,6 +74,7 @@
                     else {
                         text = ' 1 .   ';
                     }
+                    this.currentUnits = "V";
 
                 } else if (this.dialPosition === 'dcv_1000') {
                      if (this.absoluteValue < 999.95) {
@@ -83,6 +85,7 @@
                     else {
                         text = 'h1 .   ';
                     }
+                    this.currentUnits = "V";
 
                 } else if (this.dialPosition === 'dcv_2000m') {
                     var vm = this.absoluteValue * 1000;
@@ -93,6 +96,7 @@
                     else {
                         text = ' 1 .   ';
                     }
+                    this.currentUnits = "mV";
 
                 } else if (this.dialPosition === 'dcv_200m') {
                     var vm = this.absoluteValue * 1000;
@@ -103,6 +107,7 @@
                     else {
                         text = ' 1 .   ';
                     }
+                    this.currentUnits = "mV";
 
                 } else if (this.dialPosition === 'acv_200') {
                     if (this.absoluteValue < 199.95) {
@@ -112,7 +117,8 @@
                     else {
                         text = ' 1 .   ';
                     }
-                
+                    this.currentUnits = "V";
+
                 } else if (this.dialPosition === 'acv_750') {
                     if (this.absoluteValue < 699.5) {
                         text = (Math.round(this.absoluteValue)).toString();
@@ -122,6 +128,7 @@
                     else {
                         text = 'h1 .   ';
                     }
+                    this.currentUnits = "V";
 
                 } else if (this.dialPosition === 'r_200') {
                     if (this.absoluteValue < 199.95) {
@@ -131,6 +138,7 @@
                     else {
                         text = ' 1   . ';
                     }
+                    this.currentUnits = "Ohms";
                 } else if (this.dialPosition === 'r_2000') {
                     if (this.absoluteValue < 1999.5) {
                         text = Math.round(this.absoluteValue).toString();
@@ -139,6 +147,7 @@
                     else {
                         text = ' 1     ';
                     }
+                    this.currentUnits = "Ohms";
                 }
                 else if (this.dialPosition === 'r_20k') {
                     if (this.absoluteValue < 19995) {
@@ -148,6 +157,7 @@
                     else {
                         text = ' 1 .   ';
                     }
+                    this.currentUnits = "kOhms";
                 }
                 else if (this.dialPosition === 'r_200k') {
                     if (this.absoluteValue < 199950) {
@@ -157,6 +167,7 @@
                     else {
                         text = ' 1   . ';
                     }
+                    this.currentUnits = "kOhms";
                 }
                 else if (this.dialPosition === 'r_2000k') {
                     if (this.absoluteValue < 1999500) {
@@ -166,7 +177,8 @@
                     else {
                         text = ' 1     ';
                     }
-                } 
+                    this.currentUnits = "kOhms";
+                }
                 else if (this.dialPosition === 'dca_200mc') {
                   var imc = this.absoluteValue * 1000000
                   if (imc < 195){
@@ -176,6 +188,7 @@
                   else {
                       text = ' 1     ';
                   }
+                  this.currentUnits = "μA";
                 }
                 else if (this.dialPosition === 'dca_2000mc') {
                   var imc = this.absoluteValue * 1000000
@@ -186,6 +199,7 @@
                   else {
                       text = ' 1     ';
                   }
+                  this.currentUnits = "μA";
                 }
                 else if (this.dialPosition === 'dca_20m') {
                   var im = this.absoluteValue * 1000
@@ -196,6 +210,7 @@
                   else {
                       text = ' 1     ';
                   }
+                  this.currentUnits = "mA";
                 }
                 else if (this.dialPosition === 'dca_200m') {
                   var im = this.absoluteValue * 1000
@@ -206,6 +221,7 @@
                   else {
                       text = ' 1     ';
                   }
+                  this.currentUnits = "mA";
                 }
                 else if (this.dialPosition === 'dcv_200m' || this.dialPosition === 'dcv_200' ||
                         this.dialPosition === 'acv_200' || this.dialPosition === 'p_9v' ||
@@ -273,6 +289,7 @@
             text = this.disable_multimeter_position(text);
             flash.sendCommand('set_multimeter_display', text);
             this.displayText = text;
+            this.currentValue = parseFloat(text.replace(/[^\d\.]/g, ""));
         },
 
 
@@ -285,8 +302,8 @@
 
         disable_multimeter_position : function (displayText) {
         	// how do I pass a variable from the "series" file into here?
-        	// something like: sparks.jsonSection.disable_multimeter_position  ??    
-        	
+        	// something like: sparks.jsonSection.disable_multimeter_position  ??
+
         	// right now this is hard wired to disable R dial positions
         	switch (this.dialPosition)
         	{
@@ -324,7 +341,7 @@
 						break;
 					}
 				}
-				break;			
+				break;
 			case 'acv_750':
 			case 'acv_200':
 				for(i=0;i<this.disabledPositions.length;i++){
@@ -462,7 +479,7 @@
         },
 
         allConnected : function () {
-            return this.redProbeConnection !== null && 
+            return this.redProbeConnection !== null &&
                 this.blackProbeConnection !== null &&
                 this.redProbeConnection !== this.blackProbeConnection &&
                 (this.redPlugConnection === 'voma_port' &&

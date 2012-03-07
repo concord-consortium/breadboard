@@ -2891,6 +2891,7 @@ sparks.createQuestionsCSV = function(data) {
                     else {
                         text = ' 1 .   ';
                     }
+                    this.currentUnits = "V";
 
                 } else if (this.dialPosition === 'dcv_200') {
                     if (this.absoluteValue < 199.95) {
@@ -2900,6 +2901,7 @@ sparks.createQuestionsCSV = function(data) {
                     else {
                         text = ' 1 .   ';
                     }
+                    this.currentUnits = "V";
 
                 } else if (this.dialPosition === 'dcv_1000') {
                      if (this.absoluteValue < 999.95) {
@@ -2910,6 +2912,7 @@ sparks.createQuestionsCSV = function(data) {
                     else {
                         text = 'h1 .   ';
                     }
+                    this.currentUnits = "V";
 
                 } else if (this.dialPosition === 'dcv_2000m') {
                     var vm = this.absoluteValue * 1000;
@@ -2920,6 +2923,7 @@ sparks.createQuestionsCSV = function(data) {
                     else {
                         text = ' 1 .   ';
                     }
+                    this.currentUnits = "mV";
 
                 } else if (this.dialPosition === 'dcv_200m') {
                     var vm = this.absoluteValue * 1000;
@@ -2930,6 +2934,7 @@ sparks.createQuestionsCSV = function(data) {
                     else {
                         text = ' 1 .   ';
                     }
+                    this.currentUnits = "mV";
 
                 } else if (this.dialPosition === 'acv_200') {
                     if (this.absoluteValue < 199.95) {
@@ -2939,6 +2944,7 @@ sparks.createQuestionsCSV = function(data) {
                     else {
                         text = ' 1 .   ';
                     }
+                    this.currentUnits = "V";
 
                 } else if (this.dialPosition === 'acv_750') {
                     if (this.absoluteValue < 699.5) {
@@ -2949,6 +2955,7 @@ sparks.createQuestionsCSV = function(data) {
                     else {
                         text = 'h1 .   ';
                     }
+                    this.currentUnits = "V";
 
                 } else if (this.dialPosition === 'r_200') {
                     if (this.absoluteValue < 199.95) {
@@ -2958,6 +2965,7 @@ sparks.createQuestionsCSV = function(data) {
                     else {
                         text = ' 1   . ';
                     }
+                    this.currentUnits = "Ohms";
                 } else if (this.dialPosition === 'r_2000') {
                     if (this.absoluteValue < 1999.5) {
                         text = Math.round(this.absoluteValue).toString();
@@ -2966,6 +2974,7 @@ sparks.createQuestionsCSV = function(data) {
                     else {
                         text = ' 1     ';
                     }
+                    this.currentUnits = "Ohms";
                 }
                 else if (this.dialPosition === 'r_20k') {
                     if (this.absoluteValue < 19995) {
@@ -2975,6 +2984,7 @@ sparks.createQuestionsCSV = function(data) {
                     else {
                         text = ' 1 .   ';
                     }
+                    this.currentUnits = "kOhms";
                 }
                 else if (this.dialPosition === 'r_200k') {
                     if (this.absoluteValue < 199950) {
@@ -2984,6 +2994,7 @@ sparks.createQuestionsCSV = function(data) {
                     else {
                         text = ' 1   . ';
                     }
+                    this.currentUnits = "kOhms";
                 }
                 else if (this.dialPosition === 'r_2000k') {
                     if (this.absoluteValue < 1999500) {
@@ -2993,6 +3004,7 @@ sparks.createQuestionsCSV = function(data) {
                     else {
                         text = ' 1     ';
                     }
+                    this.currentUnits = "kOhms";
                 }
                 else if (this.dialPosition === 'dca_200mc') {
                   var imc = this.absoluteValue * 1000000
@@ -3003,6 +3015,7 @@ sparks.createQuestionsCSV = function(data) {
                   else {
                       text = ' 1     ';
                   }
+                  this.currentUnits = "μA";
                 }
                 else if (this.dialPosition === 'dca_2000mc') {
                   var imc = this.absoluteValue * 1000000
@@ -3013,6 +3026,7 @@ sparks.createQuestionsCSV = function(data) {
                   else {
                       text = ' 1     ';
                   }
+                  this.currentUnits = "μA";
                 }
                 else if (this.dialPosition === 'dca_20m') {
                   var im = this.absoluteValue * 1000
@@ -3023,6 +3037,7 @@ sparks.createQuestionsCSV = function(data) {
                   else {
                       text = ' 1     ';
                   }
+                  this.currentUnits = "mA";
                 }
                 else if (this.dialPosition === 'dca_200m') {
                   var im = this.absoluteValue * 1000
@@ -3033,6 +3048,7 @@ sparks.createQuestionsCSV = function(data) {
                   else {
                       text = ' 1     ';
                   }
+                  this.currentUnits = "mA";
                 }
                 else if (this.dialPosition === 'dcv_200m' || this.dialPosition === 'dcv_200' ||
                         this.dialPosition === 'acv_200' || this.dialPosition === 'p_9v' ||
@@ -3100,6 +3116,7 @@ sparks.createQuestionsCSV = function(data) {
             text = this.disable_multimeter_position(text);
             flash.sendCommand('set_multimeter_display', text);
             this.displayText = text;
+            this.currentValue = parseFloat(text.replace(/[^\d\.]/g, ""));
         },
 
 
