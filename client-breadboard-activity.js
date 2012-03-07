@@ -3497,11 +3497,18 @@ sparks.createQuestionsCSV = function(data) {
             e.preventDefault();
 
             sparks.activityController.currentSection.meter.dmm.update();
-            reading = sparks.activityController.currentSection.meter.dmm.absoluteValue;
+            value = sparks.activityController.currentSection.meter.dmm.currentValue;
+            units = sparks.activityController.currentSection.meter.dmm.currentUnits;
+            reading = value + " " +  units;
 
-            $multimeterReading.text(sparks.math.roundToSigDigits(reading, 3));
+            $multimeterReading.text(reading);
 
-            question.answer = reading;
+            var parsedAnswer = sparks.unit.parse(reading);
+            question.meta.val = parsedAnswer.val;
+            question.meta.units = parsedAnswer.units;
+
+            question.answer = parsedAnswer.val;
+
 
             if (board.components.source && typeof board.components.source.frequency !== 'undefined') {
               amplitude = board.components.source.getAmplitude();
