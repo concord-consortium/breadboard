@@ -530,4 +530,9 @@ ul.quiet_list {
   top: 120px;
   width: 50px;
   display: none; }
+  
+@page {
+    margin-left: 0px;
+    margin-right: 0px;
+}
 
