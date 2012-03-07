@@ -124,22 +124,25 @@
   this.loadClassReport = function () {
     var classStudents,
         learnerIds = [],
-        activity;
+        activity,
+        classId;
     if (!!sparks.util.readCookie('class')){
+      classId = sparks.util.readCookie('class');
       activity = unescape(sparks.util.readCookie('activity_name')).split('#')[1];
       classStudents = eval(unescape(sparks.util.readCookie('class_students')).replace(/\+/g," "));
       for (var i=0, ii=classStudents.length; i < ii; i++){
         learnerIds.push(classStudents[i].id);
       }
     } else {
-      activity = prompt("Enter the activity id");
-      classStudents = prompt("Enter a list of learner ids", "");
+      activity = prompt("Enter the activity id", "series-resistances");                       // series-resistances
+      classStudents = prompt("Enter a list of learner ids", "212,213,214,215,216,217,218,219,220");        // 212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228
       learnerIds = classStudents.split(',');
     }
 
     sparks.classReportController.getClassData(
       activity,
       learnerIds,
+      classId,
       function(reports) {
         $('#loading').hide();
         var view = new sparks.ClassReportView(),
@@ -147,7 +150,7 @@
         $('#report').append($report);
       });
   };
-  
+
   this.setupQuitButton = function () {
     $('#return_to_portal').click(function() {
       if (!!sparks.couchDS.user) {

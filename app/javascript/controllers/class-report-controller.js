@@ -1,7 +1,7 @@
 /*globals console sparks $ breadModel getBreadBoard window alert*/
 
 (function() {
-  
+
   /*
    * Sparks Class Report Controller can be accessed by the
    * singleton variable sparks.classReportController
@@ -12,14 +12,35 @@
   sparks.ClassReportController = function(){
     // sparks.classReport = new sparks.ClassReport();
     this.reports = [];
+
+    this.className = "";
+    this.teacherName = "";
     // this.view = new sparks.ClassReportView();
   };
-  
+
   sparks.ClassReportController.prototype = {
-    
-    getClassData: function(activityId, learnerIds, callback) {
+
+    getClassData: function(activityId, learnerIds, classId, callback) {
       var reports = this.reports;
-          
+      var self = this;
+
+      if (classId) {
+        $.get("http://sparks.portal.concord.org/portal/classes/"+classId, function(data) {
+          if (data) {
+            var classElem = $(data).find('strong:contains("Class:")'),
+                className = classElem ? classElem.text().split(": ")[1] : "",
+                teacherElem = $(data).find('li:contains("Teacher")>strong'),
+                teacherName = teacherElem ? teacherElem.text().replace(/\n/g, "") : "";
+            self.className = className;
+            self.teacherName = teacherName;
+
+            if (className && teacherName) {
+              $('#title').html(className + " &nbsp; &mdash; &nbsp; " + teacherName);
+            }
+          }
+        });
+      }
+
       var receivedData = function(response){
         if (!!response && !!response.rows && response.rows.length > 0){
           for (var i = 0, ii = response.rows.length; i < ii; i++){
@@ -28,14 +49,14 @@
           callback(reports);
         }
       };
-      
+
       var fail = function() {
         alert("Failed to load class report");
       };
-      
+
       sparks.couchDS.loadClassDataWithLearnerIds(activityId, learnerIds, receivedData, fail);
     },
-    
+
     getLevels: function() {
       if (this.reports.length > 0){
         var reportWithMostSections = 0,
@@ -54,8 +75,8 @@
       }
       return [];
     }
-    
+
   };
-  
+
   sparks.classReportController = new sparks.ClassReportController();
 })();

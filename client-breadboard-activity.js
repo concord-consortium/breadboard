@@ -5984,12 +5984,33 @@ sparks.createQuestionsCSV = function(data) {
    */
   sparks.ClassReportController = function(){
     this.reports = [];
+
+    this.className = "";
+    this.teacherName = "";
   };
 
   sparks.ClassReportController.prototype = {
 
-    getClassData: function(activityId, learnerIds, callback) {
+    getClassData: function(activityId, learnerIds, classId, callback) {
       var reports = this.reports;
+      var self = this;
+
+      if (classId) {
+        $.get("http://sparks.portal.concord.org/portal/classes/"+classId, function(data) {
+          if (data) {
+            var classElem = $(data).find('strong:contains("Class:")'),
+                className = classElem ? classElem.text().split(": ")[1] : "",
+                teacherElem = $(data).find('li:contains("Teacher")>strong'),
+                teacherName = teacherElem ? teacherElem.text().replace(/\n/g, "") : "";
+            self.className = className;
+            self.teacherName = teacherName;
+
+            if (className && teacherName) {
+              $('#title').html(className + " &nbsp; &mdash; &nbsp; " + teacherName);
+            }
+          }
+        });
+      }
 
       var receivedData = function(response){
         if (!!response && !!response.rows && response.rows.length > 0){
@@ -9472,22 +9493,25 @@ sparks.GAHelper.userRepeatedLevel = function (levelName) {
   this.loadClassReport = function () {
     var classStudents,
         learnerIds = [],
-        activity;
+        activity,
+        classId;
     if (!!sparks.util.readCookie('class')){
+      classId = sparks.util.readCookie('class');
       activity = unescape(sparks.util.readCookie('activity_name')).split('#')[1];
       classStudents = eval(unescape(sparks.util.readCookie('class_students')).replace(/\+/g," "));
       for (var i=0, ii=classStudents.length; i < ii; i++){
         learnerIds.push(classStudents[i].id);
       }
     } else {
-      activity = prompt("Enter the activity id");
-      classStudents = prompt("Enter a list of learner ids", "");
+      activity = prompt("Enter the activity id", "series-resistances");                       // series-resistances
+      classStudents = prompt("Enter a list of learner ids", "212,213,214,215,216,217,218,219,220");        // 212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228
       learnerIds = classStudents.split(',');
     }
 
     sparks.classReportController.getClassData(
       activity,
       learnerIds,
+      classId,
       function(reports) {
         $('#loading').hide();
         var view = new sparks.ClassReportView(),
