@@ -518,3 +518,16 @@ ul.quiet_list {
   border: 1px solid;
   margin: 2px;
   padding: 5px; }
+  
+#print-link {
+  background: url(../../common/icons/print.png) no-repeat 0 0;
+  display: block;
+  height: 15px;
+  padding: 0;
+  position: absolute;
+  right: 20px;
+  text-indent: -999em;
+  top: 120px;
+  width: 50px;
+  display: none; }
+

@@ -9517,6 +9517,7 @@ sparks.GAHelper.userRepeatedLevel = function (levelName) {
         var view = new sparks.ClassReportView(),
             $report = view.getClassReportView(reports);
         $('#report').append($report);
+        $("#print-link").show();
       });
   };
 
