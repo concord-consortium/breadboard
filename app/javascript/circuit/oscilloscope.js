@@ -252,12 +252,12 @@
         }
 
         var goodnesses = [];
-        if (this.signals[this.SOURCE_CHANNEL]) {
-          goodnesses.push(goodnessOfScale([this.SOURCE_CHANNEL]));
+        if (this.signals[1]) {
+          goodnesses.push(goodnessOfScale([1]));
         }
 
-        if (this.signals[this.PROBE_CHANNEL]) {
-          goodnesses.push(goodnessOfScale([this.PROBE_CHANNEL]));
+        if (this.signals[2]) {
+          goodnesses.push(goodnessOfScale([2]));
         }
         return Array.min(goodnesses);
       }
