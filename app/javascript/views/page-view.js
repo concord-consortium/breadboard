@@ -215,9 +215,13 @@
           question.meta.amplitude = board.components.source.getAmplitude();
           question.meta.frequency = board.components.source.getFrequency();
         }
+
         var section = sparks.activityController.currentSection;
         if (section.meter.dmm && section.meter.dmm.dialPosition) {
           question.meta.dmmDial = section.meter.dmm.dialPosition;
+        }
+        if (section.meter.oscope) {
+          question.meta.oscopeScaleQuality = sparks.activityController.currentSection.meter.oscope.getGoodnessOfScale();
         }
       }
 
