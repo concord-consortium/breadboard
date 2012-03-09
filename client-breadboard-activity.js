@@ -3428,18 +3428,26 @@ sparks.createQuestionsCSV = function(data) {
 
     submitButtonClicked: function (question) {
       var board = getBreadBoard();
-      if (board && board.components.source && typeof board.components.source.frequency !== 'undefined') {
-        var amplitude = board.components.source.getAmplitude(),
-            frequency = board.components.source.getFrequency(),
-            meta = { frequency: frequency, amplitude: amplitude };
-        if (question.isSubQuestion) {
-          var questions = sparks.pageController.getSisterSubquestionsOf(sparks.sectionController.currentPage, question);
-          $.each(questions, function(i, subquestion){
-            subquestion.meta = meta;
-          });
-        } else {
-          question.meta = meta;
+
+      if (!question.meta) {
+        question.meta = {};
+        if (board && board.components.source && typeof board.components.source.frequency !== 'undefined') {
+          question.meta.amplitude = board.components.source.getAmplitude();
+          question.meta.frequency = board.components.source.getFrequency();
         }
+        var section = sparks.activityController.currentSection;
+        if (section.meter.dmm && section.meter.dmm.dialPosition) {
+          question.meta.dmmDial = section.meter.dmm.dialPosition;
+        }
+      }
+
+      if (question.isSubQuestion) {
+        var questions = sparks.pageController.getSisterSubquestionsOf(sparks.sectionController.currentPage, question);
+        $.each(questions, function(i, subquestion){
+          if (!subquestion.meta) {
+            subquestion.meta = meta;
+          }
+        });
       }
 
       sparks.pageController.completedQuestion(this.page);
@@ -3510,13 +3518,10 @@ sparks.createQuestionsCSV = function(data) {
 
             question.answer = parsedAnswer.val;
 
-
+            question.meta.dmmDial = sparks.activityController.currentSection.meter.dmm.dialPosition;
             if (board.components.source && typeof board.components.source.frequency !== 'undefined') {
-              amplitude = board.components.source.getAmplitude();
-              frequency = board.components.source.getFrequency();
-              question.meta = question.meta || {};
-              question.meta.frequency =  frequency;
-              question.meta.amplitude = amplitude ;
+              question.meta.frequency =  board.components.source.getAmplitude();
+              question.meta.amplitude = board.components.source.getFrequency() ;
             }
           });
           $input = $('<div style="display: inline-block">').append($readMultimeterButton).append($multimeterReading);

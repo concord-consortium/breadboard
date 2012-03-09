@@ -61,14 +61,11 @@
 
             question.answer = parsedAnswer.val;
 
-
+            question.meta.dmmDial = sparks.activityController.currentSection.meter.dmm.dialPosition;
             // save meta information about source frequency and amplitude if this is an AC reading
             if (board.components.source && typeof board.components.source.frequency !== 'undefined') {
-              amplitude = board.components.source.getAmplitude();
-              frequency = board.components.source.getFrequency();
-              question.meta = question.meta || {};
-              question.meta.frequency =  frequency;
-              question.meta.amplitude = amplitude ;
+              question.meta.frequency =  board.components.source.getAmplitude();
+              question.meta.amplitude = board.components.source.getFrequency() ;
             }
           });
           $input = $('<div style="display: inline-block">').append($readMultimeterButton).append($multimeterReading);
