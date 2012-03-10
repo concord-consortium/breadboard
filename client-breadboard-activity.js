@@ -3524,8 +3524,8 @@ sparks.createQuestionsCSV = function(data) {
 
             question.meta.dmmDial = sparks.activityController.currentSection.meter.dmm.dialPosition;
             if (board.components.source && typeof board.components.source.frequency !== 'undefined') {
-              question.meta.frequency =  board.components.source.getAmplitude();
-              question.meta.amplitude = board.components.source.getFrequency() ;
+              question.meta.frequency = board.components.source.getFrequency();
+              question.meta.amplitude = board.components.source.getAmplitude();
             }
           });
           $input = $('<div style="display: inline-block">').append($readMultimeterButton).append($multimeterReading);
