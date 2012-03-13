@@ -3449,7 +3449,7 @@ sparks.createQuestionsCSV = function(data) {
         var questions = sparks.pageController.getSisterSubquestionsOf(sparks.sectionController.currentPage, question);
         $.each(questions, function(i, subquestion){
           if (!subquestion.meta) {
-            subquestion.meta = meta;
+            subquestion.meta = question.meta;
           }
         });
       }
