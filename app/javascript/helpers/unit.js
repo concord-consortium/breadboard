@@ -9,38 +9,31 @@
     u.labels = { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' };
     
     u.toEngineering = function (value, units){
-      // function html_entity_decode(str) {
-      //   return $("<div>").html(str).text();
-      // }
       value = Number(value);
+      var isShort = units.length === 1,
+          prefix  = "";
       
       if (value >= 1000000){
-        var MUnits = "mega"+units;
-        units = MUnits;
+        prefix = isShort ? "M" : "mega";
         value = u.round(value/1000000,2);
       } else if (value >= 1000){
-        var kUnits = "kilo"+units;
-        units = kUnits;
+        prefix = isShort ? "k" : "kilo";
         value = u.round(value/1000,2);
       } else if (value === 0 ) {
-        units = units;
         value = 0;
       } else if (value < 0.000001){
-        var nUnits = "nano"+units;
-        units = nUnits;
+        prefix = isShort ? "n" : "nano";
         value = u.round(value * 1000000000,2);
       } else if (value < 0.001){
-        var uUnits = "micro"+units;
-        units = uUnits;
+        prefix = isShort ? "μ" : "micro";
         value = u.round(value * 1000000,2);
       } else if (value < 1) {
-        var mUnits = "milli"+units;
-        units = mUnits;
+        prefix = isShort ? "m" : "milli";
         value = u.round(value * 1000,2);
       } else {
-        units = units;
         value = u.round(value,2);
       }
+      units = prefix + units;
       
       return {"value": value, "units": units};
     };

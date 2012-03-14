@@ -58,7 +58,16 @@ describe 'Units'
     u.toEngineering(100000000, "ohms").units.should.be "megaohms"
 
   end
-  
+
+  it 'should use short forms of units when necessery'
+
+    u.toEngineering(0.0000001, "Amps").units.should.be "nanoAmps"
+
+    u.toEngineering(0.0000001, "A").units.should.be "nA"
+
+  end
+
+
   it 'should round to two places correctly'
     u.toEngineering(0.000000123456, "ohms").value.should.be 123.46
     u.toEngineering(0.000000123456, "ohms").units.should.be "nanoohms"
