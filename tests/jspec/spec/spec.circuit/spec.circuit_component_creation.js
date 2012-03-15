@@ -45,8 +45,8 @@ describe "Construction of individual circuit components from a JSON circuit spec
           breadModel("createCircuit", jsonCircuit);
         end
                 
-        it "should contain only one object"
-          size(components).should.be 2
+        it "should contain only one object, plus a battery and two leads"
+          size(components).should.be 4
         end
         
         describe "the component"
@@ -74,8 +74,8 @@ describe "Construction of individual circuit components from a JSON circuit spec
         breadModel("createCircuit", jsonCircuit);        
       end 
         
-      it "should contain one object"
-        size(components).should.be 2
+      it "should contain one object, plus a battery and two leads"
+        size(components).should.be 4
       end
       
       describe "the component"
