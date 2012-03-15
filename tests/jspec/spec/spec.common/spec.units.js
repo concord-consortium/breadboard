@@ -62,8 +62,8 @@ describe 'Units'
   it 'should use short forms of units when necessery'
 
     u.toEngineering(0.0000001, "Amps").units.should.be "nanoAmps"
-
     u.toEngineering(0.0000001, "A").units.should.be "nA"
+    u.toEngineering(1000, "Hz").units.should.be "kHz"
 
   end
 

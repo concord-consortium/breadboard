@@ -1149,7 +1149,7 @@ sparks.createQuestionsCSV = function(data) {
 
     u.toEngineering = function (value, units){
       value = Number(value);
-      var isShort = units.length === 1,
+      var isShort = (units.length === 1 || units === "Hz"),
           prefix  = "";
 
       if (value >= 1000000){
