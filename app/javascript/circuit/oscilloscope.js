@@ -79,7 +79,7 @@
             if (probeNode === 'gnd') {
               // short-circuit this operation and just return a flat trace
               this.setSignal(this.PROBE_CHANNEL[probeIndex], {amplitude: 0, frequency: 0, phase: 0});
-              return;
+              continue;
             } else if (~probeNode.indexOf('powerPos')) {
               // just return the source
               sourceSignal = {
@@ -88,7 +88,7 @@
                 phase: 0
               };
               this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
-              return;
+              continue;
             }
 
             data = breadModel('query');

@@ -8192,7 +8192,7 @@ sparks.createQuestionsCSV = function(data) {
             probeNode = getBreadBoard().getHole(this.probeLocation[probeIndex]).nodeName();
             if (probeNode === 'gnd') {
               this.setSignal(this.PROBE_CHANNEL[probeIndex], {amplitude: 0, frequency: 0, phase: 0});
-              return;
+              continue;
             } else if (~probeNode.indexOf('powerPos')) {
               sourceSignal = {
                 amplitude: source.amplitude * source.amplitudeScaleFactor,
@@ -8200,7 +8200,7 @@ sparks.createQuestionsCSV = function(data) {
                 phase: 0
               };
               this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
-              return;
+              continue;
             }
 
             data = breadModel('query');
