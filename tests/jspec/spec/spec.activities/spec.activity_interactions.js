@@ -271,12 +271,8 @@ describe 'Activity Interactions'
      sparks.activity.view.layoutCurrentSection();
      
      var components = getBreadBoard().components;
-     console.log("components.r1 = "+components.r1);
-       console.log("components.r2 = "+components.r2);
      var res1 = components.r1.resistance;
      var res2 = components.r2.resistance;
-     console.log("res1 = "+res1);
-     console.log("res2 = "+res2);
 
      $buttons = $questionsDiv.find(':button');
      $($buttons[0]).click();
@@ -286,8 +282,6 @@ describe 'Activity Interactions'
      $repeat.click();
      
      var components = getBreadBoard().components;
-     console.log("components.r1 = "+components.r1);
-      console.log("components.r2 = "+components.r2);
      var bothResistorsAreTheSame = (components.r1.resistance === res1) && (components.r2.resistance === res2)
      
      bothResistorsAreTheSame.should.not.be true

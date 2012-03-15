@@ -43,7 +43,6 @@
         },
 
         update : function () {
-            console.log('ENTER MultimeterBase#update');
         },
 
         updateDisplay : function () {
@@ -52,7 +51,6 @@
                 flash.sendCommand('set_multimeter_display', '       ');
                 return;
             }
-            console.log('Multimeter.update: v=' + this.absoluteValue + ', dial=' + this.dialPosition);
 
             var text = '';
             if (this.allConnected()) {

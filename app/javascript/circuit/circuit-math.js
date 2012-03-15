@@ -44,7 +44,6 @@
         var resistors = this.getResistors(arguments);
         var resistance = 0;
         $.each(resistors, function(i, resistor){
-          console.log("adding "+resistor.nominalResistance)
           resistance += resistor.nominalResistance;
         });
         return resistance;

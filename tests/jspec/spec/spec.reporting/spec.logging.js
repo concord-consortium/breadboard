@@ -96,7 +96,6 @@ describe 'Logging'
       
       var section = sparks.activityController.currentSection;
       var sessionReport = sparks.reportController.addNewSessionReport(section.pages[0]);
-      console.log("DISCONNECT")
       receiveEvent('disconnect', 'component|r1|b23', 0);
       
       var log = sessionReport.log;

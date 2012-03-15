@@ -953,7 +953,6 @@ sparks.getDataArray = function(){
               sparks.data.push(obj);
           }
         );
-        console.log("done");
       }
     }
   );

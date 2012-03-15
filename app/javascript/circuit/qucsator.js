@@ -115,7 +115,6 @@
       }
       
       if ( !component.hasValidConnections() ) {
-        console.log(component);
         throw new Error("Component " + name + " has invalid connections and cannot be inserted into the netlist");
       }
       

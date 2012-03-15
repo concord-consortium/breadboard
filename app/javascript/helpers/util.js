@@ -252,7 +252,6 @@ sparks.getDataArray = function(){
             // }
           }
         );
-        console.log("done");
       }
     }
   );

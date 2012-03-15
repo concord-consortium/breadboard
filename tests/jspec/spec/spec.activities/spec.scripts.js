@@ -205,7 +205,7 @@ describe 'Authored Scripts'
                  {
                      "prompt": "Which resistor is faulty?",
                      "points": 5,
-                     "scoring": "console.log(breadboard.getFault().UID); if (question.answer == breadboard.getFault().UID) {question.points_earned = 5}"
+                     "scoring": "if (question.answer == breadboard.getFault().UID) {question.points_earned = 5}"
                  },
                  {
                      "prompt": "List the faulty resistors in the feedback...",

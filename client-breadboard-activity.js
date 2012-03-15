@@ -2324,7 +2324,6 @@ sparks.getDataArray = function(){
               sparks.data.push(obj);
           }
         );
-        console.log("done");
       }
     }
   );
@@ -6407,7 +6406,6 @@ sparks.createQuestionsCSV = function(data) {
     };
 
     this.receiveEvent = function (name, value, time) {
-      console.log('ENTER sm.Activity#receiveEvent');
       console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
 
       var v;
@@ -6632,7 +6630,6 @@ sparks.createQuestionsCSV = function(data) {
       }
 
       if ( !component.hasValidConnections() ) {
-        console.log(component);
         throw new Error("Component " + name + " has invalid connections and cannot be inserted into the netlist");
       }
 
@@ -7554,7 +7551,6 @@ sparks.createQuestionsCSV = function(data) {
         },
 
         update : function () {
-            console.log('ENTER MultimeterBase#update');
         },
 
         updateDisplay : function () {
@@ -7563,7 +7559,6 @@ sparks.createQuestionsCSV = function(data) {
                 flash.sendCommand('set_multimeter_display', '       ');
                 return;
             }
-            console.log('Multimeter.update: v=' + this.absoluteValue + ', dial=' + this.dialPosition);
 
             var text = '';
             if (this.allConnected()) {
@@ -8734,7 +8729,6 @@ sparks.createQuestionsCSV = function(data) {
         var resistors = this.getResistors(arguments);
         var resistance = 0;
         $.each(resistors, function(i, resistor){
-          console.log("adding "+resistor.nominalResistance)
           resistance += resistor.nominalResistance;
         });
         return resistance;

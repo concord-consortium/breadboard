@@ -2328,7 +2328,6 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
     };
 
     this.receiveEvent = function (name, value, time) {
-      console.log('ENTER sm.Activity#receiveEvent');
       console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
 
       var v;
@@ -2645,7 +2644,6 @@ sparks.getDataArray = function(){
               sparks.data.push(obj);
           }
         );
-        console.log("done");
       }
     }
   );
@@ -2870,7 +2868,6 @@ sparks.createQuestionsCSV = function(data) {
         },
 
         update : function () {
-            console.log('ENTER MultimeterBase#update');
         },
 
         updateDisplay : function () {
@@ -2879,7 +2876,6 @@ sparks.createQuestionsCSV = function(data) {
                 flash.sendCommand('set_multimeter_display', '       ');
                 return;
             }
-            console.log('Multimeter.update: v=' + this.absoluteValue + ', dial=' + this.dialPosition);
 
             var text = '';
             if (this.allConnected()) {

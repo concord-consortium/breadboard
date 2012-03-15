@@ -205,8 +205,6 @@ describe 'Interfacing with QUCS'
         board = getBreadBoard();
         netlist = sparks.circuit.qucsator.makeNetlist(board);
       
-        console.log(netlist);
-      
         netlist.search(/L:L1 L1 L2 L=\"1.23 H\"/).should.be_at_least 0
       end
     

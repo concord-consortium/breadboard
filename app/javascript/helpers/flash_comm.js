@@ -48,7 +48,6 @@
 
     // To be called from Flash thru ExternalInterface
     this.receiveEvent = function (name, value, time) {
-      console.log('ENTER sm.Activity#receiveEvent');
       console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
       
       var v;
