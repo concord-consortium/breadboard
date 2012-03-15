@@ -141,6 +141,7 @@
 
     // if page is null, currentPage will be used
     repeatPage: function(page) {
+      var section = sparks.activityController.currentSection;
       sparks.GAHelper.userRepeatedLevel(section.title);
       sparks.reportController.saveData();
 
@@ -148,9 +149,6 @@
         this.currentPage = page;
         this.currentPageIndex = this.pageIndexMap[page];
       }
-
-      var section = sparks.activityController.currentSection;
-      // section.view.clear();
 
       this.loadCurrentSection();
       sparks.activity.view.layoutCurrentSection();

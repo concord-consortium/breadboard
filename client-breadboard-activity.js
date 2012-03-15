@@ -5401,6 +5401,7 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     repeatPage: function(page) {
+      var section = sparks.activityController.currentSection;
       sparks.GAHelper.userRepeatedLevel(section.title);
       sparks.reportController.saveData();
 
@@ -5408,8 +5409,6 @@ sparks.createQuestionsCSV = function(data) {
         this.currentPage = page;
         this.currentPageIndex = this.pageIndexMap[page];
       }
-
-      var section = sparks.activityController.currentSection;
 
       this.loadCurrentSection();
       sparks.activity.view.layoutCurrentSection();
