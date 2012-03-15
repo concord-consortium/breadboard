@@ -72,27 +72,13 @@ describe 'OScope View'
       var ac = new sparks.ActivityConstructor(jsonSection);
       var oscope = sparks.activityController.currentSection.meter.oscope;
       
-      // actual QUCS result for above circuit
-      mock_request().and_return(
-        "<Qucs Dataset 0.0.15>\n" +
-        "<indep acfrequency 1>\n" +
-        "  +1.00000000000e+03\n"  +
-        "</indep>\n" +
-        "<dep source.i acfrequency>\n" +
-        "  +0.00000000000e+00-j6.28318530718e+04\n" +
-        "</dep>\n" +
-        "<dep powerPosL.v acfrequency>\n" +
-        "  +1.00000000000e+02\n" +
-        "</dep>", 
-        'text/plain');
-      
       var renderSignalCalledTimes = 0;
       sparks.OscilloscopeView.prototype.renderSignal = function (channel) {
         renderSignalCalledTimes++;
       }
       
       var meter = sparks.activityController.currentSection.meter.oscope;
-      meter.setProbeLocation("probe_oscope", "left_negative1");
+      meter.setProbeLocation("probe_pink", "left_negative1");
       renderSignalCalledTimes.should.be 2
       
       oscope.signals[1].amplitude.should.be 100
@@ -108,7 +94,7 @@ describe 'OScope View'
         renderSignalCalledTimes++;
       }
       
-      meter.setProbeLocation("probe_oscope", "left_positive1");
+      meter.setProbeLocation("probe_pink", "left_positive1");
       renderSignalCalledTimes.should.be 2
       
       oscope.signals[2].amplitude.should.be 100
@@ -158,7 +144,7 @@ describe 'OScope View'
         "<dep powerPosL.v acfrequency>\n" +
         "  +1.00000000000e+02\n" +
         "</dep>",
-        'text/plain');
+        'text/plain', 200);
       
       var renderSignalCalledTimes = 0;
       sparks.OscilloscopeView.prototype.renderSignal = function (channel) {
@@ -166,7 +152,7 @@ describe 'OScope View'
       }
       
       var meter = sparks.activityController.currentSection.meter.oscope;
-      meter.setProbeLocation("probe_oscope", "a1");
+      meter.setProbeLocation("probe_pink", "a1");
       renderSignalCalledTimes.should.be 2
       
       oscope.signals[2].amplitude.should.be 1.591549430721572e-3
@@ -220,7 +206,7 @@ describe 'OScope View'
         "  +3.94768591204e-04+j6.28293726676e-02\n" +
         "  +1.57888737627e-03+j1.25643865260e-01\n" +
         "</dep>",
-        'text/plain');
+        'text/plain', 200);
       
       var renderSignalCalledTimes = 0;
       sparks.OscilloscopeView.prototype.renderSignal = function (channel) {
@@ -228,7 +214,7 @@ describe 'OScope View'
       }
       
       var meter = sparks.activityController.currentSection.meter.oscope;
-      meter.setProbeLocation("probe_oscope", "a1");
+      meter.setProbeLocation("probe_pink", "a1");
       renderSignalCalledTimes.should.be 2
       
       oscope.signals[2].amplitude.should.be 6.283061285746593e-2

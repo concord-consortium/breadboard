@@ -35,7 +35,7 @@ describe "As components are added to the breadboard model, "
           arguments[2].search(/resistor.*/).should.be_at_least 0
           arguments[3].should.be "a1,a2"
           arguments[4].should.be "4band"
-          arguments[5].should.be null
+          arguments[5].should.be ""
           arguments[6].should.be "brown,black,brown,gold"
         }
  

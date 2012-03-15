@@ -26,8 +26,8 @@ describe 'Circuit Constructor'
     
       breadModel("createCircuit", jsonCircuit);
     
-      // we should have 2, because we autmatically add a power source (battery)
-      size(components).should.be 2
+      // we should have 4, because we autmatically add a power source (battery) and two leads
+      size(components).should.be 4
     end
     
      it 'should be able to add a wire'
@@ -43,7 +43,7 @@ describe 'Circuit Constructor'
      
        var components = getBreadBoard().components;
      
-       size(components).should.be 2
+       size(components).should.be 4
        
        components["newWire"].should_not.be null
        components["newWire"].connections[0].nodeName().should.be "L1"
@@ -82,7 +82,7 @@ describe 'Circuit Constructor'
      
        var components = getBreadBoard().components;
      
-       size(components).should.be 5
+       size(components).should.be 7
    
        components['w1'].should.not.be null
        components['w1'].kind.should.be "wire"
@@ -138,7 +138,7 @@ describe 'Circuit Constructor'
        breadModel("createCircuit", jsonCircuit);
        var components = getBreadBoard().components;
 
-       size(components).should.be 2
+       size(components).should.be 4
        
        components["source"].should.not.be null
        components["source"].voltage.should.be 9
@@ -170,7 +170,7 @@ describe 'Circuit Constructor'
      
        var components = getBreadBoard().components;
      
-       size(components).should.be 4
+       size(components).should.be 6
      end
    
      it 'should be able to create a resistor with random resistances'
