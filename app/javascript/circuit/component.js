@@ -13,11 +13,11 @@
       this.breadBoard.components[props.UID] = this;
 
       if (!this.label){
-        this.label = !!this.UID.split("/")[1] ? this.UID.split("/")[1] : null;
+        this.label = !!this.UID.split("/")[1] ? this.UID.split("/")[1] : "";
       }
 
       if (typeof this.connections === "string") {
-        this.connections = this.connections.split(",");
+        this.connections = this.connections.replace(/ /g,'').split(",");
       }
 
       for (i in this.connections) {

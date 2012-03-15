@@ -129,7 +129,6 @@
 
       var nextPage = this.areMorePage();
       if (!nextPage){
-        console.log("No more pages");
         return;
       }
       this.currentPageIndex = this.currentPageIndex+1;
