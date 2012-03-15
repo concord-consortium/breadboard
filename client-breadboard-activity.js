@@ -8191,9 +8191,16 @@ sparks.createQuestionsCSV = function(data) {
         for (var probeIndex = 0; probeIndex < 2; probeIndex++) {
           if (this.probeLocation[probeIndex]) {
             probeNode = getBreadBoard().getHole(this.probeLocation[probeIndex]).nodeName();
-
             if (probeNode === 'gnd') {
               this.setSignal(this.PROBE_CHANNEL[probeIndex], {amplitude: 0, frequency: 0, phase: 0});
+              return;
+            } else if (~probeNode.indexOf('powerPos')) {
+              sourceSignal = {
+                amplitude: source.amplitude * source.amplitudeScaleFactor,
+                frequency: source.frequency,
+                phase: 0
+              };
+              this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
               return;
             }
 
