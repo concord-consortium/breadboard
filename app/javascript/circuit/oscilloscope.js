@@ -75,7 +75,7 @@
 
         for (var probeIndex = 0; probeIndex < 2; probeIndex++) {
           if (this.probeLocation[probeIndex]) {
-            probeNode = getBreadBoard().getHole(this.probeLocation[probeIndex]).nodeName();
+            probeNode = breadboard.getHole(this.probeLocation[probeIndex]).nodeName();
             if (probeNode === 'gnd') {
               // short-circuit this operation and just return a flat trace
               this.setSignal(this.PROBE_CHANNEL[probeIndex], {amplitude: 0, frequency: 0, phase: 0});
@@ -91,33 +91,38 @@
               continue;
             }
 
-            data = breadModel('query');
-
-            // first go through the returned frequencies, and find the one that matches our source frequency
-            freqs = data.acfrequency;
-            dataIndex = sparks.util.getClosestIndex(freqs, source.frequency, true);
-            // find the same index in our data
-            result = data[probeNode].v[dataIndex];
-
-            if (result) {
-              probeSignal = {
-                amplitude: result.magnitude * source.amplitudeScaleFactor,
-                frequency: source.frequency,
-                phase:     result.angle
-              };
-
-              this.setSignal(this.PROBE_CHANNEL[probeIndex], probeSignal);
-
-              sparks.logController.addEvent(sparks.LogEvent.OSCOPE_MEASUREMENT, {
-                  "probe": probeNode
-                });
-            } else {
-              this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
-            }
+            breadModel('query', null, null, this.updateWithData, this, [probeNode, probeIndex]);
           } else {
             this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
           }
+        }
+      },
 
+      updateWithData: function(data, probeInfo) {
+        var breadboard = getBreadBoard(),
+            source     = breadboard.components.source,
+            probeNode  = probeInfo[0],
+            probeIndex = probeInfo[1];
+        // first go through the returned frequencies, and find the one that matches our source frequency
+        freqs = data.acfrequency;
+        dataIndex = sparks.util.getClosestIndex(freqs, source.frequency, true);
+        // find the same index in our data
+        result = data[probeNode].v[dataIndex];
+
+        if (result) {
+          probeSignal = {
+            amplitude: result.magnitude * source.amplitudeScaleFactor,
+            frequency: source.frequency,
+            phase:     result.angle
+          };
+
+          this.setSignal(this.PROBE_CHANNEL[probeIndex], probeSignal);
+
+          sparks.logController.addEvent(sparks.LogEvent.OSCOPE_MEASUREMENT, {
+              "probe": probeNode
+            });
+        } else {
+          this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
         }
       },
 
@@ -163,7 +168,7 @@
             return;
           }
         }
-        
+
         this._verticalScale[channel] = scale;
         if (this.view) {
           this.view.verticalScaleChanged(1);

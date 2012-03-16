@@ -7423,7 +7423,7 @@ sparks.createQuestionsCSV = function(data) {
           return resistor;
         },
 
-        query: function(type, connections){
+        query: function(type, connections, callback, context, callbackArgs){
           var tempComponents = [];
 
           if (!!type && type === 'resistance') {
@@ -7459,14 +7459,12 @@ sparks.createQuestionsCSV = function(data) {
               resultObject;
 
           q.qucsate(netlist, function (results) {
-            resultObject = results;
+            callback.call(context, results, callbackArgs);
           } );
 
           $.each(tempComponents, function(i, component){
             component.destroy();
           });
-
-          return  resultObject;
         },
         updateFlash: function() {
           $.each(breadBoard.components, function(i, component) {
@@ -8007,81 +8005,83 @@ sparks.createQuestionsCSV = function(data) {
           this.update();
         },
 
+        currentMeasurement: null,
+
         update: function () {
-            if (this.redProbeConnection && this.blackProbeConnection) {
-                var measurement = null;
-                if (this.dialPosition.indexOf('dcv_') > -1){
-                  measurement = "voltage";
-                } else if (this.dialPosition.indexOf('dca_') > -1){
-                  measurement = "current";
-                } else if (this.dialPosition.indexOf('r_') > -1){
-                  measurement = "resistance";
-                } else if (this.dialPosition.indexOf('acv_') > -1){
-                  measurement = "ac_voltage";
-                }
-
-                if (!!measurement){
-                  var resultsBlob = this.makeMeasurement(measurement),
-                      meterKey = (measurement === 'voltage' || measurement === 'ac_voltage') ? 'v' : 'i';
-
-                  if (!!meterKey && !!resultsBlob.meter[meterKey]){
-
-                    var index = this._getResultsIndex(resultsBlob);
-
-                    var result = resultsBlob.meter[meterKey][index];
-
-                    result = result.magnitude;
-
-                    result = Math.abs(result);
-
-
-                    var source = getBreadBoard().components.source;
-                    if (!!source &&
-                       ((measurement === 'voltage' && source.getQucsSimulationType().indexOf(".AC") > -1) ||
-                        (measurement === 'ac_voltage' && source.getQucsSimulationType().indexOf(".DC") > -1))) {
-                      result = 0;
-                    } else if (measurement === 'resistance') {
-                      result = 1 / result;
-                    } else if (measurement === "ac_voltage" ||
-                                (measurement === 'current' && source && source.getQucsSimulationType().indexOf(".AC") > -1)){
-                      if (!!source.amplitudeScaleFactor || source.amplitudeScaleFactor === 0){
-                        result = result * source.amplitudeScaleFactor;
-                      }
-                      result = result / Math.sqrt(2);         // RMS voltage or RMS cureent
-                    }
-                    result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
-
-                    this.absoluteValue = result;
-
-                    if (measurement === "current"){
-                      if (this.absoluteValue > 0.44){
-                        this.blowFuse();
-                      }
-                    }
-                  } else {
-                    this.absoluteValue = 0;
-                  }
-                }
-            }
-            else {
-                this.absoluteValue = 0;
+          if (this.redProbeConnection && this.blackProbeConnection) {
+            if (this.dialPosition.indexOf('dcv_') > -1){
+              this.currentMeasurement = "voltage";
+            } else if (this.dialPosition.indexOf('dca_') > -1){
+              this.currentMeasurement = "current";
+            } else if (this.dialPosition.indexOf('r_') > -1){
+              this.currentMeasurement = "resistance";
+            } else if (this.dialPosition.indexOf('acv_') > -1){
+              this.currentMeasurement = "ac_voltage";
+            } else {
+              this.currentMeasurement = null;
             }
 
-            this.updateDisplay();
-
-            if (this.redProbeConnection && this.blackProbeConnection) {
-              sparks.logController.addEvent(sparks.LogEvent.DMM_MEASUREMENT, {
-                "measurement": measurement,
-                "dial_position": this.dialPosition,
-                "red_probe": this.redProbeConnection,
-                "black_probe": this.blackProbeConnection,
-                "result": this.displayText});
+            if (!!this.currentMeasurement){
+              breadModel('query', this.currentMeasurement, this.redProbeConnection + ',' + this.blackProbeConnection, this.updateWithData, this);
             }
+          } else {
+            this.updateWithData();
+          }
         },
 
-        makeMeasurement: function(measurementType) {
-            var measurement = breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection);
-            return measurement;
+        updateWithData: function (resultsBlob) {
+          var measurement = this.currentMeasurement;
+          if (resultsBlob) {
+            var meterKey = (measurement === 'voltage' || measurement === 'ac_voltage') ? 'v' : 'i';
+
+            if (!!meterKey && !!resultsBlob.meter[meterKey]){
+              var index = this._getResultsIndex(resultsBlob);
+
+              var result = resultsBlob.meter[meterKey][index];
+
+              result = result.magnitude;
+
+              result = Math.abs(result);
+
+
+              var source = getBreadBoard().components.source;
+              if (!!source &&
+                 ((measurement === 'voltage' && source.getQucsSimulationType().indexOf(".AC") > -1) ||
+                  (measurement === 'ac_voltage' && source.getQucsSimulationType().indexOf(".DC") > -1))) {
+                result = 0;
+              } else if (measurement === 'resistance') {
+                result = 1 / result;
+              } else if (measurement === "ac_voltage" ||
+                          (measurement === 'current' && source && source.getQucsSimulationType().indexOf(".AC") > -1)){
+                if (!!source.amplitudeScaleFactor || source.amplitudeScaleFactor === 0){
+                  result = result * source.amplitudeScaleFactor;
+                }
+                result = result / Math.sqrt(2);         // RMS voltage or RMS cureent
+              }
+              result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
+
+              this.absoluteValue = result;
+
+              if (measurement === "current" && this.absoluteValue > 0.44){
+                this.blowFuse();
+              }
+            } else {
+              this.absoluteValue = 0;
+            }
+          } else {
+            this.absoluteValue = 0;
+          }
+
+          this.updateDisplay();
+
+          if (this.redProbeConnection && this.blackProbeConnection) {
+            sparks.logController.addEvent(sparks.LogEvent.DMM_MEASUREMENT, {
+              "measurement": measurement,
+              "dial_position": this.dialPosition,
+              "red_probe": this.redProbeConnection,
+              "black_probe": this.blackProbeConnection,
+              "result": this.displayText});
+          }
         },
 
         blowFuse: function() {
@@ -8189,7 +8189,7 @@ sparks.createQuestionsCSV = function(data) {
 
         for (var probeIndex = 0; probeIndex < 2; probeIndex++) {
           if (this.probeLocation[probeIndex]) {
-            probeNode = getBreadBoard().getHole(this.probeLocation[probeIndex]).nodeName();
+            probeNode = breadboard.getHole(this.probeLocation[probeIndex]).nodeName();
             if (probeNode === 'gnd') {
               this.setSignal(this.PROBE_CHANNEL[probeIndex], {amplitude: 0, frequency: 0, phase: 0});
               continue;
@@ -8203,31 +8203,36 @@ sparks.createQuestionsCSV = function(data) {
               continue;
             }
 
-            data = breadModel('query');
-
-            freqs = data.acfrequency;
-            dataIndex = sparks.util.getClosestIndex(freqs, source.frequency, true);
-            result = data[probeNode].v[dataIndex];
-
-            if (result) {
-              probeSignal = {
-                amplitude: result.magnitude * source.amplitudeScaleFactor,
-                frequency: source.frequency,
-                phase:     result.angle
-              };
-
-              this.setSignal(this.PROBE_CHANNEL[probeIndex], probeSignal);
-
-              sparks.logController.addEvent(sparks.LogEvent.OSCOPE_MEASUREMENT, {
-                  "probe": probeNode
-                });
-            } else {
-              this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
-            }
+            breadModel('query', null, null, this.updateWithData, this, [probeNode, probeIndex]);
           } else {
             this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
           }
+        }
+      },
 
+      updateWithData: function(data, probeInfo) {
+        var breadboard = getBreadBoard(),
+            source     = breadboard.components.source,
+            probeNode  = probeInfo[0],
+            probeIndex = probeInfo[1];
+        freqs = data.acfrequency;
+        dataIndex = sparks.util.getClosestIndex(freqs, source.frequency, true);
+        result = data[probeNode].v[dataIndex];
+
+        if (result) {
+          probeSignal = {
+            amplitude: result.magnitude * source.amplitudeScaleFactor,
+            frequency: source.frequency,
+            phase:     result.angle
+          };
+
+          this.setSignal(this.PROBE_CHANNEL[probeIndex], probeSignal);
+
+          sparks.logController.addEvent(sparks.LogEvent.OSCOPE_MEASUREMENT, {
+              "probe": probeNode
+            });
+        } else {
+          this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
         }
       },
 

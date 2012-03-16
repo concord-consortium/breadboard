@@ -29,89 +29,92 @@
           this.blackProbeConnection = null;
           this.update();
         },
-
+        
+        currentMeasurement: null,
+        
         update: function () {
-            if (this.redProbeConnection && this.blackProbeConnection) {
-                var measurement = null;
-                if (this.dialPosition.indexOf('dcv_') > -1){
-                  measurement = "voltage";
-                } else if (this.dialPosition.indexOf('dca_') > -1){
-                  measurement = "current";
-                } else if (this.dialPosition.indexOf('r_') > -1){
-                  measurement = "resistance";
-                } else if (this.dialPosition.indexOf('acv_') > -1){
-                  measurement = "ac_voltage";
-                }
-
-                if (!!measurement){
-                  var resultsBlob = this.makeMeasurement(measurement),
-                      meterKey = (measurement === 'voltage' || measurement === 'ac_voltage') ? 'v' : 'i';
-
-                  if (!!meterKey && !!resultsBlob.meter[meterKey]){
-
-                    // get the index of the data we want from the returned QUCS array
-                    var index = this._getResultsIndex(resultsBlob);
-
-                    var result = resultsBlob.meter[meterKey][index];
-
-                    // result is a complex number. for the DMM, we only care about the magnitude
-                    result = result.magnitude;
-
-                    // process the absolute value
-                    result = Math.abs(result);
-
-                    // now do any tweaking we need from that result:
-
-                    // if in wrong voltage mode for AC/DC voltage, show zero
-                    var source = getBreadBoard().components.source;
-                    if (!!source &&
-                       ((measurement === 'voltage' && source.getQucsSimulationType().indexOf(".AC") > -1) ||
-                        (measurement === 'ac_voltage' && source.getQucsSimulationType().indexOf(".DC") > -1))) {
-                      result = 0;
-                    } else if (measurement === 'resistance') {
-                      result = 1 / result;
-                    } else if (measurement === "ac_voltage" ||
-                                (measurement === 'current' && source && source.getQucsSimulationType().indexOf(".AC") > -1)){
-                      // the following applies to both RMS voltage and RMS current
-                      // first, if we are dealing with a function generator, scale by the appropriate scale factor
-                      if (!!source.amplitudeScaleFactor || source.amplitudeScaleFactor === 0){
-                        result = result * source.amplitudeScaleFactor;
-                      }
-                      result = result / Math.sqrt(2);         // RMS voltage or RMS cureent
-                    }
-                    result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
-
-                    this.absoluteValue = result;
-
-                    if (measurement === "current"){
-                      if (this.absoluteValue > 0.44){
-                        this.blowFuse();
-                      }
-                    }
-                  } else {
-                    this.absoluteValue = 0;
-                  }
-                }
-            }
-            else {
-                this.absoluteValue = 0;
+          if (this.redProbeConnection && this.blackProbeConnection) {
+            if (this.dialPosition.indexOf('dcv_') > -1){
+              this.currentMeasurement = "voltage";
+            } else if (this.dialPosition.indexOf('dca_') > -1){
+              this.currentMeasurement = "current";
+            } else if (this.dialPosition.indexOf('r_') > -1){
+              this.currentMeasurement = "resistance";
+            } else if (this.dialPosition.indexOf('acv_') > -1){
+              this.currentMeasurement = "ac_voltage";
+            } else {
+              this.currentMeasurement = null;
             }
 
-            this.updateDisplay();
-
-            if (this.redProbeConnection && this.blackProbeConnection) {
-              sparks.logController.addEvent(sparks.LogEvent.DMM_MEASUREMENT, {
-                "measurement": measurement,
-                "dial_position": this.dialPosition,
-                "red_probe": this.redProbeConnection,
-                "black_probe": this.blackProbeConnection,
-                "result": this.displayText});
+            if (!!this.currentMeasurement){
+              breadModel('query', this.currentMeasurement, this.redProbeConnection + ',' + this.blackProbeConnection, this.updateWithData, this);
             }
+          } else {
+            this.updateWithData();
+          }
         },
+        
+        // this is called asynchronously after update() is called and qucs returns
+        updateWithData: function (resultsBlob) {
+          var measurement = this.currentMeasurement;
+          if (resultsBlob) {
+            var meterKey = (measurement === 'voltage' || measurement === 'ac_voltage') ? 'v' : 'i';
 
-        makeMeasurement: function(measurementType) {
-            var measurement = breadModel('query', measurementType, this.redProbeConnection + ',' + this.blackProbeConnection);
-            return measurement;
+            if (!!meterKey && !!resultsBlob.meter[meterKey]){
+              // get the index of the data we want from the returned QUCS array
+              var index = this._getResultsIndex(resultsBlob);
+
+              var result = resultsBlob.meter[meterKey][index];
+
+              // result is a complex number. for the DMM, we only care about the magnitude
+              result = result.magnitude;
+
+              // process the absolute value
+              result = Math.abs(result);
+
+              // now do any tweaking we need from that result:
+
+              // if in wrong voltage mode for AC/DC voltage, show zero
+              var source = getBreadBoard().components.source;
+              if (!!source &&
+                 ((measurement === 'voltage' && source.getQucsSimulationType().indexOf(".AC") > -1) ||
+                  (measurement === 'ac_voltage' && source.getQucsSimulationType().indexOf(".DC") > -1))) {
+                result = 0;
+              } else if (measurement === 'resistance') {
+                result = 1 / result;
+              } else if (measurement === "ac_voltage" ||
+                          (measurement === 'current' && source && source.getQucsSimulationType().indexOf(".AC") > -1)){
+                // the following applies to both RMS voltage and RMS current
+                // first, if we are dealing with a function generator, scale by the appropriate scale factor
+                if (!!source.amplitudeScaleFactor || source.amplitudeScaleFactor === 0){
+                  result = result * source.amplitudeScaleFactor;
+                }
+                result = result / Math.sqrt(2);         // RMS voltage or RMS cureent
+              }
+              result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
+
+              this.absoluteValue = result;
+
+              if (measurement === "current" && this.absoluteValue > 0.44){
+                this.blowFuse();
+              }
+            } else {
+              this.absoluteValue = 0;
+            }
+          } else {
+            this.absoluteValue = 0;
+          }
+
+          this.updateDisplay();
+
+          if (this.redProbeConnection && this.blackProbeConnection) {
+            sparks.logController.addEvent(sparks.LogEvent.DMM_MEASUREMENT, {
+              "measurement": measurement,
+              "dial_position": this.dialPosition,
+              "red_probe": this.redProbeConnection,
+              "black_probe": this.blackProbeConnection,
+              "result": this.displayText});
+          }
         },
 
         blowFuse: function() {

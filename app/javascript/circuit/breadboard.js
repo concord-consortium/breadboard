@@ -434,7 +434,7 @@
         // and then simply call qucsator.qucsate, and return the resulting results object.
         // NB: This function used to return the final value required by the DMM. It no longer does so, as
         // it does not assume a DMM is doing the requesting, and instead returns the entire results object.
-        query: function(type, connections){
+        query: function(type, connections, callback, context, callbackArgs){
           var tempComponents = [];
 
           // add DMM components as necessary
@@ -472,15 +472,13 @@
               resultObject;
 
           q.qucsate(netlist, function (results) {
-            resultObject = results;
+            callback.call(context, results, callbackArgs);
           } );
 
           // destroy the temporary DMM components
           $.each(tempComponents, function(i, component){
             component.destroy();
           });
-
-          return  resultObject;
         },
         updateFlash: function() {
           $.each(breadBoard.components, function(i, component) {
