@@ -14,7 +14,7 @@ load('spec/support/junit.xml.js');
 
 load('lib/common.js');
 
-
+sparks.async = false;
 
 specResults = JSpec
 .exec('spec/spec.common/spec.string.js')

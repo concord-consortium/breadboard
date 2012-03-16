@@ -6559,8 +6559,9 @@ sparks.createQuestionsCSV = function(data) {
     type = type || 'qucs';
     var data = {};
     data[type || 'qucs'] = netlist;
+    var async = (sparks.async === false) ? false : true;
     $.ajax({
-        async: false,
+        async: async,
         url: sparks.config.qucsate_server_url,
         data: data,
         success: function(ret) {
