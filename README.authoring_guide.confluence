@@ -747,6 +747,8 @@ Whenever a student answers a question, additional information may be saved in th
 || Property || Meaning ||
 || question.meta.frequency | The frequency of the power source when the user hit submit (AC only) ||
 || question.meta.amplitude | The amplitude of the power source when the user hit submit (AC only) ||
+|| question.meta.dmmDial | The current DMM dial setting as a string ||
+|| question.meta.oscopeScaleQuality | The "quality" of the current OScope scale, from 0 to 1 ||
 || question.meta.val | Used for multimeter-button readings (below) ||
 || question.meta.units | Used for multimeter-button readings (below)||
 
@@ -790,6 +792,15 @@ if (valueCorrect) {
   question.points_earned = 10;
 }
 {code}
+
+h3. Other useful functions for scripts
+
+Besides the functions "parse" and "close" described above, there are a number of other specialized functions that may be useful to script authors.
+
+|| Area || Function || What it does || Example ||
+|| Parsing, measurements and units | sparks.unit.convertMeasurement(string) | Converts a measurement (as a string) to engineering notation if possible | ...convertMeasurement("0.0045 A") -> "4.5 mA" |
+|| | sparks.unit.toEngineering(value, units) | Converts a measurement (as a value and a string unit) to an object in engineering notation | ...toEngineering(0.0045, "A") -> {tt}{value: 4.5, units: "mA"}{tt} |
+|| Math | _See the section_ More math functions _above_ |
 
 h2. Question before scripts
 
