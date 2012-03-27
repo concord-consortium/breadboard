@@ -1,0 +1,93 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>SPARKS: Finding the Cutoff Frequency</title>
+<link rel="stylesheet" href="tutorials.css">
+
+</head>
+
+<body lang="EN-US">
+
+<div id="framecontent">
+<!-- Title and logo at top -->
+<a href="index.html" title="View all tutorials"><img src="sparks_tut_logo.jpg" alt="SPARKS Tutorial Logo"></a>
+<a href="#" onclick="window.print(); return false;" id="print-link">Print this</a>
+</div>
+
+<div id="maincontent"> <!-- content window -->
+<h3>Finding the Cutoff Frequency</h3>
+
+<table border=0 align=right width=400>
+ <tr><td>
+  <img src="graph_RL_cutoff_freq.jpg" width="400" height="267" alt="graph_RL_cutoff_freq.jpg">
+</td></tr>
+ <tr><td>
+  <p><b>Figure&nbsp;1.</b> Frequency response of a <br> series RL circuit
+  </td></tr>
+</table>
+
+<p>AC circuits with capacitors and inductors respond to the <span style='color:#0070C0'><b>frequency</b></span>, as well
+as the voltage. A useful way to describe this is to note the frequency
+at which the circuit current is reduced from a maximum down to half.</p>
+
+
+<p><b>Frequency response in series RL circuits</b></p>
+
+<p>The magnetic field within an <span style='color:#0070C0'><b>inductor L</b></span> resists the rapid changes of AC
+signals. <i>Slow changes,</i> like those occurring in low frequency signals, pass
+through inductors unimpeded, but <i>rapidly changing,</i> high frequency signals are &quot;resisted&quot;
+by the inductor. That means <b>less current at <span style='color:#0070C0'>high</span> frequencies</b>, and so, less
+power delivered to the series <span style='color:#0070C0'><b>resistor R</b></span>. Figure&nbsp;1 shows the drop in
+current as the frequency increases in a series <b>RL</b> circuit.</p>
+
+<p>The <b><span style='color:#0070C0'>cutoff frequency, <font face="Times Roman, Times New Roman, serif"><i>f<sub>c</sub></i></font> </span></b> is
+an important parameter to describe this behavior. This is the frequency at which
+the power delivered by the circuit is cut in half. Since <b>P&nbsp;=&nbsp;I<sup>2</sup>R</b>,
+half the power will occur when the current drops to <span style='position:relative;top:4pt'><img src="Eqn28-3.jpg" width="14" height="22" alt="1-over-sqrt-2"></span><b>I<sub>max</sub></b>, or about 0.707&nbsp;<b>I<sub>max</sub></b>.<b><sub>
+</sub></b>In your SPARKS circuits, you can measure the voltage drop <b>V<sub>R</sub></b> across the resistor as you
+adjust the frequency, and note the frequency <font face="Times Roman, Times New Roman, serif"><b><i>f<sub>c</sub></i></b></font>  when <b>V<sub>R</sub></b> just drops
+to 0.707&nbsp;<b>V<sub>max</sub></b>. </p>
+
+<p><b>Frequency response in series RC circuits</b></p>
+
+<table border=0 align=right width=400>
+ <tr><td>
+  <img src="graph_RC_cutoff_freq.jpg" width="400" height="267" alt="graph_RC_cutoff_freq.jpg">
+</td></tr>
+ <tr><td>
+  <p><b>Figure&nbsp;1.</b> Frequency response of a <br> series RC circuit
+  </td></tr>
+</table>
+
+<p>Capacitors also resist the changing AC voltage, but in an opposite fashion than inductors. The effects of <i>rapidly changing</i> electric fields pass
+through a <span style='color:#0070C0'><b>capacitor C</b></span> unimpeded, but now <i>slowly changing</i> fields are &quot;resisted.&quot;
+That means <b>less current at <span style='color:#0070C0'>low</span> frequencies</b>. Figure&nbsp;2 shows the small current values at low frequencies
+in a series <b>RC</b> circuit.</p>
+
+<p>Just as with the inductor, you can determine the <b><span style='color:#0070C0'>cutoff
+frequency</span></b> for the <b>RC</b> circuit. Again, measure <b>V<sub>R</sub></b>
+across the resistor as you adjust the frequency, and note the frequency <font face="Times Roman, Times New Roman, serif"><b><i>f<sub>c</sub></i></b></font>  when it drops to
+0.707&nbsp;<b>V<sub>max</sub></b>.</p>
+
+<p><b>Calculating the cutoff frequency</b></p>
+
+<p>If you know the circuit values for the resistor, capacitor, and inductor,
+you can calculate the cutoff frequency value.</p>
+
+<p>For the series <b>RL</b> circuit: </p>
+
+<p style='text-indent:36.0pt'><img src="Eqn28-1.jpg" width="96" height="25" alt="Eqn28-1"></p>
+
+<p>For the series <b>RC</b> circuit:</p>
+
+<p style='text-indent:36.0pt'><img src="Eqn28-2.jpg" width="84" height="48" alt="Eqn28-2"></p>
+
+<p>Try these formulas using the circuit values in the figures above and see if
+your values for <font face="Times Roman, Times New Roman, serif"><b><i>f<sub>c</sub></i></b></font> agree with the graph. Be careful to
+include the scientific notation required by the unit prefixes.</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>
