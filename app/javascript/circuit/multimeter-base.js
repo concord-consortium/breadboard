@@ -283,11 +283,13 @@
                     text = '       ';
                 }
             }
-            console.log('text=' + text);
             text = this.disable_multimeter_position(text);
-            flash.sendCommand('set_multimeter_display', text);
-            this.displayText = text;
-            this.currentValue = parseFloat(text.replace(/[^\d\.]/g, ""));
+            if (text !== this.displayText) {
+              console.log('text=' + text);
+              flash.sendCommand('set_multimeter_display', text);
+              this.displayText = text;
+              this.currentValue = parseFloat(text.replace(/[^\d\.]/g, ""));
+            }
         },
 
 
