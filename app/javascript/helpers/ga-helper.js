@@ -6,7 +6,8 @@ _gaq = window._gaq;
 sparks.GAHelper.USER_TYPE = 1;
 
 sparks.GAHelper.Category = {
-  NAVIGATION: "Navigation"
+  NAVIGATION: "Navigation",
+  TUTORIAL: "Tutorial"
 }
 
 sparks.GAHelper.setUserLoggedIn = function (isLoggedIn) {
@@ -35,6 +36,15 @@ sparks.GAHelper.userRepeatedLevel = function (levelName) {
       levelName,
    ]);
 };
+
+sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
+   _gaq.push(['_trackEvent',
+      sparks.GAHelper.Category.TUTORIAL, // category of activity
+      'Visited tutorial', // Action
+      tutorialId,
+   ]);
+};
+
 
 
 

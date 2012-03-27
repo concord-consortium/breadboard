@@ -22,6 +22,7 @@
         this.tutorialWindow.moveActionCallback = this.tutorialMoveActionCallback;
       }
       sparks.logController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
+      sparks.GAHelper.userVisitedTutorial(filename);
     },
     
     tutorialWindow: null,
@@ -67,8 +68,10 @@
       setTimeout(function() {
         var win = sparks.tutorialController.tutorialWindow;
         if (win && win.location) {
-          sparks.logController.addEvent(sparks.LogEvent.CHANGED_TUTORIAL, win.location.pathname.replace("/",""));
+          var tutorialName = win.location.pathname.replace("/","");
+          sparks.logController.addEvent(sparks.LogEvent.CHANGED_TUTORIAL, tutorialName);
           win.moveActionCallback = sparks.tutorialController.tutorialMoveActionCallback
+          sparks.GAHelper.userVisitedTutorial(tutorialName);
         }
       }, 1000);
     }

@@ -6096,6 +6096,7 @@ sparks.createQuestionsCSV = function(data) {
         this.tutorialWindow.moveActionCallback = this.tutorialMoveActionCallback;
       }
       sparks.logController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
+      sparks.GAHelper.userVisitedTutorial(filename);
     },
 
     tutorialWindow: null,
@@ -6141,8 +6142,10 @@ sparks.createQuestionsCSV = function(data) {
       setTimeout(function() {
         var win = sparks.tutorialController.tutorialWindow;
         if (win && win.location) {
-          sparks.logController.addEvent(sparks.LogEvent.CHANGED_TUTORIAL, win.location.pathname.replace("/",""));
+          var tutorialName = win.location.pathname.replace("/","");
+          sparks.logController.addEvent(sparks.LogEvent.CHANGED_TUTORIAL, tutorialName);
           win.moveActionCallback = sparks.tutorialController.tutorialMoveActionCallback
+          sparks.GAHelper.userVisitedTutorial(tutorialName);
         }
       }, 1000);
     }
@@ -9439,7 +9442,8 @@ _gaq = window._gaq;
 sparks.GAHelper.USER_TYPE = 1;
 
 sparks.GAHelper.Category = {
-  NAVIGATION: "Navigation"
+  NAVIGATION: "Navigation",
+  TUTORIAL: "Tutorial"
 }
 
 sparks.GAHelper.setUserLoggedIn = function (isLoggedIn) {
@@ -9468,6 +9472,15 @@ sparks.GAHelper.userRepeatedLevel = function (levelName) {
       levelName,
    ]);
 };
+
+sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
+   _gaq.push(['_trackEvent',
+      sparks.GAHelper.Category.TUTORIAL, // category of activity
+      'Visited tutorial', // Action
+      tutorialId,
+   ]);
+};
+
 
 
 
