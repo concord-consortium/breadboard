@@ -1,5 +1,6 @@
 //= require "qucsator"
 //= require <circuit/resistor>
+//= require <circuit/variable-resistor>
 //= require <circuit/component>
 
 /* FILE breadboard.js */
@@ -144,6 +145,9 @@
 
           if (props.kind === "resistor"){
             return new sparks.circuit.Resistor(props, breadBoard);
+          }
+          if (props.kind === "variable resistor"){
+            return new sparks.circuit.VariableResistor(props, breadBoard);
           }
           if (props.kind === 'inductor') {
             return new sparks.circuit.Inductor(props, breadBoard);
