@@ -77,8 +77,8 @@
             multimeter.setDisplayText('  9.0 0');
 			
 			breadboardMC = root.outer_breadboard_mc;
-			breadboardMC.expandOnFocus.setStartX(breadboardMC.x); //kpc comment out for non-zoom BB
-			breadboardMC.expandOnFocus.setStartY(breadboardMC.y); //kpc comment out for non-zoom BB
+			//breadboardMC.expandOnFocus.setStartX(breadboardMC.x); //kpc comment out for non-zoom BB
+			//breadboardMC.expandOnFocus.setStartY(breadboardMC.y); //kpc comment out for non-zoom BB
 			
 			redProbe.visible=false;
 			blackProbe.visible=false;

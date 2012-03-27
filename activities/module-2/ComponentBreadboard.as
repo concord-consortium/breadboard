@@ -11,7 +11,7 @@
 		public function ComponentBreadboard() {
 			trace('ENTER ComponentBreadboard');
 			//trace('component breadboard ' +this.stage.x+' '+this.stage.y);
-			expandOnFocus = new ExpandOnFocus(this,1.25,-130,-100, this.hitArea_mc);	// give breadboard rollover behavior  12/11 kpc comment out so bb won't zoom 
+			//expandOnFocus = new ExpandOnFocus(this,1.25,-130,-100, this.hitArea_mc);	// give breadboard rollover behavior  12/11 kpc comment out so bb won't zoom 
 			// kpc uncommented expandOnFocus in Circuit.as
 		}
 		
