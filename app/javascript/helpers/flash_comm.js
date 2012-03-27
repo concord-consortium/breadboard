@@ -131,12 +131,12 @@
       } else if (name == 'multimeter_power') {
           section.meter.dmm.powerOn = value == 'true' ? true : false;
           section.meter.update();
-          // activity.log.add(name, { value: this.multimeter.powerOn });
-          //                 if (value === 'true' && this.multimeter.allConnected()) {
-          //                     activity.log.add('make_circuit');
-          //                 } else if (value == 'false' && wasConnected) {
-          //                     activity.log.add('break_circuit');
-          //                 }
+      } else if (name == 'value_changed') {
+        var component = getBreadBoard().components[args[0]];
+        if (component.scaleResistance) {
+          component.scaleResistance(args[1]);
+          section.meter.update();
+        }
       }
   }
 

@@ -6487,6 +6487,12 @@ sparks.createQuestionsCSV = function(data) {
       } else if (name == 'multimeter_power') {
           section.meter.dmm.powerOn = value == 'true' ? true : false;
           section.meter.update();
+      } else if (name == 'value_changed') {
+        var component = getBreadBoard().components[args[0]];
+        if (component.scaleResistance) {
+          component.scaleResistance(args[1]);
+          section.meter.update();
+        }
       }
   }
 
