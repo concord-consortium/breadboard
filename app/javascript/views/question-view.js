@@ -62,8 +62,8 @@
             question.answer = parsedAnswer.val;
 
             question.meta.dmmDial = sparks.activityController.currentSection.meter.dmm.dialPosition;
-            question.meta.redProbe = sparks.activityController.currentSection.meter.dmm.redProbeConnection;
-            question.meta.blackProbe = sparks.activityController.currentSection.meter.dmm.blackProbeConnection;
+            question.meta.blackProbe = board.getHole(section.meter.dmm.blackProbeConnection).nodeName();
+            question.meta.redProbe = board.getHole(section.meter.dmm.redProbeConnection).nodeName();
 
             // save meta information about source frequency and amplitude if this is an AC reading
             if (board.components.source && typeof board.components.source.frequency !== 'undefined') {

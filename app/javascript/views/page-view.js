@@ -219,13 +219,13 @@
         var section = sparks.activityController.currentSection;
         if (section.meter.dmm && section.meter.dmm.dialPosition) {
           question.meta.dmmDial = section.meter.dmm.dialPosition;
-          question.meta.blackProbe = section.meter.dmm.blackProbeConnection;
-          question.meta.redProbe = section.meter.dmm.redProbeConnection;
+          question.meta.blackProbe = board.getHole(section.meter.dmm.blackProbeConnection).nodeName();
+          question.meta.redProbe = board.getHole(section.meter.dmm.redProbeConnection).nodeName();
         }
         if (section.meter.oscope) {
           question.meta.oscopeScaleQuality = section.meter.oscope.getGoodnessOfScale();
-          question.meta.pinkProbe = section.meter.oscope.probeLocation[0];
-          question.meta.yellowProbe = section.meter.oscope.probeLocation[1];
+          question.meta.pinkProbe = board.getHole(section.meter.oscope.probeLocation[0]).nodeName();
+          question.meta.yellowProbe = board.getHole(section.meter.oscope.probeLocation[1]).nodeName();
         }
       }
 

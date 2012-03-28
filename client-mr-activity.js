@@ -2347,7 +2347,6 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
               if (!!args[2]){
                 breadModel('unmapHole', args[2]);
               }
-
               sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
                 "type": "connect lead",
                 "location": args[2]});
