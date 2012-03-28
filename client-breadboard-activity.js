@@ -6420,9 +6420,13 @@ sparks.createQuestionsCSV = function(data) {
             section.meter.setProbeLocation(args[1], args[2]);
           }
           if (args[0] === 'component') {
+              if (args[2] === "left_positive21" || args[2] === "left_negative21") {
+                args[2] = args[2].replace("2", "");
+              }
               if (!!args[2]){
                 breadModel('unmapHole', args[2]);
               }
+
               sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
                 "type": "connect lead",
                 "location": args[2]});
@@ -6433,6 +6437,9 @@ sparks.createQuestionsCSV = function(data) {
             section.meter.setProbeLocation(args[1], null);
           } else if (args[0] === 'component') {
             var hole = args[2];
+            if (hole === "left_positive21" || hole === "left_negative21") {
+              hole = hole.replace("2", "");
+            }
             var newHole = breadModel('getGhostHole', hole+"ghost");
 
             breadModel('mapHole', hole, newHole.nodeName());
