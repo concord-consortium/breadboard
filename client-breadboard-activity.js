@@ -7240,7 +7240,7 @@ sparks.createQuestionsCSV = function(data) {
       },
 
       scaleResistance: function(value) {
-        var perc = (value - 1) / 9,       // values are 1-10...
+        var perc = value / 10,       // values are 0-10
             range = this.maximumResistance - this.minimumResistance,
             newValue = this.minimumResistance + (range * perc);
         this.resistance = newValue;
