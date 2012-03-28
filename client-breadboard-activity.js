@@ -3434,9 +3434,13 @@ sparks.createQuestionsCSV = function(data) {
         var section = sparks.activityController.currentSection;
         if (section.meter.dmm && section.meter.dmm.dialPosition) {
           question.meta.dmmDial = section.meter.dmm.dialPosition;
+          question.meta.blackProbe = section.meter.dmm.blackProbeConnection;
+          question.meta.redProbe = section.meter.dmm.redProbeConnection;
         }
         if (section.meter.oscope) {
-          question.meta.oscopeScaleQuality = sparks.activityController.currentSection.meter.oscope.getGoodnessOfScale();
+          question.meta.oscopeScaleQuality = section.meter.oscope.getGoodnessOfScale();
+          question.meta.pinkProbe = section.meter.oscope.probeLocation[0];
+          question.meta.yellowProbe = section.meter.oscope.probeLocation[1];
         }
       }
 
@@ -3518,6 +3522,9 @@ sparks.createQuestionsCSV = function(data) {
             question.answer = parsedAnswer.val;
 
             question.meta.dmmDial = sparks.activityController.currentSection.meter.dmm.dialPosition;
+            question.meta.redProbe = sparks.activityController.currentSection.meter.dmm.redProbeConnection;
+            question.meta.blackProbe = sparks.activityController.currentSection.meter.dmm.blackProbeConnection;
+
             if (board.components.source && typeof board.components.source.frequency !== 'undefined') {
               question.meta.frequency = board.components.source.getFrequency();
               question.meta.amplitude = board.components.source.getAmplitude();
@@ -6426,7 +6433,6 @@ sparks.createQuestionsCSV = function(data) {
               if (!!args[2]){
                 breadModel('unmapHole', args[2]);
               }
-
               sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
                 "type": "connect lead",
                 "location": args[2]});

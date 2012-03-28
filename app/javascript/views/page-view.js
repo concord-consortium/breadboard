@@ -219,9 +219,13 @@
         var section = sparks.activityController.currentSection;
         if (section.meter.dmm && section.meter.dmm.dialPosition) {
           question.meta.dmmDial = section.meter.dmm.dialPosition;
+          question.meta.blackProbe = section.meter.dmm.blackProbeConnection;
+          question.meta.redProbe = section.meter.dmm.redProbeConnection;
         }
         if (section.meter.oscope) {
-          question.meta.oscopeScaleQuality = sparks.activityController.currentSection.meter.oscope.getGoodnessOfScale();
+          question.meta.oscopeScaleQuality = section.meter.oscope.getGoodnessOfScale();
+          question.meta.pinkProbe = section.meter.oscope.probeLocation[0];
+          question.meta.yellowProbe = section.meter.oscope.probeLocation[1];
         }
       }
 
