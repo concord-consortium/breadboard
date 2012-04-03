@@ -41,6 +41,7 @@
 
           $readMultimeterButton.click( function(e) {
             var board = getBreadBoard(),
+                section = sparks.activityController.currentSection,
                 reading,
                 amplitude,
                 frequency;
@@ -48,8 +49,8 @@
             e.preventDefault();
 
             sparks.activityController.currentSection.meter.dmm.update();
-            value = sparks.activityController.currentSection.meter.dmm.currentValue;
-            units = sparks.activityController.currentSection.meter.dmm.currentUnits;
+            value = section.meter.dmm.currentValue;
+            units = section.meter.dmm.currentUnits;
             reading = value + " " +  units;
 
             $multimeterReading.text(reading);
@@ -61,7 +62,7 @@
 
             question.answer = parsedAnswer.val;
 
-            question.meta.dmmDial = sparks.activityController.currentSection.meter.dmm.dialPosition;
+            question.meta.dmmDial = section.meter.dmm.dialPosition;
             question.meta.blackProbe = board.getHole(section.meter.dmm.blackProbeConnection).nodeName();
             question.meta.redProbe = board.getHole(section.meter.dmm.redProbeConnection).nodeName();
 
