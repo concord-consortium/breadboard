@@ -87,11 +87,10 @@
     },
 
     reset: function() {
-      // debugger
       if (this.oscope && this.oscope.reset) {
         this.oscope.reset();
       }
-      if (this.dmm && this.dmm.view) {
+      if (this.dmm && this.dmm.reset) {
         this.dmm.reset();
       }
     }

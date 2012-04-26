@@ -48,7 +48,7 @@
 
             e.preventDefault();
 
-            sparks.activityController.currentSection.meter.dmm.update();
+            section.meter.dmm.update();
             value = section.meter.dmm.currentValue;
             units = section.meter.dmm.currentUnits;
             reading = value + " " +  units;
