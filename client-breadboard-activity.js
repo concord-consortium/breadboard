@@ -3434,8 +3434,8 @@ sparks.createQuestionsCSV = function(data) {
         var section = sparks.activityController.currentSection;
         if (section.meter.dmm && section.meter.dmm.dialPosition) {
           question.meta.dmmDial = section.meter.dmm.dialPosition;
-          question.meta.blackProbe = board.getHole(section.meter.dmm.blackProbeConnection).nodeName();
-          question.meta.redProbe = board.getHole(section.meter.dmm.redProbeConnection).nodeName();
+          question.meta.blackProbe = section.meter.dmm.blackProbeConnection ? board.getHole(section.meter.dmm.blackProbeConnection).nodeName() : null;
+          question.meta.redProbe = section.meter.dmm.redProbeConnection ? board.getHole(section.meter.dmm.redProbeConnection).nodeName() : null;
         }
         if (section.meter.oscope) {
           question.meta.oscopeScaleQuality = section.meter.oscope.getGoodnessOfScale();
