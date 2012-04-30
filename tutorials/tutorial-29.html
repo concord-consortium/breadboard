@@ -1,0 +1,125 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>SPARKS: Using an Oscilloscope</title>
+<link rel="stylesheet" href="tutorials.css">
+<script src="tutorialScript.js"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(document).ready(function()
+{
+  // enable animated gifs to restart with mouse-over
+  hoverImage("volt-knob-adjust", "volt-knob-adjust2.gif")
+  hoverImage("time-knob-adjust", "time-knob-adjust2.gif")
+  
+   // for object id, (re)load img1 with mouse-over, optionally restore img2 after mouseover 
+   function hoverImage(id, img1, img2) {$("#"+id).hover(function(){$(this).attr("src", img1);},function(){if (img2) $(this).attr("src", img2);});}});
+</script>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-6899787-17']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+</head>
+
+<body lang="EN-US">
+
+<div id="framecontent">
+<!-- Title and logo at top -->
+<a href="index.html" title="View all tutorials"><img src="sparks_tut_logo.jpg" alt="SPARKS Tutorial Logo"></a>
+<a href="#" onclick="window.print(); return false;" id="print-link">print this</a>
+</div>
+
+
+<div id="maincontent"> <!-- content window -->
+<h3>Using an Oscilloscope</h3>
+
+
+<table align="right" width="325">
+	<tr>
+		<td><img src="oscilloscope2.jpg" width="325" height="169" hspace="4px"></td>
+	</tr>
+	<tr>
+		<td><b>Figure 1.</b> Oscilloscopes graph AC <br>voltage versus time.<br><br></td>
+	</tr>
+	<tr>
+		<td><img src="oscope-probe.jpg" width="128" height="134"></td>
+	</tr>
+	<tr>
+		<td><b>Figure 2.</b> Measuring the voltage drop <br>across&nbsp;<b>R<sub>1</sub></b><br><br></td>
+	</tr>
+	<tr>
+		<td><img src="volt-knob-adjust3.gif" width="325" height="244"></td>
+	</tr>
+	<tr>
+		<td><b>Figure 3.</b> Adjusting volts/div for Channel&nbsp;B<br>
+       <font size="-2">(Mouse-over to replay animation.)</font><br><br></td>
+	</tr>
+	<tr>
+		<td><img src="time-knob-adjust3.gif" width="325" height="244"></td>
+	</tr>
+	<tr>
+		<td><b>Figure 4.</b> Adjusting time/div<br>
+       <font size="-2">(Mouse-over to replay animation.)</font><br><br></td>
+	</tr>
+	<tr>
+		<td><img src="oscope-meas-4.jpg" width="325" height="227"></td>
+	</tr>
+	<tr>
+		<td><b>Figure 5.</b> Measuring peak-to-peak voltage <br>with a scale of 5.00&nbsp;volts/div</td>
+	</tr>
+</table>
+
+
+<p>A DMM measures a DC voltage, reporting a value like 5.79&nbsp;volts. But to measure AC&nbsp;voltages and frequencies you need an <b><span
+style='color:#0070C0'>oscilloscope</span></b>.
+
+<p><b>How an oscilloscope works</b>
+
+<p>An oscilloscope beam moves <b>up and down in response to positive and negative voltages.</b> At the same time, the beam also sweeps across the face of the screen, from <b>left to right with time.</b> The result is a <span style='color:#0070C0'><b>graph of voltage versus time.</b></span> By analyzing the graph, you can measure the AC signal.
+
+<p><b>How to use an oscilloscope</b>
+
+<p>The circuit and the oscilloscope usually share a common ground, so the probe measures voltages with respect to ground. Just as with the DMM, you measure the circuit voltage by touching the oscilloscope probe to various points in the circuit. See Figure&nbsp;2.
+
+<p>Like most oscilloscopes, the SPARKS oscilloscope can show two signals at once. Our Channel&nbsp;A (yellow) shows the function generator voltage <b>E</b>, for reference. Channel&nbsp;B (red) shows the signal from the probe&mdash;wherever you place it in the circuit.
+
+<p><b>Adjust the voltage scale</b>
+
+<p>You must adjust an oscilloscope for the best scale, just as with a DMM. But now there are two scales to adjust! First, click the <b>CH&nbsp;A</b> and <b>CH&nbsp;B</b> knobs to adjust the vertical scales so <b>the whole height of the waves fit on the screen.</b> Then drag the view to align the peak and read the scale. See Figure&nbsp;3. Notice the <span style='color:#0070C0'><b>volts per division</b></span> settings. They might be different for each channel.
+
+<p><b>Adjust the time scale</b>
+
+<p>Second, click the time/div knob to adjust the horizontal scale so <b>one whole cycle fits in the screen.</b> See Figure&nbsp;4. After adjusting, notice the <span style='color:#0070C0'><b>time per division</b></span> setting on the display. <b>NOTE:</b>&nbsp;This one setting controls <i>both</i> channels.
+
+<p><b>Read the graph</b>
+
+<p>Finally, read the face of the oscilloscope like any graph: counting the number of divisions (or tick marks) and multiplying by the scale for each division. For example, in Figure&nbsp;5 the CHA display is <b>5.00&nbsp;volts/division</b> and the wave spans <b>4.0&nbsp;divisions</b> from peak to peak (top to bottom). So, you can calculate this voltage:
+
+<p align="center"><img src="Eq19-1.gif" width="248" height="56"></p>
+
+<p>You will do a similar counting and calculating to find the time span of the wave.
+
+<p>To learn more about oscilloscopes, visit these helpful web
+sites:</p>
+<ul>
+<li><a
+href="http://www.wisc-online.com/objects/ViewObject.aspx?ID=ACE3503">http://www.wisc-online.com/objects/ViewObject.aspx?ID=ACE3503</a>
+
+<li><a href="http://www.kpsec.freeuk.com/cro.htm">http://www.kpsec.freeuk.com/cro.htm</a>
+
+<li><a href="http://www.doctronics.co.uk/scope.htm">http://www.doctronics.co.uk/scope.htm</a>
+</ul>
+
+</body>
+
+</html>
