@@ -5,6 +5,20 @@
 <title>SPARKS: Finding the Cutoff Frequency</title>
 <link rel="stylesheet" href="tutorials.css">
 <script src="tutorialScript.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function()
+{
+ // enable animated gifs to restart with mouse-over
+ hoverImage("series-troubleshooting-short", "series-troubleshooting-short.gif");
+ hoverImage("series-troubleshooting-open", "series-troubleshooting-open.gif");
+ hoverImage("parallel-troubleshooting", "parallel-troubleshooting-too-large-R.gif");
+
+ // for object id, (re)load img1 with mouse-over, optionally restore img2 after mouseover
+ function hoverImage(id, img1, img2) {$("#"+id).hover(function(){$(this).attr("src", img1);},function(){if (img2) $(this).attr("src", img2);});}
+});
+</script>
+
 <script type="text/javascript">
  var _gaq = _gaq || [];
  _gaq.push(['_setAccount', 'UA-6899787-17']);
@@ -17,16 +31,16 @@
    var s = document.getElementsByTagName('script')[0];
    s.parentNode.insertBefore(ga, s);
  })();
-</script>  
+</script>
 <style type="text/css">
 td.text {
-	font-size: medium;
-	padding: 0px;
-	text-align: left;
-	}
+font-size: medium;
+padding: 0px;
+text-align: left;
+}
 </style>
 </head>
-    
+
 <body lang="EN-US">
 <div id="framecontent">
 <!-- Title and logo at top -->
@@ -37,8 +51,9 @@ td.text {
 <!-- content window -->
 <h3>Troubleshooting Breadboard Circuits</h3>
 
+
 <p>Troubleshooting techniques are an
-application of basic logic. Some people are very good at logic puzzles, 
+application of basic logic. Some people are very good at logic puzzles,
 and can solve them very efficiently. Most people improve with practice.</p>
 
 <p>The SPARKS troubleshooting
@@ -52,7 +67,7 @@ current.</p>
 <h4>Series Circuits</h4>
 <p>The series resistance circuit will be simplest circuit to solve. You are looking for a single defective resistor: either <b>shorted</b> (zero resistance) or <b>open</b> (infinite resistance). You will apply these important facts about series circuits:
 <ul style="margin:0">
-  <li>In the SPARKS series circuit, if a resistor is <b>shorted</b> (See Figure&nbsp;1. Reload page to restart animations.):</li>
+  <li>In the SPARKS series circuit, if a resistor is <b>shorted</b> (See Figure&nbsp;1.):</li>
   <ul style="list-style-type:circle;">
 	  <li>There is current through all resistors, and so you will measure some voltage drop across all resistors...</li>
 	  <li><b>...except the shorted resistor.</b> It will measure zero voltage drop, just like a plain wire.</li>
@@ -83,36 +98,40 @@ In the SPARKS parallel circuits, a zero-ohm resistor would short the battery, so
 
 <h4>Series-Parallel Circuits</h4>
 
-<p>In circuits with both series and parallel connections, you must apply <b>both</b> of the above techniques. Use the series-circuit principles to test the series resistors, and the parallel-circuit principles to test the parallel resistors. 
+<p>In circuits with both series and parallel connections, you must apply <b>both</b> of the above techniques. Use the series-circuit principles to test the series resistors, and the parallel-circuit principles to test the parallel resistors.
 
-<p><b>NOTE:</b> You must be especially careful of the current path when measuring with lifted leads to avoid blowing the DMM fuse. 
+<p><b>NOTE:</b> You must be especially careful of the current path when measuring with lifted leads to avoid blowing the DMM fuse.
 
 <p>In any case, practice with the SPARKS circuits will rapidly improve your troubleshooting skills!
 
 </td></tr>
 <tr><td>
-<p align="center"><img src="series-troubleshooting-short.gif" border="0" width="374" height="300" alt="animated series-troubleshooting-short.gif"><br>
+<p align="center"><img id="series-troubleshooting-short" src="series-troubleshooting-short.gif" border="0" width="374" height="300" alt="animated series-troubleshooting-short.gif"><br>
 <font size="-1"><b>Figure 1.</b> Deducing that <b>R1</b> is shorted. <br>
-(Third measurement is unnecessary.)</font>
+(Third measurement is unnecessary.)</font><br>
+<font size="-2">(Mouse-over to replay animation.)</font>
 </td></tr>
 <tr><td>
-<p align="center"><img src="series-troubleshooting-open.gif" border="0" width="374" height="300" 
+<p align="center"><img id="series-troubleshooting-open" src="series-troubleshooting-open.gif" border="0" width="374" height="300"
 alt="animated series-troubleshooting-short.gif"><br>
 <font size="-1"><b>Figure 2.</b> Deducing that <b>R2</b> is open. <br>
-(Third measurement is unnecessary.)</font>
+(Third measurement is unnecessary.)</font><br>
+<font size="-2">(Mouse-over to replay animation.)</font>
 </td></tr>
 <tr><td>
-<p align="center"><img src="parallel-troubleshooting-open.jpg" border="0" width="374" height="300"  
+<p align="center"><img src="parallel-troubleshooting-open.jpg" border="0" width="374" height="300"
 alt=" parallel-troubleshooting-open.jpg"><br>
 <font size="-1"><b>Figure 3.</b> Measuring zero current through <b>R1</b>.<br>
 (No further measurements are necessary.)</font>
 </td></tr>
 <tr><td>
-<img src="parallel-troubleshooting-too-large-R.gif" border="0" width="374" height="300" 
+<img id="parallel-troubleshooting" src="parallel-troubleshooting-too-large-R.gif" border="0" width="374" height="300"
 alt="animated parallel-troubleshooting-too-large-R.gif"><br>
 <font size="-1"><b>Figure 4.</b> Finding too small current in <b>R3</b> indicates <br>
-<b>R3</b> has too large of a resistance value.
+<b>R3</b> has too large of a resistance value.<br>
+<font size="-2">(Mouse-over to replay animation.)</font>
 </font>
 </td></tr>
 </tbody></table>
-
+</body>
+</html>

@@ -10,9 +10,10 @@
 $(document).ready(function()
 {
   // enable animated gifs to restart with mouse-over
-  hoverImage("volt-knob-adjust", "volt-knob-adjust2.gif")
-  hoverImage("time-knob-adjust", "time-knob-adjust2.gif")
-  
+  hoverImage("volt-knob-adjust", "volt-knob-adjust3.gif")
+  hoverImage("time-knob-adjust", "time-knob-adjust3.gif")
+
+
    // for object id, (re)load img1 with mouse-over, optionally restore img2 after mouseover 
    function hoverImage(id, img1, img2) {$("#"+id).hover(function(){$(this).attr("src", img1);},function(){if (img2) $(this).attr("src", img2);});}});
 </script>
@@ -58,14 +59,14 @@ $(document).ready(function()
 		<td><b>Figure 2.</b> Measuring the voltage drop <br>across&nbsp;<b>R<sub>1</sub></b><br><br></td>
 	</tr>
 	<tr>
-		<td><img src="volt-knob-adjust3.gif" width="325" height="244"></td>
+		<td><img id="volt-knob-adjust" src="volt-knob-adjust3.gif" width="325" height="244"></td>
 	</tr>
 	<tr>
 		<td><b>Figure 3.</b> Adjusting volts/div for Channel&nbsp;B<br>
        <font size="-2">(Mouse-over to replay animation.)</font><br><br></td>
 	</tr>
 	<tr>
-		<td><img src="time-knob-adjust3.gif" width="325" height="244"></td>
+		<td><img id="time-knob-adjust" src="time-knob-adjust3.gif" width="325" height="244"></td>
 	</tr>
 	<tr>
 		<td><b>Figure 4.</b> Adjusting time/div<br>
