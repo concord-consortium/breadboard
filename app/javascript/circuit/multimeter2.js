@@ -27,6 +27,7 @@
           this.powerOn = true;
           this.redProbeConnection = null;
           this.blackProbeConnection = null;
+          this.displayText = "";
           this.update();
         },
         
