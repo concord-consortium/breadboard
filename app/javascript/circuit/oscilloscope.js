@@ -264,15 +264,15 @@
           return ((minScore * 3) + maxScore) / 4;
         }
 
-        var goodnesses = [];
+        var goodnesses = [null, null];
         if (this.signals[1]) {
-          goodnesses.push(goodnessOfScale([1]));
+          goodnesses[0] = goodnessOfScale([1]);
         }
 
         if (this.signals[2]) {
-          goodnesses.push(goodnessOfScale([2]));
+          goodnesses[1] = goodnessOfScale([2]);
         }
-        return Array.min(goodnesses);
+        return goodnesses;
       }
 
     };
