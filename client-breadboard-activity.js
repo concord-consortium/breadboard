@@ -9621,9 +9621,18 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
         learnerIds = [],
         activity,
         classId;
+    if (!!sparks.util.readCookie('class')){
+      classId = sparks.util.readCookie('class');
+      activity = unescape(sparks.util.readCookie('activity_name')).split('#')[1];
+      classStudents = eval(unescape(sparks.util.readCookie('class_students')).replace(/\+/g," "));
+      for (var i=0, ii=classStudents.length; i < ii; i++){
+        learnerIds.push(classStudents[i].id);
+      }
+    } else {
       activity = prompt("Enter the activity id", "series-parallel-g1");                       // series-resistances
-      classStudents = prompt("Enter a list of learner ids", "568,569,570,571,572,573,574,575,576,577,578,579,580,581,582,583,584,585,586,587,588,589,590,591,592,593,594,595,596,597,598,599,600,601,602,603,604,605,606,607,608,609,610,611,612,613,614,615,616,617,618,619,620,621,622,623,624,625,626,627,628,629,630,631,632,633,634,635,636,637,638,639,640,641,642,643,644,645,646,647,648,649,650,651,652,653,654,655,656,657,658,659,660,661,662,663,664,665,666,667,668,669,670,671,672");        // 212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228
+      classStudents = prompt("Enter a list of learner ids", "568,569");        // 212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228
       learnerIds = classStudents.split(',');
+    }
 
     sparks.classReportController.getClassData(
       activity,
