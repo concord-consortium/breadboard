@@ -4240,7 +4240,7 @@ sparks.createQuestionsCSV = function(data) {
 
       $('<p class="goodnessOfScale"></p>').css({
         top:       229,
-        left:      63,
+        left:      55,
         right:     0,
         height:    20,
         position:  'absolute'
@@ -4323,8 +4323,12 @@ sparks.createQuestionsCSV = function(data) {
           if (!!this.traces[2].raphaelObject) this.traces[2].raphaelObject.toFront();
         }
 
-        if (sparks.testGoodnessOfScale) {
-          $(".goodnessOfScale").html(sparks.math.roundToSigDigits(this.model.getGoodnessOfScale(),4));
+        if (sparks.testOscopeScaleQuality) {
+          var g = this.model.getGoodnessOfScale();
+          console.log(g)
+          var g0 = sparks.math.roundToSigDigits(g[0] ? g[0] : -1,4),
+              g1 = sparks.math.roundToSigDigits(g[1] ? g[1] : -1,4)
+          $(".goodnessOfScale").html("["+g0+","+g1+"]");
         }
       }
       else {
@@ -8591,15 +8595,15 @@ sparks.createQuestionsCSV = function(data) {
           return ((minScore * 3) + maxScore) / 4;
         }
 
-        var goodnesses = [];
+        var goodnesses = [null, null];
         if (this.signals[1]) {
-          goodnesses.push(goodnessOfScale([1]));
+          goodnesses[0] = goodnessOfScale([1]);
         }
 
         if (this.signals[2]) {
-          goodnesses.push(goodnessOfScale([2]));
+          goodnesses[1] = goodnessOfScale([2]);
         }
-        return Array.min(goodnesses);
+        return goodnesses;
       }
 
     };
