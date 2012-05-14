@@ -322,7 +322,7 @@
       // for testing the goodnessOfScale measurement
       $('<p class="goodnessOfScale"></p>').css({
         top:       229,
-        left:      63,
+        left:      55,
         right:     0,
         height:    20,
         position:  'absolute'
@@ -345,10 +345,10 @@
 
 
     $('.comboButton').removeClass('active');
-    
+
     $('.channelA button').addClass('active')
     $('.vscale.channel2').html($('.vscale.channel1').html());
-    
+
     if (this.model.showAminusB) {
       $('#AminusB').addClass('active');
     } else if (this.model.showAplusB) {
@@ -410,8 +410,12 @@
         }
 
         // testing goodness of scale
-        if (sparks.testGoodnessOfScale) {
-          $(".goodnessOfScale").html(sparks.math.roundToSigDigits(this.model.getGoodnessOfScale(),4));
+        if (sparks.testOscopeScaleQuality) {
+          var g = this.model.getGoodnessOfScale();
+          console.log(g)
+          var g0 = sparks.math.roundToSigDigits(g[0] ? g[0] : -1,4),
+              g1 = sparks.math.roundToSigDigits(g[1] ? g[1] : -1,4)
+          $(".goodnessOfScale").html("["+g0+","+g1+"]");
         }
       }
       else {

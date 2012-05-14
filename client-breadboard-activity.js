@@ -3439,8 +3439,8 @@ sparks.createQuestionsCSV = function(data) {
         }
         if (section.meter.oscope) {
           question.meta.oscopeScaleQuality = section.meter.oscope.getGoodnessOfScale();
-          question.meta.pinkProbe = board.getHole(section.meter.oscope.probeLocation[0]).nodeName();
-          question.meta.yellowProbe = board.getHole(section.meter.oscope.probeLocation[1]).nodeName();
+          question.meta.pinkProbe = section.meter.oscope.probeLocation[0] ? board.getHole(section.meter.oscope.probeLocation[0]).nodeName() : null;
+          question.meta.yellowProbe = section.meter.oscope.probeLocation[1] ? board.getHole(section.meter.oscope.probeLocation[1]).nodeName() : null;
         }
       }
 
@@ -4240,7 +4240,7 @@ sparks.createQuestionsCSV = function(data) {
 
       $('<p class="goodnessOfScale"></p>').css({
         top:       229,
-        left:      63,
+        left:      55,
         right:     0,
         height:    20,
         position:  'absolute'
@@ -4323,8 +4323,12 @@ sparks.createQuestionsCSV = function(data) {
           if (!!this.traces[2].raphaelObject) this.traces[2].raphaelObject.toFront();
         }
 
-        if (sparks.testGoodnessOfScale) {
-          $(".goodnessOfScale").html(sparks.math.roundToSigDigits(this.model.getGoodnessOfScale(),4));
+        if (sparks.testOscopeScaleQuality) {
+          var g = this.model.getGoodnessOfScale();
+          console.log(g)
+          var g0 = sparks.math.roundToSigDigits(g[0] ? g[0] : -1,4),
+              g1 = sparks.math.roundToSigDigits(g[1] ? g[1] : -1,4)
+          $(".goodnessOfScale").html("["+g0+","+g1+"]");
         }
       }
       else {
@@ -8591,15 +8595,15 @@ sparks.createQuestionsCSV = function(data) {
           return ((minScore * 3) + maxScore) / 4;
         }
 
-        var goodnesses = [];
+        var goodnesses = [null, null];
         if (this.signals[1]) {
-          goodnesses.push(goodnessOfScale([1]));
+          goodnesses[0] = goodnessOfScale([1]);
         }
 
         if (this.signals[2]) {
-          goodnesses.push(goodnessOfScale([2]));
+          goodnesses[1] = goodnessOfScale([2]);
         }
-        return Array.min(goodnesses);
+        return goodnesses;
       }
 
     };
@@ -9621,9 +9625,18 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
         learnerIds = [],
         activity,
         classId;
+    if (!!sparks.util.readCookie('class')){
+      classId = sparks.util.readCookie('class');
+      activity = unescape(sparks.util.readCookie('activity_name')).split('#')[1];
+      classStudents = eval(unescape(sparks.util.readCookie('class_students')).replace(/\+/g," "));
+      for (var i=0, ii=classStudents.length; i < ii; i++){
+        learnerIds.push(classStudents[i].id);
+      }
+    } else {
       activity = prompt("Enter the activity id", "series-parallel-g1");                       // series-resistances
-      classStudents = prompt("Enter a list of learner ids", "568,569,570,571,572,573,574,575,576,577,578,579,580,581,582,583,584,585,586,587,588,589,590,591,592,593,594,595,596,597,598,599,600,601,602,603,604,605,606,607,608,609,610,611,612,613,614,615,616,617,618,619,620,621,622,623,624,625,626,627,628,629,630,631,632,633,634,635,636,637,638,639,640,641,642,643,644,645,646,647,648,649,650,651,652,653,654,655,656,657,658,659,660,661,662,663,664,665,666,667,668,669,670,671,672");        // 212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228
+      classStudents = prompt("Enter a list of learner ids", "568,569");        // 212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228
       learnerIds = classStudents.split(',');
+    }
 
     sparks.classReportController.getClassData(
       activity,

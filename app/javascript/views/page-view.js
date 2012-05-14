@@ -224,8 +224,8 @@
         }
         if (section.meter.oscope) {
           question.meta.oscopeScaleQuality = section.meter.oscope.getGoodnessOfScale();
-          question.meta.pinkProbe = board.getHole(section.meter.oscope.probeLocation[0]).nodeName();
-          question.meta.yellowProbe = board.getHole(section.meter.oscope.probeLocation[1]).nodeName();
+          question.meta.pinkProbe = section.meter.oscope.probeLocation[0] ? board.getHole(section.meter.oscope.probeLocation[0]).nodeName() : null;
+          question.meta.yellowProbe = section.meter.oscope.probeLocation[1] ? board.getHole(section.meter.oscope.probeLocation[1]).nodeName() : null;
         }
       }
 
