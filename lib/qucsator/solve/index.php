@@ -2,7 +2,10 @@
 
 if($_REQUEST['qucs'] || $_REQUEST['spice']) {
 //if (false) {
-  $path = '/usr/local/bin';
+  $path = '/usr/bin';
+  if (!file_exists($path . '/qucsator')) {
+    $path = '/usr/local/bin';
+  }
 
   if ($_REQUEST['qucs']) {
     $data = str_replace('\\', '', $_REQUEST['qucs']) . "\n";
