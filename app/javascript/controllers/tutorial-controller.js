@@ -1,7 +1,7 @@
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
-  
+
   /*
    * Sparks Tutorial Controller can be accessed by the
    * singleton variable sparks.tutorialController
@@ -12,21 +12,21 @@
    */
   sparks.TutorialController = function(){
   };
-  
+
   sparks.TutorialController.prototype = {
-    
+
     showTutorial: function(filename) {
       var url = this._getURL(filename);
-      this.tutorialWindow = window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no');
+      this.tutorialWindow = window.open(url,'','menubar=no,height=600,width=800,resizable=yes,toolbar=no,location=no,status=no,scrollbars=yes');
       if (this.tutorialWindow) {
         this.tutorialWindow.moveActionCallback = this.tutorialMoveActionCallback;
       }
       sparks.logController.addEvent(sparks.LogEvent.CLICKED_TUTORIAL, url);
       sparks.GAHelper.userVisitedTutorial(filename);
     },
-    
+
     tutorialWindow: null,
-    
+
     setQuestionCategory: function(question) {
       var tutorialFilename = question.top_tutorial;
       if (!!tutorialFilename){
@@ -35,7 +35,7 @@
         });
       }
     },
-    
+
     getTutorialTitle: function(filename, callback) {
       $.get(this._getURL(filename), function(data) {
         var title = filename;
@@ -51,7 +51,7 @@
         callback(title);
       });
     },
-    
+
     _getURL: function(filename) {
       var url;
       if (filename.indexOf("http:") < 0 && filename.indexOf("/") !== 0){
@@ -63,7 +63,7 @@
         return filename;
       }
     },
-    
+
     tutorialMoveActionCallback: function() {
       setTimeout(function() {
         var win = sparks.tutorialController.tutorialWindow;
@@ -75,8 +75,8 @@
         }
       }, 1000);
     }
-    
-    
+
+
   };
 
   sparks.tutorialController = new sparks.TutorialController();
