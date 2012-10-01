@@ -3,7 +3,6 @@
 //= require <jquery/jquery-ui-1.8.custom.min>
 //= require <jquery/plugins/jquery.url.packed>
 //= require <jquery/plugins/jquery.cookie>
-//= require <jquery/plugins/jquery.bgiframe.min>
 //= require <jquery/plugins/jquery.flash>
 //= require <jquery/plugins/jquery.couch>
 //= require <data-source/couch-ds>
