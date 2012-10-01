@@ -17,7 +17,7 @@
 // used for the breadboard activities
 
 (function () {
-    
+
     sparks.config.root_dir = '../..';
 
     $(document).ready(function () {
@@ -37,11 +37,11 @@
           console.log('ERROR: init: ' + e);
       }
     };
-    
+
     this.setSavePath = function (activity) {
-      
+
       activity.learner_id = sparks.util.readCookie('learner_id');
-      
+
       if (activity.learner_id) {
           var put_path = unescape(sparks.util.readCookie('save_path')) || 'undefined_path';
           console.log('initActivity!: learner_id=' + activity.learner_id + ' put_path=' + put_path);
@@ -53,7 +53,7 @@
           } else {
             activity.setDataService(new RestDS(null, null, put_path));
           }
-          
+
           function askConfirm(){
             return "Are you sure you want to leave this page?";
           }
@@ -62,7 +62,7 @@
       }
     };
 
-    /* 
+    /*
      * This function gets called from Flash after Flash has set up the external
      * interface. Therefore all code that sends messages to Flash should be
      * initiated from this function.
@@ -71,22 +71,22 @@
         console.log("flash loaded");
         sparks.activity.onActivityReady();
     };
-    
+
     sparks.Activity = function () {
-        
+
     };
-    
+
     sparks.Activity.prototype = {
-            
+
         init: function () {
         },
-        
+
         setDataService: function () {
         },
-        
+
         buttonize: function () {
             $('button').button();
         }
     };
-    
+
 })();
