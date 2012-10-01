@@ -94,8 +94,8 @@
         this.renderSignal(1, true);
         this.renderSignal(2, true);
         this.popup = $view.dialog({
-          width: this.largeViewConfig.width + 150,
-          height: this.largeViewConfig.height + 80,
+          width: this.largeViewConfig.width + 149,
+          height: this.largeViewConfig.height + 97,
           dialogClass: 'tools-dialog oscope_popup',
           title: "Oscilloscope",
           closeOnEscape: false,

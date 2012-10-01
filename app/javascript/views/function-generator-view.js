@@ -43,7 +43,7 @@
         $view = this.getLargeView();
         this.popup = $view.dialog({
           width: this.width + 10,
-          height: this.height+37,
+          height: this.height+49,
           dialogClass: 'tools-dialog fg_popup',
           title: "Function Generator",
           closeOnEscape: false,
