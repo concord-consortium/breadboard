@@ -2608,6 +2608,7 @@ sparks.createQuestionsCSV = function(data) {
     this.show_multimeter = false;
     this.show_oscilloscope = false;
     this.allow_move_yellow_probe = false;
+    this.hide_pink_probe = false;
 
     this.section_url = "";
     this.images_url = "";
@@ -3004,6 +3005,7 @@ sparks.createQuestionsCSV = function(data) {
         this.showDMM(section.show_multimeter);
         this.showOScope(section.show_oscilloscope);
         this.allowMoveYellowProbe(section.allow_move_yellow_probe);
+        this.hidePinkProbe(section.hide_pink_probe);
 
         section.meter.reset();
       }
@@ -3068,11 +3070,11 @@ sparks.createQuestionsCSV = function(data) {
          sparks.activityController.currentSection.meter.oscope.setView(scopeView);
        }
 
-       sparks.flash.sendCommand('set_oscope_probe_visibility',visible.toString());
+         sparks.flash.sendCommand('set_oscope_probe_visibility',visible.toString());
 
-       if (visible) {
-         this.doOnFlashLoad(function() {setTimeout(function() {sparks.flash.sendCommand('connect_probe', "yellow");},1000)});
-       }
+         if (visible) {
+          sparks.flash.sendCommand('enable_probe_dragging', "yellow", true);
+         }
      },
 
      showDMM: function(visible) {
@@ -3082,6 +3084,9 @@ sparks.createQuestionsCSV = function(data) {
 
      allowMoveYellowProbe: function(allow) {
        sparks.flash.sendCommand('enable_probe_dragging', "yellow", allow);
+     },
+
+     hidePinkProbe: function(allow) {
      },
 
      hidePopups: function() {
@@ -5251,6 +5256,7 @@ sparks.createQuestionsCSV = function(data) {
       section.show_multimeter = !(!(jsonSection.show_multimeter) || jsonSection.show_multimeter === "false");     // may be a string
       section.show_oscilloscope = !(!(jsonSection.show_oscilloscope) || jsonSection.show_oscilloscope === "false");
       section.allow_move_yellow_probe = !(!(jsonSection.allow_move_yellow_probe) || jsonSection.allow_move_yellow_probe === "false");
+      section.hide_pink_probe = !(!(jsonSection.hide_pink_probe) || jsonSection.hide_pink_probe === "false");
       section.disable_multimeter_position = jsonSection.disable_multimeter_position;
 
       if (!section.hide_circuit && section.show_multimeter) {

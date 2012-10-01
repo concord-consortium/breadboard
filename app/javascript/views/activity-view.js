@@ -54,6 +54,7 @@
         this.showDMM(section.show_multimeter);
         this.showOScope(section.show_oscilloscope);
         this.allowMoveYellowProbe(section.allow_move_yellow_probe);
+        this.hidePinkProbe(section.hide_pink_probe);
 
         section.meter.reset();
       }
@@ -118,12 +119,11 @@
          sparks.activityController.currentSection.meter.oscope.setView(scopeView);
        }
 
-       sparks.flash.sendCommand('set_oscope_probe_visibility',visible.toString());
+         sparks.flash.sendCommand('set_oscope_probe_visibility',visible.toString());
 
-       if (visible) {
-          // we have to force the connection of the yellow probe the first time
-         this.doOnFlashLoad(function() {setTimeout(function() {sparks.flash.sendCommand('connect_probe', "yellow");},1000)});
-       }
+         if (visible) {
+          sparks.flash.sendCommand('enable_probe_dragging', "yellow", true);
+         }
      },
 
      showDMM: function(visible) {
@@ -133,6 +133,10 @@
 
      allowMoveYellowProbe: function(allow) {
        sparks.flash.sendCommand('enable_probe_dragging', "yellow", allow);
+     },
+
+     hidePinkProbe: function(allow) {
+        // not supported yet
      },
 
      hidePopups: function() {
