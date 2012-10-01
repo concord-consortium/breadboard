@@ -18,26 +18,26 @@
     nMinorTicks:      5,
 
     faceplateColor:   '#EEEEEE',
-    
+
     getView: function () {
       this.$view = $('<div>');
-      
+
       $("#fg_value").remove();
       $freq_value = $("<span id='fg_value'></span").appendTo(this.$view);
       this.freqValueViews.push($freq_value);
-      
+
       this.frequencies = this.model.getPossibleFrequencies();
       this.setFrequency(this.model.frequency);
-      
+
       $overlayDiv = $('<div id="fg_mini_overlay"></div>').appendTo(this.$view);
       var self = this;
       $overlayDiv.click(function(){
         self.openPopup();
       })
-      
+
       return this.$view;
     },
-    
+
     openPopup: function () {
       if (!this.popup) {
         $view = this.getLargeView();
@@ -51,20 +51,27 @@
           autoOpen: false
         });
       }
-      
+
       var self = this;
       this.popup.bind('remove', function() {
         self.popup = null;
       });
-      
+
+      var scrollPosition = [
+        self.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
+        self.pageYOffset || document.documentElement.scrollTop  || document.body.scrollTop
+      ];
+
       this.popup.dialog('open').dialog("widget").position({
          my: 'left top',
          at: 'left top',
          offset: '5, 5',
          of: $("#breadboard_wrapper")
       });
+
+      window.scrollTo(scrollPosition[0], scrollPosition[1]);
     },
-    
+
     getLargeView: function () {
       var $canvasHolder,
           self = this;
@@ -83,7 +90,7 @@
         right: 0,
         height: this.height
       }).appendTo(this.$view);
-      
+
       $freq_value = $('<p id="freq_value">'+this.currentFreqString+'</p>').css({
         position:  'absolute',
         top:       15,
@@ -91,7 +98,7 @@
         height:    20,
         textAlign: 'center'
       }).appendTo(this.$faceplate);
-      
+
       this.freqValueViews.push($freq_value);
 
       this.$controls = $('<div id="controls">').css({
@@ -108,7 +115,7 @@
         width:     150,
         height:    55
       }).appendTo(this.$controls);
-      
+
       var freqs = this.frequencies;
       var initialStep = sparks.util.getClosestIndex(freqs, this.model.frequency, false);
       this._addSliderControl(this.$frequency, freqs.length, initialStep, function (evt, ui) {
@@ -119,7 +126,7 @@
         self.model.setFrequency(freq);
         self.setFrequency(freq);
       });
-      
+
       $('<span>Frequency</span>').css({
         position:  'absolute',
         top:       43,
@@ -127,7 +134,7 @@
         width:     100,
         height:    15
       }).appendTo(this.$controls);
-      
+
       if (this.model.maxAmplitude){
         this.$amplitude = $('<div>').css({
           position: 'absolute',
@@ -136,7 +143,7 @@
           width:    150,
           height:   55
         }).appendTo(this.$controls);
-        
+
         var minAmp = this.model.minAmplitude,
             maxAmp = this.model.maxAmplitude,
             amplitude = this.model.amplitude,

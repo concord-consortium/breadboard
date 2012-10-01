@@ -109,11 +109,18 @@
         self.popup = null;
       });
 
+      var scrollPosition = [
+        self.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
+        self.pageYOffset || document.documentElement.scrollTop  || document.body.scrollTop
+      ];
+
       this.popup.dialog('open').dialog("widget").position({
          my: 'left top',
          at: 'center top',
          of: $("#breadboard_wrapper")
       });
+
+      window.scrollTo(scrollPosition[0], scrollPosition[1]);
     },
 
     /**
