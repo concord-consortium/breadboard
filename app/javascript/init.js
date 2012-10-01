@@ -25,6 +25,7 @@
 //= require <views/oscilloscope-view>
 //= require <views/function-generator-view>
 //= require <views/class-report-view>
+//= require <views/breadboard-svg-view>
 //= require <controllers/question-controller>
 //= require <controllers/page-controller>
 //= require <controllers/log-controller>
