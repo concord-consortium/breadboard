@@ -338,7 +338,7 @@
             }
             interfaces.insertComponent("battery", battery);
           }
-          
+
           // add default power leads
           interfaces.insertComponent("powerLead", {
             UID: "redPowerLead",
@@ -484,12 +484,10 @@
             component.destroy();
           });
         },
-        updateFlash: function() {
+        updateView: function() {
           $.each(breadBoard.components, function(i, component) {
-            if (component.getFlashArguments && component.hasValidConnections()) {
-              var flashArguments = component.getFlashArguments();
-              flashArguments.unshift('insert_component');
-              sparks.flash.sendCommand.apply(this, flashArguments);
+            if (component.getViewArguments && component.hasValidConnections()) {
+              sparks.breadboardView.addComponent(component.getViewArguments());
             }
           });
         }

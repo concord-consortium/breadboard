@@ -4,7 +4,7 @@
 
   sparks.ActivityView = function(activity){
     this.activity = activity;
-    this.flashQueue = [];
+    this.commandQueue = [];
 
     this.divs = {
       $breadboardDiv:   $('#breadboard'),
@@ -20,7 +20,6 @@
 
     layoutCurrentSection: function() {
       var section = sparks.activityController.currentSection;
-      var self = this;
 
       $('#loading').hide();
 
@@ -38,17 +37,20 @@
           sparks.flash.loaded = false;
           this.divs.$breadboardDiv.html('');
         }
-        this.loadFlash();
-        breadModel('updateFlash');
+        breadboard.ready(function() {
+          sparks.breadboardView = breadboard.create("breadboard");
+          // FIXME: view should accept battery as standard component via API
+          sparks.breadboardView.addBattery("left_negative21,left_positive21");
+        });
+
+        breadModel('updateView');
 
         var source = getBreadBoard().components.source;
         if (source.frequency) {
           var fgView = new sparks.FunctionGeneratorView(source);
           var $fg = fgView.getView();
           this.divs.$fgDiv.append($fg);
-          this.doOnFlashLoad(function(){
-            self.divs.$fgDiv.show();
-          });
+          this.divs.$fgDiv.show();
         }
 
         this.showDMM(section.show_multimeter);
@@ -72,39 +74,6 @@
       $('body').scrollTop(0);
     },
 
-    loadFlash: function () {
-       this.divs.$breadboardDiv.show().css("z-index", 0);
-       this.divs.$breadboardDiv.flash({
-           src: 'activities/module-2/breadboardActivity1.swf',
-           id: 'breadboardActivity1',
-           name: 'breadboardActivity1',
-           width: 800,
-           height: 500,
-           quality: 'high',
-           allowFullScreen: false,
-           allowScriptAccess: 'sameDomain',
-           wmode: 'transparent'
-       });
-     },
-
-     setFlashLoaded: function(flashLoaded) {
-       this.flashLoaded = flashLoaded;
-       if (flashLoaded){
-         for (var i = 0, ii = this.flashQueue.length; i < ii; i++) {
-           this.flashQueue[i]();
-         }
-         this.flashQueue = [];
-       }
-     },
-
-     doOnFlashLoad: function(func) {
-       if (this.flashLoaded) {
-         func();
-       } else {
-         this.flashQueue.push(func);
-       }
-     },
-
      showOScope: function(visible) {
        this.divs.$scopeDiv.html('');
 
@@ -112,10 +81,7 @@
          var scopeView = new sparks.OscilloscopeView();
          var $scope = scopeView.getView();
          this.divs.$scopeDiv.append($scope);
-         var self = this;
-         this.doOnFlashLoad(function(){
-           self.divs.$scopeDiv.show();
-         });
+         this.divs.$scopeDiv.show();
          sparks.activityController.currentSection.meter.oscope.setView(scopeView);
        }
 

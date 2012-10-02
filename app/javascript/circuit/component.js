@@ -30,10 +30,32 @@
       this._ensureInt("resistance");
       this._ensureInt("nominalResistance");
       this._ensureInt("voltage");
+
+      this.viewArguments = {
+        type: this.type,
+        UID: this.UID,
+        connections: this.getLocation(),
+        draggable: false
+      };
+
+      if (this.label) {
+        this.viewArguments.label = this.label;
+      }
     };
 
     sparks.circuit.Component.prototype =
     {
+      setViewArguments: function (args) {
+        for (arg in args) {
+          if (!args.hasOwnProperty(arg)) continue;
+          this.viewArguments[arg] = args[arg];
+        }
+      },
+
+      getViewArguments: function () {
+        return this.viewArguments;
+      },
+
     	move: function (connections) {
         var i;
         for (i in this.connections) {
@@ -49,6 +71,8 @@
           this.connections[i] = this.breadBoard.holes[connections[i]];
           this.breadBoard.holes[connections[i]].connections[this.breadBoard.holes[connections[i]].connections.length] = this;
         }
+
+        this.setViewArguments({connections: this.getLocation()});
       },
 
       destroy: function (){

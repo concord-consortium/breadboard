@@ -45,6 +45,12 @@
 
       // now that everything has been set, if we have a fault set it now
       this.applyFaults();
+
+      if (this.resistance > 0) {
+        this.setViewArguments({color: this.colors});
+      } else {
+        this.setViewArguments({type: "wire", color: "green"});      // represent as wire if resistance is zero
+      }
     };
 
     sparks.extend(sparks.circuit.Resistor, sparks.circuit.Component,
@@ -213,15 +219,6 @@
           return 'R:' + this.UID + ' ' + nodes.join(' ') + ' R="' + resistance + ' Ohm"';
         },
 
-        // for now, all resistors are 4-band
-        getFlashArguments: function() {
-          if (this.resistance > 0) {
-            return ['resistor', this.UID, this.getLocation(), '4band', this.label, this.colors];
-          } else {
-            return ['resistor', this.UID, this.getLocation(), 'wire', this.label, null];
-          }
-        },
-        
         applyFaults: function() {
           if (!!this.open){
             this.resistance = 1e20;

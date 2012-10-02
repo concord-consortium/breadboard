@@ -146,7 +146,9 @@
         }
       }
       return frequencies;
-    }
+    },
+
+    getViewArguments: null
 
   });
 
