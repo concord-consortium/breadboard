@@ -359,7 +359,7 @@ border-bottom-style:solid;
 #fg_mini {
   background: url("../images/fg_mini.png") no-repeat top left;
   position: absolute;
-  top: 3px;
+  top: -6px;
   left: -10px;
   width: 177px;
   height: 114px;
