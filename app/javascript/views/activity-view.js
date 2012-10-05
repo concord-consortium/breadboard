@@ -37,8 +37,8 @@
           sparks.flash.loaded = false;
           this.divs.$breadboardDiv.html('');
         }
-        breadboard.ready(function() {
-          sparks.breadboardView = breadboard.create("breadboard");
+        breadboardView.ready(function() {
+          sparks.breadboardView = breadboardView.create("breadboard");
           // FIXME: view should accept battery as standard component via API
           sparks.breadboardView.addBattery("left_negative21,left_positive21");
         });

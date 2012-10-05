@@ -2,35 +2,35 @@
  * @author Mobile.Lab (http://mlearner.com)
  **/
 
-window["breadboard"] = {
+window["breadboardView"] = {
   "options" : {
     "rootpath" : ""
   },
   "util" : {}
 };
 
-window["breadboard"].connectionMade = function(component, location) {
+window["breadboardView"].connectionMade = function(component, location) {
   console.log('Received: connect, component|' + component + '|' + location);
 };
 
-window["breadboard"].connectionBroken = function(component, location) {
+window["breadboardView"].connectionBroken = function(component, location) {
   console.log('Received: disconnect, component|' + component + '|' + location);
 };
 
-window["breadboard"].probeAdded = function(meter, color, location) {
+window["breadboardView"].probeAdded = function(meter, color, location) {
   console.log('Received: connect, ' + meter + '|probe|' + color + '|' + location);
 };
 
-window["breadboard"].probeRemoved = function(meter, color) {
+window["breadboardView"].probeRemoved = function(meter, color) {
   console.log('Received: disconnect, ' + meter + '|probe|' + color);
 };
 
-window["breadboard"].dmmDialMoved = function(value) {
+window["breadboardView"].dmmDialMoved = function(value) {
   console.log('Received: multimeter_dial >> ' + value);
 };
 
 /**
- * breadboard # util # require
+ * breadboardView # util # require
  * >> loading required resources
  **/
 
@@ -117,10 +117,10 @@ window["breadboard"].dmmDialMoved = function(value) {
     });
   };
 
-})(jQuery, window["breadboard"]);
+})(jQuery, window["breadboardView"]);
 
 /**
- * breadboard # board
+ * breadboardView # board
  * >> create board object with API
  **/
 
@@ -192,7 +192,7 @@ window["breadboard"].dmmDialMoved = function(value) {
   };
 
   CircuitBoard.prototype.sendEventToModel = function(evName, params) {
-    breadboard[evName](params[0], params[1], params[2]);
+    breadboardView[evName](params[0], params[1], params[2]);
   };
 
   CircuitBoard.prototype.addComponent = function(elem) {
@@ -369,8 +369,8 @@ window["breadboard"].dmmDialMoved = function(value) {
 
     // create wires
     this.wires = [];
-    this.wires[0] = new primitive.batteryWireBlack(this.pts[0]);
-    this.wires[1] = new primitive.batteryWireRed(this.pts[1]);
+    this.wires[0] = new primitive.batteryWireRed(this.pts[1]);
+    this.wires[1] = new primitive.batteryWireBlack(this.pts[0]);
 
     this.blackWire = SVGStorage.create('group').attr({
       'component' : 'batteryWireBlack'
@@ -1431,4 +1431,4 @@ window["breadboard"].dmmDialMoved = function(value) {
     }
   };
 
-})(jQuery, window["breadboard"]);
+})(jQuery, window["breadboardView"]);

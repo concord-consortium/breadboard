@@ -3780,10 +3780,32 @@ sparks.createQuestionsCSV = function(data) {
       this._ensureInt("resistance");
       this._ensureInt("nominalResistance");
       this._ensureInt("voltage");
+
+      this.viewArguments = {
+        type: this.type,
+        UID: this.UID,
+        connections: this.getLocation(),
+        draggable: false
+      };
+
+      if (this.label) {
+        this.viewArguments.label = this.label;
+      }
     };
 
     sparks.circuit.Component.prototype =
     {
+      setViewArguments: function (args) {
+        for (arg in args) {
+          if (!args.hasOwnProperty(arg)) continue;
+          this.viewArguments[arg] = args[arg];
+        }
+      },
+
+      getViewArguments: function () {
+        return this.viewArguments;
+      },
+
     	move: function (connections) {
         var i;
         for (i in this.connections) {
@@ -3799,6 +3821,8 @@ sparks.createQuestionsCSV = function(data) {
           this.connections[i] = this.breadBoard.holes[connections[i]];
           this.breadBoard.holes[connections[i]].connections[this.breadBoard.holes[connections[i]].connections.length] = this;
         }
+
+        this.setViewArguments({connections: this.getLocation()});
       },
 
       destroy: function (){
@@ -3932,6 +3956,12 @@ sparks.createQuestionsCSV = function(data) {
       }
 
       this.applyFaults();
+
+      if (this.resistance > 0) {
+        this.setViewArguments({color: this.colors});
+      } else {
+        this.setViewArguments({type: "wire", color: "green"});      // represent as wire if resistance is zero
+      }
     };
 
     sparks.extend(sparks.circuit.Resistor, sparks.circuit.Component,
@@ -4091,14 +4121,6 @@ sparks.createQuestionsCSV = function(data) {
               nodes      = this.getNodes();
 
           return 'R:' + this.UID + ' ' + nodes.join(' ') + ' R="' + resistance + ' Ohm"';
-        },
-
-        getFlashArguments: function() {
-          if (this.resistance > 0) {
-            return ['resistor', this.UID, this.getLocation(), '4band', this.label, this.colors];
-          } else {
-            return ['resistor', this.UID, this.getLocation(), 'wire', this.label, null];
-          }
         },
 
         applyFaults: function() {

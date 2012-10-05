@@ -2955,7 +2955,7 @@ sparks.createQuestionsCSV = function(data) {
 
   sparks.ActivityView = function(activity){
     this.activity = activity;
-    this.flashQueue = [];
+    this.commandQueue = [];
 
     this.divs = {
       $breadboardDiv:   $('#breadboard'),
@@ -2971,7 +2971,6 @@ sparks.createQuestionsCSV = function(data) {
 
     layoutCurrentSection: function() {
       var section = sparks.activityController.currentSection;
-      var self = this;
 
       $('#loading').hide();
 
@@ -2989,17 +2988,19 @@ sparks.createQuestionsCSV = function(data) {
           sparks.flash.loaded = false;
           this.divs.$breadboardDiv.html('');
         }
-        this.loadFlash();
-        breadModel('updateFlash');
+        breadboardView.ready(function() {
+          sparks.breadboardView = breadboardView.create("breadboard");
+          sparks.breadboardView.addBattery("left_negative21,left_positive21");
+        });
+
+        breadModel('updateView');
 
         var source = getBreadBoard().components.source;
         if (source.frequency) {
           var fgView = new sparks.FunctionGeneratorView(source);
           var $fg = fgView.getView();
           this.divs.$fgDiv.append($fg);
-          this.doOnFlashLoad(function(){
-            self.divs.$fgDiv.show();
-          });
+          this.divs.$fgDiv.show();
         }
 
         this.showDMM(section.show_multimeter);
@@ -3023,39 +3024,6 @@ sparks.createQuestionsCSV = function(data) {
       $('body').scrollTop(0);
     },
 
-    loadFlash: function () {
-       this.divs.$breadboardDiv.show().css("z-index", 0);
-       this.divs.$breadboardDiv.flash({
-           src: 'activities/module-2/breadboardActivity1.swf',
-           id: 'breadboardActivity1',
-           name: 'breadboardActivity1',
-           width: 800,
-           height: 500,
-           quality: 'high',
-           allowFullScreen: false,
-           allowScriptAccess: 'sameDomain',
-           wmode: 'transparent'
-       });
-     },
-
-     setFlashLoaded: function(flashLoaded) {
-       this.flashLoaded = flashLoaded;
-       if (flashLoaded){
-         for (var i = 0, ii = this.flashQueue.length; i < ii; i++) {
-           this.flashQueue[i]();
-         }
-         this.flashQueue = [];
-       }
-     },
-
-     doOnFlashLoad: function(func) {
-       if (this.flashLoaded) {
-         func();
-       } else {
-         this.flashQueue.push(func);
-       }
-     },
-
      showOScope: function(visible) {
        this.divs.$scopeDiv.html('');
 
@@ -3063,10 +3031,7 @@ sparks.createQuestionsCSV = function(data) {
          var scopeView = new sparks.OscilloscopeView();
          var $scope = scopeView.getView();
          this.divs.$scopeDiv.append($scope);
-         var self = this;
-         this.doOnFlashLoad(function(){
-           self.divs.$scopeDiv.show();
-         });
+         this.divs.$scopeDiv.show();
          sparks.activityController.currentSection.meter.oscope.setView(scopeView);
        }
 
@@ -4858,30 +4823,30 @@ sparks.createQuestionsCSV = function(data) {
   };
 })();
 
-window["breadboard"] = {
+window["breadboardView"] = {
   "options" : {
     "rootpath" : ""
   },
   "util" : {}
 };
 
-window["breadboard"].connectionMade = function(component, location) {
+window["breadboardView"].connectionMade = function(component, location) {
   console.log('Received: connect, component|' + component + '|' + location);
 };
 
-window["breadboard"].connectionBroken = function(component, location) {
+window["breadboardView"].connectionBroken = function(component, location) {
   console.log('Received: disconnect, component|' + component + '|' + location);
 };
 
-window["breadboard"].probeAdded = function(meter, color, location) {
+window["breadboardView"].probeAdded = function(meter, color, location) {
   console.log('Received: connect, ' + meter + '|probe|' + color + '|' + location);
 };
 
-window["breadboard"].probeRemoved = function(meter, color) {
+window["breadboardView"].probeRemoved = function(meter, color) {
   console.log('Received: disconnect, ' + meter + '|probe|' + color);
 };
 
-window["breadboard"].dmmDialMoved = function(value) {
+window["breadboardView"].dmmDialMoved = function(value) {
   console.log('Received: multimeter_dial >> ' + value);
 };
 
@@ -4965,7 +4930,7 @@ window["breadboard"].dmmDialMoved = function(value) {
     });
   };
 
-})(jQuery, window["breadboard"]);
+})(jQuery, window["breadboardView"]);
 
 
 (function($, board) {
@@ -5023,7 +4988,7 @@ window["breadboard"].dmmDialMoved = function(value) {
   };
 
   CircuitBoard.prototype.sendEventToModel = function(evName, params) {
-    breadboard[evName](params[0], params[1], params[2]);
+    breadboardView[evName](params[0], params[1], params[2]);
   };
 
   CircuitBoard.prototype.addComponent = function(elem) {
@@ -5196,8 +5161,8 @@ window["breadboard"].dmmDialMoved = function(value) {
     this.leads = addLeads(this.pts, [300, 45], loc, 'battery', false, board);
 
     this.wires = [];
-    this.wires[0] = new primitive.batteryWireBlack(this.pts[0]);
-    this.wires[1] = new primitive.batteryWireRed(this.pts[1]);
+    this.wires[0] = new primitive.batteryWireRed(this.pts[1]);
+    this.wires[1] = new primitive.batteryWireBlack(this.pts[0]);
 
     this.blackWire = SVGStorage.create('group').attr({
       'component' : 'batteryWireBlack'
@@ -6201,7 +6166,7 @@ window["breadboard"].dmmDialMoved = function(value) {
     }
   };
 
-})(jQuery, window["breadboard"]);
+})(jQuery, window["breadboardView"]);
 /*globals console sparks $ breadModel getBreadBoard */
 
 (function() {
@@ -8012,10 +7977,32 @@ window["breadboard"].dmmDialMoved = function(value) {
       this._ensureInt("resistance");
       this._ensureInt("nominalResistance");
       this._ensureInt("voltage");
+
+      this.viewArguments = {
+        type: this.type,
+        UID: this.UID,
+        connections: this.getLocation(),
+        draggable: false
+      };
+
+      if (this.label) {
+        this.viewArguments.label = this.label;
+      }
     };
 
     sparks.circuit.Component.prototype =
     {
+      setViewArguments: function (args) {
+        for (arg in args) {
+          if (!args.hasOwnProperty(arg)) continue;
+          this.viewArguments[arg] = args[arg];
+        }
+      },
+
+      getViewArguments: function () {
+        return this.viewArguments;
+      },
+
     	move: function (connections) {
         var i;
         for (i in this.connections) {
@@ -8031,6 +8018,8 @@ window["breadboard"].dmmDialMoved = function(value) {
           this.connections[i] = this.breadBoard.holes[connections[i]];
           this.breadBoard.holes[connections[i]].connections[this.breadBoard.holes[connections[i]].connections.length] = this;
         }
+
+        this.setViewArguments({connections: this.getLocation()});
       },
 
       destroy: function (){
@@ -8163,6 +8152,12 @@ window["breadboard"].dmmDialMoved = function(value) {
       }
 
       this.applyFaults();
+
+      if (this.resistance > 0) {
+        this.setViewArguments({color: this.colors});
+      } else {
+        this.setViewArguments({type: "wire", color: "green"});      // represent as wire if resistance is zero
+      }
     };
 
     sparks.extend(sparks.circuit.Resistor, sparks.circuit.Component,
@@ -8322,14 +8317,6 @@ window["breadboard"].dmmDialMoved = function(value) {
               nodes      = this.getNodes();
 
           return 'R:' + this.UID + ' ' + nodes.join(' ') + ' R="' + resistance + ' Ohm"';
-        },
-
-        getFlashArguments: function() {
-          if (this.resistance > 0) {
-            return ['resistor', this.UID, this.getLocation(), '4band', this.label, this.colors];
-          } else {
-            return ['resistor', this.UID, this.getLocation(), 'wire', this.label, null];
-          }
         },
 
         applyFaults: function() {
@@ -8980,12 +8967,10 @@ window["breadboard"].dmmDialMoved = function(value) {
             component.destroy();
           });
         },
-        updateFlash: function() {
+        updateView: function() {
           $.each(breadBoard.components, function(i, component) {
-            if (component.getFlashArguments && component.hasValidConnections()) {
-              var flashArguments = component.getFlashArguments();
-              flashArguments.unshift('insert_component');
-              sparks.flash.sendCommand.apply(this, flashArguments);
+            if (component.getViewArguments && component.hasValidConnections()) {
+              sparks.breadboardView.addComponent(component.getViewArguments());
             }
           });
         }
@@ -10410,7 +10395,9 @@ window["breadboard"].dmmDialMoved = function(value) {
         }
       }
       return frequencies;
-    }
+    },
+
+    getViewArguments: null
 
   });
 
@@ -10423,20 +10410,22 @@ window["breadboard"].dmmDialMoved = function(value) {
 
   sparks.circuit.Wire = function (props, breadBoard) {
     sparks.circuit.Wire.parentConstructor.call(this, props, breadBoard);
+    this.setViewArguments({color: this.getColor()});
   };
 
   sparks.extend(sparks.circuit.Wire, sparks.circuit.Component, {
+
     getColor: function () {
       var location = this.getLocation();
       if (location.indexOf("positive") > -1) {
-        return "0xaa0000";
+        return "red";
       } else if (location.indexOf("negative") > -1) {
-        return "0x000000";
+        return "black";
       } else {
         if (Math.random() < 0.5){
-          return "0x008800";
+          return "green";
         } else {
-          return "0x000088";
+          return "blue";
         }
       }
     },
@@ -10446,10 +10435,6 @@ window["breadboard"].dmmDialMoved = function(value) {
           nodes      = this.getNodes();
 
       return 'TLIN:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' Z="0.000001 Ohm" L="1 mm" Alpha="0 dB"';
-    },
-
-    getFlashArguments: function () {
-      return ['wire', this.UID, this.getLocation(), this.getColor()];
     }
   });
 
@@ -10482,9 +10467,7 @@ window["breadboard"].dmmDialMoved = function(value) {
       return '';
     },
 
-    getFlashArguments: function () {
-      return [this.getColor(), this.UID, this.getLocation()];
-    }
+    getViewArguments: null
   });
 
 })();
@@ -10917,13 +10900,6 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
       console.log(activity);
       var ac = new sparks.ActivityConstructor(activity);
     });
-
-    this.initActivity = function () {
-        sparks.flash.init();
-        if (!!sparks.activity.view) {
-          sparks.activity.view.setFlashLoaded(true);
-        }
-    };
   };
 
   this.loadClassReport = function () {
