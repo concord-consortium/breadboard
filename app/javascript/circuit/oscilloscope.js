@@ -13,8 +13,8 @@
           initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
       this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
       this._horizontalScale = initHorizontalScale;
-	  this.showAminusB = false;
-	  this.showAplusB = false;
+  	  this.showAminusB = false;
+  	  this.showAplusB = false;
     };
 
     sparks.circuit.Oscilloscope.prototype = {
@@ -29,15 +29,15 @@
       INITIAL_VERTICAL_SCALE:   5,
 
       reset: function() {
-        this.probeLocation[0] = null;     // pink probe
-        this.probeLocation[1] = null;     // yellow probe
-        this.setProbeLocation("probe_yellow", "left_positive22");
+        this.probeLocation[0] = "left_positive22";      // yellow probe
+        this.probeLocation[1] = null;                   // pink probe
         this.signals = [];
         var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
             initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
         this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
         this._horizontalScale = initHorizontalScale;
-        this.update();
+        this.showAminusB = false;
+        this.showAplusB = false;
       },
 
       setView: function(view) {
@@ -53,8 +53,10 @@
       setProbeLocation: function(probe, location) {
         if (probe === "probe_yellow" || probe === "probe_pink") {
           var probeIndex = probe === "probe_yellow" ? 0 : 1;
-          this.probeLocation[probeIndex] = location;
-          this.update();
+          if (this.probeLocation[probeIndex] !== location) {
+            this.probeLocation[probeIndex] = location;
+            this.update();
+          }
         }
       },
 
@@ -90,7 +92,6 @@
               this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
               continue;
             }
-
             breadModel('query', null, null, this.updateWithData, this, [probeNode, probeIndex]);
           } else {
             this.clearSignal(this.PROBE_CHANNEL[probeIndex]);

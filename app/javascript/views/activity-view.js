@@ -50,12 +50,13 @@
             self.divs.$fgDiv.show();
           });
         }
+        section.meter.reset()
 
         this.showDMM(section.show_multimeter);
         this.showOScope(section.show_oscilloscope);
         this.allowMoveYellowProbe(section.allow_move_yellow_probe);
 
-        section.meter.reset();
+        section.meter.update();
       }
 
       this.layoutPage();

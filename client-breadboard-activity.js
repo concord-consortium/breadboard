@@ -3080,12 +3080,13 @@ sparks.createQuestionsCSV = function(data) {
             self.divs.$fgDiv.show();
           });
         }
+        section.meter.reset()
 
         this.showDMM(section.show_multimeter);
         this.showOScope(section.show_oscilloscope);
         this.allowMoveYellowProbe(section.allow_move_yellow_probe);
 
-        section.meter.reset();
+        section.meter.update();
       }
 
       this.layoutPage();
@@ -6428,7 +6429,7 @@ sparks.createQuestionsCSV = function(data) {
       var section = sparks.activityController.currentSection;
 
       if (name === 'connect') {
-          if (args[0] === 'probe') {
+          if (args[0] === 'probe' && !!args[2]) {
             section.meter.setProbeLocation(args[1], args[2]);
           }
           if (args[0] === 'component') {
@@ -8361,8 +8362,8 @@ sparks.createQuestionsCSV = function(data) {
           initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
       this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
       this._horizontalScale = initHorizontalScale;
-	  this.showAminusB = false;
-	  this.showAplusB = false;
+  	  this.showAminusB = false;
+  	  this.showAplusB = false;
     };
 
     sparks.circuit.Oscilloscope.prototype = {
@@ -8377,15 +8378,15 @@ sparks.createQuestionsCSV = function(data) {
       INITIAL_VERTICAL_SCALE:   5,
 
       reset: function() {
-        this.probeLocation[0] = null;     // pink probe
-        this.probeLocation[1] = null;     // yellow probe
-        this.setProbeLocation("probe_yellow", "left_positive22");
+        this.probeLocation[0] = "left_positive22";      // yellow probe
+        this.probeLocation[1] = null;                   // pink probe
         this.signals = [];
         var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
             initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
         this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
         this._horizontalScale = initHorizontalScale;
-        this.update();
+        this.showAminusB = false;
+        this.showAplusB = false;
       },
 
       setView: function(view) {
@@ -8399,8 +8400,10 @@ sparks.createQuestionsCSV = function(data) {
       setProbeLocation: function(probe, location) {
         if (probe === "probe_yellow" || probe === "probe_pink") {
           var probeIndex = probe === "probe_yellow" ? 0 : 1;
-          this.probeLocation[probeIndex] = location;
-          this.update();
+          if (this.probeLocation[probeIndex] !== location) {
+            this.probeLocation[probeIndex] = location;
+            this.update();
+          }
         }
       },
 
@@ -8434,7 +8437,6 @@ sparks.createQuestionsCSV = function(data) {
               this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
               continue;
             }
-
             breadModel('query', null, null, this.updateWithData, this, [probeNode, probeIndex]);
           } else {
             this.clearSignal(this.PROBE_CHANNEL[probeIndex]);

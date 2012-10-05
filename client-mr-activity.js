@@ -2337,7 +2337,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
       var section = sparks.activityController.currentSection;
 
       if (name === 'connect') {
-          if (args[0] === 'probe') {
+          if (args[0] === 'probe' && !!args[2]) {
             section.meter.setProbeLocation(args[1], args[2]);
           }
           if (args[0] === 'component') {
