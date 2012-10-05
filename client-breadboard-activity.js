@@ -4264,7 +4264,6 @@ sparks.createQuestionsCSV = function(data) {
     $('.comboButton').removeClass('active');
 
     $('.channelA button').addClass('active')
-    $('.vscale.channel2').html($('.vscale.channel1').html());
 
     if (this.model.showAminusB) {
       $('#AminusB').addClass('active');
@@ -8554,6 +8553,7 @@ sparks.createQuestionsCSV = function(data) {
         this.showAminusB = !this.showAminusB;
         if (this.showAminusB) {
           this.showAplusB = false;
+          this.setVerticalScale(1, this._verticalScale[1]);
         }
       },
 
@@ -8561,6 +8561,7 @@ sparks.createQuestionsCSV = function(data) {
         this.showAplusB = !this.showAplusB;
         if (this.showAplusB) {
           this.showAminusB = false;
+          setVerticalScale(1, this._verticalScale[1]);
         }
       },
 

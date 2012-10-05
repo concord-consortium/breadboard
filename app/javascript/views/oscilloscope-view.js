@@ -339,7 +339,7 @@
     }
 
     // force-render both signals to make them dim/brighten. Rendering these will
-    // automatically call the rendering of the combo trace is applicable
+    // automatically call the rendering of the combo trace if applicable
     this.renderSignal(1, true, this.previousPhaseOffset);
     this.renderSignal(2, true, this.previousPhaseOffset);
 
@@ -347,7 +347,6 @@
     $('.comboButton').removeClass('active');
 
     $('.channelA button').addClass('active')
-    $('.vscale.channel2').html($('.vscale.channel1').html());
 
     if (this.model.showAminusB) {
       $('#AminusB').addClass('active');

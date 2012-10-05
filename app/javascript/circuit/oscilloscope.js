@@ -213,6 +213,7 @@
         this.showAminusB = !this.showAminusB;
         if (this.showAminusB) {
           this.showAplusB = false;
+          this.setVerticalScale(1, this._verticalScale[1]);
         }
       },
 
@@ -220,6 +221,7 @@
         this.showAplusB = !this.showAplusB;
         if (this.showAplusB) {
           this.showAminusB = false;
+          setVerticalScale(1, this._verticalScale[1]);
         }
       },
 
