@@ -3166,7 +3166,7 @@ sparks.createQuestionsCSV = function(data) {
      },
 
      hidePopups: function() {
-       $('.ui-dialog').remove();
+       $('.ui-dialog').empty().remove();
      },
 
      setEmbeddingTargets: function(targets) {

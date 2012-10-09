@@ -137,7 +137,7 @@
      },
 
      hidePopups: function() {
-       $('.ui-dialog').remove();
+       $('.ui-dialog').empty().remove();
      },
 
      // not usually necessary. Justs for tests?
