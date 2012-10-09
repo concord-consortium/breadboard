@@ -15,6 +15,8 @@
       this._horizontalScale = initHorizontalScale;
   	  this.showAminusB = false;
   	  this.showAplusB = false;
+      this.AminusBwasOn = false;  // whether A-B was turned on during current question
+      this.AplusBwasOn = false;
     };
 
     sparks.circuit.Oscilloscope.prototype = {
@@ -212,6 +214,7 @@
       toggleShowAminusB: function() {
         this.showAminusB = !this.showAminusB;
         if (this.showAminusB) {
+          this.AminusBwasOn = true;
           this.showAplusB = false;
           this.setVerticalScale(1, this._verticalScale[1]);
         }
@@ -220,8 +223,22 @@
       toggleShowAplusB: function() {
         this.showAplusB = !this.showAplusB;
         if (this.showAplusB) {
+          this.AplusBwasOn = true;
           this.showAminusB = false;
           this.setVerticalScale(1, this._verticalScale[1]);
+        }
+      },
+
+      /**
+        if A-B or A+B is off right now, set AminusBwasOn and/or
+        AplusBwasOn to false now.
+      */
+      resetABforQuestion: function() {
+        if (!this.showAminusB) {
+          this.AminusBwasOn = false;
+        }
+        if (!this.showAplusB) {
+          this.AplusBwasOn = false;
         }
       },
 

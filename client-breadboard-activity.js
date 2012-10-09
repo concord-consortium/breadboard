@@ -3442,6 +3442,9 @@ sparks.createQuestionsCSV = function(data) {
           question.meta.oscopeScaleQuality = section.meter.oscope.getGoodnessOfScale();
           question.meta.yellowProbe = section.meter.oscope.probeLocation[0] ? board.getHole(section.meter.oscope.probeLocation[0]).nodeName() : null;
           question.meta.pinkProbe = section.meter.oscope.probeLocation[1] ? board.getHole(section.meter.oscope.probeLocation[1]).nodeName() : null;
+          question.meta.AminusB = section.meter.oscope.AminusBwasOn;
+          question.meta.AplusB = section.meter.oscope.AplusBwasOn;
+          section.meter.oscope.resetABforQuestion();
         }
       }
 
@@ -8363,6 +8366,8 @@ sparks.createQuestionsCSV = function(data) {
       this._horizontalScale = initHorizontalScale;
   	  this.showAminusB = false;
   	  this.showAplusB = false;
+      this.AminusBwasOn = false;  // whether A-B was turned on during current question
+      this.AplusBwasOn = false;
     };
 
     sparks.circuit.Oscilloscope.prototype = {
@@ -8552,6 +8557,7 @@ sparks.createQuestionsCSV = function(data) {
       toggleShowAminusB: function() {
         this.showAminusB = !this.showAminusB;
         if (this.showAminusB) {
+          this.AminusBwasOn = true;
           this.showAplusB = false;
           this.setVerticalScale(1, this._verticalScale[1]);
         }
@@ -8560,8 +8566,22 @@ sparks.createQuestionsCSV = function(data) {
       toggleShowAplusB: function() {
         this.showAplusB = !this.showAplusB;
         if (this.showAplusB) {
+          this.AplusBwasOn = true;
           this.showAminusB = false;
           this.setVerticalScale(1, this._verticalScale[1]);
+        }
+      },
+
+      /**
+        if A-B or A+B is off right now, set AminusBwasOn and/or
+        AplusBwasOn to false now.
+      */
+      resetABforQuestion: function() {
+        if (!this.showAminusB) {
+          this.AminusBwasOn = false;
+        }
+        if (!this.showAplusB) {
+          this.AplusBwasOn = false;
         }
       },
 
