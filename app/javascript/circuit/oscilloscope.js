@@ -40,6 +40,8 @@
         this._horizontalScale = initHorizontalScale;
         this.showAminusB = false;
         this.showAplusB = false;
+        this.AminusBwasOn = false;  // whether A-B was turned on during current question
+        this.AplusBwasOn = false;
       },
 
       setView: function(view) {
