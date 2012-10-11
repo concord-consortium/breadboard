@@ -184,6 +184,8 @@
 
       // can pass either a hole or a string
       Breadboard.prototype.getHole = function(hole) {
+        if (!hole) return;
+
         if (hole.name){
           if (!!this.holeMap[hole.name]){
             return this.getHole(this.holeMap[hole.getName()]);

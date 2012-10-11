@@ -224,8 +224,11 @@
         }
         if (section.meter.oscope) {
           question.meta.oscopeScaleQuality = section.meter.oscope.getGoodnessOfScale();
-          question.meta.pinkProbe = section.meter.oscope.probeLocation[0] ? board.getHole(section.meter.oscope.probeLocation[0]).nodeName() : null;
-          question.meta.yellowProbe = section.meter.oscope.probeLocation[1] ? board.getHole(section.meter.oscope.probeLocation[1]).nodeName() : null;
+          question.meta.yellowProbe = section.meter.oscope.probeLocation[0] ? board.getHole(section.meter.oscope.probeLocation[0]).nodeName() : null;
+          question.meta.pinkProbe = section.meter.oscope.probeLocation[1] ? board.getHole(section.meter.oscope.probeLocation[1]).nodeName() : null;
+          question.meta.AminusB = section.meter.oscope.AminusBwasOn;
+          question.meta.AplusB = section.meter.oscope.AplusBwasOn;
+          section.meter.oscope.resetABforQuestion();
         }
       }
 

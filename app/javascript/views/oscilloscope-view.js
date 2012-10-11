@@ -105,9 +105,6 @@
       }
 
       var self = this;
-      this.popup.bind('remove', function() {
-        self.popup = null;
-      });
 
       var scrollPosition = [
         self.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
@@ -121,6 +118,10 @@
       });
 
       window.scrollTo(scrollPosition[0], scrollPosition[1]);
+
+      $('.ui-dialog').bind('remove', function() {
+        self.popup = null;
+      });
     },
 
     /**
@@ -309,6 +310,7 @@
         left:      33,
         height:    23,
         width:     36,
+        fontSize:  12,
         position:  'absolute'
       }).click(function(){
         self._toggleComboButton(true);
@@ -319,6 +321,7 @@
         left:      74,
         height:    23,
         width:     36,
+        fontSize:  12,
         position:  'absolute'
       }).click(function(){
         self._toggleComboButton(false);
@@ -346,7 +349,7 @@
     }
 
     // force-render both signals to make them dim/brighten. Rendering these will
-    // automatically call the rendering of the combo trace is applicable
+    // automatically call the rendering of the combo trace if applicable
     this.renderSignal(1, true, this.previousPhaseOffset);
     this.renderSignal(2, true, this.previousPhaseOffset);
 
@@ -354,7 +357,6 @@
     $('.comboButton').removeClass('active');
 
     $('.channelA button').addClass('active')
-    $('.vscale.channel2').html($('.vscale.channel1').html());
 
     if (this.model.showAminusB) {
       $('#AminusB').addClass('active');

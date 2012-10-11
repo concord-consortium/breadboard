@@ -3002,20 +3002,23 @@ sparks.createQuestionsCSV = function(data) {
           this.divs.$fgDiv.append($fg);
           this.divs.$fgDiv.show();
         }
+        section.meter.reset()
 
         this.showDMM(section.show_multimeter);
         this.showOScope(section.show_oscilloscope);
         this.allowMoveYellowProbe(section.allow_move_yellow_probe);
         this.hidePinkProbe(section.hide_pink_probe);
 
-        section.meter.reset();
+        section.meter.update();
       }
 
-      this.layoutPage();
+      this.layoutPage(true);
     },
 
-    layoutPage: function() {
-      this.hidePopups();
+    layoutPage: function(hidePopups) {
+      if (hidePopups) {
+        this.hidePopups();
+      }
       if (!!sparks.sectionController.currentPage){
         this.divs.$questionsDiv.html('');
         var $page = sparks.sectionController.currentPage.view.getView();
@@ -3055,7 +3058,12 @@ sparks.createQuestionsCSV = function(data) {
      },
 
      hidePopups: function() {
-       $('.ui-dialog').remove();
+       $('.ui-dialog').empty().remove();
+       var section = sparks.activityController.currentSection;
+       if (section && section.meter) {
+        section.meter.reset();
+        section.meter.update();
+       }
      },
 
      setEmbeddingTargets: function(targets) {
@@ -3329,8 +3337,11 @@ sparks.createQuestionsCSV = function(data) {
         }
         if (section.meter.oscope) {
           question.meta.oscopeScaleQuality = section.meter.oscope.getGoodnessOfScale();
-          question.meta.pinkProbe = section.meter.oscope.probeLocation[0] ? board.getHole(section.meter.oscope.probeLocation[0]).nodeName() : null;
-          question.meta.yellowProbe = section.meter.oscope.probeLocation[1] ? board.getHole(section.meter.oscope.probeLocation[1]).nodeName() : null;
+          question.meta.yellowProbe = section.meter.oscope.probeLocation[0] ? board.getHole(section.meter.oscope.probeLocation[0]).nodeName() : null;
+          question.meta.pinkProbe = section.meter.oscope.probeLocation[1] ? board.getHole(section.meter.oscope.probeLocation[1]).nodeName() : null;
+          question.meta.AminusB = section.meter.oscope.AminusBwasOn;
+          question.meta.AplusB = section.meter.oscope.AplusBwasOn;
+          section.meter.oscope.resetABforQuestion();
         }
       }
 
@@ -3413,8 +3424,8 @@ sparks.createQuestionsCSV = function(data) {
             question.answer = parsedAnswer.val;
 
             question.meta.dmmDial = section.meter.dmm.dialPosition;
-            question.meta.blackProbe = board.getHole(section.meter.dmm.blackProbeConnection).nodeName();
-            question.meta.redProbe = board.getHole(section.meter.dmm.redProbeConnection).nodeName();
+            question.meta.blackProbe = section.meter.dmm.blackProbeConnection ? board.getHole(section.meter.dmm.blackProbeConnection).nodeName() : null;
+            question.meta.redProbe = section.meter.dmm.redProbeConnection ? board.getHole(section.meter.dmm.redProbeConnection).nodeName() : null;
 
             if (board.components.source && typeof board.components.source.frequency !== 'undefined') {
               question.meta.frequency = board.components.source.getFrequency();
@@ -3917,9 +3928,6 @@ sparks.createQuestionsCSV = function(data) {
       }
 
       var self = this;
-      this.popup.bind('remove', function() {
-        self.popup = null;
-      });
 
       var scrollPosition = [
         self.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
@@ -3933,6 +3941,10 @@ sparks.createQuestionsCSV = function(data) {
       });
 
       window.scrollTo(scrollPosition[0], scrollPosition[1]);
+
+      $('.ui-dialog').bind('remove', function() {
+        self.popup = null;
+      });
     },
 
     /**
@@ -4118,6 +4130,7 @@ sparks.createQuestionsCSV = function(data) {
         left:      33,
         height:    23,
         width:     36,
+        fontSize:  12,
         position:  'absolute'
       }).click(function(){
         self._toggleComboButton(true);
@@ -4128,6 +4141,7 @@ sparks.createQuestionsCSV = function(data) {
         left:      74,
         height:    23,
         width:     36,
+        fontSize:  12,
         position:  'absolute'
       }).click(function(){
         self._toggleComboButton(false);
@@ -4160,7 +4174,6 @@ sparks.createQuestionsCSV = function(data) {
     $('.comboButton').removeClass('active');
 
     $('.channelA button').addClass('active')
-    $('.vscale.channel2').html($('.vscale.channel1').html());
 
     if (this.model.showAminusB) {
       $('#AminusB').addClass('active');
@@ -6657,7 +6670,7 @@ window["breadboardView"].dmmDialMoved = function(value) {
       this.currentPageIndex = this.currentPageIndex+1;
       this.currentPage = nextPage;
 
-      sparks.activity.view.layoutPage();
+      sparks.activity.view.layoutPage(false);
 
       sparks.logController.startNewSession();
     },
@@ -7678,7 +7691,7 @@ window["breadboardView"].dmmDialMoved = function(value) {
       var section = sparks.activityController.currentSection;
 
       if (name === 'connect') {
-          if (args[0] === 'probe') {
+          if (args[0] === 'probe' && !!args[2]) {
             section.meter.setProbeLocation(args[1], args[2]);
           }
           if (args[0] === 'component') {
@@ -8699,6 +8712,8 @@ window["breadboardView"].dmmDialMoved = function(value) {
       };
 
       Breadboard.prototype.getHole = function(hole) {
+        if (!hole) return;
+
         if (hole.name){
           if (!!this.holeMap[hole.name]){
             return this.getHole(this.holeMap[hole.getName()]);
@@ -9631,8 +9646,10 @@ window["breadboardView"].dmmDialMoved = function(value) {
           initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
       this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
       this._horizontalScale = initHorizontalScale;
-	  this.showAminusB = false;
-	  this.showAplusB = false;
+  	  this.showAminusB = false;
+  	  this.showAplusB = false;
+      this.AminusBwasOn = false;  // whether A-B was turned on during current question
+      this.AplusBwasOn = false;
     };
 
     sparks.circuit.Oscilloscope.prototype = {
@@ -9647,15 +9664,17 @@ window["breadboardView"].dmmDialMoved = function(value) {
       INITIAL_VERTICAL_SCALE:   5,
 
       reset: function() {
-        this.probeLocation[0] = null;     // pink probe
-        this.probeLocation[1] = null;     // yellow probe
-        this.setProbeLocation("probe_yellow", "left_positive22");
+        this.probeLocation[0] = "left_positive22";      // yellow probe
+        this.probeLocation[1] = null;                   // pink probe
         this.signals = [];
         var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
             initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
         this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
         this._horizontalScale = initHorizontalScale;
-        this.update();
+        this.showAminusB = false;
+        this.showAplusB = false;
+        this.AminusBwasOn = false;  // whether A-B was turned on during current question
+        this.AplusBwasOn = false;
       },
 
       setView: function(view) {
@@ -9669,8 +9688,10 @@ window["breadboardView"].dmmDialMoved = function(value) {
       setProbeLocation: function(probe, location) {
         if (probe === "probe_yellow" || probe === "probe_pink") {
           var probeIndex = probe === "probe_yellow" ? 0 : 1;
-          this.probeLocation[probeIndex] = location;
-          this.update();
+          if (this.probeLocation[probeIndex] !== location) {
+            this.probeLocation[probeIndex] = location;
+            this.update();
+          }
         }
       },
 
@@ -9704,7 +9725,6 @@ window["breadboardView"].dmmDialMoved = function(value) {
               this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
               continue;
             }
-
             breadModel('query', null, null, this.updateWithData, this, [probeNode, probeIndex]);
           } else {
             this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
@@ -9821,14 +9841,31 @@ window["breadboardView"].dmmDialMoved = function(value) {
       toggleShowAminusB: function() {
         this.showAminusB = !this.showAminusB;
         if (this.showAminusB) {
+          this.AminusBwasOn = true;
           this.showAplusB = false;
+          this.setVerticalScale(1, this._verticalScale[1]);
         }
       },
 
       toggleShowAplusB: function() {
         this.showAplusB = !this.showAplusB;
         if (this.showAplusB) {
+          this.AplusBwasOn = true;
           this.showAminusB = false;
+          this.setVerticalScale(1, this._verticalScale[1]);
+        }
+      },
+
+      /**
+        if A-B or A+B is off right now, set AminusBwasOn and/or
+        AplusBwasOn to false now.
+      */
+      resetABforQuestion: function() {
+        if (!this.showAminusB) {
+          this.AminusBwasOn = false;
+        }
+        if (!this.showAplusB) {
+          this.AplusBwasOn = false;
         }
       },
 

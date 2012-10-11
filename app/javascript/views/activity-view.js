@@ -52,20 +52,23 @@
           this.divs.$fgDiv.append($fg);
           this.divs.$fgDiv.show();
         }
+        section.meter.reset()
 
         this.showDMM(section.show_multimeter);
         this.showOScope(section.show_oscilloscope);
         this.allowMoveYellowProbe(section.allow_move_yellow_probe);
         this.hidePinkProbe(section.hide_pink_probe);
 
-        section.meter.reset();
+        section.meter.update();
       }
 
-      this.layoutPage();
+      this.layoutPage(true);
     },
 
-    layoutPage: function() {
-      this.hidePopups();
+    layoutPage: function(hidePopups) {
+      if (hidePopups) {
+        this.hidePopups();
+      }
       if (!!sparks.sectionController.currentPage){
         this.divs.$questionsDiv.html('');
         var $page = sparks.sectionController.currentPage.view.getView();
@@ -106,7 +109,12 @@
      },
 
      hidePopups: function() {
-       $('.ui-dialog').remove();
+       $('.ui-dialog').empty().remove();
+       var section = sparks.activityController.currentSection;
+       if (section && section.meter) {
+        section.meter.reset();
+        section.meter.update();
+       }
      },
 
      // not usually necessary. Justs for tests?
