@@ -4233,6 +4233,7 @@ sparks.createQuestionsCSV = function(data) {
         left:      33,
         height:    23,
         width:     36,
+        fontSize:  12,
         position:  'absolute'
       }).click(function(){
         self._toggleComboButton(true);
@@ -4243,6 +4244,7 @@ sparks.createQuestionsCSV = function(data) {
         left:      74,
         height:    23,
         width:     36,
+        fontSize:  12,
         position:  'absolute'
       }).click(function(){
         self._toggleComboButton(false);
