@@ -105,14 +105,15 @@
       }
 
       var self = this;
-      this.popup.bind('remove', function() {
-        self.popup = null;
-      });
 
       this.popup.dialog('open').dialog("widget").position({
          my: 'left top',
          at: 'center top',
          of: $("#breadboard_wrapper")
+      });
+
+      $('.ui-dialog').bind('remove', function() {
+        self.popup = null;
       });
     },
 

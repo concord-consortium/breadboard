@@ -59,11 +59,13 @@
         section.meter.update();
       }
 
-      this.layoutPage();
+      this.layoutPage(true);
     },
 
-    layoutPage: function() {
-      this.hidePopups();
+    layoutPage: function(hidePopups) {
+      if (hidePopups) {
+        this.hidePopups();
+      }
       if (!!sparks.sectionController.currentPage){
         this.divs.$questionsDiv.html('');
         var $page = sparks.sectionController.currentPage.view.getView();
@@ -138,6 +140,11 @@
 
      hidePopups: function() {
        $('.ui-dialog').empty().remove();
+       var section = sparks.activityController.currentSection;
+       if (section && section.meter) {
+        section.meter.reset();
+        section.meter.update();
+       }
      },
 
      // not usually necessary. Justs for tests?

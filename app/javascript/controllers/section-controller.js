@@ -134,7 +134,7 @@
       this.currentPageIndex = this.currentPageIndex+1;
       this.currentPage = nextPage;
 
-      sparks.activity.view.layoutPage();
+      sparks.activity.view.layoutPage(false);
 
       sparks.logController.startNewSession();
     },
