@@ -3534,8 +3534,8 @@ sparks.createQuestionsCSV = function(data) {
             question.answer = parsedAnswer.val;
 
             question.meta.dmmDial = section.meter.dmm.dialPosition;
-            question.meta.blackProbe = board.getHole(section.meter.dmm.blackProbeConnection).nodeName();
-            question.meta.redProbe = board.getHole(section.meter.dmm.redProbeConnection).nodeName();
+            question.meta.blackProbe = section.meter.dmm.blackProbeConnection ? board.getHole(section.meter.dmm.blackProbeConnection).nodeName() : null;
+            question.meta.redProbe = section.meter.dmm.redProbeConnection ? board.getHole(section.meter.dmm.redProbeConnection).nodeName() : null;
 
             if (board.components.source && typeof board.components.source.frequency !== 'undefined') {
               question.meta.frequency = board.components.source.getFrequency();
@@ -7438,6 +7438,8 @@ sparks.createQuestionsCSV = function(data) {
       };
 
       Breadboard.prototype.getHole = function(hole) {
+        if (!hole) return;
+
         if (hole.name){
           if (!!this.holeMap[hole.name]){
             return this.getHole(this.holeMap[hole.getName()]);

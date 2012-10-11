@@ -63,8 +63,8 @@
             question.answer = parsedAnswer.val;
 
             question.meta.dmmDial = section.meter.dmm.dialPosition;
-            question.meta.blackProbe = board.getHole(section.meter.dmm.blackProbeConnection).nodeName();
-            question.meta.redProbe = board.getHole(section.meter.dmm.redProbeConnection).nodeName();
+            question.meta.blackProbe = section.meter.dmm.blackProbeConnection ? board.getHole(section.meter.dmm.blackProbeConnection).nodeName() : null;
+            question.meta.redProbe = section.meter.dmm.redProbeConnection ? board.getHole(section.meter.dmm.redProbeConnection).nodeName() : null;
 
             // save meta information about source frequency and amplitude if this is an AC reading
             if (board.components.source && typeof board.components.source.frequency !== 'undefined') {
