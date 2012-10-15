@@ -142,7 +142,9 @@
 
       clearSignal: function(channel) {
         delete this.signals[channel];
-        this.view.removeTrace(channel);
+        if (this.view) {
+          this.view.removeTrace(channel);
+        }
       },
 
       setHorizontalScale: function(scale) {
