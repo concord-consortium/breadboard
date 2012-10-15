@@ -3037,6 +3037,16 @@ sparks.createQuestionsCSV = function(data) {
          this.divs.$scopeDiv.append($scope);
          this.divs.$scopeDiv.show();
          sparks.activityController.currentSection.meter.oscope.setView(scopeView);
+
+         sparks.breadboardView.addOScope({
+              "yellow":{
+              "connection": "left_positive21",
+              "draggable": true
+            },"pink": {
+              "connection": "f22",
+              "draggable": true
+            }
+          });
        }
 
 
@@ -7653,17 +7663,19 @@ window["breadboardView"] = {
     };
 
     sparks.breadboardComm.probeAdded = function(meter, color, location) {
-      var section = sparks.activityController.currentSection
+      var section = sparks.activityController.currentSection;
       section.meter.setProbeLocation("probe_"+color, location);
     };
 
     sparks.breadboardComm.probeRemoved = function(meter, color) {
       console.log('woo Received: disconnect, ' + meter + '|probe|' + color);
+      var section = sparks.activityController.currentSection;
+      section.meter.setProbeLocation("probe_"+color, null);
     };
 
     sparks.breadboardComm.dmmDialMoved = function(value) {
       console.log('woo Received: multimeter_dial >> ' + value);
-      var section = sparks.activityController.currentSection
+      var section = sparks.activityController.currentSection;
       section.meter.dmm.dialPosition = value;
       section.meter.update();
     };

@@ -87,6 +87,16 @@
          this.divs.$scopeDiv.append($scope);
          this.divs.$scopeDiv.show();
          sparks.activityController.currentSection.meter.oscope.setView(scopeView);
+
+         sparks.breadboardView.addOScope({
+              "yellow":{
+              "connection": "left_positive21",
+              "draggable": true
+            },"pink": {
+              "connection": "f22",
+              "draggable": true
+            }
+          });
        }
 
 
