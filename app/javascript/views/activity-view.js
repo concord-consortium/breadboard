@@ -37,11 +37,20 @@
           sparks.flash.loaded = false;
           this.divs.$breadboardDiv.html('');
         }
+
+        var self = this;
         breadboardView.ready(function() {
           sparks.breadboardView = breadboardView.create("breadboard");
           // FIXME: view should accept battery as standard component via API
           sparks.breadboardView.addBattery("left_negative21,left_positive21");
           breadModel('updateView');
+
+          self.showDMM(section.show_multimeter);
+          self.showOScope(section.show_oscilloscope);
+          // this.allowMoveYellowProbe(section.allow_move_yellow_probe);
+          // this.hidePinkProbe(section.hide_pink_probe);
+
+          sparks.activityController.currentSection.meter.update();
         });
 
         var source = getBreadBoard().components.source;
@@ -52,14 +61,6 @@
           this.divs.$fgDiv.show();
         }
         section.meter.reset()
-
-        console.log("will show dmm? "+section.show_multimeter)
-        this.showDMM(section.show_multimeter);
-        this.showOScope(section.show_oscilloscope);
-        this.allowMoveYellowProbe(section.allow_move_yellow_probe);
-        this.hidePinkProbe(section.hide_pink_probe);
-
-        section.meter.update();
       }
 
       this.layoutPage(true);
