@@ -9,25 +9,26 @@ window["breadboardView"] = {
   "util" : {}
 };
 
-window["breadboardView"].connectionMade = function(component, location) {
-  console.log('Received: connect, component|' + component + '|' + location);
-};
 
-window["breadboardView"].connectionBroken = function(component, location) {
-  console.log('Received: disconnect, component|' + component + '|' + location);
-};
+// window["breadboardView"].connectionMade = function(component, location) {
+//   console.log('Received: connect, component|' + component + '|' + location);
+// };
 
-window["breadboardView"].probeAdded = function(meter, color, location) {
-  console.log('Received: connect, ' + meter + '|probe|' + color + '|' + location);
-};
+// window["breadboardView"].connectionBroken = function(component, location) {
+//   console.log('Received: disconnect, component|' + component + '|' + location);
+// };
 
-window["breadboardView"].probeRemoved = function(meter, color) {
-  console.log('Received: disconnect, ' + meter + '|probe|' + color);
-};
+// window["breadboardView"].probeAdded = function(meter, color, location) {
+//   console.log('Received: connect, ' + meter + '|probe|' + color + '|' + location);
+// };
 
-window["breadboardView"].dmmDialMoved = function(value) {
-  console.log('Received: multimeter_dial >> ' + value);
-};
+// window["breadboardView"].probeRemoved = function(meter, color) {
+//   console.log('Received: disconnect, ' + meter + '|probe|' + color);
+// };
+
+// window["breadboardView"].dmmDialMoved = function(value) {
+//   console.log('Received: multimeter_dial >> ' + value);
+// };
 
 /**
  * breadboardView # util # require
@@ -192,7 +193,9 @@ window["breadboardView"].dmmDialMoved = function(value) {
   };
 
   CircuitBoard.prototype.sendEventToModel = function(evName, params) {
-    breadboardView[evName](params[0], params[1], params[2]);
+    if (sparks && sparks.breadboardComm) {
+      sparks.breadboardComm[evName](params[0], params[1], params[2]);
+    }
   };
 
   CircuitBoard.prototype.addComponent = function(elem) {
@@ -1209,6 +1212,8 @@ window["breadboardView"].dmmDialMoved = function(value) {
   };
 
   primitive.mmbox.prototype.setState = function(state) {
+    console.log(">>>>>>>>>>>>")
+    console.log(state)
     this.bttn.attr('transform', 'rotate(' + state[0] + ')');
     this.state = state[1];
     this.board.sendEventToModel("dmmDialMoved", [this.state]);

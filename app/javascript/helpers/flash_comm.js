@@ -4,6 +4,32 @@
 
 (function () {
 
+    sparks.breadboardComm = {};
+
+    sparks.breadboardComm.connectionMade = function(component, location) {
+      console.log('woo Received: connect, component|' + component + '|' + location);
+    };
+
+    sparks.breadboardComm.connectionBroken = function(component, location) {
+      console.log('woo Received: disconnect, component|' + component + '|' + location);
+    };
+
+    sparks.breadboardComm.probeAdded = function(meter, color, location) {
+      var section = sparks.activityController.currentSection
+      section.meter.setProbeLocation("probe_"+color, location);
+    };
+
+    sparks.breadboardComm.probeRemoved = function(meter, color) {
+      console.log('woo Received: disconnect, ' + meter + '|probe|' + color);
+    };
+
+    sparks.breadboardComm.dmmDialMoved = function(value) {
+      console.log('woo Received: multimeter_dial >> ' + value);
+      var section = sparks.activityController.currentSection
+      section.meter.dmm.dialPosition = value;
+      section.meter.update();
+    };
+
     sparks.flash = {};
 
     sparks.flash.loaded = false;

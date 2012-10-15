@@ -54,6 +54,7 @@
         }
         section.meter.reset()
 
+        console.log("will show dmm? "+section.show_multimeter)
         this.showDMM(section.show_multimeter);
         this.showOScope(section.show_oscilloscope);
         this.allowMoveYellowProbe(section.allow_move_yellow_probe);
@@ -88,6 +89,8 @@
          sparks.activityController.currentSection.meter.oscope.setView(scopeView);
        }
 
+
+
          sparks.flash.sendCommand('set_oscope_probe_visibility',visible.toString());
 
          if (visible) {
@@ -96,8 +99,20 @@
      },
 
      showDMM: function(visible) {
-       sparks.flash.sendCommand('set_multimeter_visibility',visible.toString());
-       sparks.flash.sendCommand('set_probe_visibility',visible.toString());
+      if (visible) {
+       sparks.breadboardView.addDMM({
+            "dial": "dcv_20",
+            "black":{
+            "connection": "g12",
+            "draggable": true
+          },"red": {
+            "connection": "f3",
+            "draggable": true
+          }
+        });
+      }
+       //sparks.flash.sendCommand('set_multimeter_visibility',visible.toString());
+       //sparks.flash.sendCommand('set_probe_visibility',visible.toString());
      },
 
      allowMoveYellowProbe: function(allow) {

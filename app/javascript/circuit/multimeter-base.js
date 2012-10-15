@@ -286,7 +286,10 @@
             text = this.disable_multimeter_position(text);
             if (text !== this.displayText) {
               console.log('text=' + text);
-              flash.sendCommand('set_multimeter_display', text);
+              if (sparks.breadboardView) {
+                sparks.breadboardView.setDMMText(text);
+              }
+              // flash.sendCommand('set_multimeter_display', text);
               this.displayText = text;
               this.currentValue = parseFloat(text.replace(/[^\d\.]/g, ""));
             }

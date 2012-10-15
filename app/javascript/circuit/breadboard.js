@@ -488,7 +488,7 @@
         },
         updateView: function() {
           $.each(breadBoard.components, function(i, component) {
-            if (component.getViewArguments && component.hasValidConnections()) {
+            if (component.getViewArguments && component.hasValidConnections() && component.kind !== "battery") {
               sparks.breadboardView.addComponent(component.getViewArguments());
             }
           });

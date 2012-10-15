@@ -3004,6 +3004,7 @@ sparks.createQuestionsCSV = function(data) {
         }
         section.meter.reset()
 
+        console.log("will show dmm? "+section.show_multimeter)
         this.showDMM(section.show_multimeter);
         this.showOScope(section.show_oscilloscope);
         this.allowMoveYellowProbe(section.allow_move_yellow_probe);
@@ -3038,6 +3039,8 @@ sparks.createQuestionsCSV = function(data) {
          sparks.activityController.currentSection.meter.oscope.setView(scopeView);
        }
 
+
+
          sparks.flash.sendCommand('set_oscope_probe_visibility',visible.toString());
 
          if (visible) {
@@ -3046,8 +3049,18 @@ sparks.createQuestionsCSV = function(data) {
      },
 
      showDMM: function(visible) {
-       sparks.flash.sendCommand('set_multimeter_visibility',visible.toString());
-       sparks.flash.sendCommand('set_probe_visibility',visible.toString());
+      if (visible) {
+       sparks.breadboardView.addDMM({
+            "dial": "dcv_20",
+            "black":{
+            "connection": "g12",
+            "draggable": true
+          },"red": {
+            "connection": "f3",
+            "draggable": true
+          }
+        });
+      }
      },
 
      allowMoveYellowProbe: function(allow) {
@@ -4843,25 +4856,11 @@ window["breadboardView"] = {
   "util" : {}
 };
 
-window["breadboardView"].connectionMade = function(component, location) {
-  console.log('Received: connect, component|' + component + '|' + location);
-};
 
-window["breadboardView"].connectionBroken = function(component, location) {
-  console.log('Received: disconnect, component|' + component + '|' + location);
-};
 
-window["breadboardView"].probeAdded = function(meter, color, location) {
-  console.log('Received: connect, ' + meter + '|probe|' + color + '|' + location);
-};
 
-window["breadboardView"].probeRemoved = function(meter, color) {
-  console.log('Received: disconnect, ' + meter + '|probe|' + color);
-};
 
-window["breadboardView"].dmmDialMoved = function(value) {
-  console.log('Received: multimeter_dial >> ' + value);
-};
+
 
 
 (function($, board) {
@@ -5001,7 +5000,9 @@ window["breadboardView"].dmmDialMoved = function(value) {
   };
 
   CircuitBoard.prototype.sendEventToModel = function(evName, params) {
-    breadboardView[evName](params[0], params[1], params[2]);
+    if (sparks && sparks.breadboardComm) {
+      sparks.breadboardComm[evName](params[0], params[1], params[2]);
+    }
   };
 
   CircuitBoard.prototype.addComponent = function(elem) {
@@ -5963,6 +5964,8 @@ window["breadboardView"].dmmDialMoved = function(value) {
   };
 
   primitive.mmbox.prototype.setState = function(state) {
+    console.log(">>>>>>>>>>>>")
+    console.log(state)
     this.bttn.attr('transform', 'rotate(' + state[0] + ')');
     this.state = state[1];
     this.board.sendEventToModel("dmmDialMoved", [this.state]);
@@ -7639,6 +7642,32 @@ window["breadboardView"].dmmDialMoved = function(value) {
 
 (function () {
 
+    sparks.breadboardComm = {};
+
+    sparks.breadboardComm.connectionMade = function(component, location) {
+      console.log('woo Received: connect, component|' + component + '|' + location);
+    };
+
+    sparks.breadboardComm.connectionBroken = function(component, location) {
+      console.log('woo Received: disconnect, component|' + component + '|' + location);
+    };
+
+    sparks.breadboardComm.probeAdded = function(meter, color, location) {
+      var section = sparks.activityController.currentSection
+      section.meter.setProbeLocation("probe_"+color, location);
+    };
+
+    sparks.breadboardComm.probeRemoved = function(meter, color) {
+      console.log('woo Received: disconnect, ' + meter + '|probe|' + color);
+    };
+
+    sparks.breadboardComm.dmmDialMoved = function(value) {
+      console.log('woo Received: multimeter_dial >> ' + value);
+      var section = sparks.activityController.currentSection
+      section.meter.dmm.dialPosition = value;
+      section.meter.update();
+    };
+
     sparks.flash = {};
 
     sparks.flash.loaded = false;
@@ -8984,7 +9013,7 @@ window["breadboardView"].dmmDialMoved = function(value) {
         },
         updateView: function() {
           $.each(breadBoard.components, function(i, component) {
-            if (component.getViewArguments && component.hasValidConnections()) {
+            if (component.getViewArguments && component.hasValidConnections() && component.kind !== "battery") {
               sparks.breadboardView.addComponent(component.getViewArguments());
             }
           });
@@ -9304,7 +9333,9 @@ window["breadboardView"].dmmDialMoved = function(value) {
             text = this.disable_multimeter_position(text);
             if (text !== this.displayText) {
               console.log('text=' + text);
-              flash.sendCommand('set_multimeter_display', text);
+              if (sparks.breadboardView) {
+                sparks.breadboardView.setDMMText(text);
+              }
               this.displayText = text;
               this.currentValue = parseFloat(text.replace(/[^\d\.]/g, ""));
             }
