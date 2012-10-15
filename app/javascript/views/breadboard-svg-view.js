@@ -1212,8 +1212,6 @@ window["breadboardView"] = {
   };
 
   primitive.mmbox.prototype.setState = function(state) {
-    console.log(">>>>>>>>>>>>")
-    console.log(state)
     this.bttn.attr('transform', 'rotate(' + state[0] + ')');
     this.state = state[1];
     this.board.sendEventToModel("dmmDialMoved", [this.state]);

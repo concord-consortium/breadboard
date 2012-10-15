@@ -2688,12 +2688,32 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
 
     sparks.breadboardComm = {};
 
-    sparks.breadboardComm.connectionMade = function(component, location) {
-      console.log('woo Received: connect, component|' + component + '|' + location);
+    sparks.breadboardComm.connectionMade = function(component, hole) {
+      var section = sparks.activityController.currentSection;
+      if (hole === "left_positive21" || hole === "left_negative21") {
+        hole = hole.replace("2", "");
+      }
+      if (!!hole){
+        breadModel('unmapHole', hole);
+      }
+      sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+        "type": "connect lead",
+        "location": hole});
+      section.meter.update();
     };
 
-    sparks.breadboardComm.connectionBroken = function(component, location) {
-      console.log('woo Received: disconnect, component|' + component + '|' + location);
+    sparks.breadboardComm.connectionBroken = function(component, hole) {
+      var section = sparks.activityController.currentSection;
+      if (hole === "left_positive21" || hole === "left_negative21") {
+        hole = hole.replace("2", "");
+      }
+      var newHole = breadModel('getGhostHole', hole+"ghost");
+
+      breadModel('mapHole', hole, newHole.nodeName());
+      sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+        "type": "disconnect lead",
+        "location": hole});
+      section.meter.update();
     };
 
     sparks.breadboardComm.probeAdded = function(meter, color, location) {
@@ -2702,13 +2722,11 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
     };
 
     sparks.breadboardComm.probeRemoved = function(meter, color) {
-      console.log('woo Received: disconnect, ' + meter + '|probe|' + color);
       var section = sparks.activityController.currentSection;
       section.meter.setProbeLocation("probe_"+color, null);
     };
 
     sparks.breadboardComm.dmmDialMoved = function(value) {
-      console.log('woo Received: multimeter_dial >> ' + value);
       var section = sparks.activityController.currentSection;
       section.meter.dmm.dialPosition = value;
       section.meter.update();

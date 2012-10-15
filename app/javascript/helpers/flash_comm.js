@@ -6,12 +6,35 @@
 
     sparks.breadboardComm = {};
 
-    sparks.breadboardComm.connectionMade = function(component, location) {
-      console.log('woo Received: connect, component|' + component + '|' + location);
+    sparks.breadboardComm.connectionMade = function(component, hole) {
+      var section = sparks.activityController.currentSection;
+      if (hole === "left_positive21" || hole === "left_negative21") {
+        // bad hardcoding: pretending left_positive21 (power lead connection) == left_positive1 (source connection)
+        hole = hole.replace("2", "");
+      }
+      // for now, we're just dealing with the situation of replacing one lead that had been lifted
+      if (!!hole){
+        breadModel('unmapHole', hole);
+      }
+      sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+        "type": "connect lead",
+        "location": hole});
+      section.meter.update();
     };
 
-    sparks.breadboardComm.connectionBroken = function(component, location) {
-      console.log('woo Received: disconnect, component|' + component + '|' + location);
+    sparks.breadboardComm.connectionBroken = function(component, hole) {
+      var section = sparks.activityController.currentSection;
+      if (hole === "left_positive21" || hole === "left_negative21") {
+          // bad hardcoding: pretending left_positive21 (power lead connection) == left_positive1 (source connection)
+        hole = hole.replace("2", "");
+      }
+      var newHole = breadModel('getGhostHole', hole+"ghost");
+
+      breadModel('mapHole', hole, newHole.nodeName());
+      sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
+        "type": "disconnect lead",
+        "location": hole});
+      section.meter.update();
     };
 
     sparks.breadboardComm.probeAdded = function(meter, color, location) {
