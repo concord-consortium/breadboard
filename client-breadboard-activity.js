@@ -5659,7 +5659,7 @@ window["breadboardView"] = {
     if (angle > 90 || angle < -90) {
       angle += 180;
     }
-    resistor.attr('transform', 'matrix(1 0 0 1 ' + parseInt((pts[0].x + pts[1].x) / 2, 10) + ' ' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
+    resistor.attr('transform', 'matrix(1 0 0 1 ' + (parseInt((pts[0].x + pts[1].x) / 2, 10)+120) + ' ' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
 
     band.each(function(i) {
       if (i != (colors.length - 1)) {
