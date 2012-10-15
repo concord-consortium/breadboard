@@ -6168,7 +6168,7 @@ window["breadboardView"] = {
   var $ready = false; // flag, all critical objects built
   var $stack = []; // stack of callback functions
 
-  board.util.require(["../../common/images/sparks.breadboard.svg"], function(data) {
+  board.util.require(["common/images/sparks.breadboard.svg"], function(data) {
     paper = $(data["sparks.breadboard"]);
     SVGStorage = new SVGStorage(paper);
     $ready = true;
