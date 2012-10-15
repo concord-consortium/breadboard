@@ -41,9 +41,8 @@
           sparks.breadboardView = breadboardView.create("breadboard");
           // FIXME: view should accept battery as standard component via API
           sparks.breadboardView.addBattery("left_negative21,left_positive21");
+          breadModel('updateView');
         });
-
-        breadModel('updateView');
 
         var source = getBreadBoard().components.source;
         if (source.frequency) {

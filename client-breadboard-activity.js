@@ -2991,9 +2991,8 @@ sparks.createQuestionsCSV = function(data) {
         breadboardView.ready(function() {
           sparks.breadboardView = breadboardView.create("breadboard");
           sparks.breadboardView.addBattery("left_negative21,left_positive21");
+          breadModel('updateView');
         });
-
-        breadModel('updateView');
 
         var source = getBreadBoard().components.source;
         if (source.frequency) {
