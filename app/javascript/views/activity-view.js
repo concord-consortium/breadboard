@@ -22,6 +22,7 @@
       var section = sparks.activityController.currentSection;
 
       $('#loading').hide();
+      this.divs.$breadboardDiv.hide();
 
       this.divs.$titleDiv.text(section.title);
 
@@ -33,10 +34,8 @@
       }
 
       if (!!section.circuit && !section.hide_circuit){
-        if (sparks.flash.loaded){
-          sparks.flash.loaded = false;
-          this.divs.$breadboardDiv.html('');
-        }
+        this.divs.$breadboardDiv.show();
+        this.divs.$breadboardDiv.html('');
 
         var self = this;
         breadboardView.ready(function() {

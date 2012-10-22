@@ -124,8 +124,6 @@
 
       $('.report').html('');
       if (!!finalReport){
-        sparks.flash.loaded = false;
-        sparks.activity.view.setFlashLoaded(false);
         $('#image').html('');
         $('#breadboard_wrapper').children().html('').hide();
       }

@@ -2973,6 +2973,7 @@ sparks.createQuestionsCSV = function(data) {
       var section = sparks.activityController.currentSection;
 
       $('#loading').hide();
+      this.divs.$breadboardDiv.hide();
 
       this.divs.$titleDiv.text(section.title);
 
@@ -2984,10 +2985,8 @@ sparks.createQuestionsCSV = function(data) {
       }
 
       if (!!section.circuit && !section.hide_circuit){
-        if (sparks.flash.loaded){
-          sparks.flash.loaded = false;
-          this.divs.$breadboardDiv.html('');
-        }
+        this.divs.$breadboardDiv.show();
+        this.divs.$breadboardDiv.html('');
 
         var self = this;
         breadboardView.ready(function() {
@@ -3261,8 +3260,6 @@ sparks.createQuestionsCSV = function(data) {
 
       $('.report').html('');
       if (!!finalReport){
-        sparks.flash.loaded = false;
-        sparks.activity.view.setFlashLoaded(false);
         $('#image').html('');
         $('#breadboard_wrapper').children().html('').hide();
       }
@@ -4973,7 +4970,9 @@ window["breadboardView"] = {
   };
   var CircuitBoard = function(id) {
     var self = this;
-    this.holder = $('#' + id).html('').append(paper).addClass('circuit-board');
+    this.holder = $('#' + id).html('').append(
+      SVGStorage.create('board')
+    ).addClass('circuit-board');
 
     this.workspace = this.holder.find("[item=components]");
     this.holes = {
@@ -5004,6 +5003,7 @@ window["breadboardView"] = {
     this.battery = null;
 
     primitive.prototype.initLeadDraggable(this);
+    primitive.prototype.initProbeDraggable(this);
     primitive.prototype.initComponentDraggable(this);
   };
 
@@ -5097,13 +5097,13 @@ window["breadboardView"] = {
   };
 
   CircuitBoard.prototype.toFront = function(component) {
-    var self = this; // resolve crash in Google Chrome by changing environment
+    var self = this;
     setTimeout(function() {
       var i = component.view.index();
       var redrawId = component.view[0].ownerSVGElement.suspendRedraw(50);
-      self.workspace.prepend(component.view.parent().children(':gt('+i+')'));
+      self.workspace.prepend(component.view.parent().children(':gt(' + i + ')'));
       component.view[0].ownerSVGElement.unsuspendRedraw(redrawId);
-    },50)
+    }, 50);
   };
 
   var CircuitBoardHole = function(elem) {
@@ -5218,7 +5218,7 @@ window["breadboardView"] = {
     this.element = new primitive.connector(this.pts, this.angle, [color, color]);
     this.connector = this.element;
     this.view.append(this.element.view, this.leads[0].view, this.leads[1].view);
-    component.prototype.drag.call(this, params.draggable);
+    component.prototype.drag.call(this, params.draggable, params.type);
   };
 
   component.inductor = function(params, holes, board) {
@@ -5246,11 +5246,14 @@ window["breadboardView"] = {
     component.prototype.drag.call(this, params.draggable);
   };
 
-  component.prototype.drag = function(draggable) {
+  component.prototype.drag = function(draggable, type) {
     if (draggable) {
       var self = this;
       this.x = 0;
       this.y = 0;
+      if (type == 'wire') {
+        this.view.find('[drag=area]').attr('display', 'inline');
+      }
       this.element.view[0].addEventListener(_mousedown, function(evt) {
         self.element.view.data('component', self);
         evt._target = this;
@@ -5384,7 +5387,7 @@ window["breadboardView"] = {
     }, p2 = {
       x : 0,
       y : 0
-    }, deg, hi,ho, hn;
+    }, deg, hi, ho, hn;
 
     board.holder[0].addEventListener(_mousedown, function(evt) {
       lead_this = $(evt.target).data('primitive-lead') || null;
@@ -5696,10 +5699,6 @@ window["breadboardView"] = {
   };
 
   primitive.prototype.initProbeDraggable = function(board) {
-    if (primitive.prototype._initProbeDraggable) {
-      return;
-    }
-
     var active, lead_new, lead_old, lead_init, point;
     var s_pos, c_pos, x, y, dx, dy, coeff = 20;
 
@@ -5758,15 +5757,12 @@ window["breadboardView"] = {
         active.dy = y;
         if (lead_new) {
           active.setState(lead_new);
-        } else
-        if (active.lead) {
+        } else if (active.lead) {
           active.lead = null;
         }
         active = null;
       }
     }, false);
-
-    primitive.prototype._initProbeDraggable = true;
   };
 
   primitive.probe = function(board, params) {
@@ -5805,7 +5801,6 @@ window["breadboardView"] = {
       }
     }
 
-    primitive.prototype.initProbeDraggable(board);
   };
 
   primitive.probe.prototype.setState = function(lead) {
@@ -5864,7 +5859,6 @@ window["breadboardView"] = {
       });
       this.view.bind('mouseleave', function() {
         self.help.hide();
-        self.zoomOut();
       });
     }
 
@@ -5978,18 +5972,16 @@ window["breadboardView"] = {
   };
 
   primitive.mmbox.prototype.zoomOut = function() {
-    var self = this;
     this.item.attr('transform', 'scale(0.50)');
     this.over.show();
-    self.zoom = 0;
+    this.zoom = 0;
   };
 
   primitive.mmbox.prototype.zoomIn = function() {
-    var self = this;
     this.item.attr('transform', 'scale(1.00)');
     this.help.hide();
     this.over.hide();
-    self.zoom = 1;
+    this.zoom = 1;
   };
 
   primitive.btbox = function(board) {
@@ -6042,10 +6034,13 @@ window["breadboardView"] = {
   };
   var setConnectorView = function(elem, pts, deg) {
     var trn = 'matrix(1 0 0 1 ' + parseInt(pts[0].x, 10) + ' ' + parseInt(pts[0].y, 10) + ') rotate(' + deg + ',130,130)';
-    var leadLenght = 560;
+    var leadLenght = 560, coeff = 0.6;
     var dx = pts[0].x - pts[1].x, dy = pts[0].y - pts[1].y;
     var l = Math.sqrt(dx * dx + dy * dy) - leadLenght * 2;
-    var path = 'M 0 0 h ' + l / 0.6;
+    var path = 'M 0 0 h ' + l / coeff;
+    if (l > 0) {
+      elem.find('[drag=area]').attr('width', l / coeff);
+    }
     elem.attr('transform', trn);
     elem.find('[type=line]').each(function() {
       this.setAttribute('d', path);
@@ -6164,8 +6159,8 @@ window["breadboardView"] = {
 
   /* board object */
 
-  var $ready = false; // flag, all critical objects built
-  var $stack = []; // stack of callback functions
+  var $ready = false;
+  var $stack = [];
 
   board.util.require(["common/images/sparks.breadboard.svg"], function(data) {
     paper = $(data["sparks.breadboard"]);
