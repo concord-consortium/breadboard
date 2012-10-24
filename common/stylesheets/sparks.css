@@ -320,7 +320,7 @@ border-bottom-style:solid;
 #oscope_mini {
   background: url("../images/oscope_mini.png") no-repeat top left;
   position: absolute;
-  top: 10px;
+  top: 4px;
   left: 310px;
   z-index: 1;
 }
