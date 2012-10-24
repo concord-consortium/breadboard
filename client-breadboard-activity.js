@@ -7647,9 +7647,6 @@ window["breadboardView"] = {
 
     sparks.breadboardComm.connectionMade = function(component, hole) {
       var section = sparks.activityController.currentSection;
-      if (hole === "left_positive21" || hole === "left_negative21") {
-        hole = hole.replace("2", "");
-      }
       if (!!hole){
         breadModel('unmapHole', hole);
       }
@@ -7661,9 +7658,6 @@ window["breadboardView"] = {
 
     sparks.breadboardComm.connectionBroken = function(component, hole) {
       var section = sparks.activityController.currentSection;
-      if (hole === "left_positive21" || hole === "left_negative21") {
-        hole = hole.replace("2", "");
-      }
       var newHole = breadModel('getGhostHole', hole+"ghost");
 
       breadModel('mapHole', hole, newHole.nodeName());
@@ -8871,7 +8865,7 @@ window["breadboardView"] = {
           props.UID = interfaces.getUID(!!props.UID ? props.UID : props.kind);
 
           if (props.UID === "source" && !props.connections){
-            props.connections = "left_positive1,left_negative1";
+            props.connections = "left_positive21,left_negative21";
           }
 
           var newComponent = breadBoard.component(props);

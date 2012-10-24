@@ -8,10 +8,6 @@
 
     sparks.breadboardComm.connectionMade = function(component, hole) {
       var section = sparks.activityController.currentSection;
-      if (hole === "left_positive21" || hole === "left_negative21") {
-        // bad hardcoding: pretending left_positive21 (power lead connection) == left_positive1 (source connection)
-        hole = hole.replace("2", "");
-      }
       // for now, we're just dealing with the situation of replacing one lead that had been lifted
       if (!!hole){
         breadModel('unmapHole', hole);
@@ -24,10 +20,6 @@
 
     sparks.breadboardComm.connectionBroken = function(component, hole) {
       var section = sparks.activityController.currentSection;
-      if (hole === "left_positive21" || hole === "left_negative21") {
-          // bad hardcoding: pretending left_positive21 (power lead connection) == left_positive1 (source connection)
-        hole = hole.replace("2", "");
-      }
       var newHole = breadModel('getGhostHole', hole+"ghost");
 
       breadModel('mapHole', hole, newHole.nodeName());

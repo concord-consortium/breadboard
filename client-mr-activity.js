@@ -2690,9 +2690,6 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
 
     sparks.breadboardComm.connectionMade = function(component, hole) {
       var section = sparks.activityController.currentSection;
-      if (hole === "left_positive21" || hole === "left_negative21") {
-        hole = hole.replace("2", "");
-      }
       if (!!hole){
         breadModel('unmapHole', hole);
       }
@@ -2704,9 +2701,6 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
 
     sparks.breadboardComm.connectionBroken = function(component, hole) {
       var section = sparks.activityController.currentSection;
-      if (hole === "left_positive21" || hole === "left_negative21") {
-        hole = hole.replace("2", "");
-      }
       var newHole = breadModel('getGhostHole', hole+"ghost");
 
       breadModel('mapHole', hole, newHole.nodeName());
