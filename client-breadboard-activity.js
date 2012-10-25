@@ -6542,7 +6542,12 @@ sparks.createQuestionsCSV = function(data) {
 
     sparks.flash.getFlashMovie = function (movieName) {
       var isIE = navigator.appName.indexOf("Microsoft") != -1;
-      return (isIE) ? window[movieName] : document[movieName];
+      if (isIE) {
+        if (typeof (window[movieName].sendMessageToFlash) == 'function') {
+            return window[movieName];
+        }
+      }
+      return document[movieName];
     };
 
     sparks.flash.sendCommand = function () {

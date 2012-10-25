@@ -20,7 +20,14 @@
 
     sparks.flash.getFlashMovie = function (movieName) {
       var isIE = navigator.appName.indexOf("Microsoft") != -1;
-      return (isIE) ? window[movieName] : document[movieName];
+      if (isIE) {
+        if (typeof (window[movieName].sendMessageToFlash) == 'function') {
+            // < IE9
+            return window[movieName];
+        }
+      }
+      // non-IE or >= IE9
+      return document[movieName];
     };
 
     sparks.flash.sendCommand = function () {
