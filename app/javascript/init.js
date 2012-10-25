@@ -4,11 +4,11 @@
 //= require <jquery/plugins/jquery.url.packed>
 //= require <jquery/plugins/jquery.cookie>
 //= require <jquery/plugins/jquery.bgiframe.min>
-//= require <jquery/plugins/jquery.flash>
 //= require <jquery/plugins/jquery.couch>
 //= require <jquery/plugins/jquery.easyTooltip>
 //= require <jquery/plugins/jquery.tablesorter.min>
 //= require <jquery/plugins/jquery.event.drag-2.0.min>
+//= require <jquery/plugins/jquery.flashembed>
 //= require <data-source/couch-ds>
 //= require <helpers/util>
 //= require <helpers/unit>

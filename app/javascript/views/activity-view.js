@@ -75,18 +75,20 @@
     },
 
     loadFlash: function () {
-       this.divs.$breadboardDiv.show().css("z-index", 0);
-       this.divs.$breadboardDiv.flash({
-           src: 'activities/module-2/breadboardActivity1.swf',
-           id: 'breadboardActivity1',
-           name: 'breadboardActivity1',
-           width: 800,
-           height: 500,
-           quality: 'high',
-           allowFullScreen: false,
-           allowScriptAccess: 'sameDomain',
-           wmode: 'transparent'
-       });
+      this.divs.$breadboardDiv.show().css("z-index", 0);
+      this.divs.$breadboardDiv.flashembed(
+        {
+          src: 'activities/module-2/breadboardActivity1.swf',
+          id: 'breadboardActivity1',
+          name: 'breadboardActivity1',
+          width: 800,
+          height: 500,
+          quality: 'high',
+          allowFullScreen: false,
+          allowScriptAccess: 'sameDomain',
+          wmode: 'transparent'
+        }
+      );
      },
 
      setFlashLoaded: function(flashLoaded) {
