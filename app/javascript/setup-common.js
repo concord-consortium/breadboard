@@ -3,7 +3,7 @@
 /* FILE setup-common.js */
 
 (function () {
-    
+
     /*
      * Common initial setup for SPARKS activities
      */
@@ -15,36 +15,45 @@
     if (!console.log) {
         console.log = function () {};
     }
-    
+
     if (typeof debug === 'undefined' || !debug) {
         this.debug = function (x) { console.log(x); };
     }
-    
+
     // Setup namespaces
     if (typeof sparks === 'undefined' || !sparks) {
         this.sparks = {};
     }
-    
+
     if (!sparks.config) {
         sparks.config = {};
     }
-    
+
     if (!sparks.circuit) {
         sparks.circuit = {};
     }
-    
+
     if (!sparks.util) {
         sparks.util = {};
     }
-    
+
     if (!sparks.activities) {
         sparks.activities = {};
     }
 
     sparks.config.root_dir = '/sparks-content';
-    
-    
-    
+
+    // add forEach for IE
+    if ( !Array.prototype.forEach ) {
+      Array.prototype.forEach = function(fn, scope) {
+        for(var i = 0, len = this.length; i < len; ++i) {
+          fn.call(scope, this[i], i, this);
+        }
+      }
+    }
+
+
+
     // YUI-style inheritance
     sparks.extend = function(Child, Parent, properties) {
       var F = function() {};
@@ -59,5 +68,5 @@
       Child.parentConstructor = Parent;
       Child.uber = Parent.prototype;
     };
-    
+
 })();
