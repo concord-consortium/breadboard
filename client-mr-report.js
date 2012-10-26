@@ -1854,6 +1854,17 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 
     sparks.config.root_dir = '/sparks-content';
 
+    if ( !Array.prototype.indexOf ) {
+        Array.prototype.indexOf= function(find, i /*opt*/) {
+            if (i===undefined) i= 0;
+            if (i<0) i+= this.length;
+            if (i<0) i= 0;
+            for (var n= this.length; i<n; i++)
+                if (i in this && this[i]===find)
+                    return i;
+            return -1;
+        };
+    }
     if ( !Array.prototype.forEach ) {
       Array.prototype.forEach = function(fn, scope) {
         for(var i = 0, len = this.length; i < len; ++i) {
