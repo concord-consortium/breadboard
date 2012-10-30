@@ -10946,7 +10946,7 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
   sparks.activity_base_url = "http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/";
   sparks.activity_images_base_url = "http://couchdb.cosmos.concord.org/sparks/";
   sparks.tutorial_base_url = "tutorials/";
-  sparks.soundFiles = {click: "/common/sounds/click.ogg"}
+  sparks.soundFiles = {click: "common/sounds/click.ogg"}
 
   window._gaq = window._gaq || [];      // in case this script loads before the GA queue is created
 
