@@ -44,10 +44,14 @@
           sparks.breadboardView.addBattery("left_negative21,left_positive21");
           breadModel('updateView');
 
+          sparks.sound.mute = true;
+
           self.showDMM(section.show_multimeter);
           self.showOScope(section.show_oscilloscope);
           // this.allowMoveYellowProbe(section.allow_move_yellow_probe);
           // this.hidePinkProbe(section.hide_pink_probe);
+
+          sparks.sound.mute = false;
 
           sparks.activityController.currentSection.meter.update();
         });

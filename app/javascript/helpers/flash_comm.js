@@ -32,6 +32,7 @@
     sparks.breadboardComm.probeAdded = function(meter, color, location) {
       var section = sparks.activityController.currentSection;
       section.meter.setProbeLocation("probe_"+color, location);
+      sparks.sound.play(sparks.sound.click)
     };
 
     sparks.breadboardComm.probeRemoved = function(meter, color) {

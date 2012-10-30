@@ -66,6 +66,7 @@
   sparks.activity_base_url = "http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/";
   sparks.activity_images_base_url = "http://couchdb.cosmos.concord.org/sparks/";
   sparks.tutorial_base_url = "tutorials/";
+  sparks.soundFiles = {click: "/common/sounds/click.ogg"}
 
   window._gaq = window._gaq || [];      // in case this script loads before the GA queue is created
 
@@ -105,6 +106,8 @@
     if (!activityName){
       activityName = "series-interpretive";
     }
+
+    this.loadSounds();
 
     console.log("loading "+activityName);
     sparks.couchDS.loadActivity(activityName, function(activity) {
@@ -170,5 +173,30 @@
         window.location.href = "http://sparks.portal.concord.org";
       }
     });
+  };
+
+  this.loadSounds = function () {
+    var soundName, audio;
+
+    sparks.sound = {};
+
+    sparks.sound.mute = false;
+
+    sparks.sound.play = function (sound) {
+      if (!sparks.sound.mute) {
+        sound.play();
+      }
+    }
+
+    for (soundName in sparks.soundFiles) {
+      audio = new Audio();
+      audio.src = sparks.soundFiles[soundName];
+      Audio.prototype.playIfNotMuted = function() {
+        if (!sparks.sound.mute) {
+          this.play();
+        }
+      }
+      sparks.sound[soundName] = audio;
+    }
   };
 })();
