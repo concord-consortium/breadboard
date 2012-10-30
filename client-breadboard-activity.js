@@ -11062,13 +11062,13 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
     sparks.sound.mute = false;
 
     sparks.sound.play = function (sound) {
-      if (!!Audio && !sparks.sound.mute) {
+      if (!!window.Audio && !sparks.sound.mute) {
         sound.play();
       }
     }
 
     for (soundName in sparks.soundFiles) {
-      if (!!Audio) {
+      if (!!window.Audio) {
         audio = new Audio();
         audio.src = sparks.soundFiles[soundName];
         sparks.sound[soundName] = audio;
