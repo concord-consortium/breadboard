@@ -11062,20 +11062,17 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
     sparks.sound.mute = false;
 
     sparks.sound.play = function (sound) {
-      if (!sparks.sound.mute) {
+      if (!!Audio && !sparks.sound.mute) {
         sound.play();
       }
     }
 
     for (soundName in sparks.soundFiles) {
-      audio = new Audio();
-      audio.src = sparks.soundFiles[soundName];
-      Audio.prototype.playIfNotMuted = function() {
-        if (!sparks.sound.mute) {
-          this.play();
-        }
+      if (!!Audio) {
+        audio = new Audio();
+        audio.src = sparks.soundFiles[soundName];
+        sparks.sound[soundName] = audio;
       }
-      sparks.sound[soundName] = audio;
     }
   };
 })();
