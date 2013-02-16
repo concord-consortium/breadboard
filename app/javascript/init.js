@@ -1,4 +1,5 @@
 //= require "setup-common"
+//= require <circuitSolver.min>
 //= require <jquery/jquery-1.4.2.min>
 //= require <jquery/jquery-ui-1.8.custom.min>
 //= require <jquery/plugins/jquery.url.packed>
