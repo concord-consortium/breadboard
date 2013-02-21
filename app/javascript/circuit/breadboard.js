@@ -444,47 +444,59 @@
           var tempComponents = [];
 
           // add DMM components as necessary
-          if (!!type && type === 'resistance') {
+          if (type === 'resistance') {
             connections = connections.split(',');
             var ghost = new GhostHole();
             var ohmmeterBattery = breadBoard.component({
               UID: 'ohmmeterBattery',
               kind: 'battery',
               voltage: 1,
-              connections: [connections[0], ghost]});
-            var currentProbe = breadBoard.component({
-              UID: 'meter',
-              kind: 'iprobe',
-              connections: [connections[1], ghost]});
-            tempComponents.push(ohmmeterBattery, currentProbe);
-          } else if (!!type) {
-            if (type === 'voltage'){
-              var voltmeterResistor = breadBoard.component({
-                UID: 'voltmeterResistor',
-                kind: 'resistor',
-                resistance: 1e12,
-                connections: connections.split(',')});
-              tempComponents.push(voltmeterResistor);
-            }
-            var probe = breadBoard.component({
-              UID: 'meter',
-              kind: {'current' : 'iprobe', 'voltage' : 'vprobe', 'ac_voltage' : 'vprobe'}[type],
+              connections: [connections[0], connections[1]]});
+            // var currentProbe = breadBoard.component({
+            //   UID: 'meter',
+            //   kind: 'iprobe',
+            //   connections: [connections[1], ghost]});
+            tempComponents.push(ohmmeterBattery);
+          } else if (type === 'voltage'){
+            var voltmeterResistor = breadBoard.component({
+              UID: 'voltmeterResistor',
+              kind: 'resistor',
+              resistance: 1e12,
               connections: connections.split(',')});
-            tempComponents.push(probe);
+            tempComponents.push(voltmeterResistor);
+          } else if (type === 'current'){
+            var ammeterResistor = breadBoard.component({
+              UID: 'ammeterResistor',
+              kind: 'resistor',
+              resistance: 1e-6,
+              connections: connections.split(',')});
+            tempComponents.push(ammeterResistor);
+          } else if (type === 'oscope') {
+            var oscopeResistor = breadBoard.component({
+              UID: 'oscopeResistor',
+              kind: 'resistor',
+              resistance: 1e12,
+              connections: [connections, "gnd"]});
+            tempComponents.push(oscopeResistor);
           }
 
-          // get the result from qucsator
-          var netlist = q.makeNetlist(breadBoard),
-              resultObject;
+          var ciso = new CiSo();
 
-          q.qucsate(netlist, function (results) {
-            callback.call(context, results, callbackArgs);
-          } );
+          $.each(breadBoard.components, function(i, component) {
+            component.addCiSoComponent(ciso)
+          });
 
+          // if ohmmeter, set reference node
+          if (type === 'resistance') {
+            node = breadBoard.getHole(connections[1]).nodeName()
+            ciso.setReferenceNode(node);
+          }
           // destroy the temporary DMM components
           $.each(tempComponents, function(i, component){
             component.destroy();
           });
+
+          callback.call(context, ciso, callbackArgs);
         },
         updateView: function() {
           $.each(breadBoard.components, function(i, component) {
