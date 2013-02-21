@@ -30,10 +30,11 @@
           this.displayText = "";
           this.update();
         },
-        
+
         currentMeasurement: null,
-        
+
         update: function () {
+          console.log("update!")
           if (this.redProbeConnection && this.blackProbeConnection) {
             if (this.dialPosition.indexOf('dcv_') > -1){
               this.currentMeasurement = "voltage";
@@ -54,47 +55,54 @@
             this.updateWithData();
           }
         },
-        
+
         // this is called asynchronously after update() is called and qucs returns
-        updateWithData: function (resultsBlob) {
-          var measurement = this.currentMeasurement;
-          if (resultsBlob) {
-            var meterKey = (measurement === 'voltage' || measurement === 'ac_voltage') ? 'v' : 'i';
+        updateWithData: function (ciso) {
+          var measurement = this.currentMeasurement,
+              result;
+          if (ciso) {
+            var source = ciso.voltageSources[0],
+                b  = getBreadBoard(),
+                p1 = b.getHole(this.redProbeConnection).nodeName(),
+                p2 = b.getHole(this.blackProbeConnection).nodeName();
+            if (measurement === "resistance") {
+              if (p1 === p2) {
+                result = 0;
+              } else {
+                var current = ciso.getCurrent('ohmmeterBattery');
+                result = 1/current.magnitude;
+              }
+            } else if (measurement === "voltage" || measurement === "ac_voltage" || measurement === "current") {
+              var v1 = ciso.getVoltageAt(p1).magnitude,
+                  v2 = ciso.getVoltageAt(p2).magnitude,
+                  drop = v1 - v2;
 
-            if (!!meterKey && !!resultsBlob.meter[meterKey]){
-              // get the index of the data we want from the returned QUCS array
-              var index = this._getResultsIndex(resultsBlob);
+              if (measurement === "current") {
+                result = drop / 1e-6;
+              } else {
+                result = drop;
+              }
+            }
 
-              var result = resultsBlob.meter[meterKey][index];
-
-              // result is a complex number. for the DMM, we only care about the magnitude
-              result = result.magnitude;
-
-              // process the absolute value
-              result = Math.abs(result);
-
-              // now do any tweaking we need from that result:
-
+            if (result){
               // if in wrong voltage mode for AC/DC voltage, show zero
               var source = getBreadBoard().components.source;
               if (!!source &&
-                 ((measurement === 'voltage' && source.getQucsSimulationType().indexOf(".AC") > -1) ||
-                  (measurement === 'ac_voltage' && source.getQucsSimulationType().indexOf(".DC") > -1))) {
+                 ((measurement === 'voltage' && source.frequency) ||
+                  (measurement === 'ac_voltage' && source.frequency === 0))) {
                 result = 0;
-              } else if (measurement === 'resistance') {
-                result = 1 / result;
               } else if (measurement === "ac_voltage" ||
-                          (measurement === 'current' && source && source.getQucsSimulationType().indexOf(".AC") > -1)){
+                          (measurement === 'current' && source && source.frequency)){
                 // the following applies to both RMS voltage and RMS current
                 // first, if we are dealing with a function generator, scale by the appropriate scale factor
                 if (!!source.amplitudeScaleFactor || source.amplitudeScaleFactor === 0){
                   result = result * source.amplitudeScaleFactor;
                 }
-                result = result / Math.sqrt(2);         // RMS voltage or RMS cureent
+                result = result / Math.sqrt(2);         // RMS voltage or RMS current
               }
               result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
 
-              this.absoluteValue = result;
+              this.absoluteValue = Math.abs(result);
 
               if (measurement === "current" && this.absoluteValue > 0.44){
                 this.blowFuse();
