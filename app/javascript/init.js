@@ -1,6 +1,7 @@
 //= require "setup-common"
 //= require <jquery/jquery-1.8.1.min>
 //= require <jquery/jquery-ui-1.8.24.custom.min>
+//= require <circuitSolver.min>
 //= require <jquery/plugins/jquery.url.packed>
 //= require <jquery/plugins/jquery.cookie>
 //= require <jquery/plugins/jquery.flash>
