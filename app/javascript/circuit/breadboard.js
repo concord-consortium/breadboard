@@ -314,7 +314,7 @@
 
           // if uid is source, and no conections are specified, assume we are connecting to rails
           if (props.UID === "source" && !props.connections){
-            props.connections = "left_positive1,left_negative1";
+            props.connections = "left_positive21,left_negative21";
           }
 
           var newComponent = breadBoard.component(props);
