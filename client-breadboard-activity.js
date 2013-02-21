@@ -529,6 +529,7 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 * Includes: jquery.ui.slider.js
 * Copyright (c) 2012 AUTHORS.txt; Licensed MIT, GPL */
 (function(a,b){var c=5;a.widget("ui.slider",a.ui.mouse,{widgetEventPrefix:"slide",options:{animate:!1,distance:0,max:100,min:0,orientation:"horizontal",range:!1,step:1,value:0,values:null},_create:function(){var b=this,d=this.options,e=this.element.find(".ui-slider-handle").addClass("ui-state-default ui-corner-all"),f="<a class='ui-slider-handle ui-state-default ui-corner-all' href='#'></a>",g=d.values&&d.values.length||1,h=[];this._keySliding=!1,this._mouseSliding=!1,this._animateOff=!0,this._handleIndex=null,this._detectOrientation(),this._mouseInit(),this.element.addClass("ui-slider ui-slider-"+this.orientation+" ui-widget"+" ui-widget-content"+" ui-corner-all"+(d.disabled?" ui-slider-disabled ui-disabled":"")),this.range=a([]),d.range&&(d.range===!0&&(d.values||(d.values=[this._valueMin(),this._valueMin()]),d.values.length&&d.values.length!==2&&(d.values=[d.values[0],d.values[0]])),this.range=a("<div></div>").appendTo(this.element).addClass("ui-slider-range ui-widget-header"+(d.range==="min"||d.range==="max"?" ui-slider-range-"+d.range:"")));for(var i=e.length;i<g;i+=1)h.push(f);this.handles=e.add(a(h.join("")).appendTo(b.element)),this.handle=this.handles.eq(0),this.handles.add(this.range).filter("a").click(function(a){a.preventDefault()}).hover(function(){d.disabled||a(this).addClass("ui-state-hover")},function(){a(this).removeClass("ui-state-hover")}).focus(function(){d.disabled?a(this).blur():(a(".ui-slider .ui-state-focus").removeClass("ui-state-focus"),a(this).addClass("ui-state-focus"))}).blur(function(){a(this).removeClass("ui-state-focus")}),this.handles.each(function(b){a(this).data("index.ui-slider-handle",b)}),this.handles.keydown(function(d){var e=a(this).data("index.ui-slider-handle"),f,g,h,i;if(b.options.disabled)return;switch(d.keyCode){case a.ui.keyCode.HOME:case a.ui.keyCode.END:case a.ui.keyCode.PAGE_UP:case a.ui.keyCode.PAGE_DOWN:case a.ui.keyCode.UP:case a.ui.keyCode.RIGHT:case a.ui.keyCode.DOWN:case a.ui.keyCode.LEFT:d.preventDefault();if(!b._keySliding){b._keySliding=!0,a(this).addClass("ui-state-active"),f=b._start(d,e);if(f===!1)return}}i=b.options.step,b.options.values&&b.options.values.length?g=h=b.values(e):g=h=b.value();switch(d.keyCode){case a.ui.keyCode.HOME:h=b._valueMin();break;case a.ui.keyCode.END:h=b._valueMax();break;case a.ui.keyCode.PAGE_UP:h=b._trimAlignValue(g+(b._valueMax()-b._valueMin())/c);break;case a.ui.keyCode.PAGE_DOWN:h=b._trimAlignValue(g-(b._valueMax()-b._valueMin())/c);break;case a.ui.keyCode.UP:case a.ui.keyCode.RIGHT:if(g===b._valueMax())return;h=b._trimAlignValue(g+i);break;case a.ui.keyCode.DOWN:case a.ui.keyCode.LEFT:if(g===b._valueMin())return;h=b._trimAlignValue(g-i)}b._slide(d,e,h)}).keyup(function(c){var d=a(this).data("index.ui-slider-handle");b._keySliding&&(b._keySliding=!1,b._stop(c,d),b._change(c,d),a(this).removeClass("ui-state-active"))}),this._refreshValue(),this._animateOff=!1},destroy:function(){return this.handles.remove(),this.range.remove(),this.element.removeClass("ui-slider ui-slider-horizontal ui-slider-vertical ui-slider-disabled ui-widget ui-widget-content ui-corner-all").removeData("slider").unbind(".slider"),this._mouseDestroy(),this},_mouseCapture:function(b){var c=this.options,d,e,f,g,h,i,j,k,l;return c.disabled?!1:(this.elementSize={width:this.element.outerWidth(),height:this.element.outerHeight()},this.elementOffset=this.element.offset(),d={x:b.pageX,y:b.pageY},e=this._normValueFromMouse(d),f=this._valueMax()-this._valueMin()+1,h=this,this.handles.each(function(b){var c=Math.abs(e-h.values(b));f>c&&(f=c,g=a(this),i=b)}),c.range===!0&&this.values(1)===c.min&&(i+=1,g=a(this.handles[i])),j=this._start(b,i),j===!1?!1:(this._mouseSliding=!0,h._handleIndex=i,g.addClass("ui-state-active").focus(),k=g.offset(),l=!a(b.target).parents().andSelf().is(".ui-slider-handle"),this._clickOffset=l?{left:0,top:0}:{left:b.pageX-k.left-g.width()/2,top:b.pageY-k.top-g.height()/2-(parseInt(g.css("borderTopWidth"),10)||0)-(parseInt(g.css("borderBottomWidth"),10)||0)+(parseInt(g.css("marginTop"),10)||0)},this.handles.hasClass("ui-state-hover")||this._slide(b,i,e),this._animateOff=!0,!0))},_mouseStart:function(a){return!0},_mouseDrag:function(a){var b={x:a.pageX,y:a.pageY},c=this._normValueFromMouse(b);return this._slide(a,this._handleIndex,c),!1},_mouseStop:function(a){return this.handles.removeClass("ui-state-active"),this._mouseSliding=!1,this._stop(a,this._handleIndex),this._change(a,this._handleIndex),this._handleIndex=null,this._clickOffset=null,this._animateOff=!1,!1},_detectOrientation:function(){this.orientation=this.options.orientation==="vertical"?"vertical":"horizontal"},_normValueFromMouse:function(a){var b,c,d,e,f;return this.orientation==="horizontal"?(b=this.elementSize.width,c=a.x-this.elementOffset.left-(this._clickOffset?this._clickOffset.left:0)):(b=this.elementSize.height,c=a.y-this.elementOffset.top-(this._clickOffset?this._clickOffset.top:0)),d=c/b,d>1&&(d=1),d<0&&(d=0),this.orientation==="vertical"&&(d=1-d),e=this._valueMax()-this._valueMin(),f=this._valueMin()+d*e,this._trimAlignValue(f)},_start:function(a,b){var c={handle:this.handles[b],value:this.value()};return this.options.values&&this.options.values.length&&(c.value=this.values(b),c.values=this.values()),this._trigger("start",a,c)},_slide:function(a,b,c){var d,e,f;this.options.values&&this.options.values.length?(d=this.values(b?0:1),this.options.values.length===2&&this.options.range===!0&&(b===0&&c>d||b===1&&c<d)&&(c=d),c!==this.values(b)&&(e=this.values(),e[b]=c,f=this._trigger("slide",a,{handle:this.handles[b],value:c,values:e}),d=this.values(b?0:1),f!==!1&&this.values(b,c,!0))):c!==this.value()&&(f=this._trigger("slide",a,{handle:this.handles[b],value:c}),f!==!1&&this.value(c))},_stop:function(a,b){var c={handle:this.handles[b],value:this.value()};this.options.values&&this.options.values.length&&(c.value=this.values(b),c.values=this.values()),this._trigger("stop",a,c)},_change:function(a,b){if(!this._keySliding&&!this._mouseSliding){var c={handle:this.handles[b],value:this.value()};this.options.values&&this.options.values.length&&(c.value=this.values(b),c.values=this.values()),this._trigger("change",a,c)}},value:function(a){if(arguments.length){this.options.value=this._trimAlignValue(a),this._refreshValue(),this._change(null,0);return}return this._value()},values:function(b,c){var d,e,f;if(arguments.length>1){this.options.values[b]=this._trimAlignValue(c),this._refreshValue(),this._change(null,b);return}if(!arguments.length)return this._values();if(!a.isArray(arguments[0]))return this.options.values&&this.options.values.length?this._values(b):this.value();d=this.options.values,e=arguments[0];for(f=0;f<d.length;f+=1)d[f]=this._trimAlignValue(e[f]),this._change(null,f);this._refreshValue()},_setOption:function(b,c){var d,e=0;a.isArray(this.options.values)&&(e=this.options.values.length),a.Widget.prototype._setOption.apply(this,arguments);switch(b){case"disabled":c?(this.handles.filter(".ui-state-focus").blur(),this.handles.removeClass("ui-state-hover"),this.handles.propAttr("disabled",!0),this.element.addClass("ui-disabled")):(this.handles.propAttr("disabled",!1),this.element.removeClass("ui-disabled"));break;case"orientation":this._detectOrientation(),this.element.removeClass("ui-slider-horizontal ui-slider-vertical").addClass("ui-slider-"+this.orientation),this._refreshValue();break;case"value":this._animateOff=!0,this._refreshValue(),this._change(null,0),this._animateOff=!1;break;case"values":this._animateOff=!0,this._refreshValue();for(d=0;d<e;d+=1)this._change(null,d);this._animateOff=!1}},_value:function(){var a=this.options.value;return a=this._trimAlignValue(a),a},_values:function(a){var b,c,d;if(arguments.length)return b=this.options.values[a],b=this._trimAlignValue(b),b;c=this.options.values.slice();for(d=0;d<c.length;d+=1)c[d]=this._trimAlignValue(c[d]);return c},_trimAlignValue:function(a){if(a<=this._valueMin())return this._valueMin();if(a>=this._valueMax())return this._valueMax();var b=this.options.step>0?this.options.step:1,c=(a-this._valueMin())%b,d=a-c;return Math.abs(c)*2>=b&&(d+=c>0?b:-b),parseFloat(d.toFixed(5))},_valueMin:function(){return this.options.min},_valueMax:function(){return this.options.max},_refreshValue:function(){var b=this.options.range,c=this.options,d=this,e=this._animateOff?!1:c.animate,f,g={},h,i,j,k;this.options.values&&this.options.values.length?this.handles.each(function(b,i){f=(d.values(b)-d._valueMin())/(d._valueMax()-d._valueMin())*100,g[d.orientation==="horizontal"?"left":"bottom"]=f+"%",a(this).stop(1,1)[e?"animate":"css"](g,c.animate),d.options.range===!0&&(d.orientation==="horizontal"?(b===0&&d.range.stop(1,1)[e?"animate":"css"]({left:f+"%"},c.animate),b===1&&d.range[e?"animate":"css"]({width:f-h+"%"},{queue:!1,duration:c.animate})):(b===0&&d.range.stop(1,1)[e?"animate":"css"]({bottom:f+"%"},c.animate),b===1&&d.range[e?"animate":"css"]({height:f-h+"%"},{queue:!1,duration:c.animate}))),h=f}):(i=this.value(),j=this._valueMin(),k=this._valueMax(),f=k!==j?(i-j)/(k-j)*100:0,g[d.orientation==="horizontal"?"left":"bottom"]=f+"%",this.handle.stop(1,1)[e?"animate":"css"](g,c.animate),b==="min"&&this.orientation==="horizontal"&&this.range.stop(1,1)[e?"animate":"css"]({width:f+"%"},c.animate),b==="max"&&this.orientation==="horizontal"&&this.range[e?"animate":"css"]({width:100-f+"%"},{queue:!1,duration:c.animate}),b==="min"&&this.orientation==="vertical"&&this.range.stop(1,1)[e?"animate":"css"]({height:f+"%"},c.animate),b==="max"&&this.orientation==="vertical"&&this.range[e?"animate":"css"]({height:100-f+"%"},{queue:!1,duration:c.animate}))}}),a.extend(a.ui.slider,{version:"1.8.24"})})(jQuery);;
+(function(){var d=function(){this.components=[];this.nodeMap={};this.nodes=[];this.voltageSources=[];this.AMatrix=[];this.ZMatrix=[];this.referenceNode=null;this.referenceNodeIndex=null};d.prototype.getLinkedComponents=function(e){return this.nodeMap[e]};d.prototype.getDiagonalMatrixElement=function(h,k){var l=this.nodeMap[h],e=$Comp(0,0),g,f;for(f=l.length-1;f>=0;f--){g=l[f].getImpedance(k);e=e.add(g.inverse())}return e};d.prototype.getNodeIndexes=function(f){var e=[];e[0]=this.getNodeIndex(f.nodes[0]);e[1]=this.getNodeIndex(f.nodes[1]);return e};d.prototype.getNodeIndex=function(f){var e=this.nodes.indexOf(f);if(e===this.referenceNodeIndex){return -1}if(e>this.referenceNodeIndex){return e-1}return e};var b=function(h,f,g,e){this.id=h;this.type=f;this.value=g;this.nodes=e};var c=2*Math.PI;b.prototype.getImpedance=function(f){var e=$Comp(0,0);if(this.type==="Resistor"){e.real=this.value;e.imag=0}else{if(this.type=="Capacitor"){e.real=0;e.imag=-1/(c*f*this.value)}else{if(this.type=="Inductor"){e.real=0;e.imag=c*f*this.value}}}return e};b.prototype.getOffDiagonalMatrixElement=function(e){return this.getImpedance(e).inverse().negative()};var a=function(i,h,f,e,g){this.id=i;this.voltage=h;this.positiveNode=f;this.negativeNode=e;this.frequency=g||0};d.prototype.addComponent=function(n,h,m,l){var e=new b(n,h,m,l),f,g,k;this.components.push(e);for(f=0,g=l.length;f<g;f++){k=l[f];if(!this.nodeMap[k]){this.nodeMap[k]=[];this.nodes.push(k)}this.nodeMap[k].push(e)}};d.prototype.addVoltageSource=function(k,i,f,e,h){var g=new a(k,i,f,e,h);this.voltageSources.push(g);if(!this.nodeMap[f]){this.nodeMap[f]=[];this.nodes.push(f)}if(!this.nodeMap[e]){this.nodeMap[e]=[];this.nodes.push(e)}if(!this.referenceNode){this.setReferenceNode(e)}};d.prototype.setReferenceNode=function(e){this.referenceNode=e;this.referenceNodeIndex=this.nodes.indexOf(e)};d.prototype.createAMatrix=function(){this.createEmptyAMatrix();this.addGMatrix();this.addBCMatrix()};d.prototype.createEmptyAMatrix=function(){var g=$Comp(0,0),k=this.nodes.length,e=this.voltageSources.length,l=k-1+e,h,f;this.AMatrix=[];for(h=0;h<l;h++){this.AMatrix[h]=[];for(f=0;f<l;f++){this.AMatrix[h][f]=g.copy()}}};d.prototype.addGMatrix=function(){var l,m,h,g,k,f,n,e;if(this.voltageSources.length>0){l=this.voltageSources[0];m=l.frequency}for(h=0;h<this.nodes.length;h++){k=this.nodes[h];if(k===this.referenceNode){continue}f=this.getNodeIndex(k);this.AMatrix[f][f]=this.getDiagonalMatrixElement(k,m)}for(h=0;h<this.components.length;h++){n=this.getNodeIndexes(this.components[h])[0];e=this.getNodeIndexes(this.components[h])[1];if(n===-1||e===-1){continue}this.AMatrix[n][e]=this.AMatrix[e][n]=this.AMatrix[n][e].add(this.components[h].getOffDiagonalMatrixElement(m))}};d.prototype.addBCMatrix=function(){if(this.voltageSources.length===0){return}var g=$Comp(1,0),n=g.negative(),e=this.voltageSources,k,l,h,m,f;for(f=0;f<e.length;f++){k=e[f];l=k.positiveNode;if(l!==this.referenceNode){m=this.getNodeIndex(l);this.AMatrix[this.nodes.length-1+f][m]=g.copy();this.AMatrix[m][this.nodes.length-1+f]=g.copy()}h=k.negativeNode;if(h!==this.referenceNode){m=this.getNodeIndex(h);this.AMatrix[this.nodes.length-1+f][m]=n.copy();this.AMatrix[m][this.nodes.length-1+f]=n.copy()}}};d.prototype.createZMatrix=function(){var g=$Comp(0,0),k=this.nodes.length,e=this.voltageSources.length,l=k-1+e,f=this.voltageSources,h;this.ZMatrix=[[]];for(h=0;h<l;h++){this.ZMatrix[0][h]=g.copy()}for(h=0;h<f.length;h++){this.ZMatrix[0][k-1+h].real=f[h].voltage}};d.prototype.cleanCircuit=function(){var f=this.nodes,q=this.nodeMap,m=this.components,r,o=this.referenceNode,s=[],e,g,h,t;function p(u){var w=[];for(var v in u){w[v]=u[v]}return w}q=p(q);function k(u){var x=[];for(var v=0,w=u.length;v<w;v++){if(u[v]!==null){x.push(u[v])}}return x}function n(v,B){var x=B[v],C,w,D=[],u,z,E,y,A;if(v===o){return true}if(~s.indexOf(v)){return true}if(!x||x.length===0){return false}delete B[v];for(z=0,E=x.length;z<E;z++){C=x[z];w=p(C.nodes);w.splice(w.indexOf(v),1);D=D.concat(w)}for(y=0,A=D.length;y<A;y++){if(n(D[y],B)){s.push(v);return true}}return false}for(h=0,t=f.length;h<t;h++){g=f[h];if(g){if(!n(g,q)){f[h]=null}}}this.nodes=k(f);q=this.nodeMap;function l(u,y){var x=p(q[y]),v,w;q[y]=[];for(v=0,w=x.length;v<w;v++){if(x[v].id!==u.id){q[y].push(x[v])}}}for(h=0,t=m.length;h<t;h++){r=m[h];if(!(~f.indexOf(r.nodes[0])&&~f.indexOf(r.nodes[1]))){l(r,r.nodes[0]);l(r,r.nodes[1]);m[h]=null}}this.components=k(m);for(h=0,t=this.voltageSources.length;h<t;h++){e=this.voltageSources[h];if(!(~f.indexOf(e.positiveNode)&&~f.indexOf(e.negativeNode))){this.voltageSources[h]=null}}this.voltageSources=k(this.voltageSources);this.referenceNodeIndex=this.nodes.indexOf(o)};d.prototype.solve=function(){this.cleanCircuit();this.createAMatrix();this.createZMatrix();aM=$M(this.AMatrix);zM=$M(this.ZMatrix);invAM=aM.inv();res=zM.x(invAM);return res};d.prototype.getVoltageAt=function(g){if(g===this.referenceNode){return $Comp(0)}try{var f=this.solve();return f.elements[0][this.getNodeIndex(g)]}catch(h){return $Comp(0)}};d.prototype.getVoltageBetween=function(f,e){return this.getVoltageAt(f).subtract(this.getVoltageAt(e))};d.prototype.getCurrent=function(n){var k,g,f=null,h,l;try{k=this.solve()}catch(m){return $Comp(0)}g=this.voltageSources;for(h=0,l=g.length;h<l;h++){if(g[h].id==n){f=h;break}}if(f===null){try{throw Error("No voltage source "+n)}catch(m){return $Comp(0)}}try{return k.elements[0][this.nodes.length-1+f]}catch(m){return $Comp(0)}};window.CiSo=d})();var Complex=function(b,a){if(!(this instanceof Complex)){return new Complex(b,a)}if(typeof b==="string"&&a===null){return Complex.parse(b)}this.real=b||0;this.imag=a||0;this.magnitude=Math.sqrt(this.real*this.real+this.imag*this.imag);this.angle=Math.atan2(this.imag,this.real)};Complex.prototype={copy:function(){return new Complex(this.real,this.imag)},add:function(a){var c,b;if(a instanceof Complex){c=a.real;b=a.imag}else{c=a;b=0}return new Complex(this.real+c,this.imag+b)},subtract:function(a){var c,b;if(a instanceof Complex){c=a.real;b=a.imag}else{c=a;b=0}return new Complex(this.real-c,this.imag-b)},multiply:function(a){var e,d,c,b;if(a instanceof Complex){e=a.real;d=a.imag}else{e=a;d=0}c=this.real*e-this.imag*d;b=this.real*d+this.imag*e;return new Complex(c,b)},divide:function(a){var f,e,b,d,c;if(a instanceof Complex){f=a.real;e=a.imag}else{f=a;e=0}b=f*f+e*e;d=(this.real*f+this.imag*e)/b;c=(this.imag*f-this.real*e)/b;return new Complex(d,c)},inverse:function(){var a=new Complex(1,0);return a.divide(this)},negative:function(){var a=new Complex(0,0);return a.subtract(this)},equals:function(a){if(a instanceof Complex){return this.real===a.real&&this.imag===a.imag}else{if(typeof a==="number"){return this.real===a&&this.imag===0}}return false},toString:function(){return this.real+"i"+this.imag}};Complex.parse=function(c){if(!c){return null}var b=/(.*)([+,\-].*i)/.exec(c),d,a;if(b&&b.length===3){d=parseFloat(b[1]);a=parseFloat(b[2].replace("i",""))}else{d=parseFloat(c);a=0}if(isNaN(d)||isNaN(a)){throw new Error("Invalid input to Complex.parse, expecting a + bi format, instead was: "+c)}return new Complex(d,a)};$Comp=function(){if(typeof arguments[0]==="string"){return Complex.parse(arguments[0])}return new Complex(arguments[0],arguments[1])};var Sylvester={version:"0.1.3-cc",precision:0.000001};function Matrix(){}Matrix.prototype={dup:function(){return Matrix.create(this.elements)},canMultiplyFromLeft:function(a){var b=a.elements||a;if(typeof(b[0][0])=="undefined"){b=Matrix.create(b).elements}return(this.elements[0].length==b.length)},multiply:function(q){if(!q.elements){return this.map(function(c){return c.multiply(q)})}var h=q.modulus?true:false;var n=q.elements||q;if(typeof(n[0][0])=="undefined"){n=Matrix.create(n).elements}if(!this.canMultiplyFromLeft(n)){return null}var e=this.elements.length,f=e,l,b,d=n[0].length,g;var p=this.elements[0].length,a=[],m,k,o;do{l=f-e;a[l]=[];b=d;do{g=d-b;m=$Comp(0,0);k=p;do{o=p-k;m=m.add(this.elements[l][o].multiply(n[o][g]))}while(--k);a[l][g]=m}while(--b)}while(--e);var n=Matrix.create(a);return h?n.col(1):n},x:function(a){return this.multiply(a)},isSquare:function(){return(this.elements.length==this.elements[0].length)},toRightTriangular:function(){var f=this.dup(),d;var b=this.elements.length,c=b,e,g,h=this.elements[0].length,a;do{e=c-b;if(f.elements[e][e].equals(0)){for(j=e+1;j<c;j++){if(!f.elements[j][e].equals(0)){d=[];g=h;do{a=h-g;d.push(f.elements[e][a].add(f.elements[j][a]))}while(--g);f.elements[e]=d;break}}}if(!f.elements[e][e].equals(0)){for(j=e+1;j<c;j++){var l=f.elements[j][e].divide(f.elements[e][e]);d=[];g=h;do{a=h-g;d.push(a<=e?$Comp(0):f.elements[j][a].subtract(f.elements[e][a].multiply(l)))}while(--g);f.elements[j]=d}}}while(--b);return f},toUpperTriangular:function(){return this.toRightTriangular()},determinant:function(){if(!this.isSquare()){return null}var e=this.toRightTriangular();var c=e.elements[0][0],d=e.elements.length-1,a=d,b;do{b=a-d+1;c=c.multiply(e.elements[b][b])}while(--d);return c},det:function(){return this.determinant()},isSingular:function(){return(this.isSquare()&&this.determinant().equals(0))},augment:function(l){var h=l.elements||l;if(typeof(h[0][0])=="undefined"){h=Matrix.create(h).elements}var e=this.dup(),k=e.elements[0].length;var c=e.elements.length,d=c,g,a,b=h[0].length,f;if(c!=h.length){return null}do{g=d-c;a=b;do{f=b-a;e.elements[g][k+f]=h[g][f]}while(--a)}while(--c);return e},inverse:function(){if(!this.isSquare()||this.isSingular()){return null}var c=this.elements.length,d=c,h,g;var k=this.augment(Matrix.I(c)).toRightTriangular();var l,m=k.elements[0].length,a,f,b;var n=[],e;do{h=c-1;f=[];l=m;n[h]=[];b=k.elements[h][h];do{a=m-l;e=k.elements[h][a].divide(b);f.push(e);if(a>=d){n[h].push(e)}}while(--l);k.elements[h]=f;for(g=0;g<h;g++){f=[];l=m;do{a=m-l;f.push(k.elements[g][a].subtract(k.elements[h][a].multiply(k.elements[g][h])))}while(--l);k.elements[g]=f}}while(--c);return Matrix.create(n)},inv:function(){return this.inverse()},setElements:function(h){var m,a=h.elements||h;if(typeof(a[0][0])!="undefined"){var d=a.length,f=d,b,c,l;this.elements=[];do{m=f-d;b=a[m].length;c=b;this.elements[m]=[];do{l=c-b;this.elements[m][l]=a[m][l]}while(--b)}while(--d);return this}var e=a.length,g=e;this.elements=[];do{m=g-e;this.elements.push([a[m]])}while(--e);return this}};Matrix.create=function(a){var b=new Matrix();return b.setElements(a)};Matrix.I=function(f){var e=[],a=f,d,c,b;do{d=a-f;e[d]=[];c=a;do{b=a-c;e[d][b]=(d==b)?$Comp(1,0):$Comp(0)}while(--c)}while(--f);return Matrix.create(e)};var $M=Matrix.create;
 jQuery.url=function(){var segments={};var parsed={};var options={url:window.location,strictMode:false,key:["source","protocol","authority","userInfo","user","password","host","port","relative","path","directory","file","query","anchor"],q:{name:"queryKey",parser:/(?:^|&)([^&=]*)=?([^&]*)/g},parser:{strict:/^(?:([^:\/?#]+):)?(?:\/\/((?:(([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?))?((((?:[^?#\/]*\/)*)([^?#]*))(?:\?([^#]*))?(?:#(.*))?)/,loose:/^(?:(?![^:@]+:[^:@\/]*@)([^:\/?#.]+):)?(?:\/\/)?((?:(([^:@]*):?([^:@]*))?@)?([^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/}};var parseUri=function(){str=decodeURI(options.url);var m=options.parser[options.strictMode?"strict":"loose"].exec(str);var uri={};var i=14;while(i--){uri[options.key[i]]=m[i]||""}uri[options.q.name]={};uri[options.key[12]].replace(options.q.parser,function($0,$1,$2){if($1){uri[options.q.name][$1]=$2}});return uri};var key=function(key){if(!parsed.length){setUp()}if(key=="base"){if(parsed.port!==null&&parsed.port!==""){return parsed.protocol+"://"+parsed.host+":"+parsed.port+"/"}else{return parsed.protocol+"://"+parsed.host+"/"}}return(parsed[key]==="")?null:parsed[key]};var param=function(item){if(!parsed.length){setUp()}return(parsed.queryKey[item]===null)?null:parsed.queryKey[item]};var setUp=function(){parsed=parseUri();getSegments()};var getSegments=function(){var p=parsed.path;segments=[];segments=parsed.path.length==1?{}:(p.charAt(p.length-1)=="/"?p.substring(1,p.length-1):path=p.substring(1)).split("/")};return{setMode:function(mode){strictMode=mode=="strict"?true:false;return this},setUrl:function(newUri){options.url=newUri===undefined?window.location:newUri;setUp();return this},segment:function(pos){if(!parsed.length){setUp()}if(pos===undefined){return segments.length}return(segments[pos]===""||segments[pos]===undefined)?null:segments[pos]},attr:key,param:param}}();
 /**
  * Cookie plugin
@@ -7764,7 +7765,6 @@ window["breadboardView"] = {
           }
           if (args[0] === 'component') {
               if (args[2] === "left_positive21" || args[2] === "left_negative21") {
-                args[2] = args[2].replace("2", "");
               }
               if (!!args[2]){
                 breadModel('unmapHole', args[2]);
@@ -7780,7 +7780,6 @@ window["breadboardView"] = {
           } else if (args[0] === 'component') {
             var hole = args[2];
             if (hole === "left_positive21" || hole === "left_negative21") {
-              hole = hole.replace("2", "");
             }
             var newHole = breadModel('getGhostHole', hole+"ghost");
 
@@ -8393,11 +8392,10 @@ window["breadboardView"] = {
           return resistance * Math.pow(10, this.colorToNumber(colors[i]));
         },
 
-        toNetlist: function () {
-          var resistance = this.resistance || 0,
-              nodes      = this.getNodes();
-
-          return 'R:' + this.UID + ' ' + nodes.join(' ') + ' R="' + resistance + ' Ohm"';
+        addCiSoComponent: function (ciso) {
+          var resistance  = this.resistance || 0,
+              nodes       = this.getNodes();
+          ciso.addComponent(this.UID, "Resistor", resistance, nodes);
         },
 
         applyFaults: function() {
@@ -9010,45 +9008,53 @@ window["breadboardView"] = {
         query: function(type, connections, callback, context, callbackArgs){
           var tempComponents = [];
 
-          if (!!type && type === 'resistance') {
+          if (type === 'resistance') {
             connections = connections.split(',');
             var ghost = new GhostHole();
             var ohmmeterBattery = breadBoard.component({
               UID: 'ohmmeterBattery',
               kind: 'battery',
               voltage: 1,
-              connections: [connections[0], ghost]});
-            var currentProbe = breadBoard.component({
-              UID: 'meter',
-              kind: 'iprobe',
-              connections: [connections[1], ghost]});
-            tempComponents.push(ohmmeterBattery, currentProbe);
-          } else if (!!type) {
-            if (type === 'voltage'){
-              var voltmeterResistor = breadBoard.component({
-                UID: 'voltmeterResistor',
-                kind: 'resistor',
-                resistance: 1e12,
-                connections: connections.split(',')});
-              tempComponents.push(voltmeterResistor);
-            }
-            var probe = breadBoard.component({
-              UID: 'meter',
-              kind: {'current' : 'iprobe', 'voltage' : 'vprobe', 'ac_voltage' : 'vprobe'}[type],
+              connections: [connections[0], connections[1]]});
+            tempComponents.push(ohmmeterBattery);
+          } else if (type === 'voltage'){
+            var voltmeterResistor = breadBoard.component({
+              UID: 'voltmeterResistor',
+              kind: 'resistor',
+              resistance: 1e12,
               connections: connections.split(',')});
-            tempComponents.push(probe);
+            tempComponents.push(voltmeterResistor);
+          } else if (type === 'current'){
+            var ammeterResistor = breadBoard.component({
+              UID: 'ammeterResistor',
+              kind: 'resistor',
+              resistance: 1e-6,
+              connections: connections.split(',')});
+            tempComponents.push(ammeterResistor);
+          } else if (type === 'oscope') {
+            var oscopeResistor = breadBoard.component({
+              UID: 'oscopeResistor',
+              kind: 'resistor',
+              resistance: 1e12,
+              connections: [connections, "gnd"]});
+            tempComponents.push(oscopeResistor);
           }
 
-          var netlist = q.makeNetlist(breadBoard),
-              resultObject;
+          var ciso = new CiSo();
 
-          q.qucsate(netlist, function (results) {
-            callback.call(context, results, callbackArgs);
-          } );
+          $.each(breadBoard.components, function(i, component) {
+            component.addCiSoComponent(ciso)
+          });
 
+          if (type === 'resistance') {
+            node = breadBoard.getHole(connections[1]).nodeName()
+            ciso.setReferenceNode(node);
+          }
           $.each(tempComponents, function(i, component){
             component.destroy();
           });
+
+          callback.call(context, ciso, callbackArgs);
         },
         updateView: function() {
           $.each(breadBoard.components, function(i, component) {
@@ -9595,6 +9601,7 @@ window["breadboardView"] = {
         currentMeasurement: null,
 
         update: function () {
+          console.log("update!")
           if (this.redProbeConnection && this.blackProbeConnection) {
             if (this.dialPosition.indexOf('dcv_') > -1){
               this.currentMeasurement = "voltage";
@@ -9616,38 +9623,49 @@ window["breadboardView"] = {
           }
         },
 
-        updateWithData: function (resultsBlob) {
-          var measurement = this.currentMeasurement;
-          if (resultsBlob) {
-            var meterKey = (measurement === 'voltage' || measurement === 'ac_voltage') ? 'v' : 'i';
+        updateWithData: function (ciso) {
+          var measurement = this.currentMeasurement,
+              result;
+          if (ciso) {
+            var source = ciso.voltageSources[0],
+                b  = getBreadBoard(),
+                p1 = b.getHole(this.redProbeConnection).nodeName(),
+                p2 = b.getHole(this.blackProbeConnection).nodeName();
+            if (measurement === "resistance") {
+              if (p1 === p2) {
+                result = 0;
+              } else {
+                var current = ciso.getCurrent('ohmmeterBattery');
+                result = 1/current.magnitude;
+              }
+            } else if (measurement === "voltage" || measurement === "ac_voltage" || measurement === "current") {
+              var v1 = ciso.getVoltageAt(p1).magnitude,
+                  v2 = ciso.getVoltageAt(p2).magnitude,
+                  drop = v1 - v2;
 
-            if (!!meterKey && !!resultsBlob.meter[meterKey]){
-              var index = this._getResultsIndex(resultsBlob);
+              if (measurement === "current") {
+                result = drop / 1e-6;
+              } else {
+                result = drop;
+              }
+            }
 
-              var result = resultsBlob.meter[meterKey][index];
-
-              result = result.magnitude;
-
-              result = Math.abs(result);
-
-
+            if (result){
               var source = getBreadBoard().components.source;
               if (!!source &&
-                 ((measurement === 'voltage' && source.getQucsSimulationType().indexOf(".AC") > -1) ||
-                  (measurement === 'ac_voltage' && source.getQucsSimulationType().indexOf(".DC") > -1))) {
+                 ((measurement === 'voltage' && source.frequency) ||
+                  (measurement === 'ac_voltage' && source.frequency === 0))) {
                 result = 0;
-              } else if (measurement === 'resistance') {
-                result = 1 / result;
               } else if (measurement === "ac_voltage" ||
-                          (measurement === 'current' && source && source.getQucsSimulationType().indexOf(".AC") > -1)){
+                          (measurement === 'current' && source && source.frequency)){
                 if (!!source.amplitudeScaleFactor || source.amplitudeScaleFactor === 0){
                   result = result * source.amplitudeScaleFactor;
                 }
-                result = result / Math.sqrt(2);         // RMS voltage or RMS cureent
+                result = result / Math.sqrt(2);         // RMS voltage or RMS current
               }
               result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
 
-              this.absoluteValue = result;
+              this.absoluteValue = Math.abs(result);
 
               if (measurement === "current" && this.absoluteValue > 0.44){
                 this.blowFuse();
@@ -9734,7 +9752,7 @@ window["breadboardView"] = {
       INITIAL_VERTICAL_SCALE:   5,
 
       reset: function() {
-        this.probeLocation[0] = "left_positive22";      // yellow probe
+        this.probeLocation[0] = "left_positive21";      // yellow probe
         this.probeLocation[1] = null;                   // pink probe
         this.signals = [];
         var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
@@ -9766,6 +9784,7 @@ window["breadboardView"] = {
       },
 
       update: function() {
+        console.log("update")
         var breadboard = getBreadBoard(),
             source     = breadboard.components.source,
             sourceSignal,
@@ -9795,21 +9814,21 @@ window["breadboardView"] = {
               this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
               continue;
             }
-            breadModel('query', null, null, this.updateWithData, this, [probeNode, probeIndex]);
+            breadModel('query', "oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
           } else {
             this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
           }
         }
       },
 
-      updateWithData: function(data, probeInfo) {
+      updateWithData: function(ciso, probeInfo) {
+
         var breadboard = getBreadBoard(),
             source     = breadboard.components.source,
             probeNode  = probeInfo[0],
             probeIndex = probeInfo[1];
-        freqs = data.acfrequency;
-        dataIndex = sparks.util.getClosestIndex(freqs, source.frequency, true);
-        result = data[probeNode].v[dataIndex];
+
+        result = ciso.getVoltageAt(probeInfo[0])
 
         if (result) {
           probeSignal = {
@@ -10296,11 +10315,10 @@ window["breadboardView"] = {
       return impedance / (2 * Math.PI * frequency);
     },
 
-    toNetlist: function () {
+    addCiSoComponent: function (ciso) {
       var inductance = this.getInductance() || 0,
-          nodes      = this.getNodes();
-
-      return 'L:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' L="' + inductance + ' H"';
+          nodes       = this.getNodes();
+      ciso.addComponent(this.UID, "Inductor", inductance, nodes);
     },
 
     getFlashArguments: function () {
@@ -10328,11 +10346,10 @@ window["breadboardView"] = {
       return 1 / (impedance * 2 * Math.PI * frequency);
     },
 
-    toNetlist: function () {
+    addCiSoComponent: function (ciso) {
       var capacitance = this.getCapacitance() || 0,
           nodes       = this.getNodes();
-
-      return 'C:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' C="' + capacitance + ' F"';
+      ciso.addComponent(this.UID, "Capacitor", capacitance, nodes);
     },
 
     getFlashArguments: function () {
@@ -10360,15 +10377,11 @@ window["breadboardView"] = {
   };
 
   sparks.extend(sparks.circuit.Battery, sparks.circuit.Component, {
-    toNetlist: function () {
+    addCiSoComponent: function (ciso) {
       var voltage = this.voltage || 0,
           nodes      = this.getNodes();
 
-      return 'Vdc:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' U="' + voltage + ' V"';
-    },
-
-    getQucsSimulationType: function() {
-      return ".DC:DC1";
+      ciso.addVoltageSource(this.UID, voltage, nodes[0], nodes[1]);
     }
   });
 
@@ -10451,10 +10464,11 @@ window["breadboardView"] = {
       return this.possibleFrequencies;
     },
 
-    toNetlist: function () {
-      var amplitude = this.amplitude || 0,
-          nodes     = this.getNodes();
-      return 'Vac:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' U="' + amplitude + ' V" f="' + this.baseFrequency + '" Phase="0" Theta="0"';
+    addCiSoComponent: function (ciso) {
+      var amplitude   = this.amplitude || 0,
+          nodes       = this.getNodes();
+
+      ciso.addVoltageSource(this.UID,amplitude,nodes[0],nodes[1],this.frequency)
     },
 
     defaultFrequencySteps: 100,
@@ -10539,11 +10553,10 @@ window["breadboardView"] = {
       }
     },
 
-    toNetlist: function () {
-      var voltage = this.voltage || 0,
-          nodes      = this.getNodes();
-
-      return 'TLIN:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' Z="0.000001 Ohm" L="1 mm" Alpha="0 dB"';
+    addCiSoComponent: function (ciso) {
+      var resistance  = 1e-6,
+          nodes       = this.getNodes();
+      ciso.addComponent(this.UID, "Resistor", resistance, nodes);
     }
   });
 
@@ -10571,6 +10584,8 @@ window["breadboardView"] = {
     getLocation: function () {
       return this.connections[0].getName() + ",a1";       // Flash coding issue means we need to give this a second argument...
     },
+
+    addCiSoComponent: function (ciso) { },
 
     toNetlist: function () {
       return '';

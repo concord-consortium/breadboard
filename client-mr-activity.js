@@ -2803,7 +2803,6 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
           }
           if (args[0] === 'component') {
               if (args[2] === "left_positive21" || args[2] === "left_negative21") {
-                args[2] = args[2].replace("2", "");
               }
               if (!!args[2]){
                 breadModel('unmapHole', args[2]);
@@ -2819,7 +2818,6 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
           } else if (args[0] === 'component') {
             var hole = args[2];
             if (hole === "left_positive21" || hole === "left_negative21") {
-              hole = hole.replace("2", "");
             }
             var newHole = breadModel('getGhostHole', hole+"ghost");
 
@@ -4178,11 +4176,10 @@ sparks.createQuestionsCSV = function(data) {
           return resistance * Math.pow(10, this.colorToNumber(colors[i]));
         },
 
-        toNetlist: function () {
-          var resistance = this.resistance || 0,
-              nodes      = this.getNodes();
-
-          return 'R:' + this.UID + ' ' + nodes.join(' ') + ' R="' + resistance + ' Ohm"';
+        addCiSoComponent: function (ciso) {
+          var resistance  = this.resistance || 0,
+              nodes       = this.getNodes();
+          ciso.addComponent(this.UID, "Resistor", resistance, nodes);
         },
 
         applyFaults: function() {
