@@ -93,10 +93,11 @@
       return this.possibleFrequencies;
     },
 
-    toNetlist: function () {
-      var amplitude = this.amplitude || 0,
-          nodes     = this.getNodes();
-      return 'Vac:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' U="' + amplitude + ' V" f="' + this.baseFrequency + '" Phase="0" Theta="0"';
+    addCiSoComponent: function (ciso) {
+      var amplitude   = this.amplitude || 0,
+          nodes       = this.getNodes();
+
+      ciso.addVoltageSource(this.UID,amplitude,nodes[0],nodes[1],this.frequency)
     },
 
     defaultFrequencySteps: 100,

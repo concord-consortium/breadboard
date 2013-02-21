@@ -206,11 +206,10 @@
           return resistance * Math.pow(10, this.colorToNumber(colors[i]));
         },
 
-        toNetlist: function () {
-          var resistance = this.resistance || 0,
-              nodes      = this.getNodes();
-
-          return 'R:' + this.UID + ' ' + nodes.join(' ') + ' R="' + resistance + ' Ohm"';
+        addCiSoComponent: function (ciso) {
+          var resistance  = this.resistance || 0,
+              nodes       = this.getNodes();
+          ciso.addComponent(this.UID, "Resistor", resistance, nodes);
         },
 
         // for now, all resistors are 4-band
@@ -221,7 +220,7 @@
             return ['resistor', this.UID, this.getLocation(), 'wire', this.label, null];
           }
         },
-        
+
         applyFaults: function() {
           if (!!this.open){
             this.resistance = 1e20;
