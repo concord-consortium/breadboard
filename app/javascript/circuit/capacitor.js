@@ -18,11 +18,10 @@
       return 1 / (impedance * 2 * Math.PI * frequency);
     },
 
-    toNetlist: function () {
+    addCiSoComponent: function (ciso) {
       var capacitance = this.getCapacitance() || 0,
           nodes       = this.getNodes();
-
-      return 'C:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' C="' + capacitance + ' F"';
+      ciso.addComponent(this.UID, "Capacitor", capacitance, nodes);
     },
 
     getFlashArguments: function () {

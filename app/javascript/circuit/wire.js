@@ -26,11 +26,10 @@
       }
     },
 
-    toNetlist: function () {
-      var voltage = this.voltage || 0,
-          nodes      = this.getNodes();
-
-      return 'TLIN:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' Z="0.000001 Ohm" L="1 mm" Alpha="0 dB"';
+    addCiSoComponent: function (ciso) {
+      var resistance  = 1e-6,
+          nodes       = this.getNodes();
+      ciso.addComponent(this.UID, "Resistor", resistance, nodes);
     }
   });
 

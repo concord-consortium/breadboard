@@ -18,11 +18,10 @@
       return impedance / (2 * Math.PI * frequency);
     },
 
-    toNetlist: function () {
+    addCiSoComponent: function (ciso) {
       var inductance = this.getInductance() || 0,
-          nodes      = this.getNodes();
-
-      return 'L:' + this.UID + ' ' + nodes[0] + ' ' + nodes[1] + ' L="' + inductance + ' H"';
+          nodes       = this.getNodes();
+      ciso.addComponent(this.UID, "Inductor", inductance, nodes);
     },
 
     getFlashArguments: function () {

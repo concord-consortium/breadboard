@@ -23,6 +23,8 @@
       return this.connections[0].getName() + ",a1";       // Flash coding issue means we need to give this a second argument...
     },
 
+    addCiSoComponent: function (ciso) { },
+
     toNetlist: function () {
       return '';
     },
