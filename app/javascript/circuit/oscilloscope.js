@@ -31,7 +31,7 @@
       INITIAL_VERTICAL_SCALE:   5,
 
       reset: function() {
-        this.probeLocation[0] = "left_positive22";      // yellow probe
+        this.probeLocation[0] = "left_positive21";      // yellow probe
         this.probeLocation[1] = null;                   // pink probe
         this.signals = [];
         var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
@@ -65,6 +65,7 @@
       },
 
       update: function() {
+        console.log("update")
         var breadboard = getBreadBoard(),
             source     = breadboard.components.source,
             sourceSignal,
@@ -96,23 +97,26 @@
               this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
               continue;
             }
-            breadModel('query', null, null, this.updateWithData, this, [probeNode, probeIndex]);
+            breadModel('query', "oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
           } else {
             this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
           }
         }
       },
 
-      updateWithData: function(data, probeInfo) {
+      updateWithData: function(ciso, probeInfo) {
+
         var breadboard = getBreadBoard(),
             source     = breadboard.components.source,
             probeNode  = probeInfo[0],
             probeIndex = probeInfo[1];
-        // first go through the returned frequencies, and find the one that matches our source frequency
-        freqs = data.acfrequency;
-        dataIndex = sparks.util.getClosestIndex(freqs, source.frequency, true);
-        // find the same index in our data
-        result = data[probeNode].v[dataIndex];
+        // // first go through the returned frequencies, and find the one that matches our source frequency
+        // freqs = data.acfrequency;
+        // dataIndex = sparks.util.getClosestIndex(freqs, source.frequency, true);
+        // // find the same index in our data
+        // result = data[probeNode].v[dataIndex];
+
+        result = ciso.getVoltageAt(probeInfo[0])
 
         if (result) {
           probeSignal = {
