@@ -9848,6 +9848,7 @@ window["breadboardView"] = {
       },
 
       setSignal: function(channel, signal) {
+        if (!this.view) return;
         this.signals[channel] = signal;
         this.view.renderSignal(channel);
       },
