@@ -7208,7 +7208,6 @@ sparks.createQuestionsCSV = function(data) {
         addCiSoComponent: function (ciso) {
           var resistance  = this.resistance || 0,
               nodes       = this.getNodes();
-          console.log("ciso.addComponent("+this.UID+", \"Resistor\", "+resistance+", "+nodes+");")
           ciso.addComponent(this.UID, "Resistor", resistance, nodes);
         },
 
@@ -7862,7 +7861,6 @@ sparks.createQuestionsCSV = function(data) {
             tempComponents.push(oscopeResistor);
           }
 
-
           var ciso = new CiSo();
 
           $.each(breadBoard.components, function(i, component) {
@@ -8462,9 +8460,9 @@ sparks.createQuestionsCSV = function(data) {
                 result = 1/current.magnitude;
               }
             } else if (measurement === "voltage" || measurement === "ac_voltage" || measurement === "current") {
-              var v1 = ciso.getVoltageAt(p1).magnitude,
-                  v2 = ciso.getVoltageAt(p2).magnitude,
-                  drop = v1 - v2;
+              var v1 = ciso.getVoltageAt(p1),   // complex
+                  v2 = ciso.getVoltageAt(p2),
+                  drop = v1.subtract(v2).magnitude;
 
               if (measurement === "current") {
                 result = drop / 1e-6;
@@ -9201,7 +9199,7 @@ sparks.createQuestionsCSV = function(data) {
     addCiSoComponent: function (ciso) {
       var voltage = this.voltage || 0,
           nodes      = this.getNodes();
-      console.log("ciso.addVoltageSource("+this.UID+", "+voltage+", "+nodes[0]+", "+nodes[1]+")")
+
       ciso.addVoltageSource(this.UID, voltage, nodes[0], nodes[1]);
     }
   });
@@ -9373,7 +9371,6 @@ sparks.createQuestionsCSV = function(data) {
     addCiSoComponent: function (ciso) {
       var resistance  = 1e-6,
           nodes       = this.getNodes();
-      console.log("ciso.addComponent("+this.UID+", \"Resistor\", "+resistance+", "+nodes+");")
       ciso.addComponent(this.UID, "Resistor", resistance, nodes);
     },
 

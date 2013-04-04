@@ -3710,7 +3710,6 @@ sparks.createQuestionsCSV = function(data) {
         addCiSoComponent: function (ciso) {
           var resistance  = this.resistance || 0,
               nodes       = this.getNodes();
-          console.log("ciso.addComponent("+this.UID+", \"Resistor\", "+resistance+", "+nodes+");")
           ciso.addComponent(this.UID, "Resistor", resistance, nodes);
         },
 
