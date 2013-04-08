@@ -255,14 +255,14 @@ button {
   color: white;
   cursor: pointer;
   font-size: 1.1em;
-  text-align: center; 
+  text-align: center;
 
   border-radius: 5px;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
-  
+
 }
-  
+
 button.disabled {
   background-color: #e5b789;
 }
@@ -518,7 +518,7 @@ ul.quiet_list {
   border: 1px solid;
   margin: 2px;
   padding: 5px; }
-  
+
 #print-link {
   background: url(../../common/icons/print.png) no-repeat 0 0;
   display: block;
@@ -530,9 +530,39 @@ ul.quiet_list {
   top: 120px;
   width: 50px;
   display: none; }
-  
+
 @page {
     margin-left: 0px;
     margin-right: 0px;
+}
+
+/* sparks.breadboard.css from mLearner svg view*/
+
+.circuit-board {
+  position: relative;
+  left: 0px;
+  top: 0px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: #999181;
+  overflow: hidden;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+  cursor: default;
+}
+
+.circuit-board .magnifier {
+  position: absolute;
+  display: none;
+  left: 0px;
+  top: 0px;
+  padding: 0;
+  margin: 0;
+  border: 0;
 }
 

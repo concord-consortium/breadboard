@@ -4878,9 +4878,19 @@ sparks.createQuestionsCSV = function(data) {
   };
 })();
 
+
 window["breadboardView"] = {
   "options" : {
-    "rootpath" : ""
+    "rootpath" : "",
+    "magnifier" : {
+      "time": 400,
+      "size": 60,
+      "zoom": 2,
+      "offset": {
+        "x": 80,
+        "y": 80
+      }
+    }
   },
   "util" : {}
 };
@@ -4997,6 +5007,8 @@ window["breadboardView"] = {
     this.holder = $('#' + id).html('').append(
       SVGStorage.create('board')
     ).addClass('circuit-board');
+    this.holder.h = this.holder.height();
+    this.holder.w = this.holder.width();
 
     this.workspace = this.holder.find("[item=components]");
     this.holes = {
@@ -5025,6 +5037,7 @@ window["breadboardView"] = {
 
     this.multimeter = null;
     this.battery = null;
+    this.probes = [];
 
     primitive.prototype.initLeadDraggable(this);
     primitive.prototype.initProbeDraggable(this);
@@ -5043,6 +5056,7 @@ window["breadboardView"] = {
     this.component[elem["UID"]]["id"] = elem["UID"];
     this.itemslist.push(this.component[elem["UID"]]);
     this.workspace.append(this.component[elem["UID"]].view);
+    this.component[elem["UID"]]["image"] = new SVGImage(this, elem["UID"]);
   };
 
   CircuitBoard.prototype.removeComponent = function(id) {
@@ -5060,6 +5074,8 @@ window["breadboardView"] = {
   CircuitBoard.prototype.addDMM = function(params) {
     if (!this.multimeter) {
       this.multimeter = new equipment.multimeter(this, params);
+      this.probes.push(this.multimeter.probe['black']);
+      this.probes.push(this.multimeter.probe['red']);
     }
     this.multimeter.probe['black'].view.show();
     this.multimeter.probe['red'].view.show();
@@ -5083,14 +5099,19 @@ window["breadboardView"] = {
   };
 
   CircuitBoard.prototype.addBattery = function(connections) {
+    var type = "battery";
+
     if (!this.battery) {
       this.battery = new equipment.battery(this, connections);
-      this.workspace.append(this.battery.blackWire, this.battery.redWire);
+      this.workspace.append(this.battery.view);
       this.itemslist.push(this.battery);
+
+      this.component[type] = this.battery;
+      this.battery["type"] = type;
+      this.battery["image"] = new SVGImage(this, type);
     }
+
     this.battery.btbox.view.show();
-    this.battery.blackWire.show();
-    this.battery.redWire.show();
 
     this.battery.pts[0].connected();
     this.battery.pts[1].connected();
@@ -5110,6 +5131,8 @@ window["breadboardView"] = {
   CircuitBoard.prototype.addOScope = function(params) {
     if (!this.oscope) {
       this.oscope = new equipment.oscope(this, params);
+      this.probes.push(this.oscope.probe['yellow']);
+      this.probes.push(this.oscope.probe['pink']);
     }
     this.oscope.probe['yellow'].view.show();
     this.oscope.probe['pink'].view.show();
@@ -5121,14 +5144,561 @@ window["breadboardView"] = {
   };
 
   CircuitBoard.prototype.toFront = function(component) {
-    var self = this;
+    var self = this, redrawId;
     setTimeout(function() {
       var i = component.view.index();
-      var redrawId = component.view[0].ownerSVGElement.suspendRedraw(50);
+      if (component.view[0].ownerSVGElement.suspendRedraw) { // IE9 out
+        redrawId = component.view[0].ownerSVGElement.suspendRedraw(50);
+      }
       self.workspace.prepend(component.view.parent().children(':gt(' + i + ')'));
-      component.view[0].ownerSVGElement.unsuspendRedraw(redrawId);
+      if (component.view[0].ownerSVGElement.unsuspendRedraw) { // IE9 out
+        component.view[0].ownerSVGElement.unsuspendRedraw(redrawId);
+      }
     }, 50);
   };
+
+  CircuitBoard.prototype.initMagnifier = function() {
+    var brd = this, x, y, t, hole, show_magnifier = false, time;
+
+    var holder = brd.holder[0], active = false, svghead;
+    var dx, dy, z, r, pi2, wm, hm, wb, hb, sh, pos, old;
+
+    time = board.options.magnifier.time;
+    hole = SVGStorage.hole;
+    svghead = SVGStorage.info.svghead;
+    dx = board.options.magnifier.offset.x;
+    dy = board.options.magnifier.offset.y;
+    z = board.options.magnifier.zoom;
+    r = board.options.magnifier.size;
+    hm = brd.holder.h * z;
+    wm = brd.holder.w * z;
+    sh = 60 * z;
+    hb = hm - sh;
+    wb = wm;
+
+    var comp = context2d();
+    comp.canvas.height = hm;
+    comp.canvas.width = wm;
+
+    pi2 = Math.PI * 2;
+    z--; // for event;
+
+    var magnifier = $('<canvas class="magnifier">').attr({
+      'height': brd.holder.h + 'px',
+      'width': brd.holder.w + 'px'
+    }).appendTo(brd.holder);
+
+    var ctx = magnifier[0].getContext('2d'), buff, lead, elem;
+
+    buff = context2d();
+    buff.canvas.height = hm;
+    buff.canvas.width = wm;
+    buff.fillStyle = '#999181';
+    buff.rect(0, 0, wb, sh), buff.fill();
+    buff.drawImage(SVGStorage.defs[':bg-green-board'], 0, sh, wb, hb);
+    buff.drawSvg( SVGStorage.info.svghole, 0, 0, wm, hm );
+    buff.fill();
+
+
+    holder.addEventListener( _mousedown, function(evt) {
+      lead = $(evt.target).data('primitive-lead') || null;
+      if (lead) {
+        elem = brd.component[lead.name];
+        comp.update(elem);
+        old = pos = getCoords(evt, brd.holder);
+        magnifier.draw();
+        active = true;
+        show_magnifier = true;
+        setTimeout(function() {
+          if (show_magnifier) {
+            magnifier.show();
+          }
+        }, time);
+      }
+      evt.preventDefault();
+    }, false);
+
+    holder.addEventListener( _mousemove, function(evt) {
+      pos = getCoords(evt, brd.holder);
+      if (active && ((pos.x != old.x) || (pos.y != old.y))) {
+        magnifier.show();
+        magnifier.draw();
+        old = pos;
+      }
+    }, false);
+
+    holder.addEventListener( _mouseup, function(evt) {
+      if (active) {
+        show_magnifier = false;
+        magnifier.hide();
+        active = false;
+        lead = null;
+        elem = null;
+      }
+    }, false);
+
+    ctx.font = "bold 16px Arial";
+
+    magnifier.draw = function() {
+      ctx.save();
+      ctx.clearRect(0, 0, brd.holder.w, brd.holder.h);
+
+      ctx.beginPath();
+      ctx.arc(pos.x-dx, pos.y-dy, r, 0, pi2, false);
+      ctx.closePath();
+      ctx.fill();
+      ctx.clip();
+
+      x = -z*pos.x - dx;
+      y = -z*pos.y - dy;
+
+      ctx.drawImage(buff.canvas, x, y, wm, hm);
+      if (brd.hole_target) {
+        ctx.save();
+        t = brd.hole_target.view[0].getCTM();
+        ctx.translate(x, y);
+        ctx.scale(z + 1, z + 1);
+        ctx.transform(t.a, t.b, t.c, t.d, t.e, t.f);
+        for (var i = 0, l = hole.length; i < l; i++) {
+          ctx.fillStyle = hole[i].c;
+          ctx.beginPath();
+          ctx.arc(hole[i].x, hole[i].y, hole[i].r, 0, pi2, false);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+      ctx.drawImage(comp.canvas, x, y, wm, hm);
+      ctx.drawImage(elem.image.update(), x, y, wm, hm);
+
+      ctx.restore();
+      ctx.save();
+      ctx.strokeStyle = '#3c3c3c';
+      ctx.shadowColor = '#000000';
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      ctx.shadowBlur = 8;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(pos.x-dx, pos.y-dy, r, 0, pi2, false);
+      ctx.closePath();
+      ctx.stroke();
+      if (brd.hole_target) {
+        ctx.save();
+        ctx.fillStyle = "#00ff00";
+        ctx.fillText(brd.hole_target.name, pos.x - r - dx, pos.y - r - dy);
+        ctx.restore();
+      }
+      ctx.restore();
+
+    };
+
+    comp.update = function(elem) {
+      this.clearRect(0, 0, wm, hm);
+      for (var i = 0, l = brd.itemslist.length; i < l; i++) {
+        if (brd.itemslist[i] != elem ) {
+          this.drawImage(brd.itemslist[i].image.cnv.canvas, 0, 0, wm, hm);
+        }
+      }
+      for (var p = 0, d = brd.probes.length; p < d; p++ ) {
+        this.drawImage(brd.probes[p].image.cnv.canvas, 0, 0, wm, hm);
+      }
+    };
+
+  };
+
+  var SVGImage = function(brd, uid) {
+    this.comp = brd.component[uid];
+    this.brd = brd;
+    this.view = this.comp.element.view;
+    this.cnv = context2d();
+    this.ctx = context2d();
+
+    this.ozoom = 1 / board.options.magnifier.zoom;
+    this.zoom = board.options.magnifier.zoom;
+    this.w = this.brd.holder.w * this.zoom;
+    this.h = this.brd.holder.h * this.zoom;
+
+    this.cnv.canvas.height = this.ctx.canvas.height = this.h;
+    this.cnv.canvas.width = this.ctx.canvas.width = this.w;
+
+    SVGImage[this.comp.type].call(this);
+
+    this.update();
+  };
+
+  SVGImage.prototype.update = function() {
+    var ctx = this.cnv, elem = this.comp, path, trns, p, l, i;
+
+    this.cnv.clearRect(0, 0, this.w, this.h);
+    this.cnv.save();
+    this.cnv.scale(this.zoom, this.zoom);
+
+    for (i = elem.leads.length; i--; ) {
+      path = elem.leads[i].state.path;
+      trns = path[0].getCTM();
+      for (p = 0, l = path.length; p < l; p++) {
+        SVGImage.draw_path.call(this, ctx, path[p], trns);
+      }
+    }
+
+    path = elem.connector.view.path;
+    for (p = 0, l = path.length; p < l; p++) {
+      trns =  path[p].getCTM();
+      SVGImage.draw_path.call(this, ctx, path[p], trns);
+    }
+
+    this.cnv.save();
+    this.cnv.transform(0.05, 0, 0, 0.05, 0, -50);
+    this.cnv.transform(0.8, 0, 0, 0.8, 0, 0);
+
+    var t = this.view.attr('transform');
+    t = t.replace(/\) rotate/g,')#rotate')
+      .replace(/ /g,',').replace(/#/, ' ');
+    t = t.split(' ');
+    var t1 = getTransform(t[0]);
+    var t2 = getTransform(t[1]);
+    this.cnv.translate(t1[0], t1[1]);
+    this.cnv.translate(t2[1], t2[2]);
+    this.cnv.rotate(t2[0]*Math.PI/180);
+    this.cnv.translate(-t2[1], -t2[2]);
+    this.cnv.translate(-5000, -5000);
+    this.cnv.transform(1.25, 0, 0, 1.25, 0, 0);
+    this.cnv.transform(20, 0, 0, 20, 0, 1000);
+    this.cnv.scale(this.ozoom, this.ozoom);
+    this.cnv.drawImage(this.ctx.canvas, 0, 0, this.w, this.h);
+    this.cnv.restore();
+
+
+    this.cnv.restore();
+    return this.cnv.canvas;
+  };
+
+  SVGImage.wire = function(elem) {
+  };
+
+  SVGImage.battery = function(elem) {
+  };
+
+  SVGImage.capacitor = function(elem) {
+    var path = this.comp.element.view.path;
+
+    this.ctx.scale(this.zoom, this.zoom);
+    this.ctx.transform(0.05, 0, 0, 0.05, 0, -50);
+    this.ctx.transform(0.8, 0, 0, 0.8, 0, 0);
+    this.ctx.translate(5000, 5000);
+    var t = getTransform(this.view.children().first().attr('transform'));
+    this.ctx.transform(t[0], t[1], t[2], t[3], t[4], t[5]);
+
+    path = this.view.path;
+    for (var p = 0, l = path.length; p < l; p++) {
+      SVGImage.draw_path.call(this, this.ctx, path[p]);
+    }
+
+  };
+
+  SVGImage.inductor = function(elem) {
+    var path = this.comp.element.view.path, g, t;
+
+    this.ctx.scale(this.zoom, this.zoom);
+    this.ctx.transform(0.05, 0, 0, 0.05, 0, -50);
+    this.ctx.transform(0.8, 0, 0, 0.8, 0, 0);
+    this.ctx.translate(5000, 5000);
+
+    g = this.view.children();
+    t = getTransform(g.attr('transform'));
+    this.ctx.transform(t[0], t[1], t[2], t[3], t[4], t[5]);
+
+    g = this.view.children().children().not('[type="label"]');
+    for (var i = 0, l = g.length; i< l; i++) {
+      t = getTransform(g[i].getAttribute('transform'));
+      this.ctx.save();
+      this.ctx.transform(t[0], t[1], t[2], t[3], t[4], t[5]);
+      path = $(g[i]).children()[0];
+      SVGImage.draw_path.call(this, this.ctx, path);
+      this.ctx.restore();
+    }
+
+  };
+
+  SVGImage.resistor = function(elem) {
+    var g, u, t, i, l;
+
+    this.ctx.scale(this.zoom, this.zoom);
+    this.ctx.transform(0.05, 0, 0, 0.05, 0, -50);
+    this.ctx.transform(0.8, 0, 0, 0.8, 0, 0);
+    this.ctx.translate(5000, 5000);
+
+    this.ctx.transform(15, 0, 0, 15, 0, 150);
+    this.ctx.scale(0.6, 0.6);
+
+    g = this.view.children().children().not('[type="label"]');
+
+    u = g.children('use').not('[type="hint"]');
+    this.ctx.save();
+    this.ctx.translate(-94, -32);
+    for (i = 0, l = u.length; i< l; i++) {
+      SVGImage.draw_use.call(this, this.ctx, u[i]);
+    }
+    this.ctx.restore();
+
+    g = g.children('g');
+    for (i = 0, l = g.length; i< l; i++) {
+      this.ctx.save();
+
+      g[i] = $(g[i]);
+
+      t = g[i].attr('transform');
+      t = t.replace(/\) rotate/g,')#rotate')
+        .replace(/ /g,',').replace(/#/, ' ');
+      t = t.split(' ');
+      var t1 = getTransform(t[0]);
+      this.ctx.translate(t1[0], t1[1]);
+      if (t[1]) {
+        var t2 = getTransform(t[1]);
+        this.ctx.scale(t2[0], t2[1]);
+      }
+      u = g[i].children()[0];
+      SVGImage.draw_use.call(this, this.ctx, u);
+      this.ctx.restore();
+    }
+
+  };
+
+  SVGImage.probe = function(brd, elem) {
+    this.view = elem.view;
+    this.cnv = context2d();
+    this.ctx = context2d();
+
+    this.ozoom = 1 / board.options.magnifier.zoom;
+    this.zoom = board.options.magnifier.zoom;
+    this.w = brd.holder.w * this.zoom;
+    this.h = brd.holder.h * this.zoom;
+
+    this.cnv.canvas.height = this.ctx.canvas.height = this.h;
+    this.cnv.canvas.width = this.ctx.canvas.width = this.w;
+
+    SVGImage.probe.template.call(this);
+
+    this.update();
+  };
+
+  SVGImage.probe.prototype.update = function() {
+    this.cnv.clearRect(0, 0, this.w, this.h);
+    this.cnv.save();
+
+    this.cnv.scale(this.zoom, this.zoom);
+    this.cnv.transform(0.05, 0, 0, 0.05, 0, -100);
+    var t = this.view.attr('transform');
+    if (t) {
+      t = getTransform(t);
+      this.cnv.translate(t[0], t[1]);
+    }
+
+    t = this.view.children().attr('transform');
+    if (t) {
+      t = getTransform(t);
+      this.cnv.translate(t[0], t[1]);
+    }
+
+    t = this.view.children().children().attr('transform');
+    t = getTransform(t);
+
+    this.cnv.translate(this.rt[0], this.rt[1]);
+    this.cnv.transform(20, 0, 0, 20, 0, 2000);
+    this.cnv.scale(this.ozoom, this.ozoom);
+
+    this.cnv.drawImage(this.ctx.canvas, 0, 0, this.w, this.h);
+
+
+    this.cnv.restore();
+    return this.cnv.canvas;
+  };
+
+  SVGImage.probe.template = function() {
+    var t = this.view.attr('transform-full-visibility');
+    t = getTransform(t);
+
+    this.ctx.save();
+    this.ctx.scale(this.zoom, this.zoom);
+    this.ctx.transform(0.05, 0, 0, 0.05, 0, -100);
+    this.ctx.translate(t[0], t[1]);
+
+    this.view.children().children().each(
+      SVGImage.probe.template_draw(this.ctx)
+    );
+    this.ctx.restore();
+
+    this.rt = [-t[0], -t[1]];
+
+  };
+
+  SVGImage.probe.template_draw = function(ctx) {
+    return function() {
+      var elem = $(this), name = this.nodeName.toLowerCase();
+      if (name == 'g') {
+        ctx.save();
+        var t = this.getAttribute('transform');
+        if (t) {
+
+          t = getTransform(t);
+          ctx.transform(t[0], t[1], t[2], t[3], t[4], t[5]);
+        }
+        elem.children().each(
+          SVGImage.probe.template_draw(ctx)
+        );
+        ctx.restore();
+      } else
+      if (name == 'path') {
+        SVGImage.draw_path(ctx, this);
+      }
+    };
+  };
+
+  SVGImage.draw_use = function(ctx, use, trn) {
+    ctx.save();
+
+    if (trn) {
+      ctx.transform(trn.a, trn.b, trn.c, trn.d, trn.e, trn.f);
+    }
+
+    var xlink = use.getAttribute('xlink:href').replace('#','');
+    var img = SVGStorage.defs[xlink];
+    var x = parseInt(use.getAttribute('x'), 10);
+    var y = parseInt(use.getAttribute('y'), 10);
+    var ox = parseInt(img.ox, 10);
+    var oy = parseInt(img.oy, 10);
+
+    ctx.drawImage(img, x + ox, y + oy, img.width, img.height);
+
+    ctx.restore();
+  };
+
+  SVGImage.draw_path = function(ctx, path, trn) {
+    ctx.save();
+
+    if (trn) {
+      ctx.transform(trn.a, trn.b, trn.c, trn.d, trn.e, trn.f);
+    }
+
+    var str_lj = path.getAttribute('stroke-linejoin') || false;
+    var str_lc = path.getAttribute('stroke-linecap') || false;
+    var str_w = parseInt(path.getAttribute('stroke-width'), 10);
+    var str_c = path.getAttribute('stroke');
+    var fill = path.getAttribute('fill'), f;
+
+    if (str_c) {ctx.strokeStyle = str_c;}
+    if (str_w) {ctx.lineWidth = str_w;}
+    if (str_lj) {ctx.lineJoin = str_lj;}
+    if (str_lc) {ctx.lineCap = str_lc;}
+
+    ctx.beginPath();
+
+    var segs = path.pathSegList;
+    for (var i = 0, len = segs.numberOfItems; i < len; i++) {
+      var seg = segs.getItem(i), c = seg.pathSegTypeAsLetter;
+      if (c == "M") {
+        ctx.moveTo(seg.x, seg.y);
+      } else
+      if (c == "L") {
+        ctx.lineTo(seg.x, seg.y);
+      } else
+      if (c == "Q") {
+        ctx.quadraticCurveTo(seg.x1, seg.y1, seg.x, seg.y);
+      } else
+      if (c == "A") {
+       ctx.arc(seg.x - seg.r1, seg.y, seg.r1, 0, Math.PI * 2, true);
+      } else
+      if (c == "Z") {
+        ctx.closePath();
+      }
+    }
+
+    if (str_c) {ctx.stroke();}
+
+    if (fill && fill != 'none') {
+      if (fill.substring(0,3) == 'url') {
+        fill = fill.replace(/url\(/gm,'');
+        fill = fill.replace(/\)/gm,'');
+        f = this.brd.holder.find(fill);
+        SVGImage["draw_"+ f[0].nodeName.toLowerCase()](ctx, f);
+      } else {
+        ctx.fillStyle = fill;
+        ctx.fill();
+      }
+    }
+
+    ctx.restore();
+  };
+
+  SVGImage.draw_lineargradient = function(ctx, f) {
+    var x1 = parseFloat(f.attr('x1'), 10);
+    var y1 = parseFloat(f.attr('y1'), 10);
+    var x2 = parseFloat(f.attr('x2'), 10);
+    var y2 = parseFloat(f.attr('y2'), 10);
+
+    var trn = (f[0].getAttribute('gradientTransform') || '')
+         .replace(/\)/,'').replace(/matrix\(/,'').split(' ');
+
+    ctx.save();
+
+    if (trn) {
+      ctx.transform(
+        parseFloat(trn[0], 10), parseFloat(trn[1], 10),
+        parseFloat(trn[2], 10), parseFloat(trn[3], 10),
+        parseFloat(trn[4], 10), parseFloat(trn[5], 10)
+      );
+    }
+
+    var grad = ctx.createLinearGradient(x1, y1, x2, y2);
+
+    var s = f.children('stop'), i, l;
+    for (i = 0, l = s.length; i < l; i++) {
+      grad.addColorStop(
+        parseFloat(s[i].getAttribute('offset'), 10) ,
+        s[i].getAttribute('stop-color-rgba')
+      );
+    }
+
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.restore();
+  };
+
+  SVGImage.draw_radialgradient = function(ctx, f) {
+    var fx = parseFloat(f.attr('fx'), 10);
+    var fy = parseFloat(f.attr('fy'), 10);
+    var cx = parseFloat(f.attr('cx'), 10);
+    var cy = parseFloat(f.attr('cy'), 10);
+    var r = parseFloat(f.attr('r'), 10);
+    var trn = (f[0].getAttribute('gradientTransform') || '')
+         .replace(/\)/,'').replace(/matrix\(/,'').split(' ');
+
+    ctx.save();
+
+    if (trn) {
+      ctx.transform(
+        parseFloat(trn[0], 10), parseFloat(trn[1], 10),
+        parseFloat(trn[2], 10), parseFloat(trn[3], 10),
+        parseFloat(trn[4], 10), parseFloat(trn[5], 10)
+      );
+    }
+
+    var grad = ctx.createRadialGradient(fx, fy, 0, cx, cy, r);
+
+    var s = f.children('stop'), i, l;
+    for (i = 0, l = s.length; i < l; i++) {
+      grad.addColorStop(
+        parseFloat(s[i].getAttribute('offset'), 10) ,
+        s[i].getAttribute('stop-color-rgba')
+      );
+    }
+
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.restore();
+  };
+
 
   var CircuitBoardHole = function(elem) {
     this.name = elem.attr('hole');
@@ -5161,7 +5731,9 @@ window["breadboardView"] = {
     this.view.attr("xlink:href", "#$:hole" + pref + "_connected");
     return this;
   };
+
   /* === #equipments begin === */
+
   equipment.multimeter = function(board, params) {
     this.mmbox = new primitive.mmbox(board, params);
     this.probe = {
@@ -5198,6 +5770,10 @@ window["breadboardView"] = {
   };
 
   equipment.battery = function(board, connections) {
+    this.view = SVGStorage.create('group').attr({
+      'component' : 'battery'
+    });
+
     this.btbox = new primitive.btbox(board);
 
     var loc = connections.split(',');
@@ -5206,26 +5782,26 @@ window["breadboardView"] = {
 
     this.leads = addLeads(this.pts, [300, 45], loc, 'battery', false, board);
 
-    this.wires = [];
-    this.wires[0] = new primitive.batteryWireRed(this.pts[1]);
-    this.wires[1] = new primitive.batteryWireBlack(this.pts[0]);
+    this.wires = [
+      new primitive.battery_wire('black', this.pts[0]),
+      new primitive.battery_wire('red', this.pts[1])
+    ];
 
-    this.blackWire = SVGStorage.create('group').attr({
-      'component' : 'batteryWireBlack'
-    });
+    this.view.append(this.wires[0].view, this.wires[1].view);
+    this.view.append(this.leads[0].view, this.leads[1].view);
 
-    this.redWire = SVGStorage.create('group').attr({
-      'component' : 'batteryWireRed'
-    });
-
-    this.blackWire.append(this.wires[0].view, this.leads[0].view);
-    this.redWire.append(this.wires[1].view, this.leads[1].view);
+    this.connector = {"view": this.wires[0].view};
+    this.element = {"view": this.wires[0].view};
+    this.connector.view.path = this.view.children('g:lt(2)').find('path');
 
   };
+
   /* === #equipments end === */
+
   /* === #components begin === */
+
   component.prototype.init = function(params, holes, board) {
-    var loc = params["connections"].split(','), self = this;
+    var loc = params["connections"].split(',');
     this.pts = [holes[loc[0]], holes[loc[1]]];
     this.angle = getAngleBetwPoints(this.pts);
     this.leads = addLeads(this.pts, getDegsFromRad(this.angle), loc, params.UID, params.draggable, board);
@@ -5284,11 +5860,14 @@ window["breadboardView"] = {
       }, false);
     }
   };
+
   /* === #components end === */
+
   /* === #primitive begin === */
+
   primitive.prototype.initComponentDraggable = function(board) {
-    var component, s_pos, c_pos, x = 0, y = 0, coeff = 25, i, dx, dy;
-    var l1, l2, ho1, ho2, hn1, hn2, begDiffX, c, deg, angle;
+    var component, s_pos, c_pos, x = 0, y = 0, coeff = 25, dx, dy;
+    var l1, l2, ho1, ho2, hn1, hn2, c, deg, angle;
     var hi1, hi2;
     var p1 = {
       x : 0,
@@ -5299,90 +5878,96 @@ window["breadboardView"] = {
     }, pts = [p2, p1];
 
     board.holder[0].addEventListener(_mousedown, function(evt) {
-      component = $(evt._target).data('component') || null;
-      if (component) {
-        s_pos = getCoords(evt, board.holder);
+      if (!evt.touches || evt.touches.length == 1) {
+        component = $(evt._target).data('component') || null;
+        if (component) {
+          s_pos = getCoords(evt, board.holder);
 
-        l1 = component.leads[0];
-        l2 = component.leads[1];
+          l1 = component.leads[0];
+          l2 = component.leads[1];
 
-        p1.x = l1.x;
-        p1.y = l1.y;
-        p2.x = l2.x;
-        p2.y = l2.y;
+          p1.x = l1.x;
+          p1.y = l1.y;
+          p2.x = l2.x;
+          p2.y = l2.y;
 
-        ho1 = component.hole[0].highlight();
-        ho2 = component.hole[1].highlight();
-        hi1 = hn1 = ho1;
-        hi2 = hn2 = ho2;
+          ho1 = component.hole[0].highlight();
+          ho2 = component.hole[1].highlight();
+          hi1 = hn1 = ho1;
+          hi2 = hn2 = ho2;
 
-        board.toFront(component);
-        evt.preventDefault();
+          board.toFront(component);
+          evt.preventDefault();
+        }
       }
     }, false);
 
     board.holder[0].addEventListener(_mousemove, function(evt) {
-      if (component) {
-        c_pos = getCoords(evt, board.holder);
-        dx = c_pos.x - s_pos.x;
-        dy = c_pos.y - s_pos.y;
-        x = component.x + dx * coeff;
-        y = component.y + dy * coeff;
-        component.view.attr('transform', 'translate(' + x + ',' + y + ')');
-        p1.x = l1.x + dx * coeff;
-        p1.y = l1.y + dy * coeff;
-        p2.x = l2.x + dx * coeff;
-        p2.y = l2.y + dy * coeff;
-        hn1 = board.holes.find(p1);
-        hn2 = board.holes.find(p2);
-        if (hi1 || hi2) {
-          hi1.disconnected().highlight();
-          hi2.disconnected().highlight();
-          hi1 = hi2 = null;
-          if (l1.state != l1.view_d) {
-            l1.board.sendEventToModel("connectionBroken", [l1.name, l1.hole]);
+      if (!evt.touches || evt.touches.length == 1) {
+        if (component) {
+          c_pos = getCoords(evt, board.holder);
+          dx = c_pos.x - s_pos.x;
+          dy = c_pos.y - s_pos.y;
+          x = component.x + dx * coeff;
+          y = component.y + dy * coeff;
+          component.view.attr('transform', 'translate(' + x + ',' + y + ')');
+          p1.x = l1.x + dx * coeff;
+          p1.y = l1.y + dy * coeff;
+          p2.x = l2.x + dx * coeff;
+          p2.y = l2.y + dy * coeff;
+          hn1 = board.holes.find(p1);
+          hn2 = board.holes.find(p2);
+          if (hi1 || hi2) {
+            hi1.disconnected().highlight();
+            hi2.disconnected().highlight();
+            hi1 = hi2 = null;
+            if (l1.state != l1.view_d) {
+              l1.board.sendEventToModel("connectionBroken", [l1.name, l1.hole]);
+            }
+            if (l2.state != l2.view_d) {
+              l2.board.sendEventToModel("connectionBroken", [l2.name, l2.hole]);
+            }
           }
-          if (l2.state != l2.view_d) {
-            l2.board.sendEventToModel("connectionBroken", [l2.name, l2.hole]);
+          if (hn1 != ho1) {
+            ho1.unhighlight();
+            ho1 = hn1.highlight();
           }
-        }
-        if (hn1 != ho1) {
-          ho1.unhighlight();
-          ho1 = hn1.highlight();
-        }
-        if (hn2 != ho2) {
-          ho2.unhighlight();
-          ho2 = hn2.highlight();
+          if (hn2 != ho2) {
+            ho2.unhighlight();
+            ho2 = hn2.highlight();
+          }
         }
       }
     }, false);
 
     board.holder[0].addEventListener(_mouseup, function(evt) {
-      if (component) {
-        component.hole[0] = hn1;
-        component.hole[1] = hn2;
-        l1.hole = hn1.name;
-        l2.hole = hn2.name;
-        component.x = 0;
-        component.y = 0;
-        p1.x = l1.x = hn1.x;
-        p1.y = l1.y = hn1.y;
-        p2.x = l2.x = hn2.x;
-        p2.y = l2.y = hn2.y;
-        hn1.unhighlight();
-        hn2.unhighlight();
-        if (!hi1) {
-          hn1.connected();
-          l1.connect();
+      if (!evt.touches || evt.touches.length === 0) {
+        if (component) {
+          component.hole[0] = hn1;
+          component.hole[1] = hn2;
+          l1.hole = hn1.name;
+          l2.hole = hn2.name;
+          component.x = 0;
+          component.y = 0;
+          p1.x = l1.x = hn1.x;
+          p1.y = l1.y = hn1.y;
+          p2.x = l2.x = hn2.x;
+          p2.y = l2.y = hn2.y;
+          hn1.unhighlight();
+          hn2.unhighlight();
+          if (!hi1) {
+            hn1.connected();
+            l1.connect();
+          }
+          if (!hi2) {
+            hn2.connected();
+            l2.connect();
+          }
+          updateComponentView();
+          component = null;
+          hn1 = null;
+          hn2 = null;
         }
-        if (!hi2) {
-          hn2.connected();
-          l2.connect();
-        }
-        updateComponentView();
-        component = null;
-        hn1 = null;
-        hn2 = null;
       }
     }, false);
 
@@ -5398,13 +5983,14 @@ window["breadboardView"] = {
       l2.view.attr('transform', 'translate(' + l2.x + ',' + l2.y + ') rotate(' + angle + ',130,130)');
       component.element.view.attr('transform', 'translate(' + c.x + ',' + c.y + ') rotate(' + deg + ',132.5,132.5)');
       setConnectorView(component.connector.view, pts, angle);
+      component.image.update();
     };
 
   };
 
   primitive.prototype.initLeadDraggable = function(board) {
-    var lead_this, lead_pair, component, view, coeff = 25;
-    var bbox, s_pos, c_pos, x, y, dx, dy, pts, angle, c;
+    var lead_this, lead_pair, component, coeff = 25;
+    var s_pos, c_pos, dx, dy, pts, angle, c;
     var p1 = {
       x : 0,
       y : 0
@@ -5414,62 +6000,73 @@ window["breadboardView"] = {
     }, deg, hi, ho, hn;
 
     board.holder[0].addEventListener(_mousedown, function(evt) {
-      lead_this = $(evt.target).data('primitive-lead') || null;
-      if (lead_this) {
-        component = board.component[lead_this.name];
-        lead_pair = findLeadPair(component, lead_this);
-        hi = board.holes.find(lead_this).highlight();
-        hn = ho = hi;
-        s_pos = getCoords(evt, board.holder);
-        p2.x = lead_pair.x;
-        p2.y = lead_pair.y;
-        pts = (lead_this.orientation == 1) ? [p1, p2] : [p2, p1];
-        evt.preventDefault();
+      if (!evt.touches || evt.touches.length == 1) {
+        lead_this = $(evt.target).data('primitive-lead') || null;
+        if (lead_this) {
+          component = board.component[lead_this.name];
+          lead_pair = findLeadPair(component, lead_this);
+          hi = board.holes.find(lead_this).highlight();
+          hn = ho = hi;
+          s_pos = getCoords(evt, board.holder);
+          p2.x = lead_pair.x;
+          p2.y = lead_pair.y;
+          pts = (lead_this.orientation == 1) ? [p1, p2] : [p2, p1];
+          evt.preventDefault();
+        }
       }
     }, false);
 
     board.holder[0].addEventListener(_mousemove, function(evt) {
-      if (lead_this) {
-        c_pos = getCoords(evt, board.holder);
-        dx = c_pos.x - s_pos.x;
-        dy = c_pos.y - s_pos.y;
-        p1.x = lead_this.x + dx * coeff;
-        p1.y = lead_this.y + dy * coeff;
-        updateComponentView();
-        lead_this.isDragged = true;
-        hn = board.holes.find(p1);
-        if (hi) {
-          hi.disconnected().highlight();
-          hi = null;
-          if (lead_this.state != lead_this.view_d) {
-            lead_this.board.sendEventToModel("connectionBroken", [lead_this.name, lead_this.hole]);
+      if (!evt.touches || evt.touches.length == 1) {
+        if (lead_this) {
+          c_pos = getCoords(evt, board.holder);
+          dx = c_pos.x - s_pos.x;
+          dy = c_pos.y - s_pos.y;
+          p1.x = lead_this.x + dx * coeff;
+          p1.y = lead_this.y + dy * coeff;
+          updateComponentView();
+          lead_this.isDragged = true;
+          hn = board.holes.find(p1);
+          board.hole_target = hn;
+          if (hi) {
+            hi.disconnected().highlight();
+            hi = null;
+            if (lead_this.state != lead_this.view_d) {
+              lead_this.board.sendEventToModel("connectionBroken", [lead_this.name, lead_this.hole]);
+            }
           }
-        }
-        if (hn != ho) {
-          ho.unhighlight();
-          ho = hn.highlight();
+          if (hn != ho) {
+            ho.unhighlight();
+            ho = hn.highlight();
+          }
         }
       }
     }, false);
 
     board.holder[0].addEventListener(_mouseup, function(evt) {
-      if (lead_this) {
-        lead_this.isDragged = false;
-        lead_this.x = p1.x = hn.x;
-        lead_this.y = p1.y = hn.y;
-        lead_this.hole = hn.name;
-        component.hole[0] = board.holes[lead_this.hole];
-        component.hole[1] = board.holes[lead_pair.hole];
-        updateComponentView();
-        hn.unhighlight();
-        if (!hi) {
-          lead_this.connect();
-          hn.connected();
+      if (!evt.touches || evt.touches.length === 0) {
+        if (lead_this) {
+          lead_this.isDragged = false;
+          lead_this.x = p1.x = hn.x;
+          lead_this.y = p1.y = hn.y;
+          lead_this.hole = hn.name;
+          component.hole[0] = board.holes[lead_this.hole];
+          component.hole[1] = board.holes[lead_pair.hole];
+          updateComponentView();
+          hn.unhighlight();
+          if (!hi) {
+            lead_this.connect();
+            hn.connected();
+          }
+          hn = null;
+          ho = null;
+          lead_this = null;
+          lead_pair = null;
         }
-        hn = null;
-        ho = null;
-        lead_this = null;
-        lead_pair = null;
+        if ($(evt.target).data('component-lead')) {
+          var name = $(evt.target).data('component-lead');
+          board.component[name].image.update();
+        }
       }
     }, false);
 
@@ -5492,7 +6089,9 @@ window["breadboardView"] = {
   primitive.lead = function(type, pos, angle, draggable) {
     var lead = SVGStorage.create('lead').clone(), self = this;
     this.view_d = lead.find('[type="disconnected"]').hide();
+    this.view_d.path = this.view_d.find('[type="wire"]>path');
     this.view_c = lead.find('[type="connected"]').show();
+    this.view_c.path = this.view_c.find('[type="wire"]>path');
 
     this.name = pos.name;
     this.hole = pos.hole;
@@ -5522,6 +6121,7 @@ window["breadboardView"] = {
     if (draggable) {
       action.data('primitive-lead', this);
     }
+    action.data('component-lead', this.name);
 
     action[0].addEventListener(_mouseup, function(l) {
       var f = false;
@@ -5611,6 +6211,7 @@ window["breadboardView"] = {
 
   primitive.connector = function(pts, angle, color) {
     var connector = SVGStorage.create('connector').clone();
+    connector.path = connector.find('path');
     angle = getDegsFromRad(angle) + 180;
 
     setConnectorView(connector, [pts[1], pts[0]], angle);
@@ -5626,10 +6227,12 @@ window["breadboardView"] = {
     var inductor = SVGStorage.create('inductor').clone();
     angle = getDegsFromRad(angle);
 
+    inductor.path = inductor.find('path').not('[type="label-bg"]');
+
     if (angle > 90 || angle < -90) {
       angle += 180;
     }
-    inductor.attr('transform', 'matrix(1 0 0 1 ' + parseInt((pts[0].x + pts[1].x) / 2, 10) + ' ' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
+    inductor.attr('transform', 'translate(' + parseInt((pts[0].x + pts[1].x) / 2, 10) + ',' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
 
     var label = inductor.find('[type=label]');
     if (!touch) {
@@ -5652,10 +6255,12 @@ window["breadboardView"] = {
     var label = capacitor.find('[type=label]');
     angle = getDegsFromRad(angle);
 
+    capacitor.path = capacitor.find('path');
+
     if (angle > 90 || angle < -90) {
       angle += 180;
     }
-    capacitor.attr('transform', 'matrix(1 0 0 1 ' + parseInt((pts[0].x + pts[1].x) / 2, 10) + ' ' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
+    capacitor.attr('transform', 'translate('+parseInt((pts[0].x + pts[1].x) / 2, 10) + ',' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
 
     if (!touch) {
       capacitor.bind('mouseover', function() {
@@ -5681,10 +6286,14 @@ window["breadboardView"] = {
     var band = resistor.find('[type^=band]');
     angle = getDegsFromRad(angle);
 
+    resistor.path = resistor.find('use')
+               .not('[type="label-bg"]')
+                  .not('[type="hint"]');
+
     if (angle > 90 || angle < -90) {
       angle += 180;
     }
-    resistor.attr('transform', 'matrix(1 0 0 1 ' + (parseInt((pts[0].x + pts[1].x) / 2, 10)+120) + ' ' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
+    resistor.attr('transform', 'translate(' + parseInt((pts[0].x + pts[1].x) / 2, 10) + ',' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
 
     band.each(function(i) {
       if (i != (colors.length - 1)) {
@@ -5728,63 +6337,72 @@ window["breadboardView"] = {
 
     board.holder.find('[info=probe]').each(function() {
       this.addEventListener(_mousedown, function(evt) {
-        active = $(this).data('primitive-probe') || {};
-        if (active.draggable) {
-          s_pos = getCoords(evt, board.holder);
-          calcLeadsBBox.call(board);
-          lead_init = active.lead;
-          evt.stopPropagation();
-          evt.preventDefault();
-          x = active.dx;
-          y = active.dy;
-          dx = dy = 0;
-        } else {
-          active = null;
+        if (!evt.touches || evt.touches.length == 1) {
+          active = $(this).data('primitive-probe') || {};
+          if (active.draggable) {
+            active.z.attr('transform', active.z.zoom);
+            s_pos = getCoords(evt, board.holder);
+            calcLeadsBBox.call(board);
+            lead_init = active.lead;
+            evt.stopPropagation();
+            evt.preventDefault();
+            x = active.dx;
+            y = active.dy;
+            dx = dy = 0;
+          } else {
+            active = null;
+          }
         }
       }, false);
     });
 
     board.holder[0].addEventListener(_mousemove, function(evt) {
-      if (active) {
-        c_pos = getCoords(evt, board.holder);
-        dx = c_pos.x - s_pos.x;
-        dy = c_pos.y - s_pos.y;
-        x = active.dx + dx * coeff;
-        y = active.dy + dy * coeff;
-        active.view.attr('transform', 'translate(' + x + ',' + y + ')');
-        point = {
-          'x' : (active.x + dx),
-          'y' : (active.y + dy)
-        };
-        lead_new = findLeadUnderProbe(board, point);
-        if (lead_init) {
-          board.sendEventToModel("probeRemoved", [active.name, active.color]);
-          lead_init = null;
-        }
-        if (lead_new) {
-          lead_new.highlight(1);
-          lead_old = lead_new;
-        } else {
-          if (lead_old) {
-            lead_old.highlight(0);
-            lead_old = null;
+      if (!evt.touches || evt.touches.length == 1) {
+        if (active) {
+          c_pos = getCoords(evt, board.holder);
+          dx = c_pos.x - s_pos.x;
+          dy = c_pos.y - s_pos.y;
+          x = active.dx + dx * coeff;
+          y = active.dy + dy * coeff;
+          active.view.attr('transform', 'translate(' + x + ',' + y + ')');
+          point = {
+            'x' : (active.x + dx),
+            'y' : (active.y + dy)
+          };
+          lead_new = findLeadUnderProbe(board, point);
+          if (lead_init) {
+            board.sendEventToModel("probeRemoved", [active.name, active.color]);
+            lead_init = null;
+          }
+          if (lead_new) {
+            lead_new.highlight(1);
+            lead_old = lead_new;
+          } else {
+            if (lead_old) {
+              lead_old.highlight(0);
+              lead_old = null;
+            }
           }
         }
       }
     }, false);
 
     board.holder[0].addEventListener(_mouseup, function(evt) {
-      if (active) {
-        active.x += dx;
-        active.y += dy;
-        active.dx = x;
-        active.dy = y;
-        if (lead_new) {
-          active.setState(lead_new);
-        } else if (active.lead) {
-          active.lead = null;
+      if (!evt.touches || evt.touches.length === 0) {
+        if (active) {
+          active.z.attr('transform', active.z.init);
+          active.x += dx;
+          active.y += dy;
+          active.dx = x;
+          active.dy = y;
+          if (lead_new) {
+            active.setState(lead_new);
+          } else if (active.lead) {
+            active.lead = null;
+          }
+          active.image.update();
+          active = null;
         }
-        active = null;
       }
     }, false);
   };
@@ -5800,6 +6418,10 @@ window["breadboardView"] = {
       initial.attr('transform', 'translate(' + (board.holes[params.connection].x / coeff) + ',' + (board.holes[params.connection].y / coeff) + ')');
     }
 
+    this.z = elem.find('[type="zooming"]');
+    this.z.zoom = this.z.attr('transform-zoomed');
+    this.z.init = this.z.attr('transform');
+
     point = getAttractionPoint(elem);
     this.draggable = params.draggable;
     this.color = params.color;
@@ -5813,6 +6435,7 @@ window["breadboardView"] = {
     this.view.show = self.show;
     this.view.hide = self.hide;
     this.view.data('primitive-probe', this);
+    this.image = new SVGImage.probe(board, this);
 
     if (params.connection) {// snap to lead
       calcLeadsBBox.call(board);
@@ -6026,20 +6649,18 @@ window["breadboardView"] = {
     });
   };
 
-  primitive.batteryWireRed = function(point) {
-    var batteryWireRed = SVGStorage.create('batteryWireRed').clone();
-    batteryWireRed.attr('transform', 'matrix(1 0 0 1 ' + point.x + ' ' + point.y + ')');
-    this.view = batteryWireRed;
-  };
-
-  primitive.batteryWireBlack = function(point) {
-    var batteryWireBlack = SVGStorage.create('batteryWireBlack').clone();
-    batteryWireBlack.attr('transform', 'matrix(1 0 0 1 ' + point.x + ' ' + point.y + ')');
-    this.view = batteryWireBlack;
+  primitive.battery_wire = function(name, point) {
+    this.view = SVGStorage.create('battery_wire_' + name).clone();
+    this.view.attr('transform', 'translate('+ point.x +','+ point.y +') rotate(0,0,0)');
   };
 
   /* === #primitive end === */
+
   /* === #utils start === */
+
+  var context2d = function() {
+    return document.createElement('canvas').getContext('2d');
+  };
   var addLeads = function(pts, angle, loc, name, drag, board) {
     var leads = ["right", "left"], angles = [];
     angles = ($.isArray(angle)) ? [angle[0], angle[1]] : [angle, angle];
@@ -6057,11 +6678,11 @@ window["breadboardView"] = {
     return leads;
   };
   var setConnectorView = function(elem, pts, deg) {
-    var trn = 'matrix(1 0 0 1 ' + parseInt(pts[0].x, 10) + ' ' + parseInt(pts[0].y, 10) + ') rotate(' + deg + ',130,130)';
+    var trn = 'translate(' + parseInt(pts[0].x, 10) + ',' + parseInt(pts[0].y, 10) + ') rotate(' + deg + ',130,130)';
     var leadLenght = 560, coeff = 0.6;
     var dx = pts[0].x - pts[1].x, dy = pts[0].y - pts[1].y;
     var l = Math.sqrt(dx * dx + dy * dy) - leadLenght * 2;
-    var path = 'M 0 0 h ' + l / coeff;
+    var path = 'M 0 0 L ' + l / coeff + ' 0';
     if (l > 0) {
       elem.find('[drag=area]').attr('width', l / coeff);
     }
@@ -6159,18 +6780,60 @@ window["breadboardView"] = {
       y : (parseInt(posy, 10) - offset.top)
     };
   };
+  var getTransform = function(trns) {
+    trns = trns.replace(/,/g, ' ');
+    var name = trns.match(/^[^\(]*/)[0];
+    trns = trns.match(/\([^\)]*\)/)[0];
+    trns = trns.replace(/\(|\)/g, '');
+    trns = trns.split(' ');
+    for (var i = trns.length; i--; ) {
+      trns[i] = parseFloat(trns[i], 10);
+    }
+    trns.name = name;
+    return trns;
+  };
   /* === #utils stop === */
 
   var SVGStorage = function(data) {
-    var self = this;
-    this.view = {
-      'board' : data.filter('svg')
+    var h = "data:image/svg+xml;base64,";
+    var self = this, svg, a, b;
+
+    this.info = {
+      'svghead': data.match(/<svg[^>]*>/)[0] ,
+      'boardhl': new Image(),
+      'svghole': ''
     };
+    a = data.search('<!-- breadboard start -->');
+    b = data.search('<!-- breadboard end -->');
+    svg += data.substring( (a + 25), b);
+    a = data.search('<!-- breadboard defs holes start -->');
+    b = data.search('<!-- breadboard defs holes end -->');
+    svg += data.substring( (a + 36), b);
+    svg = this.info.svghead + svg + '</svg>';
+    this.info.boardhl.src = h + btoa(svg);
+    this.info.svghole = svg;
+
+    data = $(data);
+    this.defs = {};
+    this.view = {'board': data};
     data.find('[primitive]').each(function() {
       var elem = $(this), name = elem.attr('primitive');
       elem.removeAttr('primitive');
       self.view[name] = elem.remove();
     });
+    this.hole = [];
+    data.find('[id="$:hole_highlighted"]').each(function(){
+      var c = $(this).children('circle');
+      for (var i = 0, l = c.length; i < l; i++) {
+        self.hole.push({
+          'x': parseInt(c[i].getAttribute('cx'), 10),
+          'y': parseInt(c[i].getAttribute('cy'), 10),
+          'r': parseInt(c[i].getAttribute('r'), 10),
+          'c': c[i].getAttribute('fill')
+        });
+      }
+    });
+    paper = this.view.board;
   };
 
   SVGStorage.prototype.create = function(name) {
@@ -6187,12 +6850,42 @@ window["breadboardView"] = {
   var $stack = [];
 
   board.util.require(["common/images/sparks.breadboard.svg"], function(data) {
-    paper = $(data["sparks.breadboard"]);
-    SVGStorage = new SVGStorage(paper);
-    $ready = true;
-    for (var i = 0, l = $stack.length; i < l; i++) {
-      $stack[i]();
+    SVGStorage = new SVGStorage(data["sparks.breadboard"]);
+    var stack = SVGStorage.view.board.find('image[pre-cache]'), all = stack.length;
+    var cache = function(image) {
+      var img = new Image();
+      img.onload = function() {
+        var opt = {
+          'id': image.getAttribute('id'),
+          'x': image.getAttribute('x'),
+          'y': image.getAttribute('y')
+        };
+        check(img, opt);
+      };
+      img.src = image.getAttribute('xlink:href');
+    };
+    for (var i = 0; i < all; i++) {
+      cache(stack[i]);
     }
+    var check = function(img, opt) {
+      var ctx = document.createElement('canvas').getContext('2d');
+      ctx.canvas.height = img.height;
+      ctx.canvas.width = img.width;
+      ctx.drawImage(img, 0, 0, img.width, img.height);
+
+      SVGStorage.defs[opt.id] = ctx.canvas;
+      SVGStorage.defs[opt.id].ox = opt.x;
+      SVGStorage.defs[opt.id].oy = opt.y;
+      if (!--all) {start_activity();}
+    };
+
+    var start_activity = function() {
+      $ready = true;
+      for (var i = 0, l = $stack.length; i < l; i++) {
+        $stack[i]();
+      }
+    };
+
   });
 
   board.create = function(id) {
