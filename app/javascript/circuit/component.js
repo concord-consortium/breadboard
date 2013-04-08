@@ -30,12 +30,13 @@
       this._ensureInt("resistance");
       this._ensureInt("nominalResistance");
       this._ensureInt("voltage");
+      this.draggable = !!this.draggable;
 
       this.viewArguments = {
         type: this.type,
         UID: this.UID,
         connections: this.getLocation(),
-        draggable: false
+        draggable: this.draggable
       };
 
       if (this.label) {
