@@ -34,7 +34,6 @@
         currentMeasurement: null,
 
         update: function () {
-          console.log("update!")
           if (this.redProbeConnection && this.blackProbeConnection) {
             if (this.dialPosition.indexOf('dcv_') > -1){
               this.currentMeasurement = "voltage";

@@ -65,7 +65,6 @@
       },
 
       update: function() {
-        console.log("update")
         var breadboard = getBreadBoard(),
             source     = breadboard.components.source,
             sourceSignal,

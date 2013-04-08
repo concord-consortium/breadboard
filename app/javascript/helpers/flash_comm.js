@@ -6,11 +6,38 @@
 
     sparks.breadboardComm = {};
 
+    sparks.breadboardComm.openConnections = {};
+
     sparks.breadboardComm.connectionMade = function(component, hole) {
-      var section = sparks.activityController.currentSection;
+      var section = sparks.activityController.currentSection,
+          breadboard, comp, openConnections, openConnectionsArr, connectionReturning, connection;
       // for now, we're just dealing with the situation of replacing one lead that had been lifted
       if (!!hole){
-        breadModel('unmapHole', hole);
+        openConnections = sparks.breadboardComm.openConnections[component];
+        if (!openConnections) return; // shouldn't happen
+
+        if (openConnections[hole]) {        // if we're just replacing a lead
+          breadModel('unmapHole', hole);
+          delete openConnections[hole];
+        } else {                            // if we're putting lead in new hole
+          breadboard = getBreadBoard();
+          comp = breadboard.components[component];
+          // transform to array
+          openConnectionsArr = sparks.util.getKeys(openConnections);
+          // pick first open lead
+          connectionReturning = openConnectionsArr[0];
+          breadModel('unmapHole', connectionReturning);
+          //swap
+          for (var i = 0; i < comp.connections.length; i++) {
+            connection = comp.connections[i].getName();
+            if (connection === connectionReturning) {
+              comp.connections[i] = breadboard.getHole(hole);
+              delete openConnections[connection];
+              break;
+            }
+          }
+        }
+
       }
       sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
         "type": "connect lead",
@@ -19,6 +46,11 @@
     };
 
     sparks.breadboardComm.connectionBroken = function(component, hole) {
+      if (!sparks.breadboardComm.openConnections[component]) {
+        sparks.breadboardComm.openConnections[component] = {}
+      }
+      sparks.breadboardComm.openConnections[component][hole] = true;
+
       var section = sparks.activityController.currentSection;
       var newHole = breadModel('getGhostHole', hole+"ghost");
 

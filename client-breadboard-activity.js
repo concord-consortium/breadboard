@@ -7669,10 +7669,34 @@ window["breadboardView"] = {
 
     sparks.breadboardComm = {};
 
+    sparks.breadboardComm.openConnections = {};
+
     sparks.breadboardComm.connectionMade = function(component, hole) {
-      var section = sparks.activityController.currentSection;
+      var section = sparks.activityController.currentSection,
+          breadboard, comp, openConnections, openConnectionsArr, connectionReturning, connection;
       if (!!hole){
-        breadModel('unmapHole', hole);
+        openConnections = sparks.breadboardComm.openConnections[component];
+        if (!openConnections) return; // shouldn't happen
+
+        if (openConnections[hole]) {        // if we're just replacing a lead
+          breadModel('unmapHole', hole);
+          delete openConnections[hole];
+        } else {                            // if we're putting lead in new hole
+          breadboard = getBreadBoard();
+          comp = breadboard.components[component];
+          openConnectionsArr = sparks.util.getKeys(openConnections);
+          connectionReturning = openConnectionsArr[0];
+          breadModel('unmapHole', connectionReturning);
+          for (var i = 0; i < comp.connections.length; i++) {
+            connection = comp.connections[i].getName();
+            if (connection === connectionReturning) {
+              comp.connections[i] = breadboard.getHole(hole);
+              delete openConnections[connection];
+              break;
+            }
+          }
+        }
+
       }
       sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
         "type": "connect lead",
@@ -7681,6 +7705,11 @@ window["breadboardView"] = {
     };
 
     sparks.breadboardComm.connectionBroken = function(component, hole) {
+      if (!sparks.breadboardComm.openConnections[component]) {
+        sparks.breadboardComm.openConnections[component] = {}
+      }
+      sparks.breadboardComm.openConnections[component][hole] = true;
+
       var section = sparks.activityController.currentSection;
       var newHole = breadModel('getGhostHole', hole+"ghost");
 
@@ -9602,7 +9631,6 @@ window["breadboardView"] = {
         currentMeasurement: null,
 
         update: function () {
-          console.log("update!")
           if (this.redProbeConnection && this.blackProbeConnection) {
             if (this.dialPosition.indexOf('dcv_') > -1){
               this.currentMeasurement = "voltage";
@@ -9785,7 +9813,6 @@ window["breadboardView"] = {
       },
 
       update: function() {
-        console.log("update")
         var breadboard = getBreadBoard(),
             source     = breadboard.components.source,
             sourceSignal,
