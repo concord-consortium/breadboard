@@ -42,6 +42,16 @@
           this.update();
         },
 
+        moveProbe: function(oldLoc, newLoc) {
+          if (this.redProbeConnection === oldLoc) {
+            this.redProbeConnection = newLoc;
+          }
+          if (this.blackProbeConnection === oldLoc) {
+            this.blackProbeConnection = newLoc;
+          }
+          this.update();
+        },
+
         update : function () {
         },
 

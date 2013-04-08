@@ -2685,6 +2685,15 @@ sparks.createQuestionsCSV = function(data) {
       }
     },
 
+    moveProbe: function (oldLoc, newLoc) {
+      if (this.oscope) {
+        this.oscope.moveProbe(oldLoc, newLoc);
+      }
+      if (this.dmm) {
+        this.dmm.moveProbe(oldLoc, newLoc);
+      }
+    },
+
     update: function () {
       if (this.oscope) {
         this.oscope.update();
@@ -8385,6 +8394,7 @@ window["breadboardView"] = {
             if (connection === connectionReturning) {
               comp.connections[i] = breadboard.getHole(hole);
               delete openConnections[connection];
+              sparks.activityController.currentSection.meter.moveProbe(connection, hole);
               break;
             }
           }
@@ -9857,6 +9867,16 @@ window["breadboardView"] = {
           this.update();
         },
 
+        moveProbe: function(oldLoc, newLoc) {
+          if (this.redProbeConnection === oldLoc) {
+            this.redProbeConnection = newLoc;
+          }
+          if (this.blackProbeConnection === oldLoc) {
+            this.blackProbeConnection = newLoc;
+          }
+          this.update();
+        },
+
         update : function () {
         },
 
@@ -10503,6 +10523,15 @@ window["breadboardView"] = {
             this.update();
           }
         }
+      },
+
+      moveProbe: function(oldLoc, newLoc) {
+        for (i = 0; i < 2; i++) {
+          if (this.probeLocation[i] === oldLoc) {
+            this.probeLocation[i] = newLoc;
+          }
+        }
+        this.update();
       },
 
       update: function() {

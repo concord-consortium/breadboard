@@ -78,6 +78,17 @@
       }
     },
 
+    // moves any and all probes from oldLoc to newLoc
+    // useful for when a lead with connected probes is moved
+    moveProbe: function (oldLoc, newLoc) {
+      if (this.oscope) {
+        this.oscope.moveProbe(oldLoc, newLoc);
+      }
+      if (this.dmm) {
+        this.dmm.moveProbe(oldLoc, newLoc);
+      }
+    },
+
     update: function () {
       if (this.oscope) {
         this.oscope.update();

@@ -64,6 +64,15 @@
         }
       },
 
+      moveProbe: function(oldLoc, newLoc) {
+        for (i = 0; i < 2; i++) {
+          if (this.probeLocation[i] === oldLoc) {
+            this.probeLocation[i] = newLoc;
+          }
+        }
+        this.update();
+      },
+
       update: function() {
         var breadboard = getBreadBoard(),
             source     = breadboard.components.source,

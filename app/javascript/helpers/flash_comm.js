@@ -33,6 +33,7 @@
             if (connection === connectionReturning) {
               comp.connections[i] = breadboard.getHole(hole);
               delete openConnections[connection];
+              sparks.activityController.currentSection.meter.moveProbe(connection, hole);
               break;
             }
           }

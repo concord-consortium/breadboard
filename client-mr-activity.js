@@ -2730,6 +2730,7 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
             if (connection === connectionReturning) {
               comp.connections[i] = breadboard.getHole(hole);
               delete openConnections[connection];
+              sparks.activityController.currentSection.meter.moveProbe(connection, hole);
               break;
             }
           }
@@ -3363,6 +3364,16 @@ sparks.createQuestionsCSV = function(data) {
             this.redProbeConnection = location;
           } else if (probe === "probe_black") {
             this.blackProbeConnection = location;
+          }
+          this.update();
+        },
+
+        moveProbe: function(oldLoc, newLoc) {
+          if (this.redProbeConnection === oldLoc) {
+            this.redProbeConnection = newLoc;
+          }
+          if (this.blackProbeConnection === oldLoc) {
+            this.blackProbeConnection = newLoc;
           }
           this.update();
         },
