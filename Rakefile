@@ -10,29 +10,10 @@ namespace :combine do
 
   desc "Do all combine tasks"
   task :all => [
-    :'client:measuring_resistance_activity',
-    :'client:measuring_resistance_report',
-    :'server:measuring_resistance_report',
     :'client:breadboard_activity'
   ]
 
   namespace :client do
-
-    desc "Concatenate all JavaScript for Measuring Resistance activity (client)"
-    task :measuring_resistance_activity do
-      sprocket([
-          'activities/measuring-resistance/javascript/activity.js'
-        ],
-        'client-mr-activity.js')
-    end
-
-    desc "Concatenate all JavaScript for Measuring Resistance report (client)"
-    task :measuring_resistance_report do
-      sprocket([
-          'activities/measuring-resistance/javascript/assessment/learner-session-report.js'
-        ],
-        'client-mr-report.js')
-    end
 
     desc "Concatenate all JavaScript for breadboard activity (client)"
     task :breadboard_activity do
@@ -40,18 +21,6 @@ namespace :combine do
           'app/init.js'
         ],
         'client-breadboard-activity.js')
-    end
-
-  end
-
-  namespace :server do
-
-    desc "Concatenate all JavaScript for Measuring Resistance report (server)"
-    task :measuring_resistance_report do
-      sprocket([
-          'activities/measuring-resistance/javascript/assessment/grader.js'
-        ],
-        'server-mr-report.js')
     end
 
   end
