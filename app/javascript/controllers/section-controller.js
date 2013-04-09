@@ -153,12 +153,6 @@
 
       this.loadCurrentSection();
       sparks.activity.view.layoutCurrentSection();
-
-      // if (!sparks.jsonSection.hide_circuit && !sparks.debug){
-      //   sparks.flash.activity.loadFlash();
-      // } else {
-      //   sparks.flash.activity.onActivityReady();
-      // }
     },
 
     repeatSection: function(section) {

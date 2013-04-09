@@ -761,22 +761,6 @@ sparks.util.cloneSimpleObject = function (obj) {
     }
 };
 
-/*
-sparks.util.checkFlashVersion = function () {
-    var major = 10;
-    var minor = 0;
-    var revision = 31;
-
-    if (!DetectFlashVer(10, 0, 33)) {
-        var msg = 'This activity requires Flash version ';
-        msg += major + '.' + minor + '.' + revision + '. ';
-
-        $('body').html('<p>' + msg + '</p>');
-    }
-    document.write('<p>Flash version: ' + GetSwfVer() + '</p>');
-};
-*/
-
 sparks.util.Alternator = function (x, y)
 {
     this.x = x;

@@ -101,14 +101,6 @@
             }
           });
        }
-
-
-
-         sparks.flash.sendCommand('set_oscope_probe_visibility',visible.toString());
-
-         if (visible) {
-          sparks.flash.sendCommand('enable_probe_dragging', "yellow", true);
-         }
      },
 
      showDMM: function(visible) {
@@ -124,16 +116,12 @@
           }
         });
       }
-       //sparks.flash.sendCommand('set_multimeter_visibility',visible.toString());
-       //sparks.flash.sendCommand('set_probe_visibility',visible.toString());
      },
 
      allowMoveYellowProbe: function(allow) {
-       sparks.flash.sendCommand('enable_probe_dragging', "yellow", allow);
      },
 
      hidePinkProbe: function(allow) {
-        // not supported yet
      },
 
      hidePopups: function() {

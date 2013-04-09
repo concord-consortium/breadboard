@@ -623,144 +623,6 @@ jQuery.cookie = function(name, value, options) {
         return cookieValue;
     }
 };
-;(function(){
-
-var $$;
-
-$$ = jQuery.fn.flash = function(htmlOptions, pluginOptions, replace, update) {
-
-	var block = replace || $$.replace;
-
-	pluginOptions = $$.copy($$.pluginOptions, pluginOptions);
-
-	if(!$$.hasFlash(pluginOptions.version)) {
-		if(pluginOptions.expressInstall && $$.hasFlash(6,0,65)) {
-			var expressInstallOptions = {
-				flashvars: {
-					MMredirectURL: location,
-					MMplayerType: 'PlugIn',
-					MMdoctitle: jQuery('title').text()
-				}
-			};
-		} else if (pluginOptions.update) {
-			block = update || $$.update;
-		} else {
-			return this;
-		}
-	}
-
-	htmlOptions = $$.copy($$.htmlOptions, expressInstallOptions, htmlOptions);
-
-	return this.each(function(){
-		block.call(this, $$.copy(htmlOptions));
-	});
-
-};
-$$.copy = function() {
-	var options = {}, flashvars = {};
-	for(var i = 0; i < arguments.length; i++) {
-		var arg = arguments[i];
-		if(arg == undefined) continue;
-		jQuery.extend(options, arg);
-		if(arg.flashvars == undefined) continue;
-		jQuery.extend(flashvars, arg.flashvars);
-	}
-	options.flashvars = flashvars;
-	return options;
-};
-/*
- * @name flash.hasFlash
- * @desc Check if a specific version of the Flash plugin is installed
- * @type Boolean
- *
-**/
-$$.hasFlash = function() {
-	if(/hasFlash\=true/.test(location)) return true;
-	if(/hasFlash\=false/.test(location)) return false;
-	var pv = $$.hasFlash.playerVersion().match(/\d+/g);
-	var rv = String([arguments[0], arguments[1], arguments[2]]).match(/\d+/g) || String($$.pluginOptions.version).match(/\d+/g);
-	for(var i = 0; i < 3; i++) {
-		pv[i] = parseInt(pv[i] || 0);
-		rv[i] = parseInt(rv[i] || 0);
-		if(pv[i] < rv[i]) return false;
-		if(pv[i] > rv[i]) return true;
-	}
-	return true;
-};
-$$.hasFlash.playerVersion = function() {
-	try {
-		try {
-			var axo = new ActiveXObject('ShockwaveFlash.ShockwaveFlash.6');
-			try { axo.AllowScriptAccess = 'always';	}
-			catch(e) { return '6,0,0'; }
-		} catch(e) {}
-		return new ActiveXObject('ShockwaveFlash.ShockwaveFlash').GetVariable('$version').replace(/\D+/g, ',').match(/^,?(.+),?$/)[1];
-	} catch(e) {
-		try {
-			if(navigator.mimeTypes["application/x-shockwave-flash"].enabledPlugin){
-				return (navigator.plugins["Shockwave Flash 2.0"] || navigator.plugins["Shockwave Flash"]).description.replace(/\D+/g, ",").match(/^,?(.+),?$/)[1];
-			}
-		} catch(e) {}
-	}
-	return '0,0,0';
-};
-$$.htmlOptions = {
-	height: 240,
-	flashvars: {},
-	pluginspage: 'http://www.adobe.com/go/getflashplayer',
-	src: '#',
-	type: 'application/x-shockwave-flash',
-	width: 320
-};
-$$.pluginOptions = {
-	expressInstall: false,
-	update: true,
-	version: '6.0.65'
-};
-$$.replace = function(htmlOptions) {
-	this.innerHTML = '<div class="alt">'+this.innerHTML+'</div>';
-	jQuery(this)
-		.addClass('flash-replaced')
-		.prepend($$.transform(htmlOptions));
-};
-$$.update = function(htmlOptions) {
-	var url = String(location).split('?');
-	url.splice(1,0,'?hasFlash=true&');
-	url = url.join('');
-	var msg = '<p>This content requires the Flash Player. <a href="http://www.adobe.com/go/getflashplayer">Download Flash Player</a>. Already have Flash Player? <a href="'+url+'">Click here.</a></p>';
-	this.innerHTML = '<span class="alt">'+this.innerHTML+'</span>';
-	jQuery(this)
-		.addClass('flash-update')
-		.prepend(msg);
-};
-function toAttributeString() {
-	var s = '';
-	for(var key in this)
-		if(typeof this[key] != 'function')
-			s += key+'="'+this[key]+'" ';
-	return s;
-};
-function toFlashvarsString() {
-	var s = '';
-	for(var key in this)
-		if(typeof this[key] != 'function')
-			s += key+'='+encodeURIComponent(this[key])+'&';
-	return s.replace(/&$/, '');
-};
-$$.transform = function(htmlOptions) {
-	htmlOptions.toString = toAttributeString;
-	if(htmlOptions.flashvars) htmlOptions.flashvars.toString = toFlashvarsString;
-	return '<embed ' + String(htmlOptions) + '/>';
-};
-
-if (window.attachEvent) {
-	window.attachEvent("onbeforeunload", function(){
-		__flash_unloadHandler = function() {};
-		__flash_savedUnloadHandler = function() {};
-	});
-}
-
-})();
 
 /**
  * @namespace
@@ -2072,22 +1934,6 @@ sparks.util.cloneSimpleObject = function (obj) {
     }
 };
 
-/*
-sparks.util.checkFlashVersion = function () {
-    var major = 10;
-    var minor = 0;
-    var revision = 31;
-
-    if (!DetectFlashVer(10, 0, 33)) {
-        var msg = 'This activity requires Flash version ';
-        msg += major + '.' + minor + '.' + revision + '. ';
-
-        $('body').html('<p>' + msg + '</p>');
-    }
-    document.write('<p>Flash version: ' + GetSwfVer() + '</p>');
-};
-*/
-
 sparks.util.Alternator = function (x, y)
 {
     this.x = x;
@@ -3078,14 +2924,6 @@ sparks.createQuestionsCSV = function(data) {
             }
           });
        }
-
-
-
-         sparks.flash.sendCommand('set_oscope_probe_visibility',visible.toString());
-
-         if (visible) {
-          sparks.flash.sendCommand('enable_probe_dragging', "yellow", true);
-         }
      },
 
      showDMM: function(visible) {
@@ -3104,7 +2942,6 @@ sparks.createQuestionsCSV = function(data) {
      },
 
      allowMoveYellowProbe: function(allow) {
-       sparks.flash.sendCommand('enable_probe_dragging', "yellow", allow);
      },
 
      hidePinkProbe: function(allow) {
@@ -7417,7 +7254,6 @@ window["breadboardView"] = {
 
       this.loadCurrentSection();
       sparks.activity.view.layoutCurrentSection();
-
     },
 
     repeatSection: function(section) {
@@ -8363,7 +8199,7 @@ window["breadboardView"] = {
     };
 
 })();
-/* FILE flash_comm.js */
+/* FILE svg_view_comm.js */
 
 /*globals console sparks $ document window alert navigator*/
 
@@ -8439,142 +8275,6 @@ window["breadboardView"] = {
       section.meter.dmm.dialPosition = value;
       section.meter.update();
     };
-
-    sparks.flash = {};
-
-    sparks.flash.loaded = false;
-
-    sparks.flash.queuedMessages = [];
-
-    sparks.flash.init = function() {
-      sparks.flash.loaded = true;
-      var length = sparks.flash.queuedMessages.length;
-      for (var i = 0; i < length; i++){
-        sparks.flash.sendCommand.apply(this, sparks.flash.queuedMessages.pop());
-      }
-    };
-
-    sparks.flash.getFlashMovie = function (movieName) {
-      var isIE = navigator.appName.indexOf("Microsoft") != -1;
-      return (isIE) ? window[movieName] : document[movieName];
-    };
-
-    sparks.flash.sendCommand = function () {
-      if (!sparks.flash.loaded){
-        sparks.flash.queuedMessages.push(arguments);
-        return;
-      }
-
-      try {
-        var params = [];
-        for (var i = 0; i < arguments.length; ++i) {
-          params[i] = arguments[i];
-        }
-        var flash = sparks.flash.getFlashMovie(sparks.config.flash_id);
-
-        var retVal = flash.sendMessageToFlash.apply(flash, params).split('|');
-        if (retVal[0] == 'flash_error') {
-          alert('Flash error:\n' + retVal[1]);
-        }
-      }
-      catch (e) {
-        alert('Error sending command to Flash:\n' + e.toString());
-      }
-    };
-
-    this.receiveEvent = function (name, value, time) {
-      console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
-
-      var v;
-      var t = '';
-      var args = value.split('|');
-
-      var section = sparks.activityController.currentSection;
-
-      if (name === 'connect') {
-          if (args[0] === 'probe' && !!args[2]) {
-            section.meter.setProbeLocation(args[1], args[2]);
-          }
-          if (args[0] === 'component') {
-              if (args[2] === "left_positive21" || args[2] === "left_negative21") {
-              }
-              if (!!args[2]){
-                breadModel('unmapHole', args[2]);
-              }
-              sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
-                "type": "connect lead",
-                "location": args[2]});
-              section.meter.update();
-          }
-      } else if (name === 'disconnect') {
-          if (args[0] === 'probe') {
-            section.meter.setProbeLocation(args[1], null);
-          } else if (args[0] === 'component') {
-            var hole = args[2];
-            if (hole === "left_positive21" || hole === "left_negative21") {
-            }
-            var newHole = breadModel('getGhostHole', hole+"ghost");
-
-            breadModel('mapHole', hole, newHole.nodeName());
-            sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
-              "type": "disconnect lead",
-              "location": hole});
-            section.meter.update();
-          }
-      } else if (name === 'probe') {
-          $('#popup').dialog();
-
-          v = breadModel('query', 'voltage', 'a23,a17');
-          t += v.toFixed(3);
-          v = breadModel('query', 'voltage', 'b17,b11');
-          t += ' ' + v.toFixed(3);
-          v = breadModel('query', 'voltage', 'c11,c5');
-          t += ' ' + v.toFixed(3);
-          $('#dbg_voltage').text(t);
-
-          breadModel('move', 'wire1', 'left_positive1,a22');
-
-          v = breadModel('query', 'resistance', 'a23,a17');
-          t = v.toFixed(3);
-          v = breadModel('query', 'resistance', 'b17,b11');
-          t += ' ' + v.toFixed(3);
-          v = breadModel('query', 'resistance', 'c11,c5');
-          t += ' ' + v.toFixed(3);
-
-          $('#dbg_resistance').text(t);
-
-          v = breadModel('query', 'current', 'a22,a23');
-          t = v.toFixed(3);
-
-          breadModel('move', 'wire1', 'left_positive1,a23');
-          breadModel('move', 'resistor1', 'a23,a16');
-          v = breadModel('query', 'current', 'a16,b17');
-          t += ' ' + v.toFixed(3);
-
-          breadModel('move', 'resistor1', 'a23,a17');
-          breadModel('move', 'resistor2', 'b17,b10');
-          v = breadModel('query', 'current', 'b10,c11');
-          t += ' ' + v.toFixed(3);
-
-          breadModel('move', 'resistor2', 'b17,b11');
-
-          $('#dbg_current').text(t);
-
-          $('#popup').dialog('close');
-      } else if (name == 'multimeter_dial') {
-          section.meter.dmm.dialPosition = value;
-          section.meter.update();
-      } else if (name == 'multimeter_power') {
-          section.meter.dmm.powerOn = value == 'true' ? true : false;
-          section.meter.update();
-      } else if (name == 'value_changed') {
-        var component = getBreadBoard().components[args[0]];
-        if (component.scaleResistance) {
-          component.scaleResistance(args[1]);
-          section.meter.update();
-        }
-      }
-  }
 
 })();
 /* FILE complex_number.js */
@@ -8930,8 +8630,6 @@ window["breadboardView"] = {
 /*globals console sparks getBreadBoard */
 
 (function () {
-
-    var flash = sparks.flash;
 
     sparks.circuit.Resistor = function (props, breadBoard) {
       var tolerance, steps;
@@ -9333,12 +9031,6 @@ window["breadboardView"] = {
             range = this.maximumResistance - this.minimumResistance,
             newValue = this.minimumResistance + (range * perc);
         this.resistance = newValue;
-      },
-
-      getFlashArguments: function() {
-        if (this.resistance > 0) {
-          return ['slider', this.UID, this.getLocation(), this.label];
-        }
       }
 
     });
@@ -9829,8 +9521,6 @@ window["breadboardView"] = {
 
 (function () {
 
-    var flash = sparks.flash;
-
     /*
      * Digital Multimeter
      * Base for the Centech DMM
@@ -9883,7 +9573,6 @@ window["breadboardView"] = {
         updateDisplay : function () {
             if (!this.powerOn) {
                 this.displayText = '       ';
-                flash.sendCommand('set_multimeter_display', '       ');
                 return;
             }
 
@@ -10120,7 +9809,6 @@ window["breadboardView"] = {
             }
             text = this.disable_multimeter_position(text);
             if (text !== this.displayText) {
-              console.log('text=' + text);
               if (sparks.breadboardView) {
                 sparks.breadboardView.setDMMText(text);
               }
@@ -10319,7 +10007,6 @@ window["breadboardView"] = {
 (function () {
 
     var circuit = sparks.circuit;
-    var flash = sparks.flash;
 
     /*
      * Digital Multimeter for breadboard activities
@@ -10440,7 +10127,6 @@ window["breadboardView"] = {
         },
 
         blowFuse: function() {
-          sparks.flash.sendCommand('mouse_up');
           apMessageBox.error({
           	title: "POW!",
           	message: "<b>You just blew the fuse in your multimeter!</b><br><br> Remember not to pass too much current through it."+
@@ -11078,10 +10764,6 @@ window["breadboardView"] = {
       var inductance = this.getInductance() || 0,
           nodes       = this.getNodes();
       ciso.addComponent(this.UID, "Inductor", inductance, nodes);
-    },
-
-    getFlashArguments: function () {
-      return ['inductor', this.UID, this.getLocation(), this.label];
     }
   });
 
@@ -11109,10 +10791,6 @@ window["breadboardView"] = {
       var capacitance = this.getCapacitance() || 0,
           nodes       = this.getNodes();
       ciso.addComponent(this.UID, "Capacitor", capacitance, nodes);
-    },
-
-    getFlashArguments: function () {
-      return ['capacitor', this.UID, this.getLocation(), this.label];
     }
   });
 
@@ -11735,7 +11413,6 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
 
 (function () {
 
-  sparks.config.flash_id = 'breadboardActivity1';
   sparks.activity_base_url = "http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/";
   sparks.activity_images_base_url = "http://couchdb.cosmos.concord.org/sparks/";
   sparks.tutorial_base_url = "tutorials/";

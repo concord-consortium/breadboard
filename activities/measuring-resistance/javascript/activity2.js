@@ -3,12 +3,9 @@
 //= require <jquery/jquery-ui-1.8.custom.min>
 //= require <jquery/plugins/jquery.url.packed>
 //= require <jquery/plugins/jquery.cookie>
-//= require <jquery/plugins/jquery.flash>
 //= require <jquery/plugins/jquery.couch>
 //= require <data-source/couch-ds>
-//= require <helpers/flash_version_detection>
-//= require <helpers/flash_version_detection>
-//= require <helpers/flash_comm>
+//= require <helpers/svg_view_comm>
 //= require <helpers/util>
 
 /* FILE activity.js */
@@ -30,7 +27,6 @@
           var activity = new sparks.config.Activity();
           this.setSavePath(activity);
           activity.onDocumentReady();
-          activity.onFlashReady();
           sparks.activity = activity;
       }
       catch (e) {
@@ -60,16 +56,6 @@
           console.log("setting onbeforeunload")
           window.onbeforeunload = askConfirm;
       }
-    };
-
-    /*
-     * This function gets called from Flash after Flash has set up the external
-     * interface. Therefore all code that sends messages to Flash should be
-     * initiated from this function.
-     */
-    this.initActivity = function () {
-        console.log("flash loaded");
-        sparks.activity.onActivityReady();
     };
 
     sparks.Activity = function () {

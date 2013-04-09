@@ -38,22 +38,6 @@ sparks.util.cloneSimpleObject = function (obj) {
     }
 };
 
-/*
-sparks.util.checkFlashVersion = function () {
-    var major = 10;
-    var minor = 0;
-    var revision = 31;
-    
-    if (!DetectFlashVer(10, 0, 33)) {
-        var msg = 'This activity requires Flash version ';
-        msg += major + '.' + minor + '.' + revision + '. ';
-        
-        $('body').html('<p>' + msg + '</p>');
-    }
-    document.write('<p>Flash version: ' + GetSwfVer() + '</p>');
-};
-*/
-
 // The "next" function returns a different value each time
 // alternating between the two input values x, y.
 sparks.util.Alternator = function (x, y)
@@ -102,7 +86,7 @@ sparks.util.serializeForm = function (form) {
         if(val === null){
             return;
         }
-     
+
         if (jQuery.isArray(val)) {
             result[this.name] = jQuery.makeArray(val);
         }
@@ -123,7 +107,7 @@ sparks.util.formatDate = function (date) {
         date = new Date(date);
     }
     var s = fillZero(date.getMonth() + 1) + '/';
-    
+
     s += fillZero(date.getDate()) + '/';
     s += String(date.getFullYear()) + ' ';
     s += fillZero(date.getHours()) + ':';
@@ -166,7 +150,7 @@ sparks.util.prettyPrint = function (obj, indent) {
 sparks.util.getRubric = function (id, callback, local) {
     var self = this;
     var url;
-    
+
     if (local) {
         url = 'rubric.json';
     }
@@ -182,7 +166,7 @@ sparks.util.getRubric = function (id, callback, local) {
             callback(rubric);
         },
         error: function (request, status, error) {
-            console.log('Activity#getRubric ERROR:\nstatus: ' + status + '\nerror: ' + error + '\nurl=' + url); 
+            console.log('Activity#getRubric ERROR:\nstatus: ' + status + '\nerror: ' + error + '\nurl=' + url);
         }
     });
 };
@@ -243,9 +227,9 @@ sparks.getDataArray = function(){
   sparks.data = [];
   $.couch.urlPrefix = "/couchdb/learnerdata";
   $.couch.db('').view(
-    "session_scores/Scores%20per%20activity", 
+    "session_scores/Scores%20per%20activity",
     {
-      success: function(response) { 
+      success: function(response) {
         $.each(response.rows, function(i, obj) {
             // if (sparks.util.contains(obj.key, activityName)) {
               sparks.data.push(obj);
@@ -255,13 +239,13 @@ sparks.getDataArray = function(){
       }
     }
   );
-  
+
 };
 
 sparks.createPointsCSV = function(data) {
   var csv = "";
   csv += "Activity|Student|Level|Page|Try|Score\n"
-  $.each(sparks.data, function(i, obj){ 
+  $.each(sparks.data, function(i, obj){
     var sections = obj.value.sectionReports;
     $.each(sections, function(j, sec){
       $.each(sec.pageReports, function(k, page){
@@ -282,7 +266,7 @@ sparks.createPointsCSV = function(data) {
 sparks.createQuestionsCSV = function(data) {
   var csv = "";
   csv += "Activity|Student|Level|Page|Try|Question|Answer|Correct Answer|Feedback|Score\n"
-  $.each(sparks.data, function(i, obj){ 
+  $.each(sparks.data, function(i, obj){
     var sections = obj.value.sectionReports;
     $.each(sections, function(j, sec){
       $.each(sec.pageReports, function(k, page){

@@ -1115,144 +1115,6 @@ jQuery.cookie = function(name, value, options) {
         return cookieValue;
     }
 };
-;(function(){
-
-var $$;
-
-$$ = jQuery.fn.flash = function(htmlOptions, pluginOptions, replace, update) {
-
-	var block = replace || $$.replace;
-
-	pluginOptions = $$.copy($$.pluginOptions, pluginOptions);
-
-	if(!$$.hasFlash(pluginOptions.version)) {
-		if(pluginOptions.expressInstall && $$.hasFlash(6,0,65)) {
-			var expressInstallOptions = {
-				flashvars: {
-					MMredirectURL: location,
-					MMplayerType: 'PlugIn',
-					MMdoctitle: jQuery('title').text()
-				}
-			};
-		} else if (pluginOptions.update) {
-			block = update || $$.update;
-		} else {
-			return this;
-		}
-	}
-
-	htmlOptions = $$.copy($$.htmlOptions, expressInstallOptions, htmlOptions);
-
-	return this.each(function(){
-		block.call(this, $$.copy(htmlOptions));
-	});
-
-};
-$$.copy = function() {
-	var options = {}, flashvars = {};
-	for(var i = 0; i < arguments.length; i++) {
-		var arg = arguments[i];
-		if(arg == undefined) continue;
-		jQuery.extend(options, arg);
-		if(arg.flashvars == undefined) continue;
-		jQuery.extend(flashvars, arg.flashvars);
-	}
-	options.flashvars = flashvars;
-	return options;
-};
-/*
- * @name flash.hasFlash
- * @desc Check if a specific version of the Flash plugin is installed
- * @type Boolean
- *
-**/
-$$.hasFlash = function() {
-	if(/hasFlash\=true/.test(location)) return true;
-	if(/hasFlash\=false/.test(location)) return false;
-	var pv = $$.hasFlash.playerVersion().match(/\d+/g);
-	var rv = String([arguments[0], arguments[1], arguments[2]]).match(/\d+/g) || String($$.pluginOptions.version).match(/\d+/g);
-	for(var i = 0; i < 3; i++) {
-		pv[i] = parseInt(pv[i] || 0);
-		rv[i] = parseInt(rv[i] || 0);
-		if(pv[i] < rv[i]) return false;
-		if(pv[i] > rv[i]) return true;
-	}
-	return true;
-};
-$$.hasFlash.playerVersion = function() {
-	try {
-		try {
-			var axo = new ActiveXObject('ShockwaveFlash.ShockwaveFlash.6');
-			try { axo.AllowScriptAccess = 'always';	}
-			catch(e) { return '6,0,0'; }
-		} catch(e) {}
-		return new ActiveXObject('ShockwaveFlash.ShockwaveFlash').GetVariable('$version').replace(/\D+/g, ',').match(/^,?(.+),?$/)[1];
-	} catch(e) {
-		try {
-			if(navigator.mimeTypes["application/x-shockwave-flash"].enabledPlugin){
-				return (navigator.plugins["Shockwave Flash 2.0"] || navigator.plugins["Shockwave Flash"]).description.replace(/\D+/g, ",").match(/^,?(.+),?$/)[1];
-			}
-		} catch(e) {}
-	}
-	return '0,0,0';
-};
-$$.htmlOptions = {
-	height: 240,
-	flashvars: {},
-	pluginspage: 'http://www.adobe.com/go/getflashplayer',
-	src: '#',
-	type: 'application/x-shockwave-flash',
-	width: 320
-};
-$$.pluginOptions = {
-	expressInstall: false,
-	update: true,
-	version: '6.0.65'
-};
-$$.replace = function(htmlOptions) {
-	this.innerHTML = '<div class="alt">'+this.innerHTML+'</div>';
-	jQuery(this)
-		.addClass('flash-replaced')
-		.prepend($$.transform(htmlOptions));
-};
-$$.update = function(htmlOptions) {
-	var url = String(location).split('?');
-	url.splice(1,0,'?hasFlash=true&');
-	url = url.join('');
-	var msg = '<p>This content requires the Flash Player. <a href="http://www.adobe.com/go/getflashplayer">Download Flash Player</a>. Already have Flash Player? <a href="'+url+'">Click here.</a></p>';
-	this.innerHTML = '<span class="alt">'+this.innerHTML+'</span>';
-	jQuery(this)
-		.addClass('flash-update')
-		.prepend(msg);
-};
-function toAttributeString() {
-	var s = '';
-	for(var key in this)
-		if(typeof this[key] != 'function')
-			s += key+'="'+this[key]+'" ';
-	return s;
-};
-function toFlashvarsString() {
-	var s = '';
-	for(var key in this)
-		if(typeof this[key] != 'function')
-			s += key+'='+encodeURIComponent(this[key])+'&';
-	return s.replace(/&$/, '');
-};
-$$.transform = function(htmlOptions) {
-	htmlOptions.toString = toAttributeString;
-	if(htmlOptions.flashvars) htmlOptions.flashvars.toString = toFlashvarsString;
-	return '<embed ' + String(htmlOptions) + '/>';
-};
-
-if (window.attachEvent) {
-	window.attachEvent("onbeforeunload", function(){
-		__flash_unloadHandler = function() {};
-		__flash_savedUnloadHandler = function() {};
-	});
-}
-
-})();
 
 /**
  * @namespace
@@ -2448,258 +2310,7 @@ if (window.attachEvent) {
 
     sparks.couchDS = new sparks.CouchDS();
 })();
-/* FILE flash_version_dectection.js */
-
-
-var isIE  = (navigator.appVersion.indexOf("MSIE") != -1) ? true : false;
-var isWin = (navigator.appVersion.toLowerCase().indexOf("win") != -1) ? true : false;
-var isOpera = (navigator.userAgent.indexOf("Opera") != -1) ? true : false;
-
-function ControlVersion()
-{
-    var version;
-    var axo;
-    try {
-        axo = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.7");
-        version = axo.GetVariable("$version");
-    } catch (e) {
-    }
-    if (!version)
-    {
-        try {
-            axo = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.6");
-
-
-            version = "WIN 6,0,21,0";
-            axo.AllowScriptAccess = "always";
-            version = axo.GetVariable("$version");
-        } catch (e2) {
-        }
-    }
-    if (!version)
-    {
-        try {
-            axo = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.3");
-            version = axo.GetVariable("$version");
-        } catch (e3) {
-        }
-    }
-    if (!version)
-    {
-        try {
-            axo = new ActiveXObject("ShockwaveFlash.ShockwaveFlash.3");
-            version = "WIN 3,0,18,0";
-        } catch (e4) {
-        }
-    }
-    if (!version)
-    {
-        try {
-            axo = new ActiveXObject("ShockwaveFlash.ShockwaveFlash");
-            version = "WIN 2,0,0,11";
-        } catch (e5) {
-            version = -1;
-        }
-    }
-
-    return version;
-}
-function GetSwfVer(){
-    var flashVer = -1;
-
-    if (navigator.plugins && navigator.plugins.length > 0) {
-        if (navigator.plugins["Shockwave Flash 2.0"] || navigator.plugins["Shockwave Flash"]) {
-            var swVer2 = navigator.plugins["Shockwave Flash 2.0"] ? " 2.0" : "";
-            var flashDescription = navigator.plugins["Shockwave Flash" + swVer2].description;
-            var descArray = flashDescription.split(" ");
-            var tempArrayMajor = descArray[2].split(".");
-            var versionMajor = tempArrayMajor[0];
-            var versionMinor = tempArrayMajor[1];
-            var versionRevision = descArray[3];
-            if (versionRevision === "") {
-                versionRevision = descArray[4];
-            }
-            if (versionRevision[0] == "d") {
-                versionRevision = versionRevision.substring(1);
-            } else if (versionRevision[0] == "r") {
-                versionRevision = versionRevision.substring(1);
-                if (versionRevision.indexOf("d") > 0) {
-                    versionRevision = versionRevision.substring(0, versionRevision.indexOf("d"));
-                }
-            }
-            var flashVer = versionMajor + "." + versionMinor + "." + versionRevision;
-        }
-    }
-    else if (navigator.userAgent.toLowerCase().indexOf("webtv/2.6") != -1) flashVer = 4;
-    else if (navigator.userAgent.toLowerCase().indexOf("webtv/2.5") != -1) flashVer = 3;
-    else if (navigator.userAgent.toLowerCase().indexOf("webtv") != -1) flashVer = 2;
-    else if ( isIE && isWin && !isOpera ) {
-        flashVer = ControlVersion();
-    }
-    return flashVer;
-}
-function DetectFlashVer(reqMajorVer, reqMinorVer, reqRevision)
-{
-    versionStr = GetSwfVer();
-    if (versionStr == -1 ) {
-        return false;
-    } else if (versionStr != 0) {
-        if(isIE && isWin && !isOpera) {
-            tempArray         = versionStr.split(" ");  // ["WIN", "2,0,0,11"]
-            tempString        = tempArray[1];           // "2,0,0,11"
-            versionArray      = tempString.split(",");  // ['2', '0', '0', '11']
-        } else {
-            versionArray      = versionStr.split(".");
-        }
-        var versionMajor      = versionArray[0];
-        var versionMinor      = versionArray[1];
-        var versionRevision   = versionArray[2];
-        if (versionMajor > parseFloat(reqMajorVer)) {
-            return true;
-        } else if (versionMajor == parseFloat(reqMajorVer)) {
-            if (versionMinor > parseFloat(reqMinorVer))
-                return true;
-            else if (versionMinor == parseFloat(reqMinorVer)) {
-                if (versionRevision >= parseFloat(reqRevision))
-                    return true;
-            }
-        }
-        return false;
-    }
-}
-function AC_AddExtension(src, ext)
-{
-  if (src.indexOf('?') != -1)
-    return src.replace(/\?/, ext+'?');
-  else
-    return src + ext;
-}
-function AC_Generateobj(objAttrs, params, embedAttrs)
-{
-  var str = '';
-  if (isIE && isWin && !isOpera)
-  {
-    str += '<object ';
-    for (var i in objAttrs)
-    {
-      str += i + '="' + objAttrs[i] + '" ';
-    }
-    str += '>';
-    for (var i in params)
-    {
-      str += '<param name="' + i + '" value="' + params[i] + '" /> ';
-    }
-    str += '</object>';
-  }
-  else
-  {
-    str += '<embed ';
-    for (var i in embedAttrs)
-    {
-      str += i + '="' + embedAttrs[i] + '" ';
-    }
-    str += '> </embed>';
-  }
-  document.write(str);
-}
-function AC_FL_RunContent(){
-  var ret =
-    AC_GetArgs
-    (  arguments, ".swf", "movie", "clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
-     , "application/x-shockwave-flash"
-    );
-  AC_Generateobj(ret.objAttrs, ret.params, ret.embedAttrs);
-}
-function AC_SW_RunContent(){
-  var ret =
-    AC_GetArgs
-    (  arguments, ".dcr", "src", "clsid:166B1BCA-3F9C-11CF-8075-444553540000"
-     , null
-    );
-  AC_Generateobj(ret.objAttrs, ret.params, ret.embedAttrs);
-}
-function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
-  var ret = new Object();
-  ret.embedAttrs = new Object();
-  ret.params = new Object();
-  ret.objAttrs = new Object();
-  for (var i=0; i < args.length; i=i+2){
-    var currArg = args[i].toLowerCase();
-    switch (currArg){
-      case "classid":
-        break;
-      case "pluginspage":
-        ret.embedAttrs[args[i]] = args[i+1];
-        break;
-      case "src":
-      case "movie":
-        args[i+1] = AC_AddExtension(args[i+1], ext);
-        ret.embedAttrs["src"] = args[i+1];
-        ret.params[srcParamName] = args[i+1];
-        break;
-      case "onafterupdate":
-      case "onbeforeupdate":
-      case "onblur":
-      case "oncellchange":
-      case "onclick":
-      case "ondblclick":
-      case "ondrag":
-      case "ondragend":
-      case "ondragenter":
-      case "ondragleave":
-      case "ondragover":
-      case "ondrop":
-      case "onfinish":
-      case "onfocus":
-      case "onhelp":
-      case "onmousedown":
-      case "onmouseup":
-      case "onmouseover":
-      case "onmousemove":
-      case "onmouseout":
-      case "onkeypress":
-      case "onkeydown":
-      case "onkeyup":
-      case "onload":
-      case "onlosecapture":
-      case "onpropertychange":
-      case "onreadystatechange":
-      case "onrowsdelete":
-      case "onrowenter":
-      case "onrowexit":
-      case "onrowsinserted":
-      case "onstart":
-      case "onscroll":
-      case "onbeforeeditfocus":
-      case "onactivate":
-      case "onbeforedeactivate":
-      case "ondeactivate":
-      case "type":
-      case "codebase":
-      case "id":
-        ret.objAttrs[args[i]] = args[i+1];
-        break;
-      case "width":
-      case "height":
-      case "align":
-      case "vspace":
-      case "hspace":
-      case "class":
-      case "title":
-      case "accesskey":
-      case "name":
-      case "tabindex":
-        ret.embedAttrs[args[i]] = ret.objAttrs[args[i]] = args[i+1];
-        break;
-      default:
-        ret.embedAttrs[args[i]] = ret.params[args[i]] = args[i+1];
-    }
-  }
-  ret.objAttrs["classid"] = classid;
-  if (mimeType) ret.embedAttrs["type"] = mimeType;
-  return ret;
-}
-/* FILE flash_comm.js */
+/* FILE svg_view_comm.js */
 
 /*globals console sparks $ document window alert navigator*/
 
@@ -2776,142 +2387,6 @@ function AC_GetArgs(args, ext, srcParamName, classid, mimeType){
       section.meter.update();
     };
 
-    sparks.flash = {};
-
-    sparks.flash.loaded = false;
-
-    sparks.flash.queuedMessages = [];
-
-    sparks.flash.init = function() {
-      sparks.flash.loaded = true;
-      var length = sparks.flash.queuedMessages.length;
-      for (var i = 0; i < length; i++){
-        sparks.flash.sendCommand.apply(this, sparks.flash.queuedMessages.pop());
-      }
-    };
-
-    sparks.flash.getFlashMovie = function (movieName) {
-      var isIE = navigator.appName.indexOf("Microsoft") != -1;
-      return (isIE) ? window[movieName] : document[movieName];
-    };
-
-    sparks.flash.sendCommand = function () {
-      if (!sparks.flash.loaded){
-        sparks.flash.queuedMessages.push(arguments);
-        return;
-      }
-
-      try {
-        var params = [];
-        for (var i = 0; i < arguments.length; ++i) {
-          params[i] = arguments[i];
-        }
-        var flash = sparks.flash.getFlashMovie(sparks.config.flash_id);
-
-        var retVal = flash.sendMessageToFlash.apply(flash, params).split('|');
-        if (retVal[0] == 'flash_error') {
-          alert('Flash error:\n' + retVal[1]);
-        }
-      }
-      catch (e) {
-        alert('Error sending command to Flash:\n' + e.toString());
-      }
-    };
-
-    this.receiveEvent = function (name, value, time) {
-      console.log('Received: ' + name + ', ' + value + ', ' + new Date(parseInt(time, 10)));
-
-      var v;
-      var t = '';
-      var args = value.split('|');
-
-      var section = sparks.activityController.currentSection;
-
-      if (name === 'connect') {
-          if (args[0] === 'probe' && !!args[2]) {
-            section.meter.setProbeLocation(args[1], args[2]);
-          }
-          if (args[0] === 'component') {
-              if (args[2] === "left_positive21" || args[2] === "left_negative21") {
-              }
-              if (!!args[2]){
-                breadModel('unmapHole', args[2]);
-              }
-              sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
-                "type": "connect lead",
-                "location": args[2]});
-              section.meter.update();
-          }
-      } else if (name === 'disconnect') {
-          if (args[0] === 'probe') {
-            section.meter.setProbeLocation(args[1], null);
-          } else if (args[0] === 'component') {
-            var hole = args[2];
-            if (hole === "left_positive21" || hole === "left_negative21") {
-            }
-            var newHole = breadModel('getGhostHole', hole+"ghost");
-
-            breadModel('mapHole', hole, newHole.nodeName());
-            sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
-              "type": "disconnect lead",
-              "location": hole});
-            section.meter.update();
-          }
-      } else if (name === 'probe') {
-          $('#popup').dialog();
-
-          v = breadModel('query', 'voltage', 'a23,a17');
-          t += v.toFixed(3);
-          v = breadModel('query', 'voltage', 'b17,b11');
-          t += ' ' + v.toFixed(3);
-          v = breadModel('query', 'voltage', 'c11,c5');
-          t += ' ' + v.toFixed(3);
-          $('#dbg_voltage').text(t);
-
-          breadModel('move', 'wire1', 'left_positive1,a22');
-
-          v = breadModel('query', 'resistance', 'a23,a17');
-          t = v.toFixed(3);
-          v = breadModel('query', 'resistance', 'b17,b11');
-          t += ' ' + v.toFixed(3);
-          v = breadModel('query', 'resistance', 'c11,c5');
-          t += ' ' + v.toFixed(3);
-
-          $('#dbg_resistance').text(t);
-
-          v = breadModel('query', 'current', 'a22,a23');
-          t = v.toFixed(3);
-
-          breadModel('move', 'wire1', 'left_positive1,a23');
-          breadModel('move', 'resistor1', 'a23,a16');
-          v = breadModel('query', 'current', 'a16,b17');
-          t += ' ' + v.toFixed(3);
-
-          breadModel('move', 'resistor1', 'a23,a17');
-          breadModel('move', 'resistor2', 'b17,b10');
-          v = breadModel('query', 'current', 'b10,c11');
-          t += ' ' + v.toFixed(3);
-
-          breadModel('move', 'resistor2', 'b17,b11');
-
-          $('#dbg_current').text(t);
-
-          $('#popup').dialog('close');
-      } else if (name == 'multimeter_dial') {
-          section.meter.dmm.dialPosition = value;
-          section.meter.update();
-      } else if (name == 'multimeter_power') {
-          section.meter.dmm.powerOn = value == 'true' ? true : false;
-          section.meter.update();
-      } else if (name == 'value_changed') {
-        var component = getBreadBoard().components[args[0]];
-        if (component.scaleResistance) {
-          component.scaleResistance(args[1]);
-          section.meter.update();
-        }
-      }
-  }
-
 })();
 /* FILE util.js */
 
@@ -2952,22 +2427,6 @@ sparks.util.cloneSimpleObject = function (obj) {
         return obj;
     }
 };
-
-/*
-sparks.util.checkFlashVersion = function () {
-    var major = 10;
-    var minor = 0;
-    var revision = 31;
-
-    if (!DetectFlashVer(10, 0, 33)) {
-        var msg = 'This activity requires Flash version ';
-        msg += major + '.' + minor + '.' + revision + '. ';
-
-        $('body').html('<p>' + msg + '</p>');
-    }
-    document.write('<p>Flash version: ' + GetSwfVer() + '</p>');
-};
-*/
 
 sparks.util.Alternator = function (x, y)
 {
@@ -3216,7 +2675,6 @@ sparks.createQuestionsCSV = function(data) {
           var activity = new sparks.config.Activity();
           this.setSavePath(activity);
           activity.onDocumentReady();
-          activity.onFlashReady();
           sparks.activity = activity;
       }
       catch (e) {
@@ -3246,16 +2704,6 @@ sparks.createQuestionsCSV = function(data) {
           console.log("setting onbeforeunload")
           window.onbeforeunload = askConfirm;
       }
-    };
-
-    /*
-     * This function gets called from Flash after Flash has set up the external
-     * interface. Therefore all code that sends messages to Flash should be
-     * initiated from this function.
-     */
-    this.initActivity = function () {
-        console.log("flash loaded");
-        sparks.activity.onActivityReady();
     };
 
     sparks.Activity = function () {
@@ -3330,8 +2778,6 @@ sparks.createQuestionsCSV = function(data) {
 
 (function () {
 
-    var flash = sparks.flash;
-
     /*
      * Digital Multimeter
      * Base for the Centech DMM
@@ -3384,7 +2830,6 @@ sparks.createQuestionsCSV = function(data) {
         updateDisplay : function () {
             if (!this.powerOn) {
                 this.displayText = '       ';
-                flash.sendCommand('set_multimeter_display', '       ');
                 return;
             }
 
@@ -3621,7 +3066,6 @@ sparks.createQuestionsCSV = function(data) {
             }
             text = this.disable_multimeter_position(text);
             if (text !== this.displayText) {
-              console.log('text=' + text);
               if (sparks.breadboardView) {
                 sparks.breadboardView.setDMMText(text);
               }
@@ -3818,7 +3262,6 @@ sparks.createQuestionsCSV = function(data) {
 (function () {
 
     var circuit = sparks.circuit;
-    var flash = sparks.flash;
 
     /*
      * Digital Multimeter
@@ -4022,8 +3465,6 @@ sparks.createQuestionsCSV = function(data) {
 /*globals console sparks getBreadBoard */
 
 (function () {
-
-    var flash = sparks.flash;
 
     sparks.circuit.Resistor = function (props, breadBoard) {
       var tolerance, steps;
@@ -6720,7 +6161,6 @@ sparks.createQuestionsCSV = function(data) {
                     this.setCurrentResistor(this.resistor5band);
                 }
             }
-            flash.sendCommand('set_current_resistor', this.currentResistor.id);
 
             var r = this.currentResistor;
 
@@ -6741,8 +6181,6 @@ sparks.createQuestionsCSV = function(data) {
             else {
                 r.randomize();
             }
-            flash.sendCommand('set_resistor_colors', this.currentResistor.id, this.currentResistor.colors);
-            flash.sendCommand('reset_circuit');
             this.logResistorState();
             console.log('currentResistor=' + sparks.activity.currentResistor.colors);
             this.multimeter.update();
@@ -6750,15 +6188,12 @@ sparks.createQuestionsCSV = function(data) {
 
         setCurrentResistor: function (resistor) {
           this.currentResistor = resistor;
-          flash.sendCommand('set_current_resistor', resistor.id);
         },
 
         enableCircuit: function () {
-            flash.sendCommand('enable_circuit');
         },
 
         disableCircuit: function () {
-            flash.sendCommand('disable_circuit');
         },
 
         completedTry: function () {

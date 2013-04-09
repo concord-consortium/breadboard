@@ -9,7 +9,6 @@
 (function () {
 
     var circuit = sparks.circuit;
-    var flash = sparks.flash;
 
     /*
      * Digital Multimeter for breadboard activities
@@ -135,7 +134,6 @@
         },
 
         blowFuse: function() {
-          sparks.flash.sendCommand('mouse_up');
           apMessageBox.error({
           	title: "POW!",
           	message: "<b>You just blew the fuse in your multimeter!</b><br><br> Remember not to pass too much current through it."+

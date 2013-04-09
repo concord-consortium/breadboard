@@ -22,10 +22,6 @@
       var inductance = this.getInductance() || 0,
           nodes       = this.getNodes();
       ciso.addComponent(this.UID, "Inductor", inductance, nodes);
-    },
-
-    getFlashArguments: function () {
-      return ['inductor', this.UID, this.getLocation(), this.label];
     }
   });
 

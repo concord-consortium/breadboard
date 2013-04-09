@@ -2,8 +2,6 @@
 
 (function () {
 
-    var flash = sparks.flash;
-
     /*
      * Digital Multimeter
      * Base for the Centech DMM
@@ -58,7 +56,6 @@
         updateDisplay : function () {
             if (!this.powerOn) {
                 this.displayText = '       ';
-                flash.sendCommand('set_multimeter_display', '       ');
                 return;
             }
 
@@ -295,11 +292,9 @@
             }
             text = this.disable_multimeter_position(text);
             if (text !== this.displayText) {
-              console.log('text=' + text);
               if (sparks.breadboardView) {
                 sparks.breadboardView.setDMMText(text);
               }
-              // flash.sendCommand('set_multimeter_display', text);
               this.displayText = text;
               this.currentValue = parseFloat(text.replace(/[^\d\.]/g, ""));
             }

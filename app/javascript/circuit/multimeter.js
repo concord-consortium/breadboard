@@ -6,8 +6,7 @@
 (function () {
 
     var circuit = sparks.circuit;
-    var flash = sparks.flash;
-    
+
     /*
      * Digital Multimeter
      * Used by Module-1 "Measuring Resistance"
@@ -17,14 +16,14 @@
     };
 
     sparks.extend(circuit.Multimeter, circuit.MultimeterBase, {
-            
+
         update : function () {
             this.r_value = sparks.activity.currentResistor.getRealValue();
             this.updateDisplay();
         },
 
         allConnected : function () {
-            return this.redProbeConnection !== null && 
+            return this.redProbeConnection !== null &&
                 this.blackProbeConnection !== null &&
                 this.redProbeConnection !== this.blackProbeConnection &&
                 (this.redPlugConnection === 'voma_port' &&

@@ -4,8 +4,6 @@
 
 (function () {
 
-    var flash = sparks.flash;
-
     sparks.circuit.Resistor = function (props, breadBoard) {
       var tolerance, steps;
 
@@ -105,14 +103,10 @@
         },
 
         updateColors: function (resistance, tolerance) {
-            //console.log('colors=' + this.colors);
-            //console.log('Sending colors=' + this.colors.join('|'));
             this.colors = this.getColors(resistance, tolerance);
-            // flash.sendCommand('set_resistor_colors', this.id, this.colors);
         },
 
         show : function() {
-            // flash.sendCommand('show_resistor');
         },
 
         calcRealValue: function (nominalValue, tolerance) {

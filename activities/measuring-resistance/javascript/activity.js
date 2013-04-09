@@ -24,9 +24,9 @@
     var flash = sparks.flash;
     var str = sparks.string;
     var util = sparks.util;
-    
+
     sparks.config.flash_id = 'resistor_colors';
-    
+
     sparks.config.debug = jQuery.url.param("debug") !== undefined;
     sparks.config.debug_nbands = jQuery.url.param("n") ? Number(jQuery.url.param("n")) : null;
     sparks.config.debug_rvalue = jQuery.url.param("r") ? Number(jQuery.url.param("r")) : null;
@@ -35,7 +35,7 @@
 
     mr.Activity = function () {
         mr.Activity.uber.init.apply(this);
-        
+
         var activity = this;
         this.dataService = null;
         this.log = new mr.ActivityLog();
@@ -51,9 +51,9 @@
         this.allResults = [];
 
     };
-    
+
     sparks.config.Activity = sparks.activities.mr.Activity;
-    
+
     sparks.extend(mr.Activity, sparks.Activity, {
 
         setDataService: function (ds) {
@@ -65,13 +65,13 @@
             var self = this;
 
             this.dom = mr.ActivityDomHelper;
-            
+
             this.root_dir = sparks.config.root_dir + '/activities/measuring-resistance';
             this.sessionTitle = $('#session_title');
             this.endSessionInstruction = $('.instruction_end_session');
             this.questionsElem = $('#questions_area');
             this.reportElem = $('#report_area').hide();
-            
+
             if (sparks.config.debug) {
                 $('#json_button').click(function () {
                     $('#json_current_log').html('<pre>' + sparks.util.prettyPrint(activity.log.sessions, 4) + '</pre>' + JSON.stringify(activity.log));
@@ -80,11 +80,11 @@
             else {
                 $('#json').hide();
             }
-            
+
             this.buttonize();
-            
+
             $('body').scrollTop(0); //scroll to top
-            
+
             // Disable all form elements
             $('input, select').attr("disabled", "true");
 
@@ -115,7 +115,7 @@
             //console.log('Real Resistance=' + this.resistor.realValue);
 
         },
-        
+
         // Re-initialize the circuit settings for a new set of questions
         resetCircuit: function () {
             console.log('ENTER ResistorActivity.resetCircuit');
@@ -130,10 +130,9 @@
                     this.setCurrentResistor(this.resistor5band);
                 }
             }
-            flash.sendCommand('set_current_resistor', this.currentResistor.id);
 
             var r = this.currentResistor;
-            
+
             if (sparks.config.debug_rvalue || sparks.config.debug_mvalue ||
                 sparks.config.debug_tvalue)
             {
@@ -151,8 +150,6 @@
             else {
                 r.randomize();
             }
-            flash.sendCommand('set_resistor_colors', this.currentResistor.id, this.currentResistor.colors);
-            flash.sendCommand('reset_circuit');
             this.logResistorState();
             console.log('currentResistor=' + sparks.activity.currentResistor.colors);
             this.multimeter.update();
@@ -160,15 +157,12 @@
 
         setCurrentResistor: function (resistor) {
           this.currentResistor = resistor;
-          flash.sendCommand('set_current_resistor', resistor.id);
         },
 
         enableCircuit: function () {
-            flash.sendCommand('enable_circuit');
         },
 
         disableCircuit: function () {
-            flash.sendCommand('disable_circuit');
         },
 
         // Completed a session (finished with one resistor)
@@ -200,7 +194,7 @@
             this.questionsElem.hide();
             this.reportElem.show();
             this.reporter.report(this.log.currentSession(), this.feedback);
-            
+
             $(".next_button").each(function () {
                 //this.disabled = false;
                 $(this).button('enable');
@@ -271,7 +265,7 @@
           // clear the grading icons
           $(".grade").remove();
 
-          // hide the contextual help  
+          // hide the contextual help
 
           // generate the resistor numbers
           // display them on the page so people can see it working
@@ -316,7 +310,7 @@
               'Nominal Value: ' + resistor.getNominalValue() + '<br />' +
               'Tolerance: ' + resistor.getTolerance() * 100.0 + '%<br />' +
               'Calculated colors: ' + resistor.getColors(resistor.getNominalValue(), resistor.getTolerance()) + '<br />' +
-              'Range: [' + sparks.unit.res_str(min) + ', ' + sparks.unit.res_str(max) + ']<br />' + 
+              'Range: [' + sparks.unit.res_str(min) + ', ' + sparks.unit.res_str(max) + ']<br />' +
               'Real Value: ' + resistor.getRealValue() + '<br />' +
               'Display Value: ' + this.multimeter.makeDisplayText(resistor.getRealValue()) + '<br />';
 
@@ -335,7 +329,7 @@
           form.find("button").click(function (event) {
               self.submitButtonClicked(self, event);
               event.preventDefault();
-          }); 
+          });
           form.find("input, select").removeAttr("disabled");
           form.find("input, select").keypress(function (event) {
               if (event.keyCode == '13') { //13: Enter key
@@ -348,7 +342,7 @@
 
         disableForm: function (form) {
           form.find("input[name='stop_time']").attr("value", "" + (new Date()).getTime());
-          form.find("button").remove(); 
+          form.find("button").remove();
           form.find("input, select").attr("disabled", "true");
           form.css("background-color", "");
         },
@@ -374,13 +368,13 @@
                 alert('Not saving the data:\neither not logged in and/or no data service defined');
             }
         },
-        
+
         validateAnswer: function (questionNum) {
             var value, unit, msg;
             var title = 'Alert';
-            
+
             var answer = this.dom.getAnswer(questionNum);
-            
+
             switch (questionNum) {
             case 1:
             case 3:
@@ -445,7 +439,7 @@
             activity.disableForm(form);
             var nextForm = form.nextAll("form:first");
             activity.log.add('end_question', { question : activity.current_question });
-            
+
             if (nextForm.size() === 0) { //all questions answered for current session
                 activity.completedTry();
             }
@@ -474,5 +468,5 @@
             activity.startTry();
         }
     });
-    
+
 })();

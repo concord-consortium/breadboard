@@ -22,10 +22,6 @@
       var capacitance = this.getCapacitance() || 0,
           nodes       = this.getNodes();
       ciso.addComponent(this.UID, "Capacitor", capacitance, nodes);
-    },
-
-    getFlashArguments: function () {
-      return ['capacitor', this.UID, this.getLocation(), this.label];
     }
   });
 

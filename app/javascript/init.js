@@ -4,7 +4,6 @@
 //= require <circuitSolver.min>
 //= require <jquery/plugins/jquery.url.packed>
 //= require <jquery/plugins/jquery.cookie>
-//= require <jquery/plugins/jquery.flash>
 //= require <jquery/plugins/jquery.couch>
 //= require <jquery/plugins/jquery.easyTooltip>
 //= require <jquery/plugins/jquery.tablesorter.min>
@@ -39,7 +38,7 @@
 //= require <helpers/math-parser>
 //= require <helpers/string>
 //= require <helpers/ui>
-//= require <helpers/flash_comm>
+//= require <helpers/svg_view_comm>
 //= require <helpers/complex-number>
 //= require <circuit/breadboard>
 //= require <circuit/multimeter2>
@@ -63,7 +62,6 @@
 
 (function () {
 
-  sparks.config.flash_id = 'breadboardActivity1';
   sparks.activity_base_url = "http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/";
   sparks.activity_images_base_url = "http://couchdb.cosmos.concord.org/sparks/";
   sparks.tutorial_base_url = "tutorials/";
