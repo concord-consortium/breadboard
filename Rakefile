@@ -1,13 +1,13 @@
 require 'rubygems'
 require 'sprockets'
 
-desc "Default: combine:all" 
+desc "Default: combine:all"
 task :default => [:"combine:all"]
 
 namespace :combine do
 
-  @load_path = [ 'lib', 'app/javascript' ]
-    
+  @load_path = [ 'lib', 'app' ]
+
   desc "Do all combine tasks"
   task :all => [
     :'client:measuring_resistance_activity',
@@ -17,7 +17,7 @@ namespace :combine do
   ]
 
   namespace :client do
-    
+
     desc "Concatenate all JavaScript for Measuring Resistance activity (client)"
     task :measuring_resistance_activity do
       sprocket([
@@ -25,7 +25,7 @@ namespace :combine do
         ],
         'client-mr-activity.js')
     end
-    
+
     desc "Concatenate all JavaScript for Measuring Resistance report (client)"
     task :measuring_resistance_report do
       sprocket([
@@ -33,11 +33,11 @@ namespace :combine do
         ],
         'client-mr-report.js')
     end
-    
+
     desc "Concatenate all JavaScript for breadboard activity (client)"
     task :breadboard_activity do
       sprocket([
-          'app/javascript/init.js'
+          'app/init.js'
         ],
         'client-breadboard-activity.js')
     end
@@ -45,7 +45,7 @@ namespace :combine do
   end
 
   namespace :server do
-    
+
     desc "Concatenate all JavaScript for Measuring Resistance report (server)"
     task :measuring_resistance_report do
       sprocket([
@@ -53,9 +53,9 @@ namespace :combine do
         ],
         'server-mr-report.js')
     end
-    
+
   end
-  
+
   def sprocket(source_files, target)
     secretary = Sprockets::Secretary.new(
       :source_files => source_files,
