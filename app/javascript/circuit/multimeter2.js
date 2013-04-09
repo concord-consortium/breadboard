@@ -74,7 +74,16 @@
             } else if (measurement === "voltage" || measurement === "ac_voltage" || measurement === "current") {
               var v1 = ciso.getVoltageAt(p1),   // complex
                   v2 = ciso.getVoltageAt(p2),
-                  drop = v1.subtract(v2).magnitude;
+                  drop;
+
+              // exit quickly if ciso was not able to solve circuit
+              if (!v1 || !v2) {
+                this.absoluteValue = 0;
+                this.updateDisplay();
+                return;
+              }
+
+              drop = v1.subtract(v2).magnitude;
 
               if (measurement === "current") {
                 result = drop / 1e-6;
