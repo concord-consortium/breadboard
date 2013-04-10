@@ -53,12 +53,6 @@
 
       if (this.resistance > 0) {
         var self = this;
-        this.toNetlist = function () {
-          var resistance = self.resistance,
-              nodes      = self.getNodes();
-
-          return 'R:' + this.UID + ' ' + nodes.join(' ') + ' R="' + resistance + ' Ohm"';
-        };
       }
     }
 

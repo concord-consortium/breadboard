@@ -1,4 +1,3 @@
-//= require "qucsator"
 //= require <circuit/resistor>
 //= require <circuit/variable-resistor>
 //= require <circuit/component>

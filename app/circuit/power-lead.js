@@ -25,10 +25,6 @@
 
     addCiSoComponent: function () { },
 
-    toNetlist: function () {
-      return '';
-    },
-
     getViewArguments: null
   });
 

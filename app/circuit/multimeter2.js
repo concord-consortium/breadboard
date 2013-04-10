@@ -54,7 +54,7 @@
           }
         },
 
-        // this is called asynchronously after update() is called and qucs returns
+        // this is called after update() is called and ciso returns
         updateWithData: function (ciso) {
           var measurement = this.currentMeasurement,
               source, b, p1, p2, v1, v2, current, drop,

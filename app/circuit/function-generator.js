@@ -102,29 +102,6 @@
 
     defaultFrequencySteps: 100,
 
-    getQucsSimulationType: function () {
-      var type, nSteps;
-
-      if (this.frequencies && (this.frequencies[0] === 'linear' || this.frequencies[0] === 'logarithmic')) {
-        type   = this.frequencies[0] === 'linear' ? 'lin' : 'log';
-        nSteps = this.frequencies[3] || this.defaultFrequencySteps;
-
-        return '.AC:AC1 Type="' + type + '" Start="' + this.frequencies[1] + '" Stop="' + this.frequencies[2] + '" Points="' + nSteps + '" Noise="no"';
-      }
-
-      if (this.frequencies && typeof this.frequencies[0] === 'number') {
-
-        if (this.frequencies.length === 1) {
-          return '.AC:AC1 Type="const" Values="' + this.frequencies[0] + '" Noise="no"';
-        }
-        else if (this.frequencies.length > 1) {
-          return '.AC:AC1 Type="list" Values="[' + this.frequencies.join('; ') + ']" Noise="no"';
-        }
-
-      }
-
-    },
-
     _calcPossibleFrequencies: function(props) {
       var startF   = props.frequencies[1],
           endF     = props.frequencies[2],
