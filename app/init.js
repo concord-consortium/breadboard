@@ -27,6 +27,7 @@
 //= require <views/function-generator-view>
 //= require <views/class-report-view>
 //= require <views/breadboard-svg-view>
+//= require <views/svg_view_comm>
 //= require <controllers/question-controller>
 //= require <controllers/page-controller>
 //= require <controllers/log-controller>
@@ -39,7 +40,6 @@
 //= require <helpers/math-parser>
 //= require <helpers/string>
 //= require <helpers/ui>
-//= require <helpers/svg_view_comm>
 //= require <helpers/complex-number>
 //= require <circuit/breadboard>
 //= require <circuit/multimeter2>
