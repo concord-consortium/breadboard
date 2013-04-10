@@ -7033,6 +7033,7 @@ window["breadboardView"] = {
     sparks.breadboardComm.connectionMade = function(component, hole) {
       var section = sparks.activityController.currentSection,
           breadboard, comp, openConnections, openConnectionsArr, connectionReturning, connection;
+
       if (!!hole){
         openConnections = sparks.breadboardComm.openConnections[component];
         if (!openConnections) return; // shouldn't happen
@@ -7055,6 +7056,8 @@ window["breadboardView"] = {
               break;
             }
           }
+
+          breadModel("checkLocation", comp);;
         }
 
       }
@@ -8651,6 +8654,7 @@ window["breadboardView"] = {
       },
 
       getViewArguments: function () {
+        this.viewArguments.connections = this.getLocation(); // update location
         return this.viewArguments;
       },
 
@@ -9466,6 +9470,11 @@ window["breadboardView"] = {
           }
 
           var newComponent = breadBoard.component(props);
+
+          if (sparks.breadboardView) {
+            sparks.breadboardView.addComponent(newComponent.getViewArguments());
+          }
+
           return newComponent.UID;
         },
         createCircuit: function(jsonCircuit) {
@@ -9511,6 +9520,64 @@ window["breadboardView"] = {
         },
         insert: function(){
           console.log("ERROR: 'insert' is deprecated. Use 'insertComponent'");
+        },
+        checkLocation: function(comp){     // ensure that a component's leads aren't too close
+          var minDistance = {
+                resistor: 6,
+                inductor: 5,
+                capacitor: 3,
+                wire: 3
+              },
+              yValue = {
+                left_positive: 1,
+                left_negative: 2,
+                a: 4, b: 5, c: 6, d: 7, e: 8,
+                f: 10, g: 11, h: 12, i: 13, j: 14,
+                right_positive: 16,
+                right_negative: 17
+              },
+              getCoordinate = function(hole) {      // returns [20, 4] for "a20"
+                var name  = hole.name,
+                    split = /(\D*)(.*)/.exec(name),
+                    row   = yValue[split[1]];
+                return [split[2]*1, row];
+              },
+              leadsAreTooClose = function() {
+                var dx, dy, leadDistance;
+
+                comp.coord = [];
+                comp.coord[0] = getCoordinate(comp.connections[0]);
+                comp.coord[1] = getCoordinate(comp.connections[1]);
+                dx = comp.coord[1][0] - comp.coord[0][0];
+                dy = comp.coord[1][1] - comp.coord[0][1];
+                leadDistance = Math.sqrt(dx*dx + dy*dy);
+
+                return (leadDistance < minDistance[comp.type]);
+              },
+              leadsWereTooClose = false;
+
+          while (leadsAreTooClose()) {
+            leadsWereTooClose = true;
+            var rightLead = comp.coord[0][0] < comp.coord[1][0] ? 0 : 1,
+                leftLead = (rightLead - 1) * -1,
+                newX, newName;
+
+            if (comp.coord[rightLead][0] > 1) {
+              newX = comp.coord[rightLead][0] - 1;
+              newName = comp.connections[rightLead].name.replace(/\d*$/, newX);
+              comp.connections[rightLead] = breadBoard.getHole(newName);
+            } else {
+              newX = comp.coord[leftLead][0] + 1;
+              newName = comp.connections[leftLead].name.replace(/\d*$/, newX);
+              comp.connections[leftLead] = breadBoard.getHole(newName);
+            }
+          }
+
+          if (leadsWereTooClose && sparks.breadboardView) {
+            sparks.breadboardView.removeComponent(comp.UID);
+            sparks.breadboardView.addComponent(comp.getViewArguments());
+          }
+
         },
         getUID: function(_name){
           var name = _name.replace(/ /g, "_");      // no spaces in qucs

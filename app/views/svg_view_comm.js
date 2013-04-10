@@ -11,7 +11,7 @@
     sparks.breadboardComm.connectionMade = function(component, hole) {
       var section = sparks.activityController.currentSection,
           breadboard, comp, openConnections, openConnectionsArr, connectionReturning, connection;
-      // for now, we're just dealing with the situation of replacing one lead that had been lifted
+
       if (!!hole){
         openConnections = sparks.breadboardComm.openConnections[component];
         if (!openConnections) return; // shouldn't happen
@@ -37,6 +37,9 @@
               break;
             }
           }
+
+          // check that we don't have two leads to close together
+          breadModel("checkLocation", comp);;
         }
 
       }

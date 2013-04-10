@@ -54,6 +54,7 @@
       },
 
       getViewArguments: function () {
+        this.viewArguments.connections = this.getLocation(); // update location
         return this.viewArguments;
       },
 
