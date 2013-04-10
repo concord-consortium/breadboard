@@ -404,8 +404,8 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
         };
     }
 }());
-
 /* FILE setup-common.js */
+/*global sparks debug console*/
 
 (function () {
 
@@ -2705,7 +2705,7 @@ sparks.createQuestionsCSV = function(data) {
 
 
 })();
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ */
 
 (function() {
   sparks.Activity = function(){
@@ -2729,7 +2729,7 @@ sparks.createQuestionsCSV = function(data) {
   };
 
 })();
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ */
 
 (function() {
   sparks.Section = function(){
@@ -2833,7 +2833,7 @@ sparks.createQuestionsCSV = function(data) {
   };
 
 })();
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ */
 
 (function() {
 
@@ -2863,7 +2863,7 @@ sparks.createQuestionsCSV = function(data) {
   };
 
 })();
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks */
 
 (function() {
   sparks.Question = function(){
@@ -2930,7 +2930,7 @@ sparks.createQuestionsCSV = function(data) {
   };
 
 })();
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks */
 
 /**
  * report:
@@ -3003,7 +3003,7 @@ sparks.createQuestionsCSV = function(data) {
   };
 
 })();
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ */
 
 /**
  * report:
@@ -3097,7 +3097,7 @@ sparks.createQuestionsCSV = function(data) {
   };
 
 })();
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ breadboardView breadModel getBreadBoard*/
 
 (function() {
 
@@ -3159,7 +3159,7 @@ sparks.createQuestionsCSV = function(data) {
           this.divs.$fgDiv.append($fg);
           this.divs.$fgDiv.show();
         }
-        section.meter.reset()
+        section.meter.reset();
       }
 
       this.layoutPage(true);
@@ -3214,10 +3214,10 @@ sparks.createQuestionsCSV = function(data) {
       }
      },
 
-     allowMoveYellowProbe: function(allow) {
+     allowMoveYellowProbe: function() {
      },
 
-     hidePinkProbe: function(allow) {
+     hidePinkProbe: function() {
      },
 
      hidePopups: function() {
@@ -7020,7 +7020,7 @@ window["breadboardView"] = {
   };
 
 })(jQuery, window["breadboardView"]);
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ */
 
 (function() {
 
@@ -7208,7 +7208,7 @@ window["breadboardView"] = {
 
       var parse = function(string){
         return sparks.unit.parse.call(sparks.unit, string);
-      }
+      };
       if (sparks.activityController.currentSection.meter.oscope) {
         goodness = sparks.activityController.currentSection.meter.oscope.getGoodnessOfScale();
       }
@@ -7219,7 +7219,7 @@ window["breadboardView"] = {
 
   sparks.questionController = new sparks.QuestionController();
 })();
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks */
 
 (function() {
 
@@ -7308,7 +7308,7 @@ window["breadboardView"] = {
 
   sparks.pageController = new sparks.PageController();
 })();
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ */
 
 (function() {
 
@@ -7376,7 +7376,7 @@ window["breadboardView"] = {
 
   sparks.logController = new sparks.LogController();
 })();
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ breadModel */
 
 (function() {
 
@@ -7440,7 +7440,7 @@ window["breadboardView"] = {
       section.jsonSection = jsonSection;
 
       if (!!jsonSection.pages){
-        $.each(jsonSection.pages, function(id, jsonPage){
+        $.each(jsonSection.pages, function(id){
           var page = new sparks.Page(id);
           section.pages.push(page);
         });
@@ -7491,7 +7491,6 @@ window["breadboardView"] = {
     },
 
     areMorePage: function() {
-      var nextPage;
       var section = sparks.activityController.currentSection;
       if (this.currentPageIndex < section.pages.length - 1){
         return section.pages[this.currentPageIndex+1];
@@ -7576,7 +7575,7 @@ window["breadboardView"] = {
 
   sparks.sectionController = new sparks.SectionController();
 })();
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ */
 
 (function() {
 
@@ -7672,7 +7671,7 @@ window["breadboardView"] = {
 
   sparks.activityController = new sparks.ActivityController();
 })();
-/*globals console sparks $ breadModel getBreadBoard window */
+/*global console sparks $ alert */
 
 (function() {
 
@@ -7856,11 +7855,13 @@ window["breadboardView"] = {
     },
 
     getLastThreeScoreForPageReport: function(pageReport) {
-      var sessionReports = pageReport.sessionReports;
-      var totalScore = 0;
-      var maxScore = 0;
-      for (var i = sessionReports.length-1; i >= (sessionReports.length - 3) && i > -1; i--){
-        var report = sessionReports[i];
+      var sessionReports = pageReport.sessionReports,
+          totalScore = 0,
+          maxScore = 0,
+          report, numRuns, i;
+
+      for (i = sessionReports.length-1; i >= (sessionReports.length - 3) && i > -1; i--){
+        report = sessionReports[i];
         totalScore += report.score;
         maxScore += report.maxScore;
       }
@@ -7907,9 +7908,8 @@ window["breadboardView"] = {
     },
 
     getCategories: function(report) {
-      var categories = {};
-      var self = this;
-      var sessions = this._sortSessionsByTime(report);
+      var categories = {},
+          sessions = this._sortSessionsByTime(report);
 
       $.each(sessions, function(k, sessionReport){
         $.each(sessionReport.questions, function(l, question){
@@ -7989,14 +7989,14 @@ window["breadboardView"] = {
     loadReport: function(jsonReport) {
       sparks.report.score = jsonReport.score;
       $.each(jsonReport.sectionReports, function(i, jsonSectionReport){
-        var sectionReport = new sparks.SectionReport();
-        var section = sparks.activityController.findSection(jsonSectionReport.sectionId);
+        var sectionReport = new sparks.SectionReport(),
+            section = sparks.activityController.findSection(jsonSectionReport.sectionId);
         sparks.report.sectionReports[section] = sectionReport;
         sectionReport.sectionId = jsonSectionReport.sectionId;
         sectionReport.sectionTitle = jsonSectionReport.sectionTitle;
         $.each(jsonSectionReport.pageReports, function(j, jsonPageReport){
-          var pageReport = new sparks.PageReport();
-          var page = section.pages[j];
+          var pageReport = new sparks.PageReport(),
+              page = section.pages[j];
           sectionReport.pageReports[page] = pageReport;
           $.each(jsonPageReport.sessionReports, function(k, jsonSessionReport){
             var sessionReport = new sparks.SessionReport();
@@ -8024,24 +8024,26 @@ window["breadboardView"] = {
     },
 
     addSectionIds: function(jsonReport, callback) {
-      var self = this;
+      var feedback = [],
+          sections = ["series-a-1d", "series-b-1a", "series-c-1", "series-c-2", "series-d-1",
+                      "series-d-2", "series-e-1", "series-e-2", "series-f-1"],
+          sectionTitles = ["Understanding a Breadboard", "Understanding Series Resistances", "Calculating Total Circuit R (Series)",
+                            "Calculating V and I in Series Circuits", "Measuring to Calculate Total R",
+                            "Measuring V and I in Series Circuits", "Measuring Series Circuits", "Measuring Series R's in Circuits",
+                            "Troubleshooting a series circuit"],
+          question,
+          sectionAttempt;
+
       if (!jsonReport.sectionReports || jsonReport.sectionReports.length < 1 || !!jsonReport.sectionReports[0].sectionId){
         callback(jsonReport);
         return;
       }
 
-      var question = jsonReport.sectionReports[0].pageReports[0].sessionReports[0].questions[0];
-      var feedback = [];
+      question = jsonReport.sectionReports[0].pageReports[0].sessionReports[0].questions[0];
+
       $.each(question.options, function(i, option){
         feedback.push(option.feedback);
       });
-
-      var sections = ["series-a-1d", "series-b-1a", "series-c-1", "series-c-2", "series-d-1",
-                      "series-d-2", "series-e-1", "series-e-2", "series-f-1"];
-      var sectionTitles = ["Understanding a Breadboard", "Understanding Series Resistances", "Calculating Total Circuit R (Series)",
-                            "Calculating V and I in Series Circuits", "Measuring to Calculate Total R",
-                            "Measuring V and I in Series Circuits", "Measuring Series Circuits", "Measuring Series R's in Circuits",
-                            "Troubleshooting a series circuit"];
 
       sectionAttempt = 0;
 
@@ -8106,7 +8108,7 @@ window["breadboardView"] = {
 
   sparks.reportController = new sparks.ReportController();
 })();
-/*globals console sparks $ breadModel getBreadBoard window alert*/
+/*global sparks $ alert*/
 
 (function() {
 
@@ -8175,7 +8177,7 @@ window["breadboardView"] = {
           }
         }
         var sectionReports = this.reports[reportWithMostSections].sectionReports;
-        return $.map(sectionReports, function(report, i) {
+        return $.map(sectionReports, function(report) {
           return (report.sectionTitle);
         });
       }
@@ -8186,7 +8188,7 @@ window["breadboardView"] = {
 
   sparks.classReportController = new sparks.ClassReportController();
 })();
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks window setTimeout $ */
 
 (function() {
 
@@ -8226,8 +8228,9 @@ window["breadboardView"] = {
 
     getTutorialTitle: function(filename, callback) {
       $.get(this._getURL(filename), function(data) {
-        var title = filename;
-        var $title = $(data).find('#tutorial_title');
+        var title = filename,
+            $title = $(data).find('#tutorial_title');
+
         if ($title.length > 0){
           title = $title[0].innerHTML;
         } else {
@@ -8241,7 +8244,6 @@ window["breadboardView"] = {
     },
 
     _getURL: function(filename) {
-      var url;
       if (filename.indexOf("http:") < 0 && filename.indexOf("/") !== 0){
         if (filename.indexOf("htm") < 0){
           filename += '.html';
@@ -8254,11 +8256,13 @@ window["breadboardView"] = {
 
     tutorialMoveActionCallback: function() {
       setTimeout(function() {
-        var win = sparks.tutorialController.tutorialWindow;
+        var win = sparks.tutorialController.tutorialWindow,
+            tutorialName;
+
         if (win && win.location) {
-          var tutorialName = win.location.pathname.replace("/","");
+          tutorialName = win.location.pathname.replace("/","");
           sparks.logController.addEvent(sparks.LogEvent.CHANGED_TUTORIAL, tutorialName);
-          win.moveActionCallback = sparks.tutorialController.tutorialMoveActionCallback
+          win.moveActionCallback = sparks.tutorialController.tutorialMoveActionCallback;
           sparks.GAHelper.userVisitedTutorial(tutorialName);
         }
       }, 1000);
@@ -8269,7 +8273,7 @@ window["breadboardView"] = {
 
   sparks.tutorialController = new sparks.TutorialController();
 })();
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ */
 
 (function() {
   sparks.ActivityConstructor = function(jsonActivity){
@@ -8278,7 +8282,7 @@ window["breadboardView"] = {
 
     if (!jsonActivity.type || jsonActivity.type !== "activity"){
       var jsonSection = jsonActivity;
-      var section = sparks.activityController.addSection(jsonSection);
+      sparks.activityController.addSection(jsonSection);
       this.loadFirstSection();
     } else {
       sparks.activityController.createActivity(jsonActivity, this.loadFirstSection);
@@ -8731,7 +8735,7 @@ window["breadboardView"] = {
 })();
 /* FILE resistor.js */
 /* FILE resistor.js */
-/*globals console sparks */
+/*global sparks $ getBreadBoard*/
 
 (function () {
 
@@ -8779,7 +8783,7 @@ window["breadboardView"] = {
     sparks.circuit.Component.prototype =
     {
       setViewArguments: function (args) {
-        for (arg in args) {
+        for (var arg in args) {
           if (!args.hasOwnProperty(arg)) continue;
           this.viewArguments[arg] = args[arg];
         }
@@ -8789,10 +8793,10 @@ window["breadboardView"] = {
         return this.viewArguments;
       },
 
-    	move: function (connections) {
-        var i;
+      move: function (connections) {
+        var i, j;
         for (i in this.connections) {
-          for (var j in this.connections[i].connections) {
+          for (j in this.connections[i].connections) {
             if (this.connections[i].connections[j] === this) {
               this.connections[i].connections = [];
             }
@@ -8809,8 +8813,9 @@ window["breadboardView"] = {
       },
 
       destroy: function (){
-        for(var i in this.connections){
-          for( var j in this.connections[i].connections ){
+        var i, j;
+        for(i in this.connections){
+          for(j in this.connections[i].connections ){
             if( this.connections[i].connections[j] === this ){
               this.connections[i].connections = [];
             }
@@ -8900,7 +8905,7 @@ window["breadboardView"] = {
     };
 
 })();
-/*globals console sparks getBreadBoard */
+/*global sparks */
 
 (function () {
 
@@ -8920,7 +8925,7 @@ window["breadboardView"] = {
       }
 
       if ((this.resistance === undefined) && !this.colors) {
-        var resistor = new sparks.circuit.Resistor4band(name);
+        var resistor = new sparks.circuit.Resistor4band();
         resistor.randomize(null);
         this.resistance = resistor.getRealValue();
         this.tolerance = resistor.tolerance;
@@ -8946,7 +8951,7 @@ window["breadboardView"] = {
 
     sparks.extend(sparks.circuit.Resistor, sparks.circuit.Component,
     {
-    	nominalValueMagnitude: -1,
+      nominalValueMagnitude: -1,
 
         colorMap: { '-1': 'gold', '-2': 'silver',
             0 : 'black', 1 : 'brown', 2 : 'red', 3 : 'orange',
@@ -9045,13 +9050,13 @@ window["breadboardView"] = {
         },
 
         getColors4Band: function (ohms, tolerance) {
-            var s = ohms.toString();
-            var decIx = s.indexOf('.');
-            var decLoc = decIx > -1 ? decIx : s.length;
+            var s = ohms.toString(),
+                decIx = s.indexOf('.'),
+                decLoc = decIx > -1 ? decIx : s.length,
+                len, i;
             s = s.replace('.', '');
-            var len = s.length;
-            for (var i = 0; i < 2 - len; ++i){ s += '0'; }
-            var mult = decLoc > 1 ? decLoc - 2 : 10;
+            len = s.length;
+            for (i = 0; i < 2 - len; ++i){ s += '0'; }
             return [ this.colorMap[s.charAt(0)],
                      this.colorMap[s.charAt(1)],
                      this.colorMap[decLoc - 2],
@@ -9060,12 +9065,13 @@ window["breadboardView"] = {
         },
 
         getColors5Band: function (ohms, tolerance) {
-            var s = ohms.toString();
-            var decIx = s.indexOf('.');
-            var decLoc = decIx > -1 ? decIx : s.length;
+            var s = ohms.toString(),
+                decIx = s.indexOf('.'),
+                decLoc = decIx > -1 ? decIx : s.length,
+                len, i;
             s = s.replace('.', '');
-            var len = s.length;
-            for (var i = 0; i < 3 - len; ++i) { s += '0'; }
+            len = s.length;
+            for (i = 0; i < 3 - len; ++i) { s += '0'; }
             return [ this.colorMap[s.charAt(0)],
                      this.colorMap[s.charAt(1)],
                      this.colorMap[s.charAt(2)],
@@ -9274,7 +9280,7 @@ window["breadboardView"] = {
     ];
 
 })();
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks */
 
 /* FILE variable-resistor.js */
 
@@ -9312,34 +9318,31 @@ window["breadboardView"] = {
 
 /* FILE breadboard.js */
 
-/*globals console sparks $ breadBoard window*/
+/*global sparks CiSo $ breadBoard window console*/
 
 (function () {
 
-    var q = sparks.circuit.qucsator;
 
-
-      var defs = {
+    var defs = {
         rows            : 31,
         powerRailHoles  : 25,
         debug           : true
-      };
+      },
 
+      Hole,
+      GhostHole,
+      Strip,
+      Breadboard,
+      breadBoard,
+      interfaces;
 
-      var remove = function(array, from, to) {
-        var rest = array.slice((to || from) + 1 || array.length);
-        array.length = from < 0 ? array.length + from : from;
-        return array.push.apply(array, rest);
-      };
-
-      var HTMLLog = undefined, HTMLbody = undefined;
       this.debug = function(){
       };
 
 
       this.breadBoard = {};
 
-      var Hole = function Hole( strip, name ){
+      Hole = function Hole( strip, name ){
         this.type ='hole';
         this.strip = strip;
         this.name = name;
@@ -9355,7 +9358,7 @@ window["breadboardView"] = {
         return this.name;
       };
 
-      var GhostHole = function GhostHole(name) {
+      GhostHole = function GhostHole(name) {
         this.name = !!name ? name : interfaces.getUID('node');
         return this;
       };
@@ -9368,7 +9371,7 @@ window["breadboardView"] = {
         return this.name;
       };
 
-      var Strip = function Strip( holes, name ){
+      Strip = function Strip( holes, name ){
         this.type ='strip';
         this.holes={};
         this.name = name;
@@ -9381,8 +9384,12 @@ window["breadboardView"] = {
         return this;
       };
 
-      var Breadboard = function Breadboard(){
-        var i;
+      Breadboard = function Breadboard(){
+        var i, h, l, ll, a,
+            side, sign,
+            newStripL, newStripR,
+            mapCode;
+
         this.type ='Breadboard';
 
         this.powerRail = { // I was told these were called power-rails
@@ -9398,8 +9405,10 @@ window["breadboardView"] = {
 
         for (i=0, l=defs.powerRailHoles; i < l; i++) {
           for (side in this.powerRail) {
+            if (!this.powerRail.hasOwnProperty(side)) continue;
             for (sign in this.powerRail[side]) {
-              var h = side + '_' + sign + i;
+              if (!this.powerRail[side].hasOwnProperty(sign)) continue;
+              h = side + '_' + sign + i;
               this.powerRail[side][sign][h] = this.holes[h] = new Hole(this.powerRail[side][sign], h);
             }
           }
@@ -9408,8 +9417,8 @@ window["breadboardView"] = {
         for (i=0, l=defs.rows; i < l; i++) {
           newStripL = this.makeStrip("L" + i);
           newStripR = this.makeStrip("R" + i);
-          for (var a=0, ll=5; a < ll; a++ ) {
-            var mapCode = String.fromCharCode(a+97)+i;
+          for (a=0, ll=5; a < ll; a++ ) {
+            mapCode = String.fromCharCode(a+97)+i;
             newStripL.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripL, mapCode );
             mapCode = String.fromCharCode(a+102)+i;
             newStripR.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripR, mapCode );
@@ -9465,9 +9474,12 @@ window["breadboardView"] = {
       };
 
       Breadboard.prototype.clear = function () {
+        var destroyed = 0,
+            k;
+
         this.resOrderOfMagnitude = -1;
-        var destroyed = 0;
         for( k in this.components ){
+          if (!this.components.hasOwnProperty(k)) continue;
           destroyed += !!this.component(k).destroy();
         }
         this.components = {};
@@ -9487,7 +9499,7 @@ window["breadboardView"] = {
 
 
         if (!!this.holeMap[hole]){
-          hole = this.holeMap[hole]
+          hole = this.holeMap[hole];
         }
 
         if (!!this.holes[hole]){
@@ -9499,9 +9511,13 @@ window["breadboardView"] = {
       };
 
       Breadboard.prototype.resetConnections = function(oldHoleName, newHoleName) {
+        var i, j;
+
         for( i in this.components ){
+          if (!this.components.hasOwnProperty(i)) continue;
           var comp = this.component(i);
           for (j in comp.connections){
+            if (!comp.connections.hasOwnProperty(j)) continue;
             if (!!comp.connections[j] && comp.connections[j].getName() === oldHoleName) {
               comp.connections[j] = this.getHole(newHoleName);
             }
@@ -9571,9 +9587,9 @@ window["breadboardView"] = {
         return null;
       };
 
-      var breadBoard = new Breadboard();
+      breadBoard = new Breadboard();
 
-      var interfaces = {
+      interfaces = {
         insertComponent: function(kind, properties){
           var props = {};
           $.each(properties, function(key, property){
@@ -9601,12 +9617,12 @@ window["breadboardView"] = {
             interfaces.insertComponent(spec.type, spec);
           });
 
-          if (!breadBoard.components["source"]) {
+          if (!breadBoard.components.source) {
             var battery = {
               UID: "source",
               type: "battery",
               voltage: 9
-            }
+            };
             interfaces.insertComponent("battery", battery);
           }
 
@@ -9632,7 +9648,7 @@ window["breadboardView"] = {
         setResOrderOfMagnitude: function(om){
           breadBoard.resOrderOfMagnitude = om;
         },
-        insert: function(type, connections){
+        insert: function(){
           console.log("ERROR: 'insert' is deprecated. Use 'insertComponent'");
         },
         getUID: function(_name){
@@ -9649,21 +9665,24 @@ window["breadboardView"] = {
           return ""+name+i;
         },
         remove: function(type, connections){
-          var comp = interfaces.findComponent(type, connections)
+          var comp = interfaces.findComponent(type, connections);
           if (!!comp){
             comp.destroy();
           }
         },
         findComponent: function(type, connections){
+          var i, component;
+
           if (!!type && !!connections && connections.split(",").length === 2){
             connections = connections.split(",");
             for (i in breadBoard.components){
-              var component = breadBoard.components[i];
+              if (!breadBoard.components.hasOwnProperty(i)) continue;
+              component = breadBoard.components[i];
               if (component.kind === type && !!component.connections[0] &&
-                ((component.connections[0].getName() === connections[0]
-                && component.connections[1].getName() === connections[1]) ||
-                (component.connections[0].getName() === connections[1]
-                  && component.connections[1].getName() === connections[0]))){
+                ((component.connections[0].getName() === connections[0] &&
+                  component.connections[1].getName() === connections[1]) ||
+                (component.connections[0].getName() === connections[1] &&
+                  component.connections[1].getName() === connections[0]))){
                   return component;
                 }
             }
@@ -9696,7 +9715,7 @@ window["breadboardView"] = {
           breadBoard.holeMap = {};
         },
         addRandomResistor: function(name, location, options){
-          console.log("WARNING: addRandomResistor is deprecated")
+          console.log("WARNING: addRandomResistor is deprecated");
           var resistor = new sparks.circuit.Resistor4band(name);
           resistor.randomize((options | null));
           interfaces.insert('resistor', location, resistor.getRealValue(), name, resistor.colors);
@@ -9704,33 +9723,39 @@ window["breadboardView"] = {
         },
 
         query: function(type, connections, callback, context, callbackArgs){
-          var tempComponents = [];
+          var tempComponents = [],
+              ghost, ohmmeterBattery,
+              voltmeterResistor,
+              ammeterResistor,
+              oscopeResistor,
+              ciso,
+              node;
 
           if (type === 'resistance') {
             connections = connections.split(',');
-            var ghost = new GhostHole();
-            var ohmmeterBattery = breadBoard.component({
+            ghost = new GhostHole();
+            ohmmeterBattery = breadBoard.component({
               UID: 'ohmmeterBattery',
               kind: 'battery',
               voltage: 1,
               connections: [connections[0], connections[1]]});
             tempComponents.push(ohmmeterBattery);
           } else if (type === 'voltage'){
-            var voltmeterResistor = breadBoard.component({
+            voltmeterResistor = breadBoard.component({
               UID: 'voltmeterResistor',
               kind: 'resistor',
               resistance: 1e12,
               connections: connections.split(',')});
             tempComponents.push(voltmeterResistor);
           } else if (type === 'current'){
-            var ammeterResistor = breadBoard.component({
+            ammeterResistor = breadBoard.component({
               UID: 'ammeterResistor',
               kind: 'resistor',
               resistance: 1e-6,
               connections: connections.split(',')});
             tempComponents.push(ammeterResistor);
           } else if (type === 'oscope') {
-            var oscopeResistor = breadBoard.component({
+            oscopeResistor = breadBoard.component({
               UID: 'oscopeResistor',
               kind: 'resistor',
               resistance: 1e12,
@@ -9738,14 +9763,14 @@ window["breadboardView"] = {
             tempComponents.push(oscopeResistor);
           }
 
-          var ciso = new CiSo();
+          ciso = new CiSo();
 
           $.each(breadBoard.components, function(i, component) {
-            component.addCiSoComponent(ciso)
+            component.addCiSoComponent(ciso);
           });
 
           if (type === 'resistance') {
-            node = breadBoard.getHole(connections[1]).nodeName()
+            node = breadBoard.getHole(connections[1]).nodeName();
             ciso.setReferenceNode(node);
           }
           $.each(tempComponents, function(i, component){
@@ -9764,7 +9789,6 @@ window["breadboardView"] = {
       };
 
       this.breadModel = function () {
-        debug(arguments);
         var newArgs = [];
         for(var i=1,l=arguments.length;i< l;i++){
           newArgs[newArgs.length] = arguments[i];
@@ -9791,7 +9815,7 @@ window["breadboardView"] = {
 
 })();
 /* FILE multimeter-base.js */
-
+/*global sparks console*/
 (function () {
 
     /*
@@ -9844,12 +9868,14 @@ window["breadboardView"] = {
         },
 
         updateDisplay : function () {
+            var text = '',
+                vm, imc, im;
+
             if (!this.powerOn) {
                 this.displayText = '       ';
                 return;
             }
 
-            var text = '';
             if (this.allConnected()) {
                 if (this.dialPosition === 'dcv_20') {
                     if (this.absoluteValue < 19.995) {
@@ -9883,7 +9909,7 @@ window["breadboardView"] = {
                     this.currentUnits = "V";
 
                 } else if (this.dialPosition === 'dcv_2000m') {
-                    var vm = this.absoluteValue * 1000;
+                    vm = this.absoluteValue * 1000;
                     if (vm < 1999.5) {
                         text = Math.round(vm).toString();
                         text = this.toDisplayString(text, 0);
@@ -9894,7 +9920,7 @@ window["breadboardView"] = {
                     this.currentUnits = "mV";
 
                 } else if (this.dialPosition === 'dcv_200m') {
-                    var vm = this.absoluteValue * 1000;
+                    vm = this.absoluteValue * 1000;
                     if (vm < 195){
                       text = (Math.round(vm * 100) * 0.01).toString();
                       text = this.toDisplayString(text, 1);
@@ -9975,7 +10001,7 @@ window["breadboardView"] = {
                     this.currentUnits = "kOhms";
                 }
                 else if (this.dialPosition === 'dca_200mc') {
-                  var imc = this.absoluteValue * 1000000
+                  imc = this.absoluteValue * 1000000;
                   if (imc < 195){
                     text = (Math.round(imc * 100) * 0.01).toString();
                     text = this.toDisplayString(text, 1);
@@ -9986,7 +10012,7 @@ window["breadboardView"] = {
                   this.currentUnits = "μA";
                 }
                 else if (this.dialPosition === 'dca_2000mc') {
-                  var imc = this.absoluteValue * 1000000
+                  imc = this.absoluteValue * 1000000;
                   if (imc < 1950){
                     text = (Math.round(imc * 10) * 0.1).toString();
                     text = this.toDisplayString(text, 0);
@@ -9997,7 +10023,7 @@ window["breadboardView"] = {
                   this.currentUnits = "μA";
                 }
                 else if (this.dialPosition === 'dca_20m') {
-                  var im = this.absoluteValue * 1000
+                  im = this.absoluteValue * 1000;
                   if (im < 19.5){
                     text = (Math.round(im * 100) * 0.01).toString();
                     text = this.toDisplayString(text, 2);
@@ -10008,7 +10034,7 @@ window["breadboardView"] = {
                   this.currentUnits = "mA";
                 }
                 else if (this.dialPosition === 'dca_200m') {
-                  var im = this.absoluteValue * 1000
+                  im = this.absoluteValue * 1000;
                   if (im < 195){
                     text = (Math.round(im * 10) * 0.1).toString();
                     text = this.toDisplayString(text, 1);
@@ -10091,68 +10117,69 @@ window["breadboardView"] = {
         },
 
 
-		set_disable_multimeter_position: function (disabled) {
-			this.disabledPositions = disabled.split(',');
-			for(i=0;i<this.disabledPositions.length;i++){
-			}
-		},
+    set_disable_multimeter_position: function (disabled) {
+      this.disabledPositions = disabled.split(',');
+      for(var i=0;i<this.disabledPositions.length;i++){
+      }
+    },
 
 
         disable_multimeter_position : function (displayText) {
+          var i;
 
-        	switch (this.dialPosition)
-        	{
- 			case 'dcv_20':
-			case 'dcv_200':
-			case 'dcv_1000':
-			case 'dcv_2000m':
-			case 'dcv_200m':
-				for(i=0;i<this.disabledPositions.length;i++){
-					if(this.disabledPositions[i] == 'dcv'){
-						displayText = '-------';
-						break;
-					}
-				}
-				break;
-			case 'r_200':
-			case 'r_2000':
-			case 'r_20k':
-			case 'r_200k':
-			case 'r_2000k':
-				for(i=0;i<this.disabledPositions.length;i++){
-					if(this.disabledPositions[i] == 'r'){
-						displayText = '-------';
-						break;
-					}
-				}
-				break;
-			case 'dca_200mc':
-			case 'dca_2000mc':
-			case 'dca_20m':
-			case 'dca_200m':
-				for(i=0;i<this.disabledPositions.length;i++){
-					if(this.disabledPositions[i] == 'dca'){
-						displayText = '-------';
-						break;
-					}
-				}
-				break;
-			case 'acv_750':
-			case 'acv_200':
-				for(i=0;i<this.disabledPositions.length;i++){
-					if(this.disabledPositions[i] == 'acv'){
-						displayText = '-------';
-						break;
-					}
-				}
-				break;
-			case 'diode':
-			case 'hfe':
-			case 'c_10a':
-			case 'p_9v':
-			default:
-        	}
-        	return displayText;
+          switch (this.dialPosition)
+          {
+      case 'dcv_20':
+      case 'dcv_200':
+      case 'dcv_1000':
+      case 'dcv_2000m':
+      case 'dcv_200m':
+        for(i=0;i<this.disabledPositions.length;i++){
+          if(this.disabledPositions[i] == 'dcv'){
+            displayText = '-------';
+            break;
+          }
+        }
+        break;
+      case 'r_200':
+      case 'r_2000':
+      case 'r_20k':
+      case 'r_200k':
+      case 'r_2000k':
+        for(i=0;i<this.disabledPositions.length;i++){
+          if(this.disabledPositions[i] == 'r'){
+            displayText = '-------';
+            break;
+          }
+        }
+        break;
+      case 'dca_200mc':
+      case 'dca_2000mc':
+      case 'dca_20m':
+      case 'dca_200m':
+        for(i=0;i<this.disabledPositions.length;i++){
+          if(this.disabledPositions[i] == 'dca'){
+            displayText = '-------';
+            break;
+          }
+        }
+        break;
+      case 'acv_750':
+      case 'acv_200':
+        for(i=0;i<this.disabledPositions.length;i++){
+          if(this.disabledPositions[i] == 'acv'){
+            displayText = '-------';
+            break;
+          }
+        }
+        break;
+      case 'diode':
+      case 'hfe':
+      case 'c_10a':
+      case 'p_9v':
+      default:
+          }
+          return displayText;
         },
 
         toDisplayString : function (s, dec) {
@@ -10275,7 +10302,7 @@ window["breadboardView"] = {
 
 /* FILE multimeter2.js */
 
-/*globals console sparks $ breadModel getBreadBoard apMessageBox*/
+/*global sparks breadModel getBreadBoard apMessageBox*/
 
 (function () {
 
@@ -10304,7 +10331,6 @@ window["breadboardView"] = {
         currentMeasurement: null,
 
         update: function () {
-          console.log("update!")
           if (this.redProbeConnection && this.blackProbeConnection) {
             if (this.dialPosition.indexOf('dcv_') > -1){
               this.currentMeasurement = "voltage";
@@ -10328,23 +10354,24 @@ window["breadboardView"] = {
 
         updateWithData: function (ciso) {
           var measurement = this.currentMeasurement,
+              source, b, p1, p2, v1, v2, current, drop,
               result;
+
           if (ciso) {
-            var source = ciso.voltageSources[0],
-                b  = getBreadBoard(),
-                p1 = b.getHole(this.redProbeConnection).nodeName(),
-                p2 = b.getHole(this.blackProbeConnection).nodeName();
+            source = ciso.voltageSources[0],
+            b  = getBreadBoard();
+            p1 = b.getHole(this.redProbeConnection).nodeName();
+            p2 = b.getHole(this.blackProbeConnection).nodeName();
             if (measurement === "resistance") {
               if (p1 === p2) {
                 result = 0;
               } else {
-                var current = ciso.getCurrent('ohmmeterBattery');
+                current = ciso.getCurrent('ohmmeterBattery');
                 result = 1/current.magnitude;
               }
             } else if (measurement === "voltage" || measurement === "ac_voltage" || measurement === "current") {
-              var v1 = ciso.getVoltageAt(p1),   // complex
-                  v2 = ciso.getVoltageAt(p2),
-                  drop;
+                v1 = ciso.getVoltageAt(p1);   // complex
+                v2 = ciso.getVoltageAt(p2);
 
               if (!v1 || !v2) {
                 this.absoluteValue = 0;
@@ -10362,7 +10389,7 @@ window["breadboardView"] = {
             }
 
             if (result){
-              var source = getBreadBoard().components.source;
+              source = getBreadBoard().components.source;
               if (!!source &&
                  ((measurement === 'voltage' && source.frequency) ||
                   (measurement === 'ac_voltage' && source.frequency === 0))) {
@@ -10402,12 +10429,12 @@ window["breadboardView"] = {
 
         blowFuse: function() {
           apMessageBox.error({
-          	title: "POW!",
-          	message: "<b>You just blew the fuse in your multimeter!</b><br><br> Remember not to pass too much current through it."+
-          	" We've replaced your fuse for you, but you lost some time.",
-          	errorImage: "lib/error-32x32.png",
-          	width: 400,
-          	height: 300
+            title: "POW!",
+            message: "<b>You just blew the fuse in your multimeter!</b><br><br> Remember not to pass too much current through it."+
+            " We've replaced your fuse for you, but you lost some time.",
+            errorImage: "lib/error-32x32.png",
+            width: 400,
+            height: 300
           });
           sparks.logController.addEvent(sparks.LogEvent.BLEW_FUSE);
         },
@@ -10429,7 +10456,7 @@ window["breadboardView"] = {
     });
 
 })();
-/*globals sparks getBreadBoard breadModel */
+/*global sparks getBreadBoard breadModel */
 /* FILE oscilloscope.js */
 
 (function () {
@@ -10444,8 +10471,8 @@ window["breadboardView"] = {
           initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
       this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
       this._horizontalScale = initHorizontalScale;
-  	  this.showAminusB = false;
-  	  this.showAplusB = false;
+      this.showAminusB = false;
+      this.showAplusB = false;
       this.AminusBwasOn = false;  // whether A-B was turned on during current question
       this.AplusBwasOn = false;
     };
@@ -10476,8 +10503,6 @@ window["breadboardView"] = {
       },
 
       setView: function(view) {
-        var i;
-
         this.view = view;
         this.view.setModel(this);
         this.update();         // we can update view immediately with the source trace
@@ -10494,7 +10519,7 @@ window["breadboardView"] = {
       },
 
       moveProbe: function(oldLoc, newLoc) {
-        for (i = 0; i < 2; i++) {
+        for (var i = 0; i < 2; i++) {
           if (this.probeLocation[i] === oldLoc) {
             this.probeLocation[i] = newLoc;
           }
@@ -10503,22 +10528,17 @@ window["breadboardView"] = {
       },
 
       update: function() {
-        console.log("update")
         var breadboard = getBreadBoard(),
             source     = breadboard.components.source,
+            probeIndex,
             sourceSignal,
-            probeSignal,
-            probeNode,
-            data,
-            result,
-            freqs,
-            dataIndex;
+            probeNode;
 
         if (!source || !source.frequency || !source.amplitude) {
           return;                                     // we must have a source with a freq and an amplitude
         }
 
-        for (var probeIndex = 0; probeIndex < 2; probeIndex++) {
+        for (probeIndex = 0; probeIndex < 2; probeIndex++) {
           if (this.probeLocation[probeIndex]) {
             probeNode = breadboard.getHole(this.probeLocation[probeIndex]).nodeName();
             if (probeNode === 'gnd') {
@@ -10545,9 +10565,12 @@ window["breadboardView"] = {
         var breadboard = getBreadBoard(),
             source     = breadboard.components.source,
             probeNode  = probeInfo[0],
-            probeIndex = probeInfo[1];
+            probeIndex = probeInfo[1],
+            result,
+            probeSignal;
 
-        result = ciso.getVoltageAt(probeInfo[0])
+
+        result = ciso.getVoltageAt(probeInfo[0]);
 
         if (result) {
           probeSignal = {
@@ -10700,20 +10723,22 @@ window["breadboardView"] = {
       },
 
       getGoodnessOfScale: function() {
-        var self = this;
-        var goodnessOfScale = function(channel) {
-          var timeScale  = self.signals[channel].frequency * (self._horizontalScale * 10),            // 0-inf, best is 1
-              ampScale   = (self.signals[channel].amplitude * 2) / (self._verticalScale[channel] * 8),
-              timeGoodness  = timeScale > 1 ? 1/timeScale : timeScale,                                // 0-1, best is 1
-              ampGoodness   = ampScale > 1 ? 1/ampScale : ampScale,
-              timeScore  = (timeGoodness - 0.3) / 0.5,                                                // scaled such that 0.3 = 0 and 0.8 = 1
-              ampScore   = (ampGoodness - 0.3) / 0.5,
-              minScore = Math.max(0,Math.min(timeScore, ampScore, 1)),                                // smallest of the two, no less than 0
-              maxScore = Math.min(1,Math.max(timeScore, ampScore, 0));                                // largest of the two, no greater than 1
-          return ((minScore * 3) + maxScore) / 4;
-        }
+        var self = this,
 
-        var goodnesses = [null, null];
+            goodnessOfScale = function(channel) {
+              var timeScale  = self.signals[channel].frequency * (self._horizontalScale * 10),            // 0-inf, best is 1
+                  ampScale   = (self.signals[channel].amplitude * 2) / (self._verticalScale[channel] * 8),
+                  timeGoodness  = timeScale > 1 ? 1/timeScale : timeScale,                                // 0-1, best is 1
+                  ampGoodness   = ampScale > 1 ? 1/ampScale : ampScale,
+                  timeScore  = (timeGoodness - 0.3) / 0.5,                                                // scaled such that 0.3 = 0 and 0.8 = 1
+                  ampScore   = (ampGoodness - 0.3) / 0.5,
+                  minScore = Math.max(0,Math.min(timeScore, ampScore, 1)),                                // smallest of the two, no less than 0
+                  maxScore = Math.min(1,Math.max(timeScore, ampScore, 0));                                // largest of the two, no greater than 1
+              return ((minScore * 3) + maxScore) / 4;
+            },
+
+            goodnesses = [null, null];
+
         if (this.signals[1]) {
           goodnesses[0] = goodnessOfScale([1]);
         }
@@ -10888,7 +10913,7 @@ window["breadboardView"] = {
     });
 })();
 
-/*globals console sparks getBreadBoard*/
+/*global console sparks getBreadBoard $*/
 
 (function () {
     sparks.circuitMath = function(){};
@@ -10947,7 +10972,7 @@ window["breadboardView"] = {
         return (1/resistance);
       },
 
-      vDiv: function(x, y){
+      vDiv: function(){
         var resistors = this.getResistors(arguments);
         return resistors[0].resistance / (resistors[0].resistance + resistors[1].resistance);
       }
@@ -10958,7 +10983,7 @@ window["breadboardView"] = {
 })();
 /* FILE inductor.js */
 /* FILE reactive-component.js */
-/*globals console sparks */
+/*global sparks */
 
 (function () {
 
@@ -11017,7 +11042,7 @@ window["breadboardView"] = {
   });
 
 })();
-/*globals console sparks */
+/*global sparks */
 
 (function () {
 
@@ -11044,7 +11069,7 @@ window["breadboardView"] = {
 
 })();
 /* FILE capacitor.js */
-/*globals console sparks */
+/*global sparks */
 
 (function () {
 
@@ -11071,18 +11096,20 @@ window["breadboardView"] = {
 
 })();
 /* FILE battery.js */
-/*globals console sparks */
+/*global sparks */
 
 (function () {
 
   sparks.circuit.Battery = function (props, breadBoard) {
+    var range;
+
     sparks.circuit.Battery.parentConstructor.call(this, props, breadBoard);
 
     if (this.voltage && this.voltage.length) {
       if (this.voltage.length === 1) {
         this.voltage = this.voltage[0];
       } else {
-        var range = this.voltage[1] - this.voltage[0];
+        range = this.voltage[1] - this.voltage[0];
         this.voltage = this.voltage[0] + (Math.random() * range);
       }
     }
@@ -11099,7 +11126,7 @@ window["breadboardView"] = {
 
 })();
 /* FILE function-generator.js */
-/*globals console sparks */
+/*global sparks */
 
 (function () {
 
@@ -11180,13 +11207,13 @@ window["breadboardView"] = {
       var amplitude   = this.amplitude || 0,
           nodes       = this.getNodes();
 
-      ciso.addVoltageSource(this.UID,amplitude,nodes[0],nodes[1],this.frequency)
+      ciso.addVoltageSource(this.UID,amplitude,nodes[0],nodes[1],this.frequency);
     },
 
     defaultFrequencySteps: 100,
 
     getQucsSimulationType: function () {
-      var type, nSteps, ret;
+      var type, nSteps;
 
       if (this.frequencies && (this.frequencies[0] === 'linear' || this.frequencies[0] === 'logarithmic')) {
         type   = this.frequencies[0] === 'linear' ? 'lin' : 'log';
@@ -11239,7 +11266,7 @@ window["breadboardView"] = {
 })();
 
 /* FILE battery.js */
-/*globals console sparks */
+/*global sparks */
 
 (function () {
 
@@ -11274,7 +11301,7 @@ window["breadboardView"] = {
 
 })();
 /* FILE powerlead.js */
-/*globals console sparks */
+/*global sparks */
 
 (function () {
 
@@ -11297,7 +11324,7 @@ window["breadboardView"] = {
       return this.connections[0].getName() + ",a1";       // Flash coding issue means we need to give this a second argument...
     },
 
-    addCiSoComponent: function (ciso) { },
+    addCiSoComponent: function () { },
 
     toNetlist: function () {
       return '';
@@ -11684,14 +11711,14 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
 
 /* FILE init.js */
 
-/*globals console sparks $ document window onDocumentReady unescape prompt apMessageBox*/
+/*global Audio console sparks $ document window onDocumentReady unescape prompt apMessageBox*/
 
 (function () {
 
   sparks.activity_base_url = "http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/";
   sparks.activity_images_base_url = "http://couchdb.cosmos.concord.org/sparks/";
   sparks.tutorial_base_url = "tutorials/";
-  sparks.soundFiles = {click: "common/sounds/click.ogg"}
+  sparks.soundFiles = {click: "common/sounds/click.ogg"};
 
   window._gaq = window._gaq || [];      // in case this script loads before the GA queue is created
 
@@ -11733,10 +11760,8 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
 
     this.loadSounds();
 
-    console.log("loading "+activityName);
     sparks.couchDS.loadActivity(activityName, function(activity) {
-      console.log(activity);
-      var ac = new sparks.ActivityConstructor(activity);
+      new sparks.ActivityConstructor(activity);
     });
   };
 
@@ -11776,21 +11801,21 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
       if (!!sparks.couchDS.user) {
         sparks.reportController.saveData();
         apMessageBox.information({
-        	title: "Ready to leave?",
-        	message: "All your work up until this page has been saved.",
-        	informationImage: "lib/information-32x32.png",
-        	width: 400,
-        	height: 200,
-        	buttons: {
-        	  "Go to the portal": function () {
-        	    $(this).dialog("close");
-        	    window.onbeforeunload = null;
+          title: "Ready to leave?",
+          message: "All your work up until this page has been saved.",
+          informationImage: "lib/information-32x32.png",
+          width: 400,
+          height: 200,
+          buttons: {
+            "Go to the portal": function () {
+              $(this).dialog("close");
+              window.onbeforeunload = null;
               window.location.href = "http://sparks.portal.concord.org";
-        	  },
-        	  "Keep working": function() {
-        	    $(this).dialog("close");
-        	  }
-        	}
+            },
+            "Keep working": function() {
+              $(this).dialog("close");
+            }
+          }
         });
       } else {
         window.onbeforeunload = null;

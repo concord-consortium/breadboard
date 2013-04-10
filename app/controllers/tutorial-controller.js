@@ -1,4 +1,4 @@
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks window setTimeout $ */
 
 (function() {
 
@@ -38,8 +38,9 @@
 
     getTutorialTitle: function(filename, callback) {
       $.get(this._getURL(filename), function(data) {
-        var title = filename;
-        var $title = $(data).find('#tutorial_title');
+        var title = filename,
+            $title = $(data).find('#tutorial_title');
+
         if ($title.length > 0){
           title = $title[0].innerHTML;
         } else {
@@ -53,7 +54,6 @@
     },
 
     _getURL: function(filename) {
-      var url;
       if (filename.indexOf("http:") < 0 && filename.indexOf("/") !== 0){
         if (filename.indexOf("htm") < 0){
           filename += '.html';
@@ -66,11 +66,13 @@
 
     tutorialMoveActionCallback: function() {
       setTimeout(function() {
-        var win = sparks.tutorialController.tutorialWindow;
+        var win = sparks.tutorialController.tutorialWindow,
+            tutorialName;
+
         if (win && win.location) {
-          var tutorialName = win.location.pathname.replace("/","");
+          tutorialName = win.location.pathname.replace("/","");
           sparks.logController.addEvent(sparks.LogEvent.CHANGED_TUTORIAL, tutorialName);
-          win.moveActionCallback = sparks.tutorialController.tutorialMoveActionCallback
+          win.moveActionCallback = sparks.tutorialController.tutorialMoveActionCallback;
           sparks.GAHelper.userVisitedTutorial(tutorialName);
         }
       }, 1000);

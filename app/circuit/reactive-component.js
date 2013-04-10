@@ -1,6 +1,6 @@
 /* FILE reactive-component.js */
 //= require "component"
-/*globals console sparks */
+/*global sparks */
 
 (function () {
 

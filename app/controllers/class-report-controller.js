@@ -1,4 +1,4 @@
-/*globals console sparks $ breadModel getBreadBoard window alert*/
+/*global sparks $ alert*/
 
 (function() {
 
@@ -69,7 +69,7 @@
           }
         }
         var sectionReports = this.reports[reportWithMostSections].sectionReports;
-        return $.map(sectionReports, function(report, i) {
+        return $.map(sectionReports, function(report) {
           return (report.sectionTitle);
         });
       }

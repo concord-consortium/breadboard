@@ -1,10 +1,12 @@
 /* FILE battery.js */
 //= require "component"
-/*globals console sparks */
+/*global sparks */
 
 (function () {
 
   sparks.circuit.Battery = function (props, breadBoard) {
+    var range;
+
     sparks.circuit.Battery.parentConstructor.call(this, props, breadBoard);
 
     // if voltages are specified as an array, then if it has only value, set the
@@ -14,7 +16,7 @@
       if (this.voltage.length === 1) {
         this.voltage = this.voltage[0];
       } else {
-        var range = this.voltage[1] - this.voltage[0];
+        range = this.voltage[1] - this.voltage[0];
         this.voltage = this.voltage[0] + (Math.random() * range);
       }
     }

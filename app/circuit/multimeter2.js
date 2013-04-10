@@ -4,7 +4,7 @@
 
 /* FILE multimeter2.js */
 
-/*globals console sparks $ breadModel getBreadBoard apMessageBox*/
+/*global sparks breadModel getBreadBoard apMessageBox*/
 
 (function () {
 
@@ -33,7 +33,6 @@
         currentMeasurement: null,
 
         update: function () {
-          console.log("update!")
           if (this.redProbeConnection && this.blackProbeConnection) {
             if (this.dialPosition.indexOf('dcv_') > -1){
               this.currentMeasurement = "voltage";
@@ -58,23 +57,24 @@
         // this is called asynchronously after update() is called and qucs returns
         updateWithData: function (ciso) {
           var measurement = this.currentMeasurement,
+              source, b, p1, p2, v1, v2, current, drop,
               result;
+
           if (ciso) {
-            var source = ciso.voltageSources[0],
-                b  = getBreadBoard(),
-                p1 = b.getHole(this.redProbeConnection).nodeName(),
-                p2 = b.getHole(this.blackProbeConnection).nodeName();
+            source = ciso.voltageSources[0],
+            b  = getBreadBoard();
+            p1 = b.getHole(this.redProbeConnection).nodeName();
+            p2 = b.getHole(this.blackProbeConnection).nodeName();
             if (measurement === "resistance") {
               if (p1 === p2) {
                 result = 0;
               } else {
-                var current = ciso.getCurrent('ohmmeterBattery');
+                current = ciso.getCurrent('ohmmeterBattery');
                 result = 1/current.magnitude;
               }
             } else if (measurement === "voltage" || measurement === "ac_voltage" || measurement === "current") {
-              var v1 = ciso.getVoltageAt(p1),   // complex
-                  v2 = ciso.getVoltageAt(p2),
-                  drop;
+                v1 = ciso.getVoltageAt(p1);   // complex
+                v2 = ciso.getVoltageAt(p2);
 
               // exit quickly if ciso was not able to solve circuit
               if (!v1 || !v2) {
@@ -94,7 +94,7 @@
 
             if (result){
               // if in wrong voltage mode for AC/DC voltage, show zero
-              var source = getBreadBoard().components.source;
+              source = getBreadBoard().components.source;
               if (!!source &&
                  ((measurement === 'voltage' && source.frequency) ||
                   (measurement === 'ac_voltage' && source.frequency === 0))) {
@@ -136,12 +136,12 @@
 
         blowFuse: function() {
           apMessageBox.error({
-          	title: "POW!",
-          	message: "<b>You just blew the fuse in your multimeter!</b><br><br> Remember not to pass too much current through it."+
-          	" We've replaced your fuse for you, but you lost some time.",
-          	errorImage: "lib/error-32x32.png",
-          	width: 400,
-          	height: 300
+            title: "POW!",
+            message: "<b>You just blew the fuse in your multimeter!</b><br><br> Remember not to pass too much current through it."+
+            " We've replaced your fuse for you, but you lost some time.",
+            errorImage: "lib/error-32x32.png",
+            width: 400,
+            height: 300
           });
           sparks.logController.addEvent(sparks.LogEvent.BLEW_FUSE);
         },

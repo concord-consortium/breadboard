@@ -1,4 +1,4 @@
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ breadModel */
 
 (function() {
 
@@ -65,7 +65,7 @@
 
       // cheat and create dummy pages for report
       if (!!jsonSection.pages){
-        $.each(jsonSection.pages, function(id, jsonPage){
+        $.each(jsonSection.pages, function(id){
           var page = new sparks.Page(id);
           section.pages.push(page);
         });
@@ -116,7 +116,6 @@
     },
 
     areMorePage: function() {
-      var nextPage;
       var section = sparks.activityController.currentSection;
       if (this.currentPageIndex < section.pages.length - 1){
         return section.pages[this.currentPageIndex+1];

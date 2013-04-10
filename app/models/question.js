@@ -1,10 +1,10 @@
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks */
 
 (function() {
   sparks.Question = function(){
     this.id = 0;
     this.shownId = 0;
-    
+
     this.prompt = '';
     this.shortPrompt = '';
     this.correct_answer = null;
@@ -13,11 +13,11 @@
     this.units = '';
     this.start_time = null;
     this.end_time = null;
-    
+
     this.options = null;
     this.radio = false;
     this.checkbox = false;
-    
+
     this.answerIsCorrect = false;
     this.unitsIsCorrect = false;
     this.points = 0;
@@ -25,26 +25,26 @@
     this.feedback = null;
     this.tutorial = null;
     this.top_tutorial = null;
-    
+
     this.scoring = null;
-    
+
     this.isSubQuestion = false;
     this.subquestionId = -1;
     this.commonPrompt = '';
-    
+
     this.keepOrder = false;
-    
+
     this.category = {categoryTitle: "", tutorial: ""};
-    
+
     this.not_scored = false;
-    
+
     this.beforeScript = null;
-    
+
     this.meta = null;       // storage for extra info, like circuit state
-    
+
     this.view = null;
   };
-  
+
   sparks.Question.prototype = {
     toJSON: function() {
       var json = {};
@@ -63,5 +63,5 @@
       return json;
     }
   };
-  
+
 })();

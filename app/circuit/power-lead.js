@@ -1,6 +1,6 @@
 /* FILE powerlead.js */
 //= require "component"
-/*globals console sparks */
+/*global sparks */
 
 (function () {
 
@@ -23,7 +23,7 @@
       return this.connections[0].getName() + ",a1";       // Flash coding issue means we need to give this a second argument...
     },
 
-    addCiSoComponent: function (ciso) { },
+    addCiSoComponent: function () { },
 
     toNetlist: function () {
       return '';

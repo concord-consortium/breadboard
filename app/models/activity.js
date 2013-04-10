@@ -1,15 +1,15 @@
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ */
 
 (function() {
   sparks.Activity = function(){
     sparks.activity = this;
-    
+
     this.sections = [];
     this.view = null;
   };
-  
+
   sparks.Activity.prototype = {
-    
+
     toJSON: function () {
       var json = {};
       json.sections = [];
@@ -18,7 +18,7 @@
       });
       return json;
     }
-    
+
   };
-  
+
 })();

@@ -1,6 +1,6 @@
 //= require "resistor"
 //= require "r-values"
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks */
 
 /* FILE variable-resistor.js */
 

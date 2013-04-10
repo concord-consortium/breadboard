@@ -1,5 +1,5 @@
 /* FILE resistor.js */
-/*globals console sparks */
+/*global sparks $ getBreadBoard*/
 
 (function () {
 
@@ -47,7 +47,7 @@
     sparks.circuit.Component.prototype =
     {
       setViewArguments: function (args) {
-        for (arg in args) {
+        for (var arg in args) {
           if (!args.hasOwnProperty(arg)) continue;
           this.viewArguments[arg] = args[arg];
         }
@@ -57,10 +57,10 @@
         return this.viewArguments;
       },
 
-    	move: function (connections) {
-        var i;
+      move: function (connections) {
+        var i, j;
         for (i in this.connections) {
-          for (var j in this.connections[i].connections) {
+          for (j in this.connections[i].connections) {
             if (this.connections[i].connections[j] === this) {
               this.connections[i].connections = [];
             }
@@ -77,8 +77,9 @@
       },
 
       destroy: function (){
-        for(var i in this.connections){
-          for( var j in this.connections[i].connections ){
+        var i, j;
+        for(i in this.connections){
+          for(j in this.connections[i].connections ){
             if( this.connections[i].connections[j] === this ){
               this.connections[i].connections = [];
             }

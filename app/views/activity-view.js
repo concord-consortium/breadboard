@@ -1,4 +1,4 @@
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ breadboardView breadModel getBreadBoard*/
 
 (function() {
 
@@ -63,7 +63,7 @@
           this.divs.$fgDiv.append($fg);
           this.divs.$fgDiv.show();
         }
-        section.meter.reset()
+        section.meter.reset();
       }
 
       this.layoutPage(true);
@@ -118,10 +118,10 @@
       }
      },
 
-     allowMoveYellowProbe: function(allow) {
+     allowMoveYellowProbe: function() {
      },
 
-     hidePinkProbe: function(allow) {
+     hidePinkProbe: function() {
      },
 
      hidePopups: function() {

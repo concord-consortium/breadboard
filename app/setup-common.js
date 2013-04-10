@@ -1,6 +1,6 @@
 //= require <json2>
-
 /* FILE setup-common.js */
+/*global sparks debug console*/
 
 (function () {
 

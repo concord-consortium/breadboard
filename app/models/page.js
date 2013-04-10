@@ -1,7 +1,7 @@
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ */
 
 (function() {
-  
+
   sparks.Page = function(id){
     this.id = id;
     this.questions = [];
@@ -10,9 +10,9 @@
     this.view = null;
     this.currentQuestion = null;
   };
-  
+
   sparks.Page.prototype = {
-    
+
     toJSON: function () {
       var json = {};
       json.questions = [];
@@ -21,10 +21,10 @@
       });
       return json;
     },
-    
+
     toString: function () {
       return "Page "+this.id;
     }
   };
-  
+
 })();

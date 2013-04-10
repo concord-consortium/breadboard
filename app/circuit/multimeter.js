@@ -3,6 +3,8 @@
 
 /* FILE multimeter.js */
 
+/*global sparks*/
+
 (function () {
 
     var circuit = sparks.circuit;

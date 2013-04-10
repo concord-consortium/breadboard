@@ -59,14 +59,14 @@
 
 /* FILE init.js */
 
-/*globals console sparks $ document window onDocumentReady unescape prompt apMessageBox*/
+/*global Audio console sparks $ document window onDocumentReady unescape prompt apMessageBox*/
 
 (function () {
 
   sparks.activity_base_url = "http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/";
   sparks.activity_images_base_url = "http://couchdb.cosmos.concord.org/sparks/";
   sparks.tutorial_base_url = "tutorials/";
-  sparks.soundFiles = {click: "common/sounds/click.ogg"}
+  sparks.soundFiles = {click: "common/sounds/click.ogg"};
 
   window._gaq = window._gaq || [];      // in case this script loads before the GA queue is created
 
@@ -109,10 +109,8 @@
 
     this.loadSounds();
 
-    console.log("loading "+activityName);
     sparks.couchDS.loadActivity(activityName, function(activity) {
-      console.log(activity);
-      var ac = new sparks.ActivityConstructor(activity);
+      new sparks.ActivityConstructor(activity);
     });
   };
 
@@ -152,21 +150,21 @@
       if (!!sparks.couchDS.user) {
         sparks.reportController.saveData();
         apMessageBox.information({
-        	title: "Ready to leave?",
-        	message: "All your work up until this page has been saved.",
-        	informationImage: "lib/information-32x32.png",
-        	width: 400,
-        	height: 200,
-        	buttons: {
-        	  "Go to the portal": function () {
-        	    $(this).dialog("close");
-        	    window.onbeforeunload = null;
+          title: "Ready to leave?",
+          message: "All your work up until this page has been saved.",
+          informationImage: "lib/information-32x32.png",
+          width: 400,
+          height: 200,
+          buttons: {
+            "Go to the portal": function () {
+              $(this).dialog("close");
+              window.onbeforeunload = null;
               window.location.href = "http://sparks.portal.concord.org";
-        	  },
-        	  "Keep working": function() {
-        	    $(this).dialog("close");
-        	  }
-        	}
+            },
+            "Keep working": function() {
+              $(this).dialog("close");
+            }
+          }
         });
       } else {
         window.onbeforeunload = null;

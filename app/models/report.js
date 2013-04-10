@@ -1,4 +1,4 @@
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ */
 
 /**
  * report:
@@ -24,18 +24,18 @@
     this.view = null;
     this.activity = null;
   };
-  
+
   sparks.SectionReport = function(){
     this.pageReports = {};
     this.view = null;
     this.sectionId = null;
     this.sectionTitle = null;
   };
-  
+
   sparks.PageReport = function(){
     this.sessionReports = [];
   };
-  
+
   sparks.SessionReport = function(){
     this.questions = [];
     this.log = null;
@@ -46,9 +46,9 @@
     this.score = -1;
     this.maxScore = -1;
   };
-  
+
   sparks.Report.prototype = {
-    
+
     toJSON: function () {
       var json = {};
       json.activity = sparks.activity.id;
@@ -60,11 +60,11 @@
       json.reportVersion = this.reportVersion;
       return json;
     }
-    
+
   };
-  
+
   sparks.SectionReport.prototype = {
-    
+
     toJSON: function () {
       var json = {};
       json.sectionId = this.sectionId;
@@ -75,11 +75,11 @@
       });
       return json;
     }
-    
+
   };
-  
+
   sparks.PageReport.prototype = {
-    
+
     toJSON: function () {
       var json = {};
       json.sessionReports = [];
@@ -88,18 +88,18 @@
       });
       return json;
     }
-    
+
   };
-  // 
+  //
   // sparks.SessionReport.prototype = {
-  //   
+  //
   //   toJSON: function () {
   //     var json = {};
   //     json.questions = this.questions;
-  //     
+  //
   //     return json;
   //   }
-  //   
+  //
   // };
-  
+
 })();

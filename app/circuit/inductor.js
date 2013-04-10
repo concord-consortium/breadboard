@@ -1,6 +1,6 @@
 /* FILE inductor.js */
 //= require "reactive-component"
-/*globals console sparks */
+/*global sparks */
 
 (function () {
 

@@ -1,6 +1,6 @@
 /* FILE function-generator.js */
 //= require "component"
-/*globals console sparks */
+/*global sparks */
 
 (function () {
 
@@ -97,13 +97,13 @@
       var amplitude   = this.amplitude || 0,
           nodes       = this.getNodes();
 
-      ciso.addVoltageSource(this.UID,amplitude,nodes[0],nodes[1],this.frequency)
+      ciso.addVoltageSource(this.UID,amplitude,nodes[0],nodes[1],this.frequency);
     },
 
     defaultFrequencySteps: 100,
 
     getQucsSimulationType: function () {
-      var type, nSteps, ret;
+      var type, nSteps;
 
       if (this.frequencies && (this.frequencies[0] === 'linear' || this.frequencies[0] === 'logarithmic')) {
         type   = this.frequencies[0] === 'linear' ? 'lin' : 'log';

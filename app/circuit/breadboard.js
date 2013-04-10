@@ -5,34 +5,27 @@
 
 /* FILE breadboard.js */
 
-/*globals console sparks $ breadBoard window*/
+/*global sparks CiSo $ breadBoard window console*/
 
 (function () {
-
-    var q = sparks.circuit.qucsator;
 
     ////////////////////////////////////////////////////////////////////////////////
     //// GLOBAL DEFAULTS ///////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////
 
-      var defs = {
+    var defs = {
         rows            : 31,
         powerRailHoles  : 25,
         debug           : true
-      };
+      },
 
-    ////////////////////////////////////////////////////////////////////////////////
-    //// HELPER FUNCTIONS //////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////
+      Hole,
+      GhostHole,
+      Strip,
+      Breadboard,
+      breadBoard,
+      interfaces;
 
-      // Array Remove from John Resig http://ejohn.org
-      var remove = function(array, from, to) {
-        var rest = array.slice((to || from) + 1 || array.length);
-        array.length = from < 0 ? array.length + from : from;
-        return array.push.apply(array, rest);
-      };
-
-      var HTMLLog = undefined, HTMLbody = undefined;
       this.debug = function(){
       };
 
@@ -43,7 +36,7 @@
       //// BREADBOARD Prototype Model //////////////////////////////////////////////
       this.breadBoard = {};
 
-      var Hole = function Hole( strip, name ){
+      Hole = function Hole( strip, name ){
         this.type ='hole';
         this.strip = strip;
         this.name = name;
@@ -59,7 +52,7 @@
         return this.name;
       };
 
-      var GhostHole = function GhostHole(name) {
+      GhostHole = function GhostHole(name) {
         this.name = !!name ? name : interfaces.getUID('node');
         return this;
       };
@@ -72,7 +65,7 @@
         return this.name;
       };
 
-      var Strip = function Strip( holes, name ){
+      Strip = function Strip( holes, name ){
         this.type ='strip';
         this.holes={};
         this.name = name;
@@ -85,8 +78,12 @@
         return this;
       };
 
-      var Breadboard = function Breadboard(){
-        var i;
+      Breadboard = function Breadboard(){
+        var i, h, l, ll, a,
+            side, sign,
+            newStripL, newStripR,
+            mapCode;
+
         this.type ='Breadboard';
 
         // Create power-rails
@@ -103,8 +100,10 @@
 
         for (i=0, l=defs.powerRailHoles; i < l; i++) {
           for (side in this.powerRail) {
+            if (!this.powerRail.hasOwnProperty(side)) continue;
             for (sign in this.powerRail[side]) {
-              var h = side + '_' + sign + i;
+              if (!this.powerRail[side].hasOwnProperty(sign)) continue;
+              h = side + '_' + sign + i;
               this.powerRail[side][sign][h] = this.holes[h] = new Hole(this.powerRail[side][sign], h);
             }
           }
@@ -114,8 +113,8 @@
         for (i=0, l=defs.rows; i < l; i++) {
           newStripL = this.makeStrip("L" + i);
           newStripR = this.makeStrip("R" + i);
-          for (var a=0, ll=5; a < ll; a++ ) {
-            var mapCode = String.fromCharCode(a+97)+i;
+          for (a=0, ll=5; a < ll; a++ ) {
+            mapCode = String.fromCharCode(a+97)+i;
             newStripL.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripL, mapCode );
             mapCode = String.fromCharCode(a+102)+i;
             newStripR.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripR, mapCode );
@@ -172,9 +171,12 @@
       };
 
       Breadboard.prototype.clear = function () {
+        var destroyed = 0,
+            k;
+
         this.resOrderOfMagnitude = -1;
-        var destroyed = 0;
         for( k in this.components ){
+          if (!this.components.hasOwnProperty(k)) continue;
           destroyed += !!this.component(k).destroy();
         }
         this.components = {};
@@ -197,7 +199,7 @@
 
         // replace with mapped name
         if (!!this.holeMap[hole]){
-          hole = this.holeMap[hole]
+          hole = this.holeMap[hole];
         }
 
         // return hole if it is in breadboard
@@ -212,9 +214,13 @@
 
       // Resets all connections, used when holeMap changes
       Breadboard.prototype.resetConnections = function(oldHoleName, newHoleName) {
+        var i, j;
+
         for( i in this.components ){
+          if (!this.components.hasOwnProperty(i)) continue;
           var comp = this.component(i);
           for (j in comp.connections){
+            if (!comp.connections.hasOwnProperty(j)) continue;
             if (!!comp.connections[j] && comp.connections[j].getName() === oldHoleName) {
               comp.connections[j] = this.getHole(newHoleName);
             }
@@ -297,9 +303,9 @@
       };
 
       //// BreadBoard Instance & Interface /////////////////////////////////////////
-      var breadBoard = new Breadboard();
+      breadBoard = new Breadboard();
 
-      var interfaces = {
+      interfaces = {
         insertComponent: function(kind, properties){
           // copy props into a new obj, so we don't modify original
           var props = {};
@@ -332,12 +338,12 @@
           });
 
           // check if there is any power source, if not, add a battery
-          if (!breadBoard.components["source"]) {
+          if (!breadBoard.components.source) {
             var battery = {
               UID: "source",
               type: "battery",
               voltage: 9
-            }
+            };
             interfaces.insertComponent("battery", battery);
           }
 
@@ -364,7 +370,7 @@
         setResOrderOfMagnitude: function(om){
           breadBoard.resOrderOfMagnitude = om;
         },
-        insert: function(type, connections){
+        insert: function(){
           console.log("ERROR: 'insert' is deprecated. Use 'insertComponent'");
         },
         getUID: function(_name){
@@ -381,21 +387,24 @@
           return ""+name+i;
         },
         remove: function(type, connections){
-          var comp = interfaces.findComponent(type, connections)
+          var comp = interfaces.findComponent(type, connections);
           if (!!comp){
             comp.destroy();
           }
         },
         findComponent: function(type, connections){
+          var i, component;
+
           if (!!type && !!connections && connections.split(",").length === 2){
             connections = connections.split(",");
             for (i in breadBoard.components){
-              var component = breadBoard.components[i];
+              if (!breadBoard.components.hasOwnProperty(i)) continue;
+              component = breadBoard.components[i];
               if (component.kind === type && !!component.connections[0] &&
-                ((component.connections[0].getName() === connections[0]
-                && component.connections[1].getName() === connections[1]) ||
-                (component.connections[0].getName() === connections[1]
-                  && component.connections[1].getName() === connections[0]))){
+                ((component.connections[0].getName() === connections[0] &&
+                  component.connections[1].getName() === connections[1]) ||
+                (component.connections[0].getName() === connections[1] &&
+                  component.connections[1].getName() === connections[0]))){
                   return component;
                 }
             }
@@ -428,7 +437,7 @@
           breadBoard.holeMap = {};
         },
         addRandomResistor: function(name, location, options){
-          console.log("WARNING: addRandomResistor is deprecated")
+          console.log("WARNING: addRandomResistor is deprecated");
           var resistor = new sparks.circuit.Resistor4band(name);
           resistor.randomize((options | null));
           interfaces.insert('resistor', location, resistor.getRealValue(), name, resistor.colors);
@@ -441,13 +450,19 @@
         // NB: This function used to return the final value required by the DMM. It no longer does so, as
         // it does not assume a DMM is doing the requesting, and instead returns the entire results object.
         query: function(type, connections, callback, context, callbackArgs){
-          var tempComponents = [];
+          var tempComponents = [],
+              ghost, ohmmeterBattery,
+              voltmeterResistor,
+              ammeterResistor,
+              oscopeResistor,
+              ciso,
+              node;
 
           // add DMM components as necessary
           if (type === 'resistance') {
             connections = connections.split(',');
-            var ghost = new GhostHole();
-            var ohmmeterBattery = breadBoard.component({
+            ghost = new GhostHole();
+            ohmmeterBattery = breadBoard.component({
               UID: 'ohmmeterBattery',
               kind: 'battery',
               voltage: 1,
@@ -458,21 +473,21 @@
             //   connections: [connections[1], ghost]});
             tempComponents.push(ohmmeterBattery);
           } else if (type === 'voltage'){
-            var voltmeterResistor = breadBoard.component({
+            voltmeterResistor = breadBoard.component({
               UID: 'voltmeterResistor',
               kind: 'resistor',
               resistance: 1e12,
               connections: connections.split(',')});
             tempComponents.push(voltmeterResistor);
           } else if (type === 'current'){
-            var ammeterResistor = breadBoard.component({
+            ammeterResistor = breadBoard.component({
               UID: 'ammeterResistor',
               kind: 'resistor',
               resistance: 1e-6,
               connections: connections.split(',')});
             tempComponents.push(ammeterResistor);
           } else if (type === 'oscope') {
-            var oscopeResistor = breadBoard.component({
+            oscopeResistor = breadBoard.component({
               UID: 'oscopeResistor',
               kind: 'resistor',
               resistance: 1e12,
@@ -480,15 +495,15 @@
             tempComponents.push(oscopeResistor);
           }
 
-          var ciso = new CiSo();
+          ciso = new CiSo();
 
           $.each(breadBoard.components, function(i, component) {
-            component.addCiSoComponent(ciso)
+            component.addCiSoComponent(ciso);
           });
 
           // if ohmmeter, set reference node
           if (type === 'resistance') {
-            node = breadBoard.getHole(connections[1]).nodeName()
+            node = breadBoard.getHole(connections[1]).nodeName();
             ciso.setReferenceNode(node);
           }
           // destroy the temporary DMM components
@@ -509,7 +524,6 @@
 
       // The inward interface between Flash's ExternalInterface and JavaScript's BreadBoard prototype model instance
       this.breadModel = function () {
-        debug(arguments);
         var newArgs = [];
         for(var i=1,l=arguments.length;i< l;i++){
           newArgs[newArgs.length] = arguments[i];

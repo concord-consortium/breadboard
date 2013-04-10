@@ -1,5 +1,5 @@
 /* FILE multimeter-base.js */
-
+/*global sparks console*/
 (function () {
 
     /*
@@ -54,12 +54,14 @@
         },
 
         updateDisplay : function () {
+            var text = '',
+                vm, imc, im;
+
             if (!this.powerOn) {
                 this.displayText = '       ';
                 return;
             }
 
-            var text = '';
             if (this.allConnected()) {
                 if (this.dialPosition === 'dcv_20') {
                     if (this.absoluteValue < 19.995) {
@@ -93,7 +95,7 @@
                     this.currentUnits = "V";
 
                 } else if (this.dialPosition === 'dcv_2000m') {
-                    var vm = this.absoluteValue * 1000;
+                    vm = this.absoluteValue * 1000;
                     if (vm < 1999.5) {
                         text = Math.round(vm).toString();
                         text = this.toDisplayString(text, 0);
@@ -104,7 +106,7 @@
                     this.currentUnits = "mV";
 
                 } else if (this.dialPosition === 'dcv_200m') {
-                    var vm = this.absoluteValue * 1000;
+                    vm = this.absoluteValue * 1000;
                     if (vm < 195){
                       text = (Math.round(vm * 100) * 0.01).toString();
                       text = this.toDisplayString(text, 1);
@@ -185,7 +187,7 @@
                     this.currentUnits = "kOhms";
                 }
                 else if (this.dialPosition === 'dca_200mc') {
-                  var imc = this.absoluteValue * 1000000
+                  imc = this.absoluteValue * 1000000;
                   if (imc < 195){
                     text = (Math.round(imc * 100) * 0.01).toString();
                     text = this.toDisplayString(text, 1);
@@ -196,7 +198,7 @@
                   this.currentUnits = "μA";
                 }
                 else if (this.dialPosition === 'dca_2000mc') {
-                  var imc = this.absoluteValue * 1000000
+                  imc = this.absoluteValue * 1000000;
                   if (imc < 1950){
                     text = (Math.round(imc * 10) * 0.1).toString();
                     text = this.toDisplayString(text, 0);
@@ -207,7 +209,7 @@
                   this.currentUnits = "μA";
                 }
                 else if (this.dialPosition === 'dca_20m') {
-                  var im = this.absoluteValue * 1000
+                  im = this.absoluteValue * 1000;
                   if (im < 19.5){
                     text = (Math.round(im * 100) * 0.01).toString();
                     text = this.toDisplayString(text, 2);
@@ -218,7 +220,7 @@
                   this.currentUnits = "mA";
                 }
                 else if (this.dialPosition === 'dca_200m') {
-                  var im = this.absoluteValue * 1000
+                  im = this.absoluteValue * 1000;
                   if (im < 195){
                     text = (Math.round(im * 10) * 0.1).toString();
                     text = this.toDisplayString(text, 1);
@@ -301,71 +303,72 @@
         },
 
 
-		set_disable_multimeter_position: function (disabled) {
-			this.disabledPositions = disabled.split(',');
-			for(i=0;i<this.disabledPositions.length;i++){
-			}
-		},
+    set_disable_multimeter_position: function (disabled) {
+      this.disabledPositions = disabled.split(',');
+      for(var i=0;i<this.disabledPositions.length;i++){
+      }
+    },
 
 
         disable_multimeter_position : function (displayText) {
-        	// how do I pass a variable from the "series" file into here?
-        	// something like: sparks.jsonSection.disable_multimeter_position  ??
+          var i;
+          // how do I pass a variable from the "series" file into here?
+          // something like: sparks.jsonSection.disable_multimeter_position  ??
 
-        	// right now this is hard wired to disable R dial positions
-        	switch (this.dialPosition)
-        	{
- 			case 'dcv_20':
-			case 'dcv_200':
-			case 'dcv_1000':
-			case 'dcv_2000m':
-			case 'dcv_200m':
-				for(i=0;i<this.disabledPositions.length;i++){
-					if(this.disabledPositions[i] == 'dcv'){
-						displayText = '-------';
-						break;
-					}
-				}
-				break;
-			case 'r_200':
-			case 'r_2000':
-			case 'r_20k':
-			case 'r_200k':
-			case 'r_2000k':
-				for(i=0;i<this.disabledPositions.length;i++){
-					if(this.disabledPositions[i] == 'r'){
-						displayText = '-------';
-						break;
-					}
-				}
-				break;
-			case 'dca_200mc':
-			case 'dca_2000mc':
-			case 'dca_20m':
-			case 'dca_200m':
-				for(i=0;i<this.disabledPositions.length;i++){
-					if(this.disabledPositions[i] == 'dca'){
-						displayText = '-------';
-						break;
-					}
-				}
-				break;
-			case 'acv_750':
-			case 'acv_200':
-				for(i=0;i<this.disabledPositions.length;i++){
-					if(this.disabledPositions[i] == 'acv'){
-						displayText = '-------';
-						break;
-					}
-				}
-				break;
-			case 'diode':
-			case 'hfe':
-			case 'c_10a':
-			case 'p_9v':
-			default:
-        	}
-        	return displayText;
+          // right now this is hard wired to disable R dial positions
+          switch (this.dialPosition)
+          {
+      case 'dcv_20':
+      case 'dcv_200':
+      case 'dcv_1000':
+      case 'dcv_2000m':
+      case 'dcv_200m':
+        for(i=0;i<this.disabledPositions.length;i++){
+          if(this.disabledPositions[i] == 'dcv'){
+            displayText = '-------';
+            break;
+          }
+        }
+        break;
+      case 'r_200':
+      case 'r_2000':
+      case 'r_20k':
+      case 'r_200k':
+      case 'r_2000k':
+        for(i=0;i<this.disabledPositions.length;i++){
+          if(this.disabledPositions[i] == 'r'){
+            displayText = '-------';
+            break;
+          }
+        }
+        break;
+      case 'dca_200mc':
+      case 'dca_2000mc':
+      case 'dca_20m':
+      case 'dca_200m':
+        for(i=0;i<this.disabledPositions.length;i++){
+          if(this.disabledPositions[i] == 'dca'){
+            displayText = '-------';
+            break;
+          }
+        }
+        break;
+      case 'acv_750':
+      case 'acv_200':
+        for(i=0;i<this.disabledPositions.length;i++){
+          if(this.disabledPositions[i] == 'acv'){
+            displayText = '-------';
+            break;
+          }
+        }
+        break;
+      case 'diode':
+      case 'hfe':
+      case 'c_10a':
+      case 'p_9v':
+      default:
+          }
+          return displayText;
         },
 
         toDisplayString : function (s, dec) {

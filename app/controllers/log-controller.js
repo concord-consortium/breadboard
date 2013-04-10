@@ -1,7 +1,7 @@
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ */
 
 (function() {
-  
+
   /*
    * Sparks Log Controller can be accessed by the
    * singleton variable sparks.logController
@@ -9,22 +9,22 @@
   sparks.LogController = function(){
     this.currentLog = null;
   };
-  
+
   sparks.LogController.prototype = {
-    
+
     startNewSession: function() {
       this.currentLog = new sparks.Log(new Date().valueOf());
     },
-    
+
     endSession: function() {
       this.currentLog.endTime = new Date().valueOf();
     },
-    
+
     addEvent: function (name, value) {
       var evt = new sparks.LogEvent(name, value, new Date().valueOf());
       this.currentLog.events.push(evt);
     },
-    
+
     numEvents: function(log, name) {
       var count = 0;
       $.each(log.events, function(i, evt){
@@ -34,7 +34,7 @@
       });
       return count;
     },
-    
+
     numUniqueMeasurements: function(log, type) {
       var count = 0;
       var positions = [];
@@ -51,7 +51,7 @@
       });
       return count;
     },
-    
+
     numConnectionChanges: function(log, type) {
       var count = 0;
       $.each(log.events, function(i, evt){
@@ -61,8 +61,8 @@
       });
       return count;
     }
-    
+
   };
-  
+
   sparks.logController = new sparks.LogController();
 })();

@@ -1,4 +1,4 @@
-/*globals console sparks $ breadModel getBreadBoard */
+/*global sparks $ */
 
 (function() {
 
@@ -186,10 +186,10 @@
           goodness     = null;
 
       eval("var functionScript = function(question, log, parse, close, goodness){" + parsedScript + "}");
-      
+
       var parse = function(string){
         return sparks.unit.parse.call(sparks.unit, string);
-      }
+      };
       if (sparks.activityController.currentSection.meter.oscope) {
         goodness = sparks.activityController.currentSection.meter.oscope.getGoodnessOfScale();
       }

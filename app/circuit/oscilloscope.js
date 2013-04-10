@@ -1,4 +1,4 @@
-/*globals sparks getBreadBoard breadModel */
+/*global sparks getBreadBoard breadModel */
 /* FILE oscilloscope.js */
 
 (function () {
@@ -13,8 +13,8 @@
           initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
       this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
       this._horizontalScale = initHorizontalScale;
-  	  this.showAminusB = false;
-  	  this.showAplusB = false;
+      this.showAminusB = false;
+      this.showAplusB = false;
       this.AminusBwasOn = false;  // whether A-B was turned on during current question
       this.AplusBwasOn = false;
     };
@@ -45,8 +45,6 @@
       },
 
       setView: function(view) {
-        var i;
-
         this.view = view;
         this.view.setModel(this);
         this.update();         // we can update view immediately with the source trace
@@ -65,7 +63,7 @@
       },
 
       moveProbe: function(oldLoc, newLoc) {
-        for (i = 0; i < 2; i++) {
+        for (var i = 0; i < 2; i++) {
           if (this.probeLocation[i] === oldLoc) {
             this.probeLocation[i] = newLoc;
           }
@@ -74,22 +72,17 @@
       },
 
       update: function() {
-        console.log("update")
         var breadboard = getBreadBoard(),
             source     = breadboard.components.source,
+            probeIndex,
             sourceSignal,
-            probeSignal,
-            probeNode,
-            data,
-            result,
-            freqs,
-            dataIndex;
+            probeNode;
 
         if (!source || !source.frequency || !source.amplitude) {
           return;                                     // we must have a source with a freq and an amplitude
         }
 
-        for (var probeIndex = 0; probeIndex < 2; probeIndex++) {
+        for (probeIndex = 0; probeIndex < 2; probeIndex++) {
           if (this.probeLocation[probeIndex]) {
             probeNode = breadboard.getHole(this.probeLocation[probeIndex]).nodeName();
             if (probeNode === 'gnd') {
@@ -118,14 +111,17 @@
         var breadboard = getBreadBoard(),
             source     = breadboard.components.source,
             probeNode  = probeInfo[0],
-            probeIndex = probeInfo[1];
+            probeIndex = probeInfo[1],
+            result,
+            probeSignal;
+
         // // first go through the returned frequencies, and find the one that matches our source frequency
         // freqs = data.acfrequency;
         // dataIndex = sparks.util.getClosestIndex(freqs, source.frequency, true);
         // // find the same index in our data
         // result = data[probeNode].v[dataIndex];
 
-        result = ciso.getVoltageAt(probeInfo[0])
+        result = ciso.getVoltageAt(probeInfo[0]);
 
         if (result) {
           probeSignal = {
@@ -289,20 +285,22 @@
       // If there are two traces showing, this will return the lower of the two values.
       //
       getGoodnessOfScale: function() {
-        var self = this;
-        var goodnessOfScale = function(channel) {
-          var timeScale  = self.signals[channel].frequency * (self._horizontalScale * 10),            // 0-inf, best is 1
-              ampScale   = (self.signals[channel].amplitude * 2) / (self._verticalScale[channel] * 8),
-              timeGoodness  = timeScale > 1 ? 1/timeScale : timeScale,                                // 0-1, best is 1
-              ampGoodness   = ampScale > 1 ? 1/ampScale : ampScale,
-              timeScore  = (timeGoodness - 0.3) / 0.5,                                                // scaled such that 0.3 = 0 and 0.8 = 1
-              ampScore   = (ampGoodness - 0.3) / 0.5,
-              minScore = Math.max(0,Math.min(timeScore, ampScore, 1)),                                // smallest of the two, no less than 0
-              maxScore = Math.min(1,Math.max(timeScore, ampScore, 0));                                // largest of the two, no greater than 1
-          return ((minScore * 3) + maxScore) / 4;
-        }
+        var self = this,
 
-        var goodnesses = [null, null];
+            goodnessOfScale = function(channel) {
+              var timeScale  = self.signals[channel].frequency * (self._horizontalScale * 10),            // 0-inf, best is 1
+                  ampScale   = (self.signals[channel].amplitude * 2) / (self._verticalScale[channel] * 8),
+                  timeGoodness  = timeScale > 1 ? 1/timeScale : timeScale,                                // 0-1, best is 1
+                  ampGoodness   = ampScale > 1 ? 1/ampScale : ampScale,
+                  timeScore  = (timeGoodness - 0.3) / 0.5,                                                // scaled such that 0.3 = 0 and 0.8 = 1
+                  ampScore   = (ampGoodness - 0.3) / 0.5,
+                  minScore = Math.max(0,Math.min(timeScore, ampScore, 1)),                                // smallest of the two, no less than 0
+                  maxScore = Math.min(1,Math.max(timeScore, ampScore, 0));                                // largest of the two, no greater than 1
+              return ((minScore * 3) + maxScore) / 4;
+            },
+
+            goodnesses = [null, null];
+
         if (this.signals[1]) {
           goodnesses[0] = goodnessOfScale([1]);
         }

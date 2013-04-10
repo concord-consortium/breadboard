@@ -1,6 +1,6 @@
 /* FILE resistor.js */
 //= require "component"
-/*globals console sparks getBreadBoard */
+/*global sparks */
 
 (function () {
 
@@ -23,7 +23,7 @@
 
       // if we have neither colors nor resistance
       if ((this.resistance === undefined) && !this.colors) {
-        var resistor = new sparks.circuit.Resistor4band(name);
+        var resistor = new sparks.circuit.Resistor4band();
         resistor.randomize(null);
         this.resistance = resistor.getRealValue();
         this.tolerance = resistor.tolerance;
@@ -53,7 +53,7 @@
 
     sparks.extend(sparks.circuit.Resistor, sparks.circuit.Component,
     {
-    	nominalValueMagnitude: -1,
+      nominalValueMagnitude: -1,
 
         colorMap: { '-1': 'gold', '-2': 'silver',
             0 : 'black', 1 : 'brown', 2 : 'red', 3 : 'orange',
@@ -154,13 +154,13 @@
         },
 
         getColors4Band: function (ohms, tolerance) {
-            var s = ohms.toString();
-            var decIx = s.indexOf('.');
-            var decLoc = decIx > -1 ? decIx : s.length;
+            var s = ohms.toString(),
+                decIx = s.indexOf('.'),
+                decLoc = decIx > -1 ? decIx : s.length,
+                len, i;
             s = s.replace('.', '');
-            var len = s.length;
-            for (var i = 0; i < 2 - len; ++i){ s += '0'; }
-            var mult = decLoc > 1 ? decLoc - 2 : 10;
+            len = s.length;
+            for (i = 0; i < 2 - len; ++i){ s += '0'; }
             return [ this.colorMap[s.charAt(0)],
                      this.colorMap[s.charAt(1)],
                      this.colorMap[decLoc - 2],
@@ -169,12 +169,13 @@
         },
 
         getColors5Band: function (ohms, tolerance) {
-            var s = ohms.toString();
-            var decIx = s.indexOf('.');
-            var decLoc = decIx > -1 ? decIx : s.length;
+            var s = ohms.toString(),
+                decIx = s.indexOf('.'),
+                decLoc = decIx > -1 ? decIx : s.length,
+                len, i;
             s = s.replace('.', '');
-            var len = s.length;
-            for (var i = 0; i < 3 - len; ++i) { s += '0'; }
+            len = s.length;
+            for (i = 0; i < 3 - len; ++i) { s += '0'; }
             return [ this.colorMap[s.charAt(0)],
                      this.colorMap[s.charAt(1)],
                      this.colorMap[s.charAt(2)],
