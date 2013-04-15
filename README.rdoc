@@ -1,11 +1,32 @@
 = SPARKS
-=== Copyright: ©2010 Concord Consortium
+=== Copyright: (c)2013 Concord Consortium
+
+See license.md for license information.
+
+== Testing SPARKS locally
+
+The SPARKS project contains all the built code needed to run the project locally. However, because the application uses XHR requests to load the application files, most browsers will require a local server, such as Apache, to be serving the site.
+
+In order to load the example activities in the /activities folder, the local server needs to simply serve the SPARKS directory.
+
+If you want to also load in the full activity set from the Couch Database, the local server needs to also proxy the path /couchdb/activities/ to http://couchdb.cosmos.concord.org/sparks/
+
+If you can run Apache on your system, the easiest way to set up the local server is to modify the file proxy/apache.conf.sample with your information (modify the paths at the bottom of the file to point to the location of your local sparks directory), and then save the file as apache.conf (i.e. remove the .sample from the file name). You can then start a local Apache server by running
+
+ apachectl -f "`pwd`/proxy/apache.conf" -k start
+
+Now you will be able to navigate to the html files in the project by pointing your browser to
+
+ http://localhost:1234
+ http://localhost:1234/activities.html
+ http://localhost:1234/activities.html#local/rlc-draggable   // local, does not require internet connection
+ http://localhost:1234/activities.html#series-interpretive   // requires Couch proxy
 
 == Building SPARKS and setting up local environment
 
 === Building Javascript code
 
-Sparks uses Sprockets (http://getsprockets.org) to manage the javascript code.  Sprockets combines the individual JS files into a single file per activity. To avoid duplication, these files aren't managed by git.
+Sparks uses Sprockets (http://getsprockets.org) to manage the javascript code.  Sprockets combines the individual JS files into a single file per activity.
 
 To build the combined JS files:
 
@@ -24,34 +45,9 @@ To build the combined JS files:
 
 "rake" will need to be called each time a Javascript file is changed.
 
-=== Setting up the server
-
-SPARKS needs to be running from a server even when running locally, so it can access scripts correctly and so it can proxy other services such as the QUCS application (used for circuit solving).
-
-The simplest way to do this is to modify the file proxy/apache.conf.sample with your information (modify the paths at the bottom of the file to point to the location of your local sparks directory), and then save the file as apache.conf (i.e. remove the .sample from the file name). You can then start a local Apache server by running
-
- apachectl -f "`pwd`/proxy/apache.conf" -k start
-
- // or simply
- ./start.sh
-
-from your Sparks directory (though you first need to copy start.sample.sh to start.sh and modify the contents accordingly). Now you will be able to navigate to the html files in the project by pointing your browser to
-
- http://localhost:1234
- http://localhost:1234/activities.html
- http://localhost:1234/activities.html#series-a
- etc
-
-==== Using a local version of QUCS
-
-If you don't want to use the remote version of QUCS referenced in the Apache config file, you can install QUCS from http://qucs.sourceforge.net/, update the PHP file lib/qucsator/solve/index.php to point to your local install of QUCS if it is not in /usr/local/bin/, place the file somewhere where it can be served by PHP, such as ~/Sites/qucsator/solve, and modify the proxy file accordingly
-
-=== Launch the application
-
-Go to http://localhost:1234/ (or whatever port you set in the step above) in your browser to get open the main index file, or directly open any html file to go directly to an activity.
-
-
 == Running the tests
+
+*Note: The tests are currently out of date.*
 
 This application is mostly tested using JSPEC. You can install JSPEC with
 
@@ -75,27 +71,13 @@ Note that some of the tests, 'Measuring breadboard components with QUCS' and 'Us
 
 == Understanding the code
 
-The majority of the application can be found in app/javascript. The application is written in an MVC pattern, and the folders follow suit, except for the circuit components, whose model objects can all be found in /app/javascript/circuit.
+The majority of the application can be found in app/. The application is written in an MVC pattern, and the folders follow suit, except for the circuit components, whose model objects can all be found in /app/circuit.
 
-There is legacy code in the /activities folder, which for the most part can be ignored.
+The models generally define object classes. Most objects (pages, sections, etc) are instances of these classes.
 
-== Deployment
+The views generally return a jQuery object representing the view of the particular model object. The parent view is generally responsible for embedding the jQuery object onto the page.
 
-This whole sparks folder needs to be deployed to the public folder of the sparks portal. This requires ssh'ing into the virtual server ruby-vm7.concord.org as the deploy user, finding the right folder, and git pulling. If you don't have permission to ssh as the deploy user, see someone.
+Demo activity JSON files can be found in the /activities folder.
 
-==== Deploying to staging
-
-// first push your changes to the 'master' branch
-
-ssh deploy@ruby-vm7.concord.org
-cd /web/staging/current/public/sparks-content/
-git pull
-
-==== Deploying to production
-
-// first push your changes to the 'production' branch
-
-ssh deploy@ruby-vm7.concord.org
-cd /web/portal/current/public/sparks-content/
-git pull
+The circuit calculations are performed by the Circuit Solver library (https://github.com/concord-consortium/circuit-solver)
 

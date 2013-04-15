@@ -13,10 +13,6 @@ LoadModule proxy_module libexec/apache2/mod_proxy.so
 LoadModule proxy_connect_module libexec/apache2/mod_proxy_connect.so
 LoadModule proxy_http_module libexec/apache2/mod_proxy_http.so
 
-# replace this with the location of qucs, if desired
-ProxyPass        /sparks/ http://sparks.portal.concord.org/sparks/
-ProxyPassReverse /sparks/ http://sparks.portal.concord.org/sparks/
-
 # replace this with the location of couchDB, if desired
 ProxyPass       /couchdb/learnerdata/ http://couchdb.cosmos.concord.org/sparks_data/ nocanon
 ProxyPassReverse /couchdb/learnerdata/ http://couchdb.cosmos.concord.org/sparks_data/
