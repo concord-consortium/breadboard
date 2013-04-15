@@ -1,7 +1,11 @@
 source "http://rubygems.org"
 
 gem "rake"
+
 gem "sprockets",      "~> 2.9"
+
+gem "rack"
+gem "rack-reverse-proxy", :require => "rack/reverse_proxy"
 
 # All the following are Guard related ...
 
