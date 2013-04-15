@@ -50,7 +50,14 @@ Build using sprockets, from top folder
 
  bin/rake
 
-"rake" will need to be called each time a Javascript file is changed.
+"rake" will need to be called each time a Javascript file is changed ... unless you use Guard (see next sections).
+
+== Using Guard to automatically build the JavaScript code
+
+Start [Guard](https://github.com/guard/guard) to automatically build client-breadboard-activity.js
+whenever changes are made to the files in app/ or lib/
+
+  bin/guard
 
 == Running the tests
 
