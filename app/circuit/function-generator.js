@@ -1,5 +1,5 @@
 /* FILE function-generator.js */
-//= require "component"
+//= require ./component
 /*global sparks */
 
 (function () {

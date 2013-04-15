@@ -1,6 +1,6 @@
-//=require <libs/rgbcolor.js>
-//=require <libs/base64.js>
-//=require <libs/canvg.js>
+//=require libs/rgbcolor.js
+//=require libs/base64.js
+//=require libs/canvg.js
 
 /**
  * @author Mobile.Lab (http://mlearner.com)

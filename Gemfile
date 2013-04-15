@@ -1,4 +1,4 @@
 source "http://rubygems.org"
 
 gem "rake"
-gem "sprockets",      "~> 1.0.2"
+gem "sprockets",      "~> 2.9"

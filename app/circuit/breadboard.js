@@ -1,6 +1,6 @@
-//= require <circuit/resistor>
-//= require <circuit/variable-resistor>
-//= require <circuit/component>
+//= require circuit/resistor
+//= require circuit/variable-resistor
+//= require circuit/component
 
 /* FILE breadboard.js */
 

@@ -1,5 +1,5 @@
 /* FILE reactive-component.js */
-//= require "component"
+//= require ./component
 /*global sparks */
 
 (function () {

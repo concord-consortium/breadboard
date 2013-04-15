@@ -1,5 +1,5 @@
 /* FILE resistor.js */
-//= require "component"
+//= require ./component
 /*global sparks */
 
 (function () {

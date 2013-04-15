@@ -1,5 +1,5 @@
-//= require "resistor"
-//= require "r-values"
+//= require ./resistor
+//= require ./r-values
 
 /* FILE resistor-5band.js */
 

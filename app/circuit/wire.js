@@ -1,5 +1,5 @@
 /* FILE battery.js */
-//= require "component"
+//= require ./component
 /*global sparks */
 
 (function () {

@@ -1,6 +1,6 @@
-//= require <setup-common>
-//= require "breadboard"
-//= require "multimeter-base"
+//= require setup-common
+//= require ./breadboard
+//= require ./multimeter-base
 
 /* FILE multimeter2.js */
 

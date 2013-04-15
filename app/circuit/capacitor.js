@@ -1,5 +1,5 @@
 /* FILE capacitor.js */
-//= require "reactive-component"
+//= require ./reactive-component
 /*global sparks */
 
 (function () {
