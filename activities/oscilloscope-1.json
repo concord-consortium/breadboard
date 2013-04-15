@@ -1,0 +1,114 @@
+{
+   "_id": "oscilloscope-1",
+   "title": "Measuring an RC circuit with an oscilloscope",
+   "show_oscilloscope": "true",
+   "allow_move_yellow_probe": "true",
+   "circuit": [
+       {
+           "type": "function generator",
+           "UID": "source",
+           "frequencies": [
+               "logarithmic",
+               100,
+               100000,
+               1001
+           ],
+           "initialFrequency": 400,
+           "amplitude": 20
+       },
+       {
+           "type": "resistor",
+           "UID": "r1",
+           "resistance": "100",
+           "connections": "c17,c23",
+           "label": "R1"
+       },
+       {
+           "type": "capacitor",
+           "UID": "c1",
+           "capacitance": "2.0e-07",
+           "connections": "b11,b17",
+           "label": "C1"
+       },
+       {
+           "type": "wire",
+           "connections": "left_negative19,a23"
+       },
+       {
+           "type": "wire",
+           "connections": "left_positive8,a11"
+       }
+   ],
+   "pages": [
+       {
+           "notes": "[source.amplitude = (Math.random()*40)+1; sparks.vars.Vs = source.amplitude; r1.resistance = (Math.random()*100) + 100; c1.capacitance = (5 * Math.random() + 1)*1.0e-6; console.log('At ' + sparks.unit.convertMeasurement(source.initialFrequency + ' Hz') + ',  VP = ' + sparks.unit.convertMeasurement(source.amplitude + ' volts') + '  Vrms = ' + sparks.unit.convertMeasurement(source.amplitude*0.707 + ' volts')); '']For this circuit:<br>&nbsp;&nbsp; <b>R<sub>1</sub></b> = [Math.round(r1.resistance)] ohms<br>&nbsp;&nbsp; <b>C<sub>1</sub></b> = [Math.round(10*c1.capacitance * 1000000)/10] microf<br> Click the oscilloscope or function generator to make adjustments.",
+           "questions": [
+               {
+                   "options": [
+                       {
+                           "option": "[sparks.sectionController.setDMMVisibility(true);'']"
+                       }
+                   ],
+                   "prompt": "Here a function generator drives an RC circuit, measured with an oscilloscope. The yellow probe is initially connected to one of the function generator leads, measuring the voltage compared to ground. Click on the scope and adjust the settings to obtain a sine wave you can measure. Then answer the two questions below (be sure to include units).<br><br>",
+                   "subquestions": [
+                       {
+                           "prompt": "What is the peak voltage provided by the function generator?",
+                           "shortPrompt": "Peak output voltage?",
+                           "scoring": "  var R = r1.resistance; var C = c1.capacitance; var f = question.meta.frequency; var Vp = source.amplitude; var Vpp = 2 * Vp; var Zc = 1 / (6.2832 * f * C); var Zrc = Math.sqrt(R * R + Zc * Zc); var Vr = Vp * R / Zrc; var Vc = Vp * Zc / Zrc; var valueCorrect = false; var valueHalfCorrect = false; var unitsCorrect = false; var yellowProbePosition = question.meta.yellowProbe; var pinkProbePosition = question.meta.pinkProbe; var correctAnswer = Vp; question.correct_answer = Math.round(100 * correctAnswer) / 100 + ' volts'; if (question.answer !== '') { var parsedAnswer = parse(question.answer); var valueCorrect = close(parsedAnswer.val, correctAnswer, 10); var valueTwiceCorrect = close(parsedAnswer.val, correctAnswer * 2, 10); var valueVr = close(parsedAnswer.val, Vr, 10); var valueVpp = close(parsedAnswer.val, Vpp, 10); var unitsExist = !! parsedAnswer.units; if (unitsExist) { unitsCorrect = parsedAnswer.units === 'V'; } var quality = question.meta.oscopeScaleQuality; var probesMeasuringVtotal = ((yellowProbePosition == 'L11' || yellowProbePosition == 'powerPosL') || (pinkProbePosition == 'L11' || pinkProbePosition == 'powerPosL')); var probesMeasuringVr = ((yellowProbePosition == 'L17' && (pinkProbePosition == 'powerPosL' || pinkProbePosition == 'L23')) || (pinkProbePosition == 'L17' && (yellowProbePosition == 'powerPosL' || yellowProbePosition == 'L23'))); question.points_earned = 0; if (unitsCorrect) { if (probesMeasuringVtotal) { if (valueCorrect) { question.feedback = 'You got the right answer (within 10%) with the right units! Well done!'; question.points_earned = 100; } else if (valueTwiceCorrect) { /*Reading peak-to-peak?*/ question.feedback = 'You may be reading the scale wrong. Remember, you&#39;re supposed to be measuring the peak voltage across the resistor, not the peak-to-peak voltage.'; } else if (valueVr && probesMeasuringVr) { /*Possible trace mixup*/ question.feedback = 'That looks like the voltage across the resistor, instead of the source.'; } else if (!valueCorrect) { question.feedback = 'Your measurement is incorrect. Remember, the display depends on the oscilloscope settings. Check to make sure you are interpreting the scale correctly.'; } } else if (probesMeasuringVtotal && (valueVp || valueVpp)) { question.feedback = 'Your measurement is incorrect. You may be measuring the voltage across the entire circuit by mistake.'; } else { question.feedback = 'You don&#39;t have the oscilloscope probes placed properly. Try again.'; } } else if (unitsExist) { question.feedback = 'You are not using voltage units.'; } else { question.feedback = 'You must supply a unit of measure with your value.'; } } else { question.feedback = 'You did not make this measurement.'; } ",
+                           "tutorial": "tutorial-29",
+                           "points": 100
+                       },
+                       {
+                           "prompt": "What source voltage would be measured by a digital multimeter?",
+                           "shortPrompt": "RMS output voltage?",
+                           "scoring": "var R = r1.resistance; var C = c1.capacitance; var f = question.meta.frequency; var Vp = source.amplitude; var Vpp = 2 * Vp; var Zc = 1 / (6.2832 * f * C); var Zrc = Math.sqrt(R * R + Zc * Zc); var Vr = Vp * R / Zrc; var Vc = Vp * Zc / Zrc; var Vrms = Vp / Math.sqrt(2); var VRrms = Vr / Math.sqrt(2); var valueCorrect = false; var valueHalfCorrect = false; var unitsCorrect = false; var yellowProbePosition = question.meta.yellowProbe; var pinkProbePosition = question.meta.pinkProbe; var correctAnswer = Vrms; question.correct_answer = Math.round(100 * correctAnswer) / 100 + ' volts'; if (question.answer !== '') { var parsedAnswer = parse(question.answer); var valueCorrect = close(parsedAnswer.val, correctAnswer, 10); var valueTwiceCorrect = close(parsedAnswer.val, correctAnswer * 2, 10); var valueVp = close(parsedAnswer.val, Vp, 10); var valueVpp = close(parsedAnswer.val, Vpp, 10); var valueVr = close(parsedAnswer.val, Vr, 10); var value2Vr = close(parsedAnswer.val, 2 * Vr, 10); var valueVRrms = close(parsedAnswer.val, VRrms, 10); var value2VRrms = close(parsedAnswer.val, 2 * VRrms, 10); var unitsExist = !! parsedAnswer.units; var quality = question.meta.oscopeScaleQuality; var probesMeasuringVtotal = ((yellowProbePosition == 'L11' || yellowProbePosition == 'powerPosL') || (pinkProbePosition == 'L11' || pinkProbePosition == 'powerPosL')); var probesMeasuringVr = ((yellowProbePosition == 'L17') || (pinkProbePosition == 'L17')); if (unitsExist) { unitsCorrect = parsedAnswer.units === 'V'; } question.points_earned = 0; if (unitsCorrect) { if (valueCorrect && probesMeasuringVtotal) { question.feedback = 'You got the right answer (within 10%) with the right units! Well done!'; question.points_earned = 100; } else if (valueTwiceCorrect && probesMeasuringVtotal) { question.feedback = 'Remember the DMM measures rms voltage. The rms voltage is the peak voltage multiplied by 0.7'; } else if (probesMeasuringVr && (valueVr || value2Vr || valueVRrms || value2VRrms)) { question.feedback = 'Your measurement is incorrect. You may be measuring the voltage across the resistor by mistake.'; } else if (!valueCorrect && probesMeasuringVtotal) { question.feedback = 'Your measurement is incorrect. Remember, the the DMM measures rms voltage. The rms voltage is the peak voltage multiplied by 0.7. Also, the display depends on the oscilloscope settings. Check to make sure you are interpreting the scale correctly.'; } else if (!probesMeasuringVtotal) { question.feedback = 'You don&#39;t have the oscilloscope probes placed properly. Try again.'; } } else if (unitsExist) { question.feedback = 'You are not using voltage units.'; } else { question.feedback = 'You must supply a unit of measure with your value.'; } if (quality < 0.2 && probesMeasuringVtotal) { question.feedback = question.feedback + 'The oscilloscope was not set up properly for you to make this measurement. For maximum accuracy you should see no more than one wavelength and it should fill the display from top to bottom. Check out tutorial #29, &#34;Using an Oscilloscope.&#34;'; } } else { question.feedback = 'You did not make this measurement.'; source.amplitude = (Math.random()*40)+1;  } ",
+                           "tutorial": "tutorial-21",
+                           "points": 100
+                       }
+                   ]
+               }
+           ]
+       },
+       {
+           "notes": "For this circuit:<br>&nbsp;&nbsp; <b>R<sub>1</sub></b> = [Math.round(r1.resistance)] ohms<br>&nbsp;&nbsp; <b>C<sub>1</sub></b> = [Math.round(10*c1.capacitance * 1000000)/10] microf<br>&nbsp;&nbsp",
+           "questions": [
+               {
+                   "prompt": "Measure the voltage drop across the resistor. Remember: all voltages are measured with respect to ground, the black lead of the function generator. <br> <br>",
+                   "subquestions": [
+                       {
+                           "prompt": "What is the peak voltage across the resistor?",
+                           "shortPrompt": "Peak voltage across R?",
+                           "scoring": " var R = r1.resistance; var C = c1.capacitance; var f = question.meta.frequency; var Vp = source.amplitude; var Vpp = 2 * Vp; var Zc = 1 / (6.2832 * f * C); var Zrc = Math.sqrt(R * R + Zc * Zc); var Vr = Vp * R / Zrc; var Vc = Vp * Zc / Zrc; var valueCorrect = false; var valueHalfCorrect = false; var unitsCorrect = false; var yellowProbePosition = question.meta.yellowProbe; var pinkProbePosition = question.meta.pinkProbe; var correctAnswer = Vr; question.correct_answer = Math.round(100 * correctAnswer) / 100 + ' volts'; if (question.answer !== '') { var parsedAnswer = parse(question.answer); var valueCorrect = close(parsedAnswer.val, correctAnswer, 10); var valueTwiceCorrect = close(parsedAnswer.val, correctAnswer * 2, 10); var valueVp = close(parsedAnswer.val, Vp, 10); var valueVpp = close(parsedAnswer.val, Vpp, 10); var unitsExist = !! parsedAnswer.units; if (unitsExist) { unitsCorrect = parsedAnswer.units === 'V'; } var quality = question.meta.oscopeScaleQuality; var probesMeasuringVtotal = ((yellowProbePosition == 'L11' || yellowProbePosition == 'powerPosL') || (pinkProbePosition == 'L11' || pinkProbePosition == 'powerPosL')); var probesMeasuringVr = ((yellowProbePosition == 'L17' && (pinkProbePosition == 'powerPosL' || pinkProbePosition == 'L23')) || (pinkProbePosition == 'L17' && (yellowProbePosition == 'powerPosL' || yellowProbePosition == 'L23'))); question.points_earned = 0; if (unitsCorrect) { if (probesMeasuringVr) { if (valueCorrect) { question.feedback = 'You got the right answer ( within 10%) with the right units! Well done!'; question.points_earned = 100; } else if (valueTwiceCorrect) { /*Reading peak-to-peak?*/ question.feedback = 'You may be reading the scale wrong. Remember, you&#39;re supposed to be measuring the peak voltage across the resistor, not the peak-to-peak voltage.'; } else if ((valueVp || valueVpp) && probesMeasuringVtotal) { /*Possible trace mixup*/ question.feedback = 'That looks like the total voltage across the circuit. You may be reading the wrong oscilloscope trace.'; } else if (!valueCorrect) { question.feedback = 'Your measurement is incorrect.Remember, the display depends on the oscilloscope settings. Check to make sure you are interpreting the scale correctly.'; } } else if (probesMeasuringVtotal && (valueVp || valueVpp)) { question.feedback = 'Your measurement is incorrect. You may be measuring the voltage across the entire circuit by mistake.'; } else { question.feedback = 'You don&#39;t have the oscilloscope probes placed properly. Try again.'; } } else if (unitsExist) { question.feedback = 'You are not using voltage units.'; } else { question.feedback = 'You must supply a unit of measure with your value.'; } } else { question.feedback = 'You did not make this measurement.'; } ",
+                           "tutorial": "tutorial-29",
+                           "points": 100
+                       },
+                       {
+                           "prompt": "What resistor voltage would be measured by a digital multimeter?",
+                           "shortPrompt": "RMS voltage across R?",
+                           "scoring": "var R = r1.resistance; var C = c1.capacitance; var f = question.meta.frequency; var Vp = source.amplitude; var Vpp = 2 * Vp; var Zc = 1 / (6.2832 * f * C); var Zrc = Math.sqrt(R * R + Zc * Zc); var Vr = Vp * R / Zrc; var Vc = Vp * Zc / Zrc; var VRrms = Vr/Math.sqrt(2); var valueCorrect = false; var valueHalfCorrect = false; var unitsCorrect = false; var yellowProbePosition = question.meta.yellowProbe; var pinkProbePosition = question.meta.pinkProbe; var correctAnswer = VRrms; question.correct_answer = Math.round(100 * correctAnswer) / 100 + ' volts'; if (question.answer !== '') { var parsedAnswer = parse(question.answer); var valueCorrect = close(parsedAnswer.val, correctAnswer, 10); var valueTwiceCorrect = close(parsedAnswer.val, correctAnswer * 2, 10); var valueVp = close(parsedAnswer.val, Vp, 10); var valueVpp = close(parsedAnswer.val, Vpp, 10); var unitsExist = !! parsedAnswer.units; if (unitsExist) { unitsCorrect = parsedAnswer.units === 'V'; } var quality = question.meta.oscopeScaleQuality; var probesMeasuringVtotal = ((yellowProbePosition == 'L11' || yellowProbePosition == 'powerPosL') || (pinkProbePosition == 'L11' || pinkProbePosition == 'powerPosL')); var probesMeasuringVr = ((yellowProbePosition == 'L17' && (pinkProbePosition == 'powerPosL' || pinkProbePosition == 'L23')) || (pinkProbePosition == 'L17' && (yellowProbePosition == 'powerPosL' || yellowProbePosition == 'L23'))); question.points_earned = 0; if (unitsCorrect) { if (probesMeasuringVr) { if (valueCorrect) { question.feedback = 'You got the right answer ( within 10%) with the right units! Well done!'; question.points_earned = 100; } else if (valueTwiceCorrect) { /*Reading peak-to-peak?*/ question.feedback = 'You may be reading the scale wrong. Also, remember that the rms voltage is based on the peak voltage, not the peak-to-peak voltage.'; } else if ((valueVp || valueVpp) && probesMeasuringVtotal) { /*Possible trace mixup*/ question.feedback = 'You seem to be reporting the total voltage across the circuit not the voltage across the resistor. You may be reading the wrong oscilloscope trace.'; } else if (!valueCorrect) { question.feedback = 'Your measurement is incorrect.Remember, the display depends on the oscilloscope settings. Check to make sure you are interpreting the scale correctly.'; } } else if (probesMeasuringVtotal && (valueVp || valueVpp)) { question.feedback = 'Your measurement is incorrect. You may be measuring the voltage across the entire circuit by mistake.'; } else { question.feedback = 'You don&#39;t have the oscilloscope probes placed properly. Try again.'; } } else if (unitsExist) { question.feedback = 'You are not using voltage units.'; } else { question.feedback = 'You must supply a unit of measure with your value.'; } } else { question.feedback = 'You did not make this measurement.'; } ",
+                           "tutorial": "tutorial-21",
+                           "points": 100
+                       }
+                   ]
+               }
+           ]
+       },
+       {
+           "notes": "For this circuit:<br>&nbsp;&nbsp; <b>R<sub>1</sub></b> = [Math.round(r1.resistance)] ohms<br>&nbsp;&nbsp; <b>C<sub>1</sub></b> = [Math.round(10*c1.capacitance * 1000000)/10] microf<br>&nbsp;&nbsp",
+           "questions": [
+               {
+                   "prompt": "Next, find the voltage drop across the capacitor. Since oscilloscopes measure voltages with respect to ground, you must measure the difference between the two leads of the capacitor using both probes and the A-minus-B function.",
+                   "subquestions": [
+                       {
+                           "prompt": "What is the peak voltage across the capacitor?",
+                           "shortPrompt": "Peak voltage across C?",
+                           "scoring": " var R = r1.resistance; var C = c1.capacitance; var f = question.meta.frequency; var Vtot = source.amplitude; var Zc = 1 / (6.2832 * f * C); var Zrc = Math.sqrt(R * R + Zc * Zc); var Vr = Vtot * R / Zrc; var Vc = Vtot * Zc / Zrc; var Vcrms = Vc / Math.sqrt(2); var valueCorrect = false; var unitsCorrect = false; var yellowProbePosition = question.meta.yellowProbe; var pinkProbePosition = question.meta.pinkProbe; var correctAnswer = Vc; question.correct_answer = Math.round(100 * correctAnswer) / 100 + ' volts'; if (question.answer !== '') { var parsedAnswer = parse(question.answer); var valueCorrect = close(parsedAnswer.val, correctAnswer, 10); var valueClose = close(parsedAnswer.val, correctAnswer, 20); var valueTwiceCorrect = close(parsedAnswer.val, 2 * correctAnswer, 10); var valueVtot = close(parsedAnswer.val, Vtot, 10) || close(parsedAnswer.val, 2 * Vtot, 10); var valueVr = close(parsedAnswer.val, Vr, 10) || close(parsedAnswer.val, 2 * Vr, 10); var unitsExist = !! parsedAnswer.units; if (unitsExist) { unitsCorrect = parsedAnswer.units === 'V'; } var quality = question.meta.oscopeScaleQuality; var probesMeasuringVtotal = ((yellowProbePosition == 'L11' || yellowProbePosition == 'powerPosL') || (pinkProbePosition == 'L11' || pinkProbePosition == 'powerPosL')); var probesMeasuringVr = ((yellowProbePosition == 'L17' && (pinkProbePosition == 'powerPosL' || pinkProbePosition == 'L23')) || (pinkProbePosition == 'L17' && (yellowProbePosition == 'powerPosL' || yellowProbePosition == 'L23'))); var probesMeasuringVc = ((yellowProbePosition == 'L17' && pinkProbePosition == 'L11') || (yellowProbePosition == 'L11' && pinkProbePosition == 'L17')); var probeNotConnected = (yellowProbePosition === null || pinkProbePosition === null); question.points_earned = 0; console.log('valueCorrect = ' + valueCorrect + ', unitsCorrect = ' + unitsCorrect + ', probesMeasuringVtotal = ' + probesMeasuringVtotal + ', probesMeasuringVr = ' + probesMeasuringVr + ', probesMeasuringVc = ' + probesMeasuringVc + ', probeNotConnected = ' + probeNotConnected); if (unitsCorrect) { if (probesMeasuringVc) { if (valueCorrect) { question.feedback = 'You got the right answer (within 10% ) and you used the right units! Well done!'; question.points_earned = 100; } else if (valueClose) { question.feedback = 'Close! It looks as though you made a mistake estimating the voltage from the oscilloscope trace. Half points for this one -- try again!'; question.points_earned = 50; } else if (valueTwiceCorrect) { question.feedback = 'You & #39;re supposed to be measuring the peak voltage, not the peak-to-peak voltage, across the capacitor.'; } else { question.feedback = 'The probes are set correctly but there&#39;s something wrong with your measurement. Remember to use the &#39;A - B&#39; trace on the oscilloscope to measure the voltage across the capacitor.'; } } else if (probeNotConnected) { question.feedback = 'You need to use both probes to make this measurement.'; } else { question.feedback = 'You don&#39;t have the oscilloscope probes placed properly. Try again.'; } } else if (unitsExist) { question.feedback = 'You are not using voltage units.'; } else { question.feedback = 'You must supply a unit of measure with your value.'; } } else { question.feedback = 'You did not make this measurement.'; } ",
+                           "tutorial": "tutorial-29",
+                           "points": 100
+                       }
+                   ]
+               }
+           ]
+       }
+   ]
+}

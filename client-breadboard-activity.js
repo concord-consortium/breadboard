@@ -11650,14 +11650,20 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
     var activityName = window.location.hash;
     activityName = activityName.substring(1,activityName.length);
     if (!activityName){
-      activityName = "series-interpretive";
+      activityName = "local/oscilloscope-1";
     }
 
     this.loadSounds();
 
-    sparks.couchDS.loadActivity(activityName, function(activity) {
+    var startActivity = function(activity) {
       new sparks.ActivityConstructor(activity);
-    });
+    };
+
+    if (activityName.indexOf("local/") === 0) {
+      $.get(activityName.replace("local", "activities")+".json", startActivity);
+    } else {
+      sparks.couchDS.loadActivity(activityName, startActivity);
+    }
   };
 
   this.loadClassReport = function () {
