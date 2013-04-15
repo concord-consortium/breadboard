@@ -1,4 +1,4 @@
-//= require "breadboard"
+//= require ./breadboard
 
 /*global console sparks getBreadBoard $*/
 

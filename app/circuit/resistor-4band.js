@@ -1,5 +1,5 @@
-//= require "resistor"
-//= require "r-values"
+//= require ./resistor
+//= require ./r-values
 /*globals console sparks $ breadModel getBreadBoard */
 
 /* FILE resistor-4band.js */

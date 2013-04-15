@@ -1,4 +1,4 @@
-//= require <helpers/string>
+//= require helpers/string
 
 /*globals console sparks */
 

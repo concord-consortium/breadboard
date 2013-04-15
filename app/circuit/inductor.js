@@ -1,5 +1,5 @@
 /* FILE inductor.js */
-//= require "reactive-component"
+//= require ./reactive-component
 /*global sparks */
 
 (function () {

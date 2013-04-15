@@ -1,5 +1,5 @@
-//= require <setup-common>
-//= require "multimeter-base"
+//= require setup-common
+//= require ./multimeter-base
 
 /* FILE multimeter.js */
 
