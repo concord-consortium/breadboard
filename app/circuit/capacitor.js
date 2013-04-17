@@ -22,6 +22,16 @@
       var capacitance = this.getCapacitance() || 0,
           nodes       = this.getNodes();
       ciso.addComponent(this.UID, "Capacitor", capacitance, nodes);
+    },
+
+    componentTypeName: "Capacitor",
+
+    isEditable: true,
+
+    editableProperty: {name: "capacitance", units: "F"},
+
+    changeEditableValue: function(val) {
+      this.capacitance = val;
     }
   });
 

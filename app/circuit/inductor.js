@@ -22,6 +22,16 @@
       var inductance = this.getInductance() || 0,
           nodes       = this.getNodes();
       ciso.addComponent(this.UID, "Inductor", inductance, nodes);
+    },
+
+    componentTypeName: "Inductor",
+
+    isEditable: true,
+
+    editableProperty: {name: "inductance", units: "H"},
+
+    changeEditableValue: function(val) {
+      this.inductance = val;
     }
   });
 

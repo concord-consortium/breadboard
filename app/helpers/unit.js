@@ -3,16 +3,16 @@
 (function () {
 
     this.sparks.unit = {};
-    
+
     var u = sparks.unit;
 
     u.labels = { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' };
-    
+
     u.toEngineering = function (value, units){
       value = Number(value);
       var isShort = (units.length === 1 || units === "Hz"),
           prefix  = "";
-      
+
       if (value >= 1000000){
         prefix = isShort ? "M" : "mega";
         value = u.round(value/1000000,2);
@@ -21,6 +21,9 @@
         value = u.round(value/1000,2);
       } else if (value === 0 ) {
         value = 0;
+      } else if (value < 0.000000001){
+        prefix = isShort ? "p" : "pico";
+        value = u.round(value * 1000000000000,2);
       } else if (value < 0.000001){
         prefix = isShort ? "n" : "nano";
         value = u.round(value * 1000000000,2);
@@ -34,28 +37,28 @@
         value = u.round(value,2);
       }
       units = prefix + units;
-      
+
       return {"value": value, "units": units};
     };
-    
+
     u.round = function(num, dec) {
     	var result = Math.round( Math.round( num * Math.pow( 10, dec + 2 ) ) / Math.pow( 10, 2 ) ) / Math.pow(10,dec);
     	return result;
     };
-    
+
     u.sigFigs = function(n, sig) {
         var mult = Math.pow(10,
             sig - Math.floor(Math.log(n) / Math.LN10) - 1);
         return Math.round(n * mult) / mult;
     };
-    
+
     // returns true if string is of form "50 ohms" or "0.1V"
     u.isMeasurement = function(string) {
       var isMeasurementPattern = /^\s?\d+.?\d*\s?\D+\s?$/
       var matched = string.match(isMeasurementPattern);
       return !!matched;
     };
-    
+
     /**
     * assumes this will be in the form ddd uu
     * i.e. a pure number and a unit, separated by an optional space
@@ -65,21 +68,21 @@
       if (!this.isMeasurement(measurement)){
         return measurement
       }
-      
+
       var numPattern = /\d+\.?\d*/g
       var nmatched = measurement.match(numPattern);
       if (!nmatched){
         return measurement;
       }
       var value = nmatched[0];
-      
+
       var unitPattern =  /(?=\d*.?\d*)[^\d\.\s]+/g
       var umatched = measurement.match(unitPattern);
       if (!umatched){
         return measurement;
       }
       var unit = umatched[0];
-      
+
       var eng = u.toEngineering(value, unit)
       return eng.value + " " + eng.units;
     };
@@ -109,7 +112,7 @@
     // value: resistance value in ohms
     u.res_str = function (value) {
         var vstr, unit, val;
-        
+
         if (typeof value !== 'number' || isNaN(Number(value))) {
             return 'Invalid Value ' + String(value);
         }
@@ -130,7 +133,7 @@
         if (val.toFixed) {
             val = val.toFixed(6);
         }
-        
+
         vstr = String(val).replace(/(\.[0-9]*[1-9])0*/, '$1');
         vstr = vstr.replace(/([0-9])\.0+$/, '$1');
         return vstr + ' ' + unit;
@@ -158,7 +161,7 @@
     u.pct_str = function (value) {
         return (value * 100) + ' %';
     };
-    
+
     u.unitEquivalents = {
       "V": ["v", "volts", "volt", "vol", "vs"],
       "A": ["a", "amps", "amp", "amper", "ampers", "as"],
@@ -169,7 +172,7 @@
       "Hz": ["hz", "herz", "hertz"],
       "%": ["%", "perc", "percent"]
     }
-    
+
     u.prefixEquivalents = {
       "femto": ["femto", "fempto", "f"],
       "pico": ["pico", "picco", "p"],
@@ -180,7 +183,7 @@
       "mega": ["mega", "meg"],
       "giga": ["giga", "gigga", "g"]
     };
-    
+
     u.prefixValues = {
       "femto": 1E-15,
       "pico": 1E-12,
@@ -191,10 +194,10 @@
       "mega": 1E6,
       "giga": 1E9
     };
-    
+
     u.parse = function(string) {
       var value, units, prefix, currPrefix, unit, equivalents, equiv, regex;
-      
+
       string = string.replace(/ /g, '');                    // rm all whitespace
       string = string.replace(/['";:,\/?\\]/g, '');         // rm all non-period, non-dash puncutation
       string = string.replace(/[^\d\.-]*(\d.*)/, '$1');      // if there are numbers, if there are letters before them remove them
@@ -204,7 +207,7 @@
       }
       string = string.replace(/^-?[\d\.]*/, '');             // everything after the first value is the units
       string = string.replace(/['";:,\.\/?\\-]/g, '');       // rm all puncutation
-      
+
       for (unit in this.unitEquivalents) {                // if the unit can be found in the equivalents table, replace
         equivalents = this.unitEquivalents[unit];
         if (equivalents.length > 0) {
@@ -223,11 +226,11 @@
           break;
         }
       }
-      
+
       if (!units) {
         units = string;
       }
-      
+
       for (currPrefix in this.prefixEquivalents) {                 // if we can find a prefix at the start of the string, store it and delete it
         equivalents = this.prefixEquivalents[currPrefix];
         if (equivalents.length > 0) {
@@ -246,7 +249,7 @@
           break;
         }
       }
-      
+
       if (!prefix) {                                      // if we haven't found a prefix yet, check for case-sensitive m or M at start
         if (string.match(/^m/)) {
           prefix = "milli";
@@ -256,15 +259,15 @@
           units = units.replace(/^M/, "");
         }
       }
-      
+
       if (prefix) {
         value = value * this.prefixValues[prefix];        // if we have a prefix, multiply by that;
       }
-      
+
       if (!value) {
         value = NaN;
       }
-      
+
       return {val: value, units: units}
     };
 

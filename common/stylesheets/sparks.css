@@ -442,6 +442,16 @@ border-bottom-style:solid;
   left: 12px;
 }
 
+#add_capacitor {
+  top: 15px;
+  left: 39px;
+}
+
+#add_inductor {
+  top: 53px;
+  left: -23px;
+}
+
 .speech-bubble {
   position:relative;
   padding:15px;

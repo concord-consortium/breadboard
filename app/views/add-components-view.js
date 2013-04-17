@@ -10,6 +10,18 @@
       imageWidth: 108,
       property: "resistance",
       initialValue: 100
+    },
+    capacitor: {
+      image: "common/images/capacitor.png",
+      imageWidth: 48,
+      property: "capacitance",
+      initialValue: 1e-6
+    },
+    inductor: {
+      image: "common/images/inductor.png",
+      imageWidth: 80,
+      property: "inductance",
+      initialValue: 1e-6
     }
   }
 
@@ -62,7 +74,8 @@
             loc = hole + "," + hole,
             possibleValues,
             $propertyEditor = null,
-            initialValueEng, initialValueText,
+            propertyName,
+            initialValue, initialValueEng, initialValueText,
             $editor, props, uid, comp;
 
         // insert component into highlighted hole
@@ -94,7 +107,9 @@
         }
 
         if (comp.isEditable) {
-          initialValueEng = sparks.unit.toEngineering(embeddableComponent.initialValue, comp.editableProperty.units);
+          propertyName = comp.editableProperty.name.charAt(0).toUpperCase() + comp.editableProperty.name.slice(1);
+          initialValue = comp[comp.editableProperty.name];
+          initialValueEng = sparks.unit.toEngineering(initialValue, comp.editableProperty.units);
           initialValueText = initialValueEng.value + initialValueEng.units;
           $propertyEditor = $("<div>").append(
             $("<div>").slider({
@@ -104,7 +119,7 @@
             })
           ).append(
             $("<div>").html(
-              comp.editableProperty.name + ": <span id='prop_value'>"+initialValueText+"</span>"
+              propertyName + ": <span id='prop_value'>"+initialValueText+"</span>"
               )
           );
         }

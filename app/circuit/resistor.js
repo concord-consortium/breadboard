@@ -236,7 +236,7 @@
 
         isEditable: true,
 
-        editableProperty: {name: "Resistance", units: "\u2126"},
+        editableProperty: {name: "resistance", units: "\u2126"},
 
         getEditablePropertyValues: function() {
           resValues = [];
