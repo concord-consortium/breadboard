@@ -1577,14 +1577,14 @@ window["breadboardView"] = {
     inductor.attr('transform', 'translate(' + parseInt((pts[0].x + pts[1].x) / 2, 10) + ',' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
 
     var label = inductor.find('[type=label]');
-    if (!touch) {
+    if (!touch && labelText) {
       inductor.bind('mouseover', function() {
         label.show();
       });
       inductor.bind('mouseout', function() {
         label.hide();
       });
-    } else {
+    } else if (labelText) {
       label.show();
     }
     inductor.find('[type=label_text]').append(labelText);
@@ -1604,14 +1604,14 @@ window["breadboardView"] = {
     }
     capacitor.attr('transform', 'translate('+parseInt((pts[0].x + pts[1].x) / 2, 10) + ',' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
 
-    if (!touch) {
+    if (!touch && labelText) {
       capacitor.bind('mouseover', function() {
         label.show();
       });
       capacitor.bind('mouseout', function() {
         label.hide();
       });
-    } else {
+    } else if (labelText) {
       label.show();
     }
     capacitor.find('[type=label_text]').append(labelText);
@@ -1645,12 +1645,14 @@ window["breadboardView"] = {
       }
     });
     if (!touch) {
-      resistor.bind('mouseover', function() {
-        label.show();
-      });
-      resistor.bind('mouseout', function() {
-        label.hide();
-      });
+      if (labelText) {
+        resistor.bind('mouseover', function() {
+          label.show();
+        });
+        resistor.bind('mouseout', function() {
+          label.hide();
+        });
+      }
 
       band.each(function(i) {
         tooltip[$(this).attr('type')] = resistor.find('[tooltip=' + $(this).attr('type') + ']').attr('xlink:href', '#:$:resistor-hint-' + colors[i]);
@@ -1664,7 +1666,7 @@ window["breadboardView"] = {
           tooltip[$(this).attr('type')].hide();
         });
       });
-    } else {
+    } else if (labelText) {
       label.show();
     }
 
