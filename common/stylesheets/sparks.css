@@ -401,6 +401,48 @@ border-bottom-style:solid;
   font-weight:bold;
 }
 
+#add_components {
+  position: absolute;
+  left: 655px;
+  top: 233px;
+  width: 144px;
+  height: 260px;
+  z-index: 100;
+  overflow: hidden;
+}
+
+#add_components_btn {
+  position: absolute;
+  top: 193px;
+  left: 7px;
+  width: 115px;
+  padding: 8px;
+}
+
+#component_drawer {
+  position: absolute;
+  top: 0px;
+  left: 150px;
+  width: 137px;
+  height: 175px;
+  background-color: #bbb;
+  -moz-border-radius:5px;
+  -webkit-border-radius:5px;
+  border-radius:5px;
+  border: 1px solid;
+  box-shadow: 0 0 10px;
+}
+
+.add_component {
+  position: relative;
+  left: 12px;
+  width: 108px;
+}
+
+#add_resistor {
+  top: 12px;
+}
+
 .tools-dialog .ui-dialog-titlebar {
   padding: 0;
 }

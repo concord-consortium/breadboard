@@ -3303,7 +3303,9 @@ sparks.createQuestionsCSV = function(data) {
       $questionsDiv:    $('#questions_area'),
       $titleDiv:        $('#title'),
       $scopeDiv:        $('#oscope_mini'),
-      $fgDiv:           $('#fg_mini')
+      $fgDiv:           $('#fg_mini'),
+      $addCompsWrapper: $('#add_components'),
+      $addCompsBtn:     $('#add_components_btn')
     };
   };
 
@@ -3355,6 +3357,14 @@ sparks.createQuestionsCSV = function(data) {
           this.divs.$fgDiv.show();
         }
         section.meter.reset();
+      }
+
+      if (section.showComponentDrawer) {
+        this.divs.$addCompsWrapper.show();
+
+        var addComponentsView = new sparks.AddComponentsView(section);
+        this.divs.$addCompsBtn.off();
+        this.divs.$addCompsBtn.on('click', addComponentsView.openPane);
       }
 
       this.layoutPage(true);
@@ -10561,6 +10571,91 @@ window["breadboardView"] = {
   };
 
 })(jQuery, window["breadboardView"]);
+/*!
+ * jQuery Nearest plugin v1.2.0
+ *
+ * Finds elements closest to a single point based on screen location and pixel dimensions
+ * http://gilmoreorless.github.com/jquery-nearest/
+ * Open source under the MIT licence: http://gilmoreorless.mit-license.org/2011/
+ *
+ * Requires jQuery 1.4 or above
+ * Also supports Ben Alman's "each2" plugin for faster looping (if available)
+ */
+
+;(function(e,t){function r(t,r,i){t||(t="div");var s=e(r.container),o=s.offset()||{left:0,top:0},u=[o.left+s.width(),o.top+s.height()],a={x:0,y:1,w:0,h:1},f,l;for(f in a)a.hasOwnProperty(f)&&(l=n.exec(r[f]),l&&(r[f]=u[a[f]]*l[1]/100));var c=e(t),h=[],p=!!r.furthest,d=!!r.checkHoriz,v=!!r.checkVert,m=p?0:Infinity,g=parseFloat(r.x)||0,y=parseFloat(r.y)||0,b=parseFloat(g+r.w)||g,w=parseFloat(y+r.h)||y,E=r.tolerance||0,S=!!e.fn.each2,x=Math.min,T=Math.max;!r.includeSelf&&i&&(c=c.not(i)),E<0&&(E=0),c[S?"each2":"each"](function(t,n){var r=S?n:e(this),i=r.offset(),s=i.left,o=i.top,u=r.outerWidth(),a=r.outerHeight(),f=s+u,l=o+a,c=T(s,g),N=x(f,b),C=T(o,y),k=x(l,w),L=N>=c,A=k>=C,O,M,_,D;if(d&&v||!d&&!v&&L&&A||d&&A||v&&L)O=L?0:c-N,M=A?0:C-k,_=L||A?T(O,M):Math.sqrt(O*O+M*M),D=p?_>=m-E:_<=m+E,D&&(m=p?T(m,_):x(m,_),h.push({node:this,dist:_}))});var N=h.length,C=[],k,L,A,O;if(N){p?(k=m-E,L=m):(k=m,L=m+E);for(A=0;A<N;A++)O=h[A],O.dist>=k&&O.dist<=L&&C.push(O.node)}return C}var n=/^([\d.]+)%$/;e.each(["nearest","furthest","touching"],function(n,i){var s={x:0,y:0,w:0,h:0,tolerance:1,container:document,furthest:i=="furthest",includeSelf:!1,checkHoriz:i!="touching",checkVert:i!="touching"};e[i]=function(n,i,o){if(!n||n.x===t||n.y===t)return e([]);var u=e.extend({},s,n,o||{});return e(r(i,u))},e.fn[i]=function(t,n){var i;if(t&&e.isPlainObject(t))return i=e.extend({},s,t,n||{}),this.pushStack(r(this,i));var o=this.offset(),u={x:o.left,y:o.top,w:this.outerWidth(),h:this.outerHeight()};return i=e.extend({},s,u,n||{}),this.pushStack(r(t,i,this))}})})(jQuery);
+
+
+/*global sparks $ */
+
+
+
+(function() {
+
+  sparks.AddComponentsView = function(section){
+    var self = this;
+
+    this.section = section;
+    this.$drawer = $("#component_drawer").empty();
+
+    this.lastHighlightedHole = null;
+
+    // create drawer
+    this.$drawer.append(
+     $("<img id='add_resistor' class='add_component'>").attr("src", "common/images/blank-resistor.png").draggable({
+      containment: "#breadboard_wrapper",
+      helper: "clone",
+      start: function() {
+        $("#add_resistor").hide().fadeIn(1200);
+      },
+      drag: function(evt, ui) {
+        if (self.lastHighlightedHole) {
+          self.lastHighlightedHole.attr("xlink:href", "#$:hole_not_connected");
+        }
+        loc = {x: ui.offset.left, y: ui.offset.top+(ui.helper.height()/2)};
+        var nearestHole = $($.nearest(loc, "use[hole]")[0]);
+        nearestHole.attr("xlink:href", "#$:hole_highlighted");
+        self.lastHighlightedHole = nearestHole;
+      }
+     })
+    );
+
+    // todo: don't add this twice
+    $("#breadboard").droppable({
+      drop: function(evt, ui) {
+        var section = sparks.activityController.currentSection,
+            hole = self.lastHighlightedHole.attr("hole"),
+            loc = hole + "," + hole,
+            uid, comp;
+
+        // insert component into highlighted hole
+        uid = breadModel("insertComponent", "resistor", {
+         "type": "resistor",
+         "draggable": true,
+         "resistance": "100",
+         "connections": loc
+        });
+
+        comp = getBreadBoard().components[uid];
+
+        // move leads to correct width
+        breadModel("checkLocation", comp);
+
+        // update meters
+        section.meter.update();
+      }
+    })
+  };
+
+  sparks.AddComponentsView.prototype = {
+
+    openPane: function() {
+      $("#component_drawer").animate({left: 0}, 300, function(){
+        $("#add_components").css("overflow", "visible");
+      });
+    }
+
+  };
+})();
 /* FILE svg_view_comm.js */
 
 /*globals console sparks $ document window alert navigator*/
@@ -10603,7 +10698,7 @@ window["breadboardView"] = {
           }
 
           // check that we don't have two leads to close together
-          breadModel("checkLocation", comp);;
+          breadModel("checkLocation", comp);
         }
 
       }
@@ -15422,6 +15517,7 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
 
 
 })();
+
 
 
 

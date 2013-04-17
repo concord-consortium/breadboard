@@ -3,6 +3,7 @@
    "title": "RLC Circuit with draggable components",
    "show_multimeter": "true",
    "show_oscilloscope": "true",
+   "showComponentDrawer": "true",
    "circuit": [
        {
            "type": "function generator",

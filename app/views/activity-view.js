@@ -12,7 +12,9 @@
       $questionsDiv:    $('#questions_area'),
       $titleDiv:        $('#title'),
       $scopeDiv:        $('#oscope_mini'),
-      $fgDiv:           $('#fg_mini')
+      $fgDiv:           $('#fg_mini'),
+      $addCompsWrapper: $('#add_components'),
+      $addCompsBtn:     $('#add_components_btn')
     };
   };
 
@@ -64,6 +66,14 @@
           this.divs.$fgDiv.show();
         }
         section.meter.reset();
+      }
+
+      if (section.showComponentDrawer) {
+        this.divs.$addCompsWrapper.show();
+
+        var addComponentsView = new sparks.AddComponentsView(section);
+        this.divs.$addCompsBtn.off();
+        this.divs.$addCompsBtn.on('click', addComponentsView.openPane);
       }
 
       this.layoutPage(true);

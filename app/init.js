@@ -27,6 +27,7 @@
 //= require views/function-generator-view
 //= require views/class-report-view
 //= require views/breadboard-svg-view
+//= require views/add-components-view
 //= require views/svg_view_comm
 //= require controllers/question-controller
 //= require controllers/page-controller

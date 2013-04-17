@@ -39,7 +39,7 @@
           }
 
           // check that we don't have two leads to close together
-          breadModel("checkLocation", comp);;
+          breadModel("checkLocation", comp);
         }
 
       }
