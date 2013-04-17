@@ -435,12 +435,11 @@ border-bottom-style:solid;
 
 .add_component {
   position: relative;
-  left: 12px;
-  width: 108px;
 }
 
 #add_resistor {
   top: 12px;
+  left: 12px;
 }
 
 .speech-bubble {

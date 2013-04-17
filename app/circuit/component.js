@@ -169,7 +169,27 @@
       addThisToFaults: function() {
         var breadBoard = getBreadBoard();
         if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
-      }
+      },
+
+      // used by the component edit view
+      componentTypeName: "Component",
+
+      // used by the component edit view
+      isEditable: false,
+
+      // used by the component edit view. Right now we assume any editable component
+      // has only one single editable property. If we change this assumption, we may
+      // want to set an array of properties
+      //
+      // Returns an array of the possible values this property can take
+      getEditablePropertyValues: function() { return [0]; },
+      // The name and base units of the editable property
+      editableProperty: {name: "", units: ""},
+
+      // used by the component edit view. Right now we assume any editable component
+      // has only one single editable property. However, even if we have components with
+      // multiple editable properties, we can keep this API and pass in an array
+      changeEditableValue: function(val) { }
 
     };
 

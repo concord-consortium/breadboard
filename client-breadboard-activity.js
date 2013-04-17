@@ -10647,11 +10647,20 @@ window["breadboardView"] = {
 /*global sparks $ */
 
 
-
 (function() {
 
+  embeddableComponents = {
+    resistor: {
+      image: "common/images/blank-resistor.png",
+      imageWidth: 108,
+      property: "resistance",
+      initialValue: 100
+    }
+  }
+
   sparks.AddComponentsView = function(section){
-    var self = this;
+    var self = this,
+        component;
 
     this.section = section;
     this.$drawer = $("#component_drawer").empty();
@@ -10659,40 +10668,55 @@ window["breadboardView"] = {
     this.lastHighlightedHole = null;
 
     // create drawer
-    this.$drawer.append(
-     $("<img id='add_resistor' class='add_component'>").attr("src", "common/images/blank-resistor.png").draggable({
-      containment: "#breadboard_wrapper",
-      helper: "clone",
-      start: function() {
-        $("#add_resistor").hide().fadeIn(1200);
-      },
-      drag: function(evt, ui) {
-        if (self.lastHighlightedHole) {
-          self.lastHighlightedHole.attr("xlink:href", "#$:hole_not_connected");
-        }
-        loc = {x: ui.offset.left, y: ui.offset.top+(ui.helper.height()/2)};
-        var nearestHole = $($.nearest(loc, "use[hole]")[0]);
-        nearestHole.attr("xlink:href", "#$:hole_highlighted");
-        self.lastHighlightedHole = nearestHole;
-      }
-     })
-    );
+    for (componentName in embeddableComponents) {
+      if (!embeddableComponents.hasOwnProperty(componentName)) continue;
+
+      component = embeddableComponents[componentName];
+
+      this.$drawer.append(
+       $("<img id='add_"+componentName+"' class='add_component'>")
+        .attr("src", component.image)
+        .css("width", component.imageWidth)
+        .data("type", componentName)
+        .draggable({
+          containment: "#breadboard_wrapper",
+          helper: "clone",
+          start: function(evt, ui) {
+            $(ui.helper.context).hide().fadeIn(1200);
+          },
+          drag: function(evt, ui) {
+            if (self.lastHighlightedHole) {
+              self.lastHighlightedHole.attr("xlink:href", "#$:hole_not_connected");
+            }
+            loc = {x: ui.offset.left, y: ui.offset.top+(ui.helper.height()/2)};
+            var nearestHole = $($.nearest(loc, "use[hole]")[0]);
+            nearestHole.attr("xlink:href", "#$:hole_highlighted");
+            self.lastHighlightedHole = nearestHole;
+          }
+        })
+      );
+    }
 
     // todo: don't add this twice
     $("#breadboard").droppable({
       drop: function(evt, ui) {
-        var section = sparks.activityController.currentSection,
+        var type = ui.draggable.data("type"),
+            embeddableComponent = embeddableComponents[type],
+            section = sparks.activityController.currentSection,
             hole = self.lastHighlightedHole.attr("hole"),
             loc = hole + "," + hole,
-            uid, comp;
+            possibleValues,
+            $propertyEditor = null,
+            $editor, props, uid, comp;
 
         // insert component into highlighted hole
-        uid = breadModel("insertComponent", "resistor", {
-         "type": "resistor",
+        props = {
+         "type": type,
          "draggable": true,
-         "resistance": "100",
          "connections": loc
-        });
+        };
+        props[embeddableComponent.property] = embeddableComponent.initialValue;
+        uid = breadModel("insertComponent", type, props);
 
         comp = getBreadBoard().components[uid];
 
@@ -10703,41 +10727,43 @@ window["breadboardView"] = {
         section.meter.update();
 
         // create editor tooltip
-        resValues = [];
-        baseValues = sparks.circuit.r_values.r_values4band10pct;
-
-        for (i = 0; i < 6; i++) {
-          for (j = 0; j < baseValues.length; j++) {
-            resValues.push(baseValues[j] * Math.pow(10, i));
-          }
-        }
+        possibleValues = comp.getEditablePropertyValues();
 
         componentValueChanged = function (evt, ui) {
-          var val = resValues[ui.value],
-              eng = sparks.unit.toEngineering(val, "\u2126"),
-              comp = getBreadBoard().components[uid];
-          $("#res_value").text(eng.value + eng.units);
-          comp.setResistance(val);
-          sparks.breadboardView.changeResistorColors(uid, comp.getViewArguments().color);
+          var val = possibleValues[ui.value],
+              eng = sparks.unit.toEngineering(val, comp.editableProperty.units);
+          $("#prop_value").text(eng.value + eng.units);
+          comp.changeEditableValue(val);
           section.meter.update();
         }
 
+        if (comp.isEditable) {
+          initialValueEng = sparks.unit.toEngineering(embeddableComponent.initialValue, comp.editableProperty.units);
+          initialValueText = initialValueEng.value + initialValueEng.units;
+          $propertyEditor = $("<div>").append(
+            $("<div>").slider({
+              max: possibleValues.length-1,
+              slide: componentValueChanged,
+              value: possibleValues.indexOf(embeddableComponent.initialValue)
+            })
+          ).append(
+            $("<div>").html(
+              comp.editableProperty.name + ": <span id='prop_value'>"+initialValueText+"</span>"
+              )
+          );
+        }
+
         $editor = $("<div class='editor'>").append(
-          $("<h3>").text("Edit Resistor")
+          $("<h3>").text("Edit "+comp.componentTypeName)
         ).append(
-          $("<div>").slider({
-            max: resValues.length-1,
-            slide: componentValueChanged,
-            value: baseValues.length
-          })
-        ).append(
-          $("<div>").html("Resistance: <span id='res_value'>100\u2126</span>")
+          $propertyEditor
         ).append(
           $("<button>").text("Remove").on('click', function() {
-            sparks.breadboardView.removeComponent(uid);
+            breadModel("removeComponent", comp);
+            section.meter.update();
             $(".speech-bubble").trigger('mouseleave');
           })
-        ).css( { width: 120, textAlign: "right" } );
+        ).css( { width: 130, textAlign: "right" } );
 
         sparks.breadboardView.showTooltip(uid, $editor);
       }
@@ -12574,7 +12600,27 @@ window["breadboardView"] = {
       addThisToFaults: function() {
         var breadBoard = getBreadBoard();
         if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
-      }
+      },
+
+      // used by the component edit view
+      componentTypeName: "Component",
+
+      // used by the component edit view
+      isEditable: false,
+
+      // used by the component edit view. Right now we assume any editable component
+      // has only one single editable property. If we change this assumption, we may
+      // want to set an array of properties
+      //
+      // Returns an array of the possible values this property can take
+      getEditablePropertyValues: function() { return [0]; },
+      // The name and base units of the editable property
+      editableProperty: {name: "", units: ""},
+
+      // used by the component edit view. Right now we assume any editable component
+      // has only one single editable property. However, even if we have components with
+      // multiple editable properties, we can keep this API and pass in an array
+      changeEditableValue: function(val) { }
 
     };
 
@@ -12812,6 +12858,30 @@ window["breadboardView"] = {
             this.open = false;
             this.shorted = false;
           }
+        },
+
+        componentTypeName: "Resistor",
+
+        isEditable: true,
+
+        editableProperty: {name: "Resistance", units: "\u2126"},
+
+        getEditablePropertyValues: function() {
+          resValues = [];
+          baseValues = sparks.circuit.r_values.r_values4band10pct;
+
+          for (i = 0; i < 6; i++) {
+            for (j = 0; j < baseValues.length; j++) {
+              resValues.push(baseValues[j] * Math.pow(10, i));
+            }
+          }
+
+          return resValues;
+        },
+
+        changeEditableValue: function(val) {
+          this.setResistance(val);
+          sparks.breadboardView.changeResistorColors(this.UID, this.getViewArguments().color);
         }
     });
 
@@ -13476,6 +13546,14 @@ window["breadboardView"] = {
           var comp = interfaces.findComponent(type, connections);
           if (!!comp){
             comp.destroy();
+          }
+          sparks.breadboardView.removeComponent(uid);
+        },
+        removeComponent: function(comp){
+          var uid = comp.UID;
+          comp.destroy();
+          if (uid) {
+            sparks.breadboardView.removeComponent(uid);
           }
         },
         findComponent: function(type, connections){

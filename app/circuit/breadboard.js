@@ -457,6 +457,14 @@
           if (!!comp){
             comp.destroy();
           }
+          sparks.breadboardView.removeComponent(uid);
+        },
+        removeComponent: function(comp){
+          var uid = comp.UID;
+          comp.destroy();
+          if (uid) {
+            sparks.breadboardView.removeComponent(uid);
+          }
         },
         findComponent: function(type, connections){
           var i, component;

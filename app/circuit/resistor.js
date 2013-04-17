@@ -230,6 +230,30 @@
             this.open = false;
             this.shorted = false;
           }
+        },
+
+        componentTypeName: "Resistor",
+
+        isEditable: true,
+
+        editableProperty: {name: "Resistance", units: "\u2126"},
+
+        getEditablePropertyValues: function() {
+          resValues = [];
+          baseValues = sparks.circuit.r_values.r_values4band10pct;
+
+          for (i = 0; i < 6; i++) {
+            for (j = 0; j < baseValues.length; j++) {
+              resValues.push(baseValues[j] * Math.pow(10, i));
+            }
+          }
+
+          return resValues;
+        },
+
+        changeEditableValue: function(val) {
+          this.setResistance(val);
+          sparks.breadboardView.changeResistorColors(this.UID, this.getViewArguments().color);
         }
     });
 
