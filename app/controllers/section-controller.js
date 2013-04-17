@@ -47,6 +47,7 @@
       section.disable_multimeter_position = jsonSection.disable_multimeter_position;
 
       section.showComponentDrawer = !(!(jsonSection.showComponentDrawer) || jsonSection.showComponentDrawer === "false");
+      section.showComponentEditor = !(!(jsonSection.showComponentEditor) || jsonSection.showComponentEditor === "false");
 
       if (!section.hide_circuit && section.show_multimeter) {
         section.meter.dmm = new sparks.circuit.Multimeter2();

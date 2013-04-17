@@ -3368,12 +3368,14 @@ sparks.createQuestionsCSV = function(data) {
         section.meter.reset();
       }
 
-      if (section.showComponentDrawer) {
-        this.divs.$addCompsWrapper.show();
-
+      if (section.showComponentDrawer || section.showComponentEditor) {
         var addComponentsView = new sparks.AddComponentsView(section);
-        this.divs.$addCompsBtn.off();
-        this.divs.$addCompsBtn.on('click', addComponentsView.openPane);
+
+        if (section.showComponentDrawer) {
+          this.divs.$addCompsWrapper.show();
+          this.divs.$addCompsBtn.off();
+          this.divs.$addCompsBtn.on('click', addComponentsView.openPane);
+        }
       }
 
       this.layoutPage(true);
@@ -11344,6 +11346,7 @@ window["breadboardView"] = {
       section.disable_multimeter_position = jsonSection.disable_multimeter_position;
 
       section.showComponentDrawer = !(!(jsonSection.showComponentDrawer) || jsonSection.showComponentDrawer === "false");
+      section.showComponentEditor = !(!(jsonSection.showComponentEditor) || jsonSection.showComponentEditor === "false");
 
       if (!section.hide_circuit && section.show_multimeter) {
         section.meter.dmm = new sparks.circuit.Multimeter2();
