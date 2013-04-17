@@ -3336,6 +3336,12 @@ sparks.createQuestionsCSV = function(data) {
         var self = this;
         breadboardView.ready(function() {
           sparks.breadboardView = breadboardView.create("breadboard");
+
+          // pass queued-up component right-click function to breadboard view
+          if (self.rightClickFunction) {
+            sparks.breadboardView.setRightClickFunction(self.rightClickFunction);
+          }
+
           // FIXME: view should accept battery as standard component via API
           sparks.breadboardView.addBattery("left_negative21,left_positive21");
           breadModel('updateView');
@@ -3435,6 +3441,10 @@ sparks.createQuestionsCSV = function(data) {
         section.meter.reset();
         section.meter.update();
        }
+     },
+
+     setRightClickFunction: function(func) {
+      this.rightClickFunction = func;
      },
 
      // not usually necessary. Justs for tests?
@@ -8585,6 +8595,21 @@ window["breadboardView"] = {
     this.itemslist.push(this.component[elem["UID"]]);
     this.workspace.append(this.component[elem["UID"]].view);
     this.component[elem["UID"]]["image"] = new SVGImage(this, elem["UID"]);
+
+    if (this.rightClickFunction) {
+      var rightClickFunction = this.rightClickFunction;
+
+      //this.component[elem["UID"]].view[0].oncontextmenu = function() {return false;};
+
+      this.component[elem["UID"]].view.bind("contextmenu", function(evt) {
+        if (evt.button === 2) {
+          rightClickFunction($(this).attr("uid"));
+          evt.preventDefault();
+          return false;
+        }
+        return true;
+      });
+    }
   };
 
   CircuitBoard.prototype.changeResistorColors = function(id, colors) {
@@ -8601,6 +8626,10 @@ window["breadboardView"] = {
         this.itemslist.splice(i, 1);
       }
     }
+  };
+
+  CircuitBoard.prototype.setRightClickFunction = function(func) {
+    this.rightClickFunction = func;
   };
 
   CircuitBoard.prototype.addDMM = function(params) {
@@ -8859,6 +8888,10 @@ window["breadboardView"] = {
         yOffset    = 50,
         tipHeight,
         $tooltip;
+
+    if (compWidth > 300) {    // weird bug
+      compWidth = 120;
+    }
 
     // wrap pane in bubble pane and then empty pane (for mousout)
     $tooltip = $("<div>").append(
@@ -10681,6 +10714,12 @@ window["breadboardView"] = {
     this.$drawer = $("#component_drawer").empty();
 
     this.lastHighlightedHole = null;
+
+    if (sparks.breadboardView) {
+      sparks.breadboardView.setRightClickFunction(this.showEditor);
+    } else {  // queue it up
+      sparks.activity.view.setRightClickFunction(this.showEditor);
+    }
 
     // create drawer
     for (componentName in embeddableComponents) {

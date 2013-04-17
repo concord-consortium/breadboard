@@ -42,6 +42,12 @@
         var self = this;
         breadboardView.ready(function() {
           sparks.breadboardView = breadboardView.create("breadboard");
+
+          // pass queued-up component right-click function to breadboard view
+          if (self.rightClickFunction) {
+            sparks.breadboardView.setRightClickFunction(self.rightClickFunction);
+          }
+
           // FIXME: view should accept battery as standard component via API
           sparks.breadboardView.addBattery("left_negative21,left_positive21");
           breadModel('updateView');
@@ -141,6 +147,10 @@
         section.meter.reset();
         section.meter.update();
        }
+     },
+
+     setRightClickFunction: function(func) {
+      this.rightClickFunction = func;
      },
 
      // not usually necessary. Justs for tests?

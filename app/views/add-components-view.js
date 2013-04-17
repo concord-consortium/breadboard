@@ -34,6 +34,12 @@
 
     this.lastHighlightedHole = null;
 
+    if (sparks.breadboardView) {
+      sparks.breadboardView.setRightClickFunction(this.showEditor);
+    } else {  // queue it up
+      sparks.activity.view.setRightClickFunction(this.showEditor);
+    }
+
     // create drawer
     for (componentName in embeddableComponents) {
       if (!embeddableComponents.hasOwnProperty(componentName)) continue;

@@ -226,6 +226,21 @@ window["breadboardView"] = {
     this.itemslist.push(this.component[elem["UID"]]);
     this.workspace.append(this.component[elem["UID"]].view);
     this.component[elem["UID"]]["image"] = new SVGImage(this, elem["UID"]);
+
+    if (this.rightClickFunction) {
+      var rightClickFunction = this.rightClickFunction;
+
+      //this.component[elem["UID"]].view[0].oncontextmenu = function() {return false;};
+
+      this.component[elem["UID"]].view.bind("contextmenu", function(evt) {
+        if (evt.button === 2) {
+          rightClickFunction($(this).attr("uid"));
+          evt.preventDefault();
+          return false;
+        }
+        return true;
+      });
+    }
   };
 
   CircuitBoard.prototype.changeResistorColors = function(id, colors) {
@@ -242,6 +257,10 @@ window["breadboardView"] = {
         this.itemslist.splice(i, 1);
       }
     }
+  };
+
+  CircuitBoard.prototype.setRightClickFunction = function(func) {
+    this.rightClickFunction = func;
   };
 
   CircuitBoard.prototype.addDMM = function(params) {
@@ -500,6 +519,10 @@ window["breadboardView"] = {
         yOffset    = 50,
         tipHeight,
         $tooltip;
+
+    if (compWidth > 300) {    // weird bug
+      compWidth = 120;
+    }
 
     // wrap pane in bubble pane and then empty pane (for mousout)
     $tooltip = $("<div>").append(
