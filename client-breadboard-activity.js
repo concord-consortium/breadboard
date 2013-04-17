@@ -8584,6 +8584,10 @@ window["breadboardView"] = {
     this.component[elem["UID"]]["image"] = new SVGImage(this, elem["UID"]);
   };
 
+  CircuitBoard.prototype.changeResistorColors = function(id, colors) {
+    this.component[id].changeColors(colors);
+  };
+
   CircuitBoard.prototype.removeComponent = function(id) {
     this.component[id].hole[0].disconnected();
     this.component[id].hole[1].disconnected();
@@ -9441,6 +9445,21 @@ window["breadboardView"] = {
     this.view.append(this.leads[0].view, this.leads[1].view, this.connector.view, this.element.view);
     // add event handler for draggable
     component.prototype.drag.call(this, params.draggable);
+
+    this.changeColors = function(colors) {
+      bands = this.view.find('[type^=band]');
+      bands.each(function(i) {
+        if (i != (colors.length - 1)) {
+          $(this).attr('xlink:href', '#:$:band-s-' + colors[i]);
+        } else {
+          $(this).attr('xlink:href', '#:$:band-b-' + colors[i]);
+        }
+      });
+      tooltips = this.view.find('[tooltip^=band]');
+      tooltips.each(function(i) {
+        $(this).attr('xlink:href', '#:$:resistor-hint-' + colors[i]);
+      });
+    }
   };
 
   component.capacitor = function(params, holes, board) {
