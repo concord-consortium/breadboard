@@ -18,6 +18,7 @@
     this.show_oscilloscope = false;
     this.allow_move_yellow_probe = false;
     this.hide_pink_probe = false;
+    this.showComponentDrawer = false;
 
     this.section_url = "";
     this.images_url = "";

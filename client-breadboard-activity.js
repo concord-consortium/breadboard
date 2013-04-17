@@ -2917,6 +2917,7 @@ sparks.createQuestionsCSV = function(data) {
     this.show_oscilloscope = false;
     this.allow_move_yellow_probe = false;
     this.hide_pink_probe = false;
+    this.showComponentDrawer = false;
 
     this.section_url = "";
     this.images_url = "";
@@ -11057,6 +11058,8 @@ window["breadboardView"] = {
       section.allow_move_yellow_probe = !(!(jsonSection.allow_move_yellow_probe) || jsonSection.allow_move_yellow_probe === "false");
       section.hide_pink_probe = !(!(jsonSection.hide_pink_probe) || jsonSection.hide_pink_probe === "false");
       section.disable_multimeter_position = jsonSection.disable_multimeter_position;
+
+      section.showComponentDrawer = !(!(jsonSection.showComponentDrawer) || jsonSection.showComponentDrawer === "false");
 
       if (!section.hide_circuit && section.show_multimeter) {
         section.meter.dmm = new sparks.circuit.Multimeter2();

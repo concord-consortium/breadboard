@@ -46,6 +46,8 @@
       section.hide_pink_probe = !(!(jsonSection.hide_pink_probe) || jsonSection.hide_pink_probe === "false");
       section.disable_multimeter_position = jsonSection.disable_multimeter_position;
 
+      section.showComponentDrawer = !(!(jsonSection.showComponentDrawer) || jsonSection.showComponentDrawer === "false");
+
       if (!section.hide_circuit && section.show_multimeter) {
         section.meter.dmm = new sparks.circuit.Multimeter2();
         if(section.disable_multimeter_position){
