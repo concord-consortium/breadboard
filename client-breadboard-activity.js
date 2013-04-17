@@ -12477,9 +12477,12 @@ window["breadboardView"] = {
           this.breadBoard.holes[this.connections[i]].connections[this.breadBoard.holes[this.connections[i]].connections.length] = this;
         }
       }
-      this._ensureInt("resistance");
-      this._ensureInt("nominalResistance");
-      this._ensureInt("voltage");
+      this._ensureFloat("resistance");
+      this._ensureFloat("nominalResistance");
+      this._ensureFloat("voltage");
+      this._ensureFloat("capacitance");
+      this._ensureFloat("inductance");
+      this._ensureFloat("impedance");
       this.draggable = !!this.draggable;
 
       this.viewArguments = {
@@ -12541,9 +12544,9 @@ window["breadboardView"] = {
         delete this.breadBoard.components[this.UID];
       },
 
-      _ensureInt: function (val) {
+      _ensureFloat: function (val) {
         if (this[val] && typeof this[val] === "string") {
-          this[val] = parseInt(this[val], 10);
+          this[val] = parseFloat(this[val], 10);
         }
       },
 
