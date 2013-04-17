@@ -8846,6 +8846,44 @@ window["breadboardView"] = {
     //document.body.appendChild(comp.canvas);
   };
 
+  CircuitBoard.prototype.showTooltip = function(uid, $tipPane) {
+    var $comp      = this.component[uid].view,
+        pos        = $comp.position(),
+        rect       = $comp[0].getBoundingClientRect(),
+        compWidth  = rect.width,
+        compHeight = rect.height,
+        tipWidth   = $tipPane.width(),
+        yOffset    = 50,
+        tipHeight,
+        $tooltip;
+
+    // wrap pane in bubble pane and then empty pane (for mousout)
+    $tooltip = $("<div>").append(
+      $("<div class='speech-bubble'>").append($tipPane)
+    );
+
+    $tooltip.css({
+      position: "absolute",
+      left:     pos.left - (tipWidth/2) + (compWidth*0.4),
+      zIndex:   1000
+    });
+
+
+    this.holder.append($tooltip);
+
+    tipHeight = $tipPane.height();
+
+    $tooltip.css({
+      top:      pos.top - tipHeight - yOffset,
+      height:   tipHeight + compHeight + yOffset
+    });
+
+    // delete on mouseout
+    $tooltip.mouseleave(function(){
+      $tooltip.fadeOut( function() { $(this).remove(); });
+    });
+  };
+
   var SVGImage = function(brd, uid) {
     this.comp = brd.component[uid];
     this.brd = brd;
@@ -10661,6 +10699,45 @@ window["breadboardView"] = {
 
         // update meters
         section.meter.update();
+
+        // create editor tooltip
+        resValues = [];
+        baseValues = sparks.circuit.r_values.r_values4band10pct;
+
+        for (i = 0; i < 6; i++) {
+          for (j = 0; j < baseValues.length; j++) {
+            resValues.push(baseValues[j] * Math.pow(10, i));
+          }
+        }
+
+        componentValueChanged = function (evt, ui) {
+          var val = resValues[ui.value],
+              eng = sparks.unit.toEngineering(val, "\u2126"),
+              comp = getBreadBoard().components[uid];
+          $("#res_value").text(eng.value + eng.units);
+          comp.setResistance(val);
+          sparks.breadboardView.changeResistorColors(uid, comp.getViewArguments().color);
+          section.meter.update();
+        }
+
+        $editor = $("<div class='editor'>").append(
+          $("<h3>").text("Edit Resistor")
+        ).append(
+          $("<div>").slider({
+            max: resValues.length-1,
+            slide: componentValueChanged,
+            value: baseValues.length
+          })
+        ).append(
+          $("<div>").html("Resistance: <span id='res_value'>100\u2126</span>")
+        ).append(
+          $("<button>").text("Remove").on('click', function() {
+            sparks.breadboardView.removeComponent(uid);
+            $(".speech-bubble").trigger('mouseleave');
+          })
+        ).css( { width: 120, textAlign: "right" } );
+
+        sparks.breadboardView.showTooltip(uid, $editor);
       }
     })
   };
@@ -12605,8 +12682,14 @@ window["breadboardView"] = {
             this.realValue = value;
         },
 
+        setResistance: function (value) {
+          this.resistance = value;
+          this.updateColors();
+        },
+
         updateColors: function (resistance, tolerance) {
-            this.colors = this.getColors(resistance, tolerance);
+            this.colors = this.getColors4Band( this.resistance, (!!this.tolerance ? this.tolerance : 0.05));
+            this.setViewArguments({color: this.colors});
         },
 
         show : function() {

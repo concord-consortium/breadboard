@@ -490,6 +490,44 @@ window["breadboardView"] = {
     //document.body.appendChild(comp.canvas);
   };
 
+  CircuitBoard.prototype.showTooltip = function(uid, $tipPane) {
+    var $comp      = this.component[uid].view,
+        pos        = $comp.position(),
+        rect       = $comp[0].getBoundingClientRect(),
+        compWidth  = rect.width,
+        compHeight = rect.height,
+        tipWidth   = $tipPane.width(),
+        yOffset    = 50,
+        tipHeight,
+        $tooltip;
+
+    // wrap pane in bubble pane and then empty pane (for mousout)
+    $tooltip = $("<div>").append(
+      $("<div class='speech-bubble'>").append($tipPane)
+    );
+
+    $tooltip.css({
+      position: "absolute",
+      left:     pos.left - (tipWidth/2) + (compWidth*0.4),
+      zIndex:   1000
+    });
+
+
+    this.holder.append($tooltip);
+
+    tipHeight = $tipPane.height();
+
+    $tooltip.css({
+      top:      pos.top - tipHeight - yOffset,
+      height:   tipHeight + compHeight + yOffset
+    });
+
+    // delete on mouseout
+    $tooltip.mouseleave(function(){
+      $tooltip.fadeOut( function() { $(this).remove(); });
+    });
+  };
+
   var SVGImage = function(brd, uid) {
     this.comp = brd.component[uid];
     this.brd = brd;

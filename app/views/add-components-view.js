@@ -56,6 +56,45 @@
 
         // update meters
         section.meter.update();
+
+        // create editor tooltip
+        resValues = [];
+        baseValues = sparks.circuit.r_values.r_values4band10pct;
+
+        for (i = 0; i < 6; i++) {
+          for (j = 0; j < baseValues.length; j++) {
+            resValues.push(baseValues[j] * Math.pow(10, i));
+          }
+        }
+
+        componentValueChanged = function (evt, ui) {
+          var val = resValues[ui.value],
+              eng = sparks.unit.toEngineering(val, "\u2126"),
+              comp = getBreadBoard().components[uid];
+          $("#res_value").text(eng.value + eng.units);
+          comp.setResistance(val);
+          sparks.breadboardView.changeResistorColors(uid, comp.getViewArguments().color);
+          section.meter.update();
+        }
+
+        $editor = $("<div class='editor'>").append(
+          $("<h3>").text("Edit Resistor")
+        ).append(
+          $("<div>").slider({
+            max: resValues.length-1,
+            slide: componentValueChanged,
+            value: baseValues.length
+          })
+        ).append(
+          $("<div>").html("Resistance: <span id='res_value'>100\u2126</span>")
+        ).append(
+          $("<button>").text("Remove").on('click', function() {
+            sparks.breadboardView.removeComponent(uid);
+            $(".speech-bubble").trigger('mouseleave');
+          })
+        ).css( { width: 120, textAlign: "right" } );
+
+        sparks.breadboardView.showTooltip(uid, $editor);
       }
     })
   };

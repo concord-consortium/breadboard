@@ -102,8 +102,14 @@
             this.realValue = value;
         },
 
+        setResistance: function (value) {
+          this.resistance = value;
+          this.updateColors();
+        },
+
         updateColors: function (resistance, tolerance) {
-            this.colors = this.getColors(resistance, tolerance);
+            this.colors = this.getColors4Band( this.resistance, (!!this.tolerance ? this.tolerance : 0.05));
+            this.setViewArguments({color: this.colors});
         },
 
         show : function() {
