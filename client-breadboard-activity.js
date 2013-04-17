@@ -10743,48 +10743,8 @@ window["breadboardView"] = {
         // update meters
         section.meter.update();
 
-        // create editor tooltip
-        possibleValues = comp.getEditablePropertyValues();
-
-        componentValueChanged = function (evt, ui) {
-          var val = possibleValues[ui.value],
-              eng = sparks.unit.toEngineering(val, comp.editableProperty.units);
-          $("#prop_value").text(eng.value + eng.units);
-          comp.changeEditableValue(val);
-          section.meter.update();
-        }
-
-        if (comp.isEditable) {
-          propertyName = comp.editableProperty.name.charAt(0).toUpperCase() + comp.editableProperty.name.slice(1);
-          initialValue = comp[comp.editableProperty.name];
-          initialValueEng = sparks.unit.toEngineering(initialValue, comp.editableProperty.units);
-          initialValueText = initialValueEng.value + initialValueEng.units;
-          $propertyEditor = $("<div>").append(
-            $("<div>").slider({
-              max: possibleValues.length-1,
-              slide: componentValueChanged,
-              value: possibleValues.indexOf(embeddableComponent.initialValue)
-            })
-          ).append(
-            $("<div>").html(
-              propertyName + ": <span id='prop_value'>"+initialValueText+"</span>"
-              )
-          );
-        }
-
-        $editor = $("<div class='editor'>").append(
-          $("<h3>").text("Edit "+comp.componentTypeName)
-        ).append(
-          $propertyEditor
-        ).append(
-          $("<button>").text("Remove").on('click', function() {
-            breadModel("removeComponent", comp);
-            section.meter.update();
-            $(".speech-bubble").trigger('mouseleave');
-          })
-        ).css( { width: 130, textAlign: "right" } );
-
-        sparks.breadboardView.showTooltip(uid, $editor);
+        // show editor
+        self.showEditor(uid);
       }
     })
   };
@@ -10795,6 +10755,53 @@ window["breadboardView"] = {
       $("#component_drawer").animate({left: 0}, 300, function(){
         $("#add_components").css("overflow", "visible");
       });
+    },
+
+    showEditor: function(uid) {
+      var comp = getBreadBoard().components[uid],
+          section = sparks.activityController.currentSection;
+      // create editor tooltip
+      possibleValues = comp.getEditablePropertyValues();
+
+      componentValueChanged = function (evt, ui) {
+        var val = possibleValues[ui.value],
+            eng = sparks.unit.toEngineering(val, comp.editableProperty.units);
+        $("#prop_value_"+uid).text(eng.value + eng.units);
+        comp.changeEditableValue(val);
+        section.meter.update();
+      }
+
+      if (comp.isEditable) {
+        propertyName = comp.editableProperty.name.charAt(0).toUpperCase() + comp.editableProperty.name.slice(1);
+        initialValue = comp[comp.editableProperty.name];
+        initialValueEng = sparks.unit.toEngineering(initialValue, comp.editableProperty.units);
+        initialValueText = initialValueEng.value + initialValueEng.units;
+        $propertyEditor = $("<div>").append(
+          $("<div>").slider({
+            max: possibleValues.length-1,
+            slide: componentValueChanged,
+            value: possibleValues.indexOf(initialValue)
+          })
+        ).append(
+          $("<div>").html(
+            propertyName + ": <span id='prop_value_"+uid+"'>"+initialValueText+"</span>"
+            )
+        );
+      }
+
+      $editor = $("<div class='editor'>").append(
+        $("<h3>").text("Edit "+comp.componentTypeName)
+      ).append(
+        $propertyEditor
+      ).append(
+        $("<button>").text("Remove").on('click', function() {
+          breadModel("removeComponent", comp);
+          section.meter.update();
+          $(".speech-bubble").trigger('mouseleave');
+        })
+      ).css( { width: 130, textAlign: "right" } );
+
+      sparks.breadboardView.showTooltip(uid, $editor);
     }
 
   };
