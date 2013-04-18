@@ -16011,6 +16011,7 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
 
     // share dialog
     $("#share-prompt").on("click", function() {
+      $("#about").hide();
       $("#share-link").text("http://sparks.portal.concord.org/activities.html"+window.location.hash);
       var iframeText = $("#share-iframe-content").html();
       var hash = /html([^"]*)"/.exec(iframeText)[1];

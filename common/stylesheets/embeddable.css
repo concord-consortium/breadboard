@@ -54,3 +54,12 @@ body {
 #close-about:hover {
   color: #666;
 }
+
+#share-panel {
+  left: 100px;
+  top: 100px;
+}
+
+#share-prompt {
+  position: inherit;
+}
