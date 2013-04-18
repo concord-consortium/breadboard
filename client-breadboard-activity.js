@@ -8604,12 +8604,9 @@ window["breadboardView"] = {
       //this.component[elem["UID"]].view[0].oncontextmenu = function() {return false;};
 
       this.component[elem["UID"]].view.bind("contextmenu", function(evt) {
-        if (evt.button === 2) {
-          rightClickFunction($(this).attr("uid"));
-          evt.preventDefault();
-          return false;
-        }
-        return true;
+        rightClickFunction($(this).attr("uid"));
+        evt.preventDefault();
+        return false;
       });
     }
   };
