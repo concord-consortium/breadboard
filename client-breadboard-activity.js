@@ -10708,7 +10708,8 @@ window["breadboardView"] = {
     },
     wire: {
       image: "common/images/wire.png",
-      imageWidth: 80
+      imageWidth: 80,
+      leadDistance: 5
     }
   }
 
@@ -10770,6 +10771,16 @@ window["breadboardView"] = {
             propertyName,
             initialValue, initialValueEng, initialValueText,
             $editor, props, uid, comp;
+
+        if (embeddableComponent.leadDistance) {
+          console.log(hole)
+          var num = /\d*$/.exec(hole)[0] * 1;
+          console.log(num)
+          num = Math.max(num-embeddableComponent.leadDistance, 1);
+          console.log(num)
+          loc = loc.replace(/(\d*)$/, num);
+          console.log(loc)
+        }
 
         // insert component into highlighted hole
         props = {
