@@ -534,3 +534,45 @@ border-bottom-style:solid;
   color: #EE864E;
 }
 
+#share-prompt {
+  position: absolute;
+  left: 713px;
+  top: 82px;
+  cursor: pointer;
+}
+
+#share-panel {
+  position: absolute;
+  left: 25%;
+  top: 120px;
+  width: 560px;
+  padding: 25px;
+  background-color: white;
+  border-radius: 10px;
+  border: rgb(75, 207, 248) solid 5px;
+  font-size: 1.2em;
+  z-index: 1003;
+}
+
+#share-panel textarea {
+  width: 470px;
+  padding: 8px;
+}
+
+#share-panel h2 {
+  font-size: 1.3em;
+}
+
+#close-share {
+  position: absolute;
+  left: 587px;
+  top: 0px;
+  width: 19px;
+  height: 19px;
+  border: 2px solid;
+  border-radius: 5px;
+  text-align: center;
+  color: #aaa;
+  font-weight: bold;
+  cursor: pointer;
+}

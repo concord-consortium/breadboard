@@ -190,6 +190,19 @@
     $("#close-about").on("click", function() {
       $("#about").hide();
     });
+
+    // share dialog
+    $("#share-prompt").on("click", function() {
+      $("#share-link").text("http://sparks.portal.concord.org/activities.html"+window.location.hash);
+      var iframeText = $("#share-iframe-content").html();
+      var hash = /html([^"]*)"/.exec(iframeText)[1];
+      $("#share-iframe-content").html(iframeText.replace(hash, window.location.hash));
+      $("#share-panel").toggle();
+    })
+
+    $("#close-share").on("click", function() {
+      $("#share-panel").hide();
+    });
   }
 
   this.loadSounds = function () {
