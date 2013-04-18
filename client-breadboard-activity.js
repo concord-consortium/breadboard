@@ -8601,9 +8601,7 @@ window["breadboardView"] = {
     if (this.rightClickFunction) {
       var rightClickFunction = this.rightClickFunction;
 
-      //this.component[elem["UID"]].view[0].oncontextmenu = function() {return false;};
-
-      this.component[elem["UID"]].view.bind("contextmenu", function(evt) {
+      this.component[elem["UID"]].view.bind("contextmenu dblclick", function(evt) {
         rightClickFunction($(this).attr("uid"));
         evt.preventDefault();
         return false;
