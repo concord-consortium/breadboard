@@ -22,6 +22,10 @@
       imageWidth: 80,
       property: "inductance",
       initialValue: 1e-6
+    },
+    wire: {
+      image: "common/images/wire.png",
+      imageWidth: 80
     }
   }
 
@@ -117,7 +121,8 @@
 
     showEditor: function(uid) {
       var comp = getBreadBoard().components[uid],
-          section = sparks.activityController.currentSection;
+          section = sparks.activityController.currentSection,
+          $propertyEditor = null;
       // create editor tooltip
       possibleValues = comp.getEditablePropertyValues();
 

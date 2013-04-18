@@ -435,6 +435,7 @@ border-bottom-style:solid;
 
 .add_component {
   position: relative;
+  cursor: pointer;
 }
 
 #add_resistor {
@@ -443,13 +444,18 @@ border-bottom-style:solid;
 }
 
 #add_capacitor {
-  top: 15px;
-  left: 39px;
+  top: 16px;
+  left: 43px;
 }
 
 #add_inductor {
-  top: 53px;
-  left: -23px;
+  top: 55px;
+  left: -19px;
+}
+
+#add_wire {
+  top: 64px;
+  left: 29px;
 }
 
 .speech-bubble {
