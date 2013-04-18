@@ -15900,6 +15900,7 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
       this.loadActivity();
     }
     this.setupQuitButton();
+    this.setupAboutDialog();
   };
 
   this.loadActivity = function () {
@@ -15998,6 +15999,16 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
       }
     });
   };
+
+  this.setupAboutDialog = function() {
+    $("#credits").on("click", function() {
+      $("#about").toggle();
+    });
+
+    $("#close-about").on("click", function() {
+      $("#about").hide();
+    });
+  }
 
   this.loadSounds = function () {
     var soundName, audio;
