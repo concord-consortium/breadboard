@@ -15904,20 +15904,23 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
   };
 
   this.loadActivity = function () {
-    var learner_id = sparks.util.readCookie('learner_id');
+    // We won't be having logged-in users for the foreseeable future. Remove this
+    // code for now, commented-out for easy uncommenting some time in the future.
+     var learner_id = null;
+    // var learner_id = sparks.util.readCookie('learner_id');
 
-    if (learner_id) {
-       console.log("setting user "+learner_id);
-       var user = {"learner_id": learner_id, "name": sparks.util.readCookie('student_name'),
-         "student_id": sparks.util.readCookie('student_id'), "class_id": sparks.util.readCookie('class_id')};
-       sparks.couchDS.setUser(user);
+    // if (learner_id) {
+    //    console.log("setting user "+learner_id);
+    //    var user = {"learner_id": learner_id, "name": sparks.util.readCookie('student_name'),
+    //      "student_id": sparks.util.readCookie('student_id'), "class_id": sparks.util.readCookie('class_id')};
+    //    sparks.couchDS.setUser(user);
 
-       // if there's a logged-in user, we want to stop them before they leave
-       var askConfirm = function(){
-         return "Are you sure you want to leave this page?";
-       };
-       window.onbeforeunload = askConfirm;
-    }
+    //    // if there's a logged-in user, we want to stop them before they leave
+    //    var askConfirm = function(){
+    //      return "Are you sure you want to leave this page?";
+    //    };
+    //    window.onbeforeunload = askConfirm;
+    // }
 
     sparks.GAHelper.setUserLoggedIn(!!learner_id);
 
