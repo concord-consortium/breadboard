@@ -14841,7 +14841,6 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
     //    };
     //    window.onbeforeunload = askConfirm;
     // }
-
     sparks.GAHelper.setUserLoggedIn(!!learner_id);
 
     var activityName = window.location.hash;
@@ -14854,17 +14853,26 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
     this.loadSounds();
 
     var startActivity = function(activity) {
-      console.log("done")
-      console.log(activity)
       new sparks.ActivityConstructor(activity);
     };
+
+    if (activityName === "postMessage") {
+      // setup postMessage listener, then return early to avoid sending a get request
+      function receiveMessage(event) {
+        if (event.data) {
+          var activity = JSON.parse(event.data);
+          startActivity(activity);
+        }
+      }
+      window.addEventListener("message", receiveMessage, false);
+      return;
+    }
 
     if (activityName.indexOf("local/") === 0) {
       activityName = activityName.replace("local", "activities") + ".json";
     } else {
       activityName = sparks.activity_base_url + activityName + ".json";
     }
-    console.log("activityName = "+activityName);
     $.get(activityName, startActivity);
   };
 
