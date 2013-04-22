@@ -9,10 +9,12 @@ The SPARKS project contains all the built code needed to run the project locally
 
 In order to load the example activities in the /activities folder, the local server needs to simply serve the SPARKS directory.
 
+To serve the main set of authored activities, the path /sparks-activities/ needs to proxy to the contents of the sparks-activities repository (https://github.com/concord-consortium/sparks-activities). This can be done by pointing to a local checkout, or to the gh-pages branch hosted at http://concord-consortium.github.io/sparks-activities/.
+
 We've supplied a simple Ruby rack server configuration for running locally.
 
-The Rack server also proxies database requests for the full activity set available on the couchdb server running
-here: http://couchdb.cosmos.concord.org/sparks/
+The Rack server also proxies database requests for the full activity set available on github
+here: http://concord-consortium.github.io/sparks-activities/
 
 The following will start up a local server using rack running on port 9292 (after installing the development dependencies listed below):
 
@@ -20,9 +22,7 @@ The following will start up a local server using rack running on port 9292 (afte
 
 You can then open the index page here: http://localhost:9292/index.html
 
-Here are some additional instructions for configuring Apache to acomplish the same goals:
-
-If you can run Apache on your system, the easiest way to set up the local server is to modify the file proxy/apache.conf.sample with your information (modify the paths at the bottom of the file to point to the location of your local sparks directory), and then save the file as apache.conf (i.e. remove the .sample from the file name). You can then start a local Apache server by running
+Alternatively, if you can run Apache on your system, you can set up the local server by modifying the file proxy/apache.conf.sample with your information (modify the paths at the bottom of the file to point to the location of your local sparks directory), and then save the file as apache.conf (i.e. remove the .sample from the file name). You can then start a local Apache server by running
 
  apachectl -f "`pwd`/proxy/apache.conf" -k start
 
@@ -31,7 +31,7 @@ Now you will be able to navigate to the html files in the project by pointing yo
  http://localhost:1234
  http://localhost:1234/activities.html
  http://localhost:1234/activities.html#local/rlc-draggable   // local, does not require internet connection
- http://localhost:1234/activities.html#series-interpretive   // requires Couch proxy
+ http://localhost:1234/activities.html#series-interpretive   // requires proxy
 
 == Building SPARKS and setting up local environment
 

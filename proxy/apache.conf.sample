@@ -13,12 +13,8 @@ LoadModule proxy_module libexec/apache2/mod_proxy.so
 LoadModule proxy_connect_module libexec/apache2/mod_proxy_connect.so
 LoadModule proxy_http_module libexec/apache2/mod_proxy_http.so
 
-# replace this with the location of couchDB, if desired
-ProxyPass       /couchdb/learnerdata/ http://couchdb.cosmos.concord.org/sparks_data/ nocanon
-ProxyPassReverse /couchdb/learnerdata/ http://couchdb.cosmos.concord.org/sparks_data/
-
-ProxyPass        /couchdb/activities/ http://couchdb.cosmos.concord.org/sparks/ nocanon
-ProxyPassReverse /couchdb/activities/ http://couchdb.cosmos.concord.org/sparks/
+ProxyPass /sparks-activities/ http://concord-consortium.github.io/sparks-activities/ nocanon
+ProxyPassReverse /sparks-activities/ http://concord-consortium.github.io/sparks-activities/
 
 # replace these paths with the location of your sparks environment
 DocumentRoot /Users/scytacki/Development/sparks

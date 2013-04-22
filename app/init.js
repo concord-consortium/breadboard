@@ -4,7 +4,6 @@
 //= require circuitSolver.min
 //= require jquery/plugins/jquery.url.packed
 //= require jquery/plugins/jquery.cookie
-//= require jquery/plugins/jquery.couch
 //= require jquery/plugins/jquery.easyTooltip
 //= require jquery/plugins/jquery.tablesorter.min
 //= require jquery/plugins/jquery.event.drag-2.0.min
@@ -64,7 +63,7 @@
 
 (function () {
 
-  sparks.activity_base_url = "http://couchdb.cosmos.concord.org/sparks/_design/app/_show/activity/";
+  sparks.activity_base_url = "/sparks-activities/";
   sparks.activity_images_base_url = "http://couchdb.cosmos.concord.org/sparks/";
   sparks.tutorial_base_url = "tutorials/";
   sparks.soundFiles = {click: "common/sounds/click.ogg"};
@@ -120,10 +119,11 @@
     };
 
     if (activityName.indexOf("local/") === 0) {
-      $.get(activityName.replace("local", "activities")+".json", startActivity);
+      activityName = activityName.replace("local", "activities") + ".json";
     } else {
-      sparks.couchDS.loadActivity(activityName, startActivity);
+      activityName = sparks.activity_base_url + activityName + ".json";
     }
+    $.get(activityName, startActivity);
   };
 
   this.loadClassReport = function () {
