@@ -10466,7 +10466,8 @@ window["breadboardView"] = {
             callback();
           }
         } else {
-          sparks.couchDS.loadActivity(jsonSection, function(jsonSection) {
+          sectionName = sparks.activity_base_url + jsonSection + ".json";
+          $.get(sectionName, function(jsonSection) {
             self.addSection(jsonSection, i);
             totalCreated++;
             if (totalCreated == activity.sections.length){
