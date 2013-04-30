@@ -12420,7 +12420,8 @@ window["breadboardView"] = {
 
           // update view
           if (sparks.breadboardView) {
-            sparks.breadboardView.addComponent(newComponent.getViewArguments());
+            if (newComponent.getViewArguments && newComponent.hasValidConnections() && newComponent.kind !== "battery")
+              sparks.breadboardView.addComponent(newComponent.getViewArguments());
           }
 
           return newComponent.UID;
