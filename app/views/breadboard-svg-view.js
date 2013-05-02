@@ -511,10 +511,11 @@ window["breadboardView"] = {
         compWidth  = rect.width,
         compHeight = rect.height,
         tipWidth   = $tipPane.width(),
-        yOffset    = 50,
+		yOffset = 0,
         tipHeight,
         $tooltip;
-
+		yOffset    = 50;
+		
     if (compWidth > 300) {    // weird bug
       compWidth = 120;
     }
@@ -523,19 +524,34 @@ window["breadboardView"] = {
     $tooltip = $("<div>").append(
       $("<div class='speech-bubble'>").append($tipPane)
     );
-
+if(typeof InstallTrigger !== 'undefined'){
+	yOffset=180;
     $tooltip.css({
       position: "absolute",
-      left:     pos.left - (tipWidth/2) + (compWidth*0.4),
+      left:     pos.left - (2.5*tipWidth)+ (compWidth*0.4) ,
       zIndex:   1000
     });
-
+}
+else {
+ $tooltip.css({
+      position: "absolute",
+	  left:     pos.left - (tipWidth/2)+ (compWidth*0.4) ,
+	   zIndex:   1000
+    });
+}
 
     this.holder.append($tooltip);
 
     tipHeight = $tipPane.height();
 
-    $tooltip.css({
+    $tooltip.css(
+	//var y2Offset = 100;
+	
+	//if(isFirefox){
+	//top:      pos.top - tipHeight + yOffset,
+	//height:   tipHeight + compHeight - yOffset }
+//else
+	{
       top:      pos.top - tipHeight - yOffset,
       height:   tipHeight + compHeight + yOffset
     });
