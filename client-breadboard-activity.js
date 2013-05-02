@@ -7803,7 +7803,8 @@ window["breadboardView"] = {
         compWidth  = rect.width,
         compHeight = rect.height,
         tipWidth   = $tipPane.width(),
-        yOffset    = 50,
+        yOffset,
+        left,
         tipHeight,
         $tooltip;
 
@@ -7816,20 +7817,25 @@ window["breadboardView"] = {
       $("<div class='speech-bubble'>").append($tipPane)
     );
 
-    $tooltip.css({
-      position: "absolute",
-      left:     pos.left - (tipWidth/2) + (compWidth*0.4),
-      zIndex:   1000
-    });
-
+    // FIXME: We need a better cross-browser solution for this
+    if(typeof InstallTrigger !== 'undefined'){    // Firefox
+      yOffset = 180;
+      left = pos.left - (2.5*tipWidth)+ (compWidth*0.4);
+    } else {
+      yOffset = 50;
+      left = pos.left - (tipWidth/2)+ (compWidth*0.4);
+    }
 
     this.holder.append($tooltip);
 
     tipHeight = $tipPane.height();
 
     $tooltip.css({
+      position: "absolute",
+      left:     left,
       top:      pos.top - tipHeight - yOffset,
-      height:   tipHeight + compHeight + yOffset
+      height:   tipHeight + compHeight + yOffset,
+      zIndex:   1000
     });
 
     // delete on mouseout
