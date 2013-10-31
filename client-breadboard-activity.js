@@ -14811,7 +14811,7 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
 (function () {
 
   sparks.activity_base_url = "/sparks-activities/";
-  sparks.activity_images_base_url = "http://couchdb.cosmos.concord.org/sparks/";
+  sparks.activity_images_base_url = "/sparks-activities/images/";
   sparks.tutorial_base_url = "tutorials/";
   sparks.soundFiles = {click: "common/sounds/click.ogg"};
 
