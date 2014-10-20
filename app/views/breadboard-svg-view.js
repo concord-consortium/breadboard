@@ -165,7 +165,7 @@ window["breadboardView"] = {
   var CircuitBoard = function(id) {
     var self = this;
     // link to main holder
-    this.holder = $('#' + id).html('').append(
+    this.holder = $('.' + id).html('').append(
       SVGStorage.create('board')
     ).addClass('circuit-board');
     this.holder.h = this.holder.height();

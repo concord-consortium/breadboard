@@ -317,7 +317,7 @@ border-bottom-style:solid;
   position: relative;
 }
 
-#oscope_mini {
+.oscope_mini {
   background: url("../images/oscope_mini.png") no-repeat top left;
   position: absolute;
   top: 4px;
@@ -325,7 +325,7 @@ border-bottom-style:solid;
   z-index: 1;
 }
 
-#oscope_mini_overlay {
+.oscope_mini_overlay {
   background: url("../images/oscope_mini_overlay.png") no-repeat top left;
   position: absolute;
   top: -4px;
@@ -335,7 +335,7 @@ border-bottom-style:solid;
   z-index: 2;
 }
 
-#oscope_mini_overlay:hover {
+.oscope_mini_overlay:hover {
   background: url("../images/oscope_mini_overlay.png") 0 -150px no-repeat;
 }
 
@@ -356,7 +356,7 @@ border-bottom-style:solid;
   -moz-box-shadow: 0 0 10px #4F4;
 }
 
-#fg_mini {
+.fg_mini {
   background: url("../images/fg_mini.png") no-repeat top left;
   position: absolute;
   top: -6px;
@@ -366,7 +366,7 @@ border-bottom-style:solid;
   z-index: 1;
 }
 
-#fg_mini_overlay {
+.fg_mini_overlay {
   background: url("../images/fg_mini_overlay.png") no-repeat top left;
   position: absolute;
   top: 11px;
@@ -376,11 +376,11 @@ border-bottom-style:solid;
   z-index: 2;
 }
 
-#fg_mini_overlay:hover {
+.fg_mini_overlay:hover {
   background: url("../images/fg_mini_overlay.png") 0 -150px no-repeat;
 }
 
-#fg_value {
+.fg_value {
   position: absolute;
   top: 52px;
   left: 28px;
@@ -394,14 +394,14 @@ border-bottom-style:solid;
   background: url("../images/fg_large.png") no-repeat -5px 1px;
 }
 
-.fg_popup #freq_value {
+.fg_popup .freq_value {
   color: #30d4f4;
   font-family: 'Anonymous Pro', sans-serif;
   font-size: 22px;
   font-weight:bold;
 }
 
-#add_components {
+.add_components {
   position: absolute;
   left: 655px;
   top: 233px;
@@ -411,7 +411,7 @@ border-bottom-style:solid;
   overflow: hidden;
 }
 
-#add_components_btn {
+.add_components_btn {
   position: absolute;
   top: 193px;
   left: 7px;
@@ -419,7 +419,7 @@ border-bottom-style:solid;
   padding: 8px;
 }
 
-#component_drawer {
+.component_drawer {
   position: absolute;
   top: 0px;
   left: 150px;
@@ -438,22 +438,22 @@ border-bottom-style:solid;
   cursor: pointer;
 }
 
-#add_resistor {
+.add_resistor {
   top: 12px;
   left: 12px;
 }
 
-#add_capacitor {
+.add_capacitor {
   top: 16px;
   left: 43px;
 }
 
-#add_inductor {
+.add_inductor {
   top: 55px;
   left: -19px;
 }
 
-#add_wire {
+.add_wire {
   top: 64px;
   left: 29px;
 }

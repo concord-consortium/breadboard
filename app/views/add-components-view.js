@@ -52,7 +52,7 @@
       component = embeddableComponents[componentName];
 
       this.$drawer.append(
-       $("<img id='add_"+componentName+"' class='add_component'>")
+       $("<img class='add_"+componentName+"' class='add_component'>")
         .attr("src", component.image)
         .css("width", component.imageWidth)
         .data("type", componentName)
@@ -158,7 +158,7 @@
           })
         ).append(
           $("<div>").html(
-            propertyName + ": <span id='prop_value_"+uid+"'>"+initialValueText+"</span>"
+            propertyName + ": <span class='prop_value_"+uid+"'>"+initialValueText+"</span>"
             )
         );
       }

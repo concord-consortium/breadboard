@@ -23,13 +23,13 @@
       this.$view = $('<div>');
 
       $("#fg_value").remove();
-      $freq_value = $("<span id='fg_value'></span").appendTo(this.$view);
+      $freq_value = $("<span class='fg_value'></span").appendTo(this.$view);
       this.freqValueViews.push($freq_value);
 
       this.frequencies = this.model.getPossibleFrequencies();
       this.setFrequency(this.model.frequency);
 
-      $overlayDiv = $('<div id="fg_mini_overlay"></div>').appendTo(this.$view);
+      $overlayDiv = $('<div class="fg_mini_overlay"></div>').appendTo(this.$view);
       var self = this;
       $overlayDiv.click(function(){
         self.openPopup();
@@ -91,7 +91,7 @@
         height: this.height
       }).appendTo(this.$view);
 
-      $freq_value = $('<p id="freq_value">'+this.currentFreqString+'</p>').css({
+      $freq_value = $('<p class="freq_value">'+this.currentFreqString+'</p>').css({
         position:  'absolute',
         top:       15,
         left:      15,
@@ -101,7 +101,7 @@
 
       this.freqValueViews.push($freq_value);
 
-      this.$controls = $('<div id="controls">').css({
+      this.$controls = $('<div class="controls">').css({
         position: 'absolute',
         top:      28,
         left:     0,
@@ -178,7 +178,7 @@
     },
 
     _addSliderControl: function ($el, steps, value, callback) {
-      $slider = $("<div id='fg_slider'>").css({
+      $slider = $("<div class='fg_slider'>").css({
         position: 'absolute',
         top:   25,
         left:  10,
