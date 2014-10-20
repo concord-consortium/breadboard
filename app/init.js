@@ -16,15 +16,12 @@
 //= require models/page
 //= require models/question
 //= require models/log
-//= require models/report
 //= require views/activity-view
 //= require views/section-view
 //= require views/page-view
 //= require views/question-view
-//= require views/report-view
 //= require views/oscilloscope-view
 //= require views/function-generator-view
-//= require views/class-report-view
 //= require views/breadboard-svg-view
 //= require views/add-components-view
 //= require views/svg_view_comm
@@ -33,8 +30,6 @@
 //= require controllers/log-controller
 //= require controllers/section-controller
 //= require controllers/activity-controller
-//= require controllers/report-controller
-//= require controllers/class-report-controller
 //= require controllers/tutorial-controller
 //= require activity-constructor
 //= require helpers/math-parser
