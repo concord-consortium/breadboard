@@ -2108,108 +2108,29 @@ sparks.createQuestionsCSV = function(data) {
 })();
 /*global sparks $ */
 
-/**
- * report:
- * {
- *   pageReports: {
- *         pageX:
- *           {
- *             sessionReports: [
- *                       {
- *                         questions: [],
- *                         log: {},
- *                         score: x,
- *                         maxScore: y
- *                       },
- *              highestScore: x,  ?
- *              maxScore: y       ?
- */
 
 (function() {
-  sparks.Report = function(){
-    this.reportVersion = 1.0;
-    this.sectionReports = {};
-    this.score = 0;
-    this.view = null;
-    this.activity = null;
+  sparks.Workbench = function(props){
+    this.circuit = null;
+    this.meter = new sparks.Meter();
+
+    this.show_multimeter          = false;
+    this.show_oscilloscope        = false;
+    this.allow_move_yellow_probe  = false;
+    this.hide_pink_probe          = false;
+    this.showComponentDrawer      = false;
+
+    this.view = new sparks.WorkbenchView(this);
   };
 
-  sparks.SectionReport = function(){
-    this.pageReports = {};
-    this.view = null;
-    this.sectionId = null;
-    this.sectionTitle = null;
-  };
-
-  sparks.PageReport = function(){
-    this.sessionReports = [];
-  };
-
-  sparks.SessionReport = function(){
-    this.questions = [];
-    this.log = null;
-    this.timeTaken = -1;
-    this.timeScore = -1;
-    this.maxTimeScore = -1;
-    this.bestTime = -1;
-    this.score = -1;
-    this.maxScore = -1;
-  };
-
-  sparks.Report.prototype = {
+  sparks.Workbench.prototype = {
 
     toJSON: function () {
       var json = {};
-      json.activity = sparks.activity.id;
-      json.sectionReports = [];
-      $.each(this.sectionReports, function(i, sectionReport){
-        json.sectionReports.push(sectionReport.toJSON());
-      });
-      json.score = this.score;
-      json.reportVersion = this.reportVersion;
       return json;
     }
 
   };
-
-  sparks.SectionReport.prototype = {
-
-    toJSON: function () {
-      var json = {};
-      json.sectionId = this.sectionId;
-      json.sectionTitle = this.sectionTitle;
-      json.pageReports = [];
-      $.each(this.pageReports, function(i, pageReport){
-        json.pageReports.push(pageReport.toJSON());
-      });
-      return json;
-    }
-
-  };
-
-  sparks.PageReport.prototype = {
-
-    toJSON: function () {
-      var json = {};
-      json.sessionReports = [];
-      $.each(this.sessionReports, function(i, sessionReport){
-        json.sessionReports.push(sessionReport);
-      });
-      return json;
-    }
-
-  };
-  //
-  // sparks.SessionReport.prototype = {
-  //
-  //   toJSON: function () {
-  //     var json = {};
-  //     json.questions = this.questions;
-  //
-  //     return json;
-  //   }
-  //
-  // };
 
 })();
 /*global sparks $ breadboardView breadModel getBreadBoard*/
@@ -2839,311 +2760,6 @@ sparks.createQuestionsCSV = function(data) {
   };
 
 })();
-/*globals console sparks $ breadModel getBreadBoard */
-
-
-(function() {
-  
-  sparks.ReportView = function(){
-  };
-  
-  sparks.ReportView.prototype = {
-    
-    getSessionReportView: function(sessionReport){
-      var $div = $('<div>');
-      $div.append(this._createReportTableForSession(sessionReport));
-      
-      var page = sparks.sectionController.currentPage;
-      var totalScore = sparks.reportController.getTotalScoreForPage(page);
-      if (totalScore > -1){
-        $div.append($('<h2>').html("Your total score for this page so far: "+totalScore));
-      }
-      return $div;
-    },
-    
-    getActivityReportView: function() {
-      var $div = $('<div>');
-      $div.append('<h1>Activity results</h1>');
-      
-      var totalScore = 0;
-      var self = this;
-      var currentSection = sparks.activityController.currentSection;
-      
-      var $table = $("<table>").addClass('finalReport');
-      
-      $table.append(
-        $('<tr>').append(
-          $('<th>'),
-          $('<th>').text("Level"),
-          $('<th>').text("Points"),
-          $('<th>')
-        )
-      );
-      
-      var passedCurrentSection = false;
-      var isNextSection = false;
-      var nextSectionDidPass = false;
-      
-      $.each(sparks.activity.sections, function(i, section){
-        var isThisSection = (section === currentSection);
-        if (!nextSectionDidPass && !section.visited){
-          isNextSection = true;
-          nextSectionDidPass = true;
-        } else {
-          isNextSection = false;
-        }
-        
-        if (section.visited) {
-          var totalSectionScore = sparks.reportController.getTotalScoreForSection(section);
-          var lastThreeSectionScore = sparks.reportController.getLastThreeScoreForSection(section);
-          var timesRun = lastThreeSectionScore[1];
-          lastThreeSectionScore = lastThreeSectionScore[0];
-          totalScore += totalSectionScore;
-          
-          var light;
-          if (lastThreeSectionScore < 0.30){
-            light = "common/icons/light-red.png";
-          } else if (lastThreeSectionScore < 0.90) {  
-            light = "common/icons/light-off.png";
-          } else {  
-            light = "common/icons/light-on.png";
-          }
-          var $img = $('<img>').attr('src', light).attr('width', 35);
-          $img.easyTooltip({
-             content: "You scored "+sparks.math.roundToSigDigits(lastThreeSectionScore*100,3)+"% of the possible points from the last "+timesRun+" times you ran this level"
-          });
-        }
-        var $btn = null;
-        if (section.visited){
-          $btn = $('<button>').addClass("repeat").text("Try this level again");
-          $btn.click(function(){
-            sparks.sectionController.repeatSection(section);
-          });
-        } else if (isNextSection){
-          $btn = $('<button>').addClass("next").text("Go to the next level");
-          $btn.click(function(){
-            sparks.activityController.nextSection();
-          });
-        }
-        
-        $table.append(
-          $('<tr>').append(
-            $('<td>').addClass(section.visited ? "" : "no_check").css('padding-left', '0px').append($img),
-            $('<td>').text(section.title),
-            $('<td>').text(section.visited ? totalSectionScore : ''),
-            $('<td>').append($btn)
-          )
-        );
-      });
-      
-      $div.append($table);
-      
-      var $score = $("<span>").css("font-size", "11pt").html("<u>You have scored <b>"+totalScore+"</b> points so far.</u>");
-      $div.find('h1').after($score);
-      
-      $div.append(this._createReportTableForCategories());
-      
-      return $div;
-    },
-    
-    // *** It looks like this is not used anymore
-    getFinalActivityReportView: function(report) {
-      var $div = $('<div>');
-      $div.append('<h1>Activity results</h1>');
-      
-      var totalScore = 0;
-      var self = this;
-      
-      $.each(report.sectionReports, function(i, sectionReport){
-        
-        $div.append('<h2>Section '+(i+1)+': '+sectionReport.sectionTitle+'</h2>');
-        var pageReports = sectionReport.pageReports;
-        
-        var $table = $("<table>");
-        $.each(pageReports, function(i, pageReport){
-          // $div.append('<h3>Page '+(i+1)+"</h3>");
-          // var bestSessionReport = sparks.reportController.getBestSessionReport(page);
-          // $div.append(self._createReportTableForSession(bestSessionReport));
-          var score = sparks.reportController.getTotalScoreForPageReport(pageReport);
-          
-          var $tr = $("<tr>");
-          $tr.append("<td>Page "+(i+1)+": "+ score   +" points</td>");
-          $table.append($tr);
-          
-          totalScore += score;
-          
-        });
-        $div.append($table);
-      });
-      
-      var $score = $("<span>").css("font-size", "11pt").html("<u>"+report.user.name.replace("+", " ").trim()+" has scored <b>"+totalScore+"</b> points so far.</u>");
-      $div.find('h1').after($score);
-      return $div;
-    },
-    
-    _createReportTableForCategories: function() {
-      
-      var categories = sparks.reportController.getCategories(sparks.report);
-      
-      var $table = $("<table>").addClass('categoryReport');
-      $table.append(
-        $('<tr>').append(
-          $('<th>'),
-          $('<th>').text("Question Categories")
-        )
-      );
-      
-      $.each(categories, function(category, score){
-        var $btn = $('<button>').addClass("tutorial").text("View tutorial");
-        $btn.click(function(){
-          sparks.tutorialController.showTutorial(score[3]);
-        });
-        
-        var light;
-        switch (score[2]) {
-          case 0:
-            light = "common/icons/light-red.png";
-            break;
-          case 1:
-          case 2:
-           light = "common/icons/light-off.png";
-           break;
-          case 3:
-           light = "common/icons/light-on.png";
-        }
-        var $img = $('<img>').attr('src', light).attr('width', 35);
-        $img.easyTooltip({
-           content: "You got "+score[2]+" out of the last "+(Math.min(score[1],3))+" questions of this type correct"
-        });
-        
-        $table.append(
-          $('<tr>').append(
-            $('<td>').append($img),
-            $('<td>').html(category),
-            $('<td>').append($btn)
-          )
-        );
-      });
-      return $table;
-    },
-    
-    _createReportTableForSession: function(sessionReport) {
-      
-      var $report = $('<table>').addClass('reportTable');
-      $report.addClass((sessionReport.score == sessionReport.maxScore) ? "allCorrect" : "notAllCorrect");
-      
-      $report.append(
-        $('<tr>').append(
-          $('<th>').text("Item"),
-          $('<th>').text("Your answer"),
-          $('<th>').text("Correct answer"),
-          $('<th>').text("Score"),
-          $('<th>').text("Notes"),
-          $('<th>').text("Tutorials")
-        )
-      );
-        
-      $.each(sessionReport.questions, function(i, question){
-        if (!!question.not_scored) {
-          $report.append(
-            $('<tr>').append(
-              $('<td>').html(question.shortPrompt),
-              $('<td>').html(question.answer)
-            )
-          );
-          $report.find('th').filter(':contains("Correct answer")').hide();
-          $report.find('th').filter(':contains("Score")').hide();
-          $report.find('th').filter(':contains("Notes")').hide();
-          return;
-        }
-        var answer = !!question.answer ? question.answer + (!!question.units ? " "+question.units : '') : '';
-        var correctAnswer = question.correct_answer + (!!question.correct_units ? " "+question.correct_units : '');
-        var score = question.points_earned;
-        var feedback = "";
-
-        
-        if(!question.feedback){
-        	if (answer === '') {
-          
-        	} else if (!question.answerIsCorrect){
-        	  feedback += "The value was wrong";
-        	}
-        } else {
-          feedback = question.feedback;
-        }
-        
-        var $tutorialButton = null;
-        if (!!question.tutorial){
-          $tutorialButton = $("<button>").text(question.tutorial.replace(/-/g, ' ').capFirst()).css('padding-left', "10px")
-                              .css('padding-right', "10px").css('margin-left', "20px").css('width', "100px");
-          
-          sparks.tutorialController.getTutorialTitle(question.tutorial, function(title){
-            var rolloverText = "Click to view \""+title+"\"";
-            $tutorialButton.easyTooltip({
-               content: rolloverText
-            });
-          });
-          $tutorialButton.click(function(){
-            sparks.tutorialController.showTutorial(question.tutorial);
-          });
-        } else {
-        }
-       
-        $report.append(
-          $('<tr>').append(
-            $('<td>').html(question.shortPrompt),
-            $('<td>').html(answer),
-            $('<td>').html(correctAnswer),
-            $('<td>').html(score +"/" + question.points),
-            $('<td>').html(feedback),
-            $('<td>').append($tutorialButton)
-          ).addClass(question.answerIsCorrect ? "correct" : "incorrect")
-        );
-      });
-      
-      if (sessionReport.bestTime > 0){
-        var feedback;
-        if (sessionReport.timeScore == sessionReport.maxTimeScore){
-          feedback = "Excellent! You earned the bonus points for very fast work!";
-        } else {
-          var rawScore = sessionReport.score - sessionReport.timeScore;
-          var rawMaxScore = sessionReport.maxScore - sessionReport.maxTimeScore;
-          if (rawScore < rawMaxScore * 0.7){
-            feedback = "You didn't score enough points to earn the time bonus";
-          } else {
-            feedback = "You could score more bonus points by completing this page quicker!";
-          }
-        }
-        
-        $report.append(
-          $('<tr>').append(
-            $('<td>').html("Time taken"),
-            $('<td>').html(Math.round(sessionReport.timeTaken) + " sec."),
-            $('<td>').html("< "+sessionReport.bestTime + " sec."),
-            $('<td>').html(sessionReport.timeScore +"/" + sessionReport.maxTimeScore),
-            $('<td>').html(feedback)
-          ).addClass(sessionReport.timeScore == sessionReport.maxTimeScore ? "correct" : "incorrect")
-        );
-      }
-      
-      if (sessionReport.score > -1){
-        $report.append(
-          $('<tr>').append(
-            $('<th>').text("Total Score:"),
-            $('<th>').text(""),
-            $('<th>').text(""),
-            $('<th>').text(sessionReport.score + "/" + sessionReport.maxScore),
-            $('<th>').text(""),
-            $('<th>').text("")
-          )
-        );
-      }
-      
-      return $report;
-    }
-    
-  };
-})();
 /*globals sparks Raphael*/
 
 
@@ -3227,7 +2843,7 @@ sparks.createQuestionsCSV = function(data) {
 
       this.drawGrid(this.miniRaphaelCanvas, conf);
 
-      $overlayDiv = $('<div id="oscope_mini_overlay"></div>').appendTo(this.$view);
+      $overlayDiv = $('<div class="oscope_mini_overlay"></div>').appendTo(this.$view);
 
       $overlayDiv.click(function(){
         self.openPopup();
@@ -3788,13 +3404,13 @@ sparks.createQuestionsCSV = function(data) {
       this.$view = $('<div>');
 
       $("#fg_value").remove();
-      $freq_value = $("<span id='fg_value'></span").appendTo(this.$view);
+      $freq_value = $("<span class='fg_value'></span").appendTo(this.$view);
       this.freqValueViews.push($freq_value);
 
       this.frequencies = this.model.getPossibleFrequencies();
       this.setFrequency(this.model.frequency);
 
-      $overlayDiv = $('<div id="fg_mini_overlay"></div>').appendTo(this.$view);
+      $overlayDiv = $('<div class="fg_mini_overlay"></div>').appendTo(this.$view);
       var self = this;
       $overlayDiv.click(function(){
         self.openPopup();
@@ -3856,7 +3472,7 @@ sparks.createQuestionsCSV = function(data) {
         height: this.height
       }).appendTo(this.$view);
 
-      $freq_value = $('<p id="freq_value">'+this.currentFreqString+'</p>').css({
+      $freq_value = $('<p class="freq_value">'+this.currentFreqString+'</p>').css({
         position:  'absolute',
         top:       15,
         left:      15,
@@ -3866,7 +3482,7 @@ sparks.createQuestionsCSV = function(data) {
 
       this.freqValueViews.push($freq_value);
 
-      this.$controls = $('<div id="controls">').css({
+      this.$controls = $('<div class="controls">').css({
         position: 'absolute',
         top:      28,
         left:     0,
@@ -3943,7 +3559,7 @@ sparks.createQuestionsCSV = function(data) {
     },
 
     _addSliderControl: function ($el, steps, value, callback) {
-      $slider = $("<div id='fg_slider'>").css({
+      $slider = $("<div class='fg_slider'>").css({
         position: 'absolute',
         top:   25,
         left:  10,
@@ -3958,236 +3574,6 @@ sparks.createQuestionsCSV = function(data) {
   };
 
 }());
-/*globals console sparks $ breadModel getBreadBoard */
-
-
-(function() {
-
-  sparks.ClassReportView = function(){
-    this.$wrapperDiv = null;
-    this.$classReport = null;
-  };
-
-  sparks.ClassReportView.prototype = {
-
-    getClassReportView: function(reports){
-      var $div = $('<div>');
-
-      $div.append('<h1>Class results</h1>');
-      $div.append('<span id="date">' + sparks.util.todaysDate() + "</span>");
-      $div.append(this.createLevelsTable(reports));
-      $div.append('<p>');
-
-      $div.append('<h2>Question categories</h2>');
-      $div.append(this.createCategoryTable(reports));
-
-      $div.find('.tablesorter').tablesorter(
-        {
-          sortList: [[0,0]],
-          widgets: ['zebra'],
-          textExtraction: function(node) {      // convert image to a string so we can sort on it
-            var content = node.childNodes[0];
-            if (!content) {
-              return "A";
-            } else if (content.nodeName === "IMG") {
-              return "Z"+(content.getAttribute('score'));
-            } else {
-              return content.textContent;
-            }
-          }
-        });
-
-      this.$classReport = $div;
-
-      this.$wrapperDiv = $("<div>").append(this.$classReport);
-
-      return this.$wrapperDiv;
-    },
-
-    createLevelsTable: function(reports) {
-      var $table = $("<table>").addClass('classReport').addClass('tablesorter');
-      var levels = sparks.classReportController.getLevels();
-
-      var headerRow = "<thead><tr><th class='firstcol'>Student Name</th>";
-      for (var i = 0, ii = levels.length; i < ii; i++){
-        headerRow += "<th>" + levels[i] + "</th>";
-      }
-      headerRow += "<th class='lastcol'>Cumulative Points</th></tr></thead>";
-      $table.append(headerRow);
-
-      for (i = 0, ii = reports.length; i < ii; i++){
-        var $studentRow = this._createStudentRow(reports[i], levels.length);
-        $table.append($studentRow);
-      }
-      return $table;
-    },
-
-    _createStudentRow: function(report, numLevels) {
-      var $tr = $("<tr>"),
-          name = this._cleanStudentName(report.user.name),
-          totalScore = 0;
-
-      var $name = $("<td class='firstcol'>" + name + "</td>");
-      $tr.append($name);
-      var self = this;
-      $name.click(function(){self.showStudentReport(report);});
-      for (var i = 0, ii = report.sectionReports.length; i < ii; i++){
-        var summary = sparks.reportController.getSummaryForSectionReport(report.sectionReports[i]),
-            light;
-        totalScore += summary[1];
-
-        if (summary[0] < 0.30){
-          light = "common/icons/light-red.png";
-        } else if (summary[0] < 0.90) {
-          light = "common/icons/light-off.png";
-        } else {
-          light = "common/icons/light-on.png";
-        }
-        var $img = $('<img>').attr('src', light).attr('width', 35).attr('score', summary[0]);
-        $img.easyTooltip({
-           content: name + " scored "+sparks.math.roundToSigDigits(summary[0]*100,3)+"% of the possible points from the last "+summary[2]+" times they ran this level"
-        });
-        $tr.append($('<td>').append($img));
-      }
-
-      for (i = 0, ii = numLevels - report.sectionReports.length; i < ii; i++){
-        $tr.append("<td/>");
-      }
-
-      $tr.append("<td class='lastcol'>"+totalScore+"</td>");
-      return $tr;
-    },
-
-    _cleanStudentName: function (name) {
-      if (name.indexOf('+') > -1){
-        return name.split("+").join(" ");
-      }
-      return name;
-    },
-
-    createCategoryTable: function(reports) {
-      var $table = $("<table>").addClass('classReport').addClass('tablesorter'),
-          categories = [],
-          i, ii;
-      for (i = 0, ii = reports.length; i < ii; i++){
-        var row = [],
-            report = reports[i],
-            name = this._cleanStudentName(report.user.name),
-            catReport = sparks.reportController.getCategories(report);
-
-        // get category report for this student, populate category array
-        for (var category in catReport){
-          if (!!category && category !== "undefined" && catReport.hasOwnProperty(category)){
-            var catIndex = sparks.util.contains(categories, category);
-            if (catIndex < 0){
-              categories.push(category);
-              catIndex = categories.length - 1;
-            }
-            row[catIndex] = catReport[category];
-          }
-        }
-
-        // create TR for this student
-        var $tr = $('<tr>').addClass(i%2===0 ? "evenrow" : "oddrow");
-        $tr.append('<td class="firstcol">'+name+'</td>');
-        for (var j = 0, jj = categories.length; j < jj; j++){
-          var score = row[j],
-              $td = $('<td>');
-          if (!!score){
-            var light;
-            switch (score[2]) {
-              case 0:
-                light = "common/icons/light-red.png";
-                break;
-              case 1:
-              case 2:
-               light = "common/icons/light-off.png";
-               break;
-              case 3:
-               light = "common/icons/light-on.png";
-            }
-            var $img = $('<img>').attr('src', light).attr('width', 35).attr('score', score[2]);
-            $img.easyTooltip({
-               content: name+" got "+score[2]+" out of the last "+(Math.min(score[1],3))+" questions of this type correct"
-            });
-            $td.append($img);
-          }
-          $tr.append($td);
-        }
-        $table.append($tr);
-      }
-
-      // create headers now that we know all the categories
-      var header = "<thead><tr><th>Students</th>";
-      for (i = 0, ii = categories.length; i < ii; i++){
-        header += "<th>" + categories[i] + "</th>";
-      }
-      header += "</tr></thead>";
-      $table.prepend(header);
-
-      // finally, fill up all the rows (they may have been created with diff # of categories)
-      $table.find('tr').each(function(i, tr){
-        for (j = categories.length, jj = tr.childNodes.length; j >= jj; j--){
-          $(tr).append('<td>');
-        }
-      });
-
-      return $table;
-    },
-
-    showStudentReport: function(report) {
-      var $div = $("<div>");
-
-      var $returnButton = $("<button>").text("Return to class report").css('padding-left', "10px")
-                        .css('padding-right', "10px").css('margin-left', "20px");
-      var self = this;
-      $returnButton.click(function(){
-        $div.hide();
-        self.$classReport.show();
-      });
-      $div.append($returnButton);
-
-      $div.append("<h1>"+this._cleanStudentName(report.user.name)+"</h1>");
-      $div.append(this.createStudentReport(report));
-
-      this.$classReport.hide();
-      this.$wrapperDiv.append($div);
-    },
-
-    createStudentReport: function(report) {
-      var $table = $("<table>").addClass('classReport').addClass('tablesorter');
-      var levels = sparks.classReportController.getLevels();
-
-      var headerRow = "<thead><tr><th class='firstcol'>Level</th><th>Score per Attempt (%)</th><th>Total score</th></tr></thead>";
-      $table.append(headerRow);
-      for (var i = 0, ii = levels.length; i < ii; i++){
-        var level = levels[i];
-        var $tr = $("<tr>").addClass(i%2===0 ? "even":"odd");
-        $tr.append("<td class='firstcol'>"+levels[i]+"</td>");
-
-        var $graphTD = $("<td>");//.css('width', '10em').css('overflow-x', 'scroll').css('overflow-y','hidden');
-        var $graph = $('<ul class="timeline">');
-        var data = sparks.reportController.getSessionScoresAsPercentages(report.sectionReports[i]);
-        for (j = 0, jj = data.length; j < jj; j++) {
-          var $li = $('<li><a><span class="count" style="height: '+data[j]+'%"></a></li>');
-          $li.easyTooltip({
-             content: ""+sparks.math.roundToSigDigits(data[j],3)+"% of the possible points in attempt "+(j+1)
-          });
-          $graph.append($li);
-        }
-        $tr.append($graphTD.append($graph));
-
-        var score = "";
-        if (i < report.sectionReports.length){
-          score = sparks.reportController.getTotalScoreForSectionReport(report.sectionReports[i]);
-        }
-        $tr.append("<td>"+score+"</td>");
-        $table.append($tr);
-      }
-      return $table;
-    }
-  };
-})();
 /**
  * A class to parse color values
  * @author Stoyan Stefanov <sstoo@gmail.com>
@@ -7457,7 +6843,8 @@ window["breadboardView"] = {
   var CircuitBoard = function(id) {
     var self = this;
     // link to main holder
-    this.holder = $('#' + id).html('').append(
+    if (window.wee) debugger
+    this.holder = $('.' + id).html('').append(
       SVGStorage.create('board')
     ).addClass('circuit-board');
     this.holder.h = this.holder.height();
@@ -9534,7 +8921,7 @@ window["breadboardView"] = {
   var $stack = [];
   // stack of callback functions
 
-  board.util.require(["common/images/sparks.breadboard.svg"], function(data) {
+  board.util.require(["../common/images/sparks.breadboard.svg"], function(data) {
     // create base element
     SVGStorage = new SVGStorage(data["sparks.breadboard"]);
     // pre-cache all needed images
@@ -9657,7 +9044,7 @@ window["breadboardView"] = {
       component = embeddableComponents[componentName];
 
       this.$drawer.append(
-       $("<img id='add_"+componentName+"' class='add_component'>")
+       $("<img class='add_"+componentName+"' class='add_component'>")
         .attr("src", component.image)
         .css("width", component.imageWidth)
         .data("type", componentName)
@@ -9763,7 +9150,7 @@ window["breadboardView"] = {
           })
         ).append(
           $("<div>").html(
-            propertyName + ": <span id='prop_value_"+uid+"'>"+initialValueText+"</span>"
+            propertyName + ": <span class='prop_value_"+uid+"'>"+initialValueText+"</span>"
             )
         );
       }
@@ -9797,7 +9184,7 @@ window["breadboardView"] = {
     sparks.breadboardComm.openConnections = {};
 
     sparks.breadboardComm.connectionMade = function(component, hole) {
-      var section = sparks.activityController.currentSection,
+      var workbench = sparks.workbenchController.workbench,
           breadboard, comp, openConnections, openConnectionsArr, connectionReturning, connection;
 
       if (!!hole){
@@ -9821,7 +9208,7 @@ window["breadboardView"] = {
             if (connection === connectionReturning) {
               comp.connections[i] = breadboard.getHole(hole);
               delete openConnections[connection];
-              sparks.activityController.currentSection.meter.moveProbe(connection, hole);
+              sparks.workbenchController.workbench.meter.moveProbe(connection, hole);
               break;
             }
           }
@@ -9834,7 +9221,7 @@ window["breadboardView"] = {
       sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
         "type": "connect lead",
         "location": hole});
-      section.meter.update();
+      workbench.meter.update();
     };
 
     sparks.breadboardComm.connectionBroken = function(component, hole) {
@@ -9843,32 +9230,157 @@ window["breadboardView"] = {
       }
       sparks.breadboardComm.openConnections[component][hole] = true;
 
-      var section = sparks.activityController.currentSection;
+      var workbench = sparks.workbenchController.workbench;
       var newHole = breadModel('getGhostHole', hole+"ghost");
 
       breadModel('mapHole', hole, newHole.nodeName());
       sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
         "type": "disconnect lead",
         "location": hole});
-      section.meter.update();
+      workbench.meter.update();
     };
 
     sparks.breadboardComm.probeAdded = function(meter, color, location) {
-      var section = sparks.activityController.currentSection;
-      section.meter.setProbeLocation("probe_"+color, location);
+      var workbench = sparks.workbenchController.workbench;
+      workbench.meter.setProbeLocation("probe_"+color, location);
       sparks.sound.play(sparks.sound.click)
     };
 
     sparks.breadboardComm.probeRemoved = function(meter, color) {
-      var section = sparks.activityController.currentSection;
-      section.meter.setProbeLocation("probe_"+color, null);
+      var workbench = sparks.workbenchController.workbench;
+      workbench.meter.setProbeLocation("probe_"+color, null);
     };
 
     sparks.breadboardComm.dmmDialMoved = function(value) {
-      var section = sparks.activityController.currentSection;
-      section.meter.dmm.dialPosition = value;
-      section.meter.update();
+      var workbench = sparks.workbenchController.workbench;
+      workbench.meter.dmm.dialPosition = value;
+      workbench.meter.update();
     };
+
+})();
+(function() {
+
+  sparks.WorkbenchView = function(workbench){
+    this.workbench = workbench;
+  };
+
+  sparks.WorkbenchView.prototype = {
+    layout: function(elId) {
+      this.container = document.getElementById(elId);
+
+      if (!this.container) {
+        throw new Error("No DOM element found with the id "+elId);
+      }
+
+      this.divs = {
+        breadboard:       this.getOrCreateDiv('breadboard'),
+        scope:            this.getOrCreateDiv('oscope_mini'),
+        fg:               this.getOrCreateDiv('fg_mini'),
+        addCompsWrapper:  this.getOrCreateDiv('add_components'),
+        addCompsBtn:      this.getOrCreateDiv('add_components_btn')
+      };
+
+      this.divs.breadboard.html('');
+
+      var self = this;
+      breadboardView.ready(function() {
+        sparks.breadboardView = breadboardView.create("breadboard");
+
+        // pass queued-up component right-click function to breadboard view
+        if (self.rightClickFunction) {
+          sparks.breadboardView.setRightClickFunction(self.rightClickFunction);
+        }
+
+        // FIXME: view should accept battery as standard component via API
+        sparks.breadboardView.addBattery("left_negative21,left_positive21");
+        breadModel('updateView');
+
+        sparks.sound.mute = true;
+
+        self.showDMM(self.workbench.show_multimeter);
+        self.showOScope(self.workbench.show_oscilloscope);
+        // self.allowMoveYellowProbe(self.workbench.allow_move_yellow_probe);
+        // self.hidePinkProbe(self.workbench.hide_pink_probe);
+
+        sparks.sound.mute = false;
+
+        self.workbench.meter.update();
+      });
+
+      var source = getBreadBoard().components.source;
+      if (source.frequency) {
+        var fgView = new sparks.FunctionGeneratorView(source);
+        var $fg = fgView.getView();
+        this.divs.fg.append($fg);
+        this.divs.fg.show();
+      }
+      this.workbench.meter.reset();
+
+      if (this.workbench.showComponentDrawer || this.workbench.showComponentEditor) {
+        var addComponentsView = new sparks.AddComponentsView(workbench);
+
+        if (this.workbench.showComponentDrawer) {
+          this.divs.addCompsWrapper.show();
+          this.divs.addCompsBtn.off();
+          this.divs.addCompsBtn.on('click', addComponentsView.openPane);
+        }
+      }
+    },
+
+    showOScope: function(visible) {
+      this.divs.scope.html('');
+
+      if (visible) {
+       var scopeView = new sparks.OscilloscopeView();
+       var $scope = scopeView.getView();
+       this.divs.scope.append($scope);
+       this.divs.scope.show();
+       this.workbench.meter.oscope.setView(scopeView);
+
+       sparks.breadboardView.addOScope({
+            "yellow":{
+            "connection": "left_positive21",
+            "draggable": true
+          },"pink": {
+            "connection": "f22",
+            "draggable": true
+          }
+        });
+      }
+    },
+
+    showDMM: function(visible) {
+      if (visible) {
+        sparks.breadboardView.addDMM({
+            "dial": "dcv_20",
+            "black":{
+            "connection": "g12",
+            "draggable": true
+          },"red": {
+            "connection": "f3",
+            "draggable": true
+          }
+        });
+      }
+    },
+
+    allowMoveYellowProbe: function() {
+    },
+
+    hidePinkProbe: function() {
+    },
+
+    setRightClickFunction: function(func) {
+      this.rightClickFunction = func;
+    },
+
+    getOrCreateDiv: function(clazz) {
+      $el = $(this.container).find('.'+clazz);
+      if (!$el.length)
+        $el = $('<div class="'+clazz+'"></div>').appendTo(this.container);
+      return $el;
+    }
+  }
 
 })();
 /*global sparks $ */
@@ -10555,539 +10067,6 @@ window["breadboardView"] = {
 
   sparks.activityController = new sparks.ActivityController();
 })();
-/*global console sparks $ alert */
-
-
-(function() {
-
-  /*
-   * Sparks Report Controller can be accessed by the
-   * singleton variable sparks.reportController
-   *
-   * There is only one singlton sparks.report object. This
-   * controller creates it when the controller is created.
-   */
-  sparks.ReportController = function(){
-    sparks.report = new sparks.Report();
-    sparks.report.view = new sparks.ReportView();
-    this.currentSectionReport = null;
-  };
-
-  sparks.ReportController.prototype = {
-
-    startNewSection: function(section) {
-      if (!!sparks.report.sectionReports[section]){
-        this.currentSectionReport = sparks.report.sectionReports[section];
-        return;
-      }
-      this.currentSectionReport = new sparks.SectionReport();
-      this.currentSectionReport.sectionId = section.id;
-      this.currentSectionReport.sectionTitle = section.title;
-      sparks.report.sectionReports[section] = this.currentSectionReport;
-    },
-
-    addNewSessionReport: function(page){
-      var sessionReport = new sparks.SessionReport();
-
-      var jsonQuestions = [];
-      var score = 0;
-      var maxScore = 0;
-      $.each(page.questions, function(i, question){
-
-        sparks.questionController.gradeQuestion(question);
-
-        score += question.points_earned;
-        maxScore += question.points;
-
-        jsonQuestions.push(question.toJSON());
-      });
-      sessionReport.questions = jsonQuestions;
-
-      if (sparks.logController.currentLog.endTime < 0){
-        sparks.logController.endSession();
-      }
-      sessionReport.log = sparks.logController.currentLog;
-      sessionReport.timeTaken = (sessionReport.log.endTime - sessionReport.log.startTime) / 1000;
-      if (!!page.time){
-        var t = page.time;
-
-        sessionReport.timeScore = 0;
-        sessionReport.maxTimeScore = t.points;
-
-        if (score >= maxScore * 0.7){
-          var m = t.points / (t.best - t.worst);
-          var k = 0-m * t.worst;
-          var timeScore = (m * sessionReport.timeTaken) + k;
-          timeScore = timeScore > t.points ? t.points : timeScore;
-          timeScore = timeScore < 0 ? 0 : timeScore;
-          timeScore = Math.floor(timeScore);
-
-          sessionReport.timeScore = timeScore;
-        }
-        sessionReport.bestTime = t.best;
-
-        score += sessionReport.timeScore;
-        maxScore += sessionReport.maxTimeScore;
-      }
-
-      sessionReport.score = score;
-      sessionReport.maxScore = maxScore;
-      this._addSessionReport(page, sessionReport);
-      return sessionReport;
-    },
-
-    _addSessionReport: function(page, sessionReport) {
-      if (!this.currentSectionReport.pageReports[page]){
-        var pageReport = new sparks.PageReport();
-        this.currentSectionReport.pageReports[page] = pageReport;
-        this.currentSectionReport.pageReports[page].sessionReports = [];
-      }
-      this.currentSectionReport.pageReports[page].sessionReports.push(sessionReport);
-    },
-
-    getTotalScoreForPage: function(page, section) {
-      var sectionReport;
-      if (!!section){
-        sectionReport = sparks.report.sectionReports[section];
-      } else {
-        sectionReport = this.currentSectionReport;
-      }
-      if (!sectionReport || !sectionReport.pageReports[page]){
-        console.log("ERROR: No session reports for page");
-        return 0;
-      }
-      return this.getTotalScoreForPageReport(sectionReport.pageReports[page]);
-    },
-
-    getTotalScoreForPageReport: function(pageReport) {
-      var sessionReports = pageReport.sessionReports;
-      var totalScore = 0;
-      for (var i in sessionReports) {
-        var report = sessionReports[i];
-        totalScore += report.score;
-      }
-      return totalScore;
-    },
-
-    getSummaryForSectionReport: function(sectionReport) {
-      var lastThree = this.getLastThreeScoreForSectionReport(sectionReport),
-          lastThreePerc = lastThree[0],
-          totalRuns = lastThree[1],
-          totalScore = this.getTotalScoreForSectionReport(sectionReport);
-      return [lastThreePerc, totalScore, totalRuns];
-    },
-
-    // To be refactored
-    getTotalScoreForSection: function(section) {
-      var totalScore = 0;
-      var self = this;
-      $.each(section.pages, function(i, page){
-        totalScore += self.getTotalScoreForPage(page, section);
-      });
-      return totalScore;
-    },
-
-   // To be refactored
-    getTotalScoreForSectionReport: function(sectionReport) {
-      var totalScore = 0;
-      var self = this;
-      $.each(sectionReport.pageReports, function(i, pageReport){
-        totalScore += self.getTotalScoreForPageReport(pageReport);
-      });
-      return totalScore;
-    },
-
-    // this is not very DRY. To be refactored
-    getLastThreeScoreForSection: function(section) {
-      var totalScore = 0;
-      var maxScore = 0;
-      var timesRun = 0;
-      var self = this;
-      $.each(section.pages, function(i, page){
-        var scores = self.getLastThreeScoreForPage(page, section);
-        totalScore += scores[0];
-        maxScore += scores[1];
-        timesRun = Math.max(timesRun, scores[2]);
-      });
-
-      return [totalScore / maxScore, timesRun];
-    },
-
-    // this is not very DRY. To be refactored
-    getLastThreeScoreForSectionReport: function(sectionReport) {
-      var totalScore = 0;
-      var maxScore = 0;
-      var timesRun = 0;
-      var self = this;
-      $.each(sectionReport.pageReports, function(i, pageReport){
-        var scores = self.getLastThreeScoreForPageReport(pageReport);
-        totalScore += scores[0];
-        maxScore += scores[1];
-        timesRun = Math.max(timesRun, scores[2]);
-      });
-
-      return [totalScore / maxScore, timesRun];
-    },
-
-    getLastThreeScoreForPage: function(page, section) {
-      var sectionReport;
-      if (!!section){
-        sectionReport = sparks.report.sectionReports[section];
-      } else {
-        sectionReport = this.currentSectionReport;
-      }
-      if (!sectionReport || !sectionReport.pageReports[page]){
-        console.log("ERROR: No session reports for page");
-        return 0;
-      }
-      return this.getLastThreeScoreForPageReport(sectionReport.pageReports[page]);
-    },
-
-    getLastThreeScoreForPageReport: function(pageReport) {
-      var sessionReports = pageReport.sessionReports,
-          totalScore = 0,
-          maxScore = 0,
-          report, numRuns, i;
-
-      for (i = sessionReports.length-1; i >= (sessionReports.length - 3) && i > -1; i--){
-        report = sessionReports[i];
-        totalScore += report.score;
-        maxScore += report.maxScore;
-      }
-      numRuns = Math.min(sessionReports.length, 3);
-      return [totalScore,maxScore, numRuns];
-    },
-
-    getLastSessionReport: function(page) {
-      if (!this.currentSectionReport.pageReports[page]){
-        console.log("ERROR: No session reports for page");
-        return;
-      }
-
-      var sessionReports = this.currentSectionReport.pageReports[page].sessionReports;
-      return sessionReports[sessionReports.length - 1];
-    },
-
-    getBestSessionReport: function(page) {
-      if (!this.currentSectionReport.pageReports[page]){
-        console.log("ERROR: No session reports for page");
-        return;
-      }
-      var sessionReports = this.currentSectionReport.pageReports[page].sessionReports;
-      var bestSessionReport = null;
-      var topScore = -1;
-      for (var i in sessionReports) {
-        var report = sessionReports[i];
-        if (report.score >= topScore){       // >= because we want to get *last* top score
-          topScore = report.score;
-          bestSessionReport = report;
-        }
-      }
-      return bestSessionReport;
-    },
-
-    getSessionScoresAsPercentages: function(sectionReport) {
-      var scores = [];
-      var sessionReports = this._sortSessionsByTime({sectionReports: [sectionReport]});
-      for (var i = 0, ii = sessionReports.length; i < ii; i++){
-        var sessionReport = sessionReports[i];
-        scores[i] = (sessionReport.score / sessionReport.maxScore) * 100;
-      }
-      return scores;
-    },
-
-    // each category is stored as an array:
-    // [total answered correctly, total, total of previous 3 answered correctly, tutorial url]
-    // categories = {
-    //   'breadboards': [0, 1, 0, 'tutorial-1'].
-    //   'voltage': [4, 5, 2, 'tutorial-2']
-    // }
-    getCategories: function(report) {
-      var categories = {},
-          sessions = this._sortSessionsByTime(report);
-
-      $.each(sessions, function(k, sessionReport){
-        $.each(sessionReport.questions, function(l, question){
-          if (!!question.category){
-            var category = question.category;
-            if (!categories[category.categoryTitle]){
-              categories[category.categoryTitle] = [0,0,0,category.tutorial,[]];
-            }
-            var right = categories[category.categoryTitle][0];
-            var total = categories[category.categoryTitle][1];
-            categories[category.categoryTitle][0] = question.answerIsCorrect ? right + 1 : right;
-            categories[category.categoryTitle][1] = total + 1;
-
-            // this is ugly. There is a more efficient way to do this
-            categories[category.categoryTitle][4].push( question.answerIsCorrect ? 1 : 0 );
-            if (categories[category.categoryTitle][4].length > 3) {
-              categories[category.categoryTitle][4].shift();
-            }
-            categories[category.categoryTitle][2] = 0;
-            $.each(categories[category.categoryTitle][4], function(m, val){
-              categories[category.categoryTitle][2] += val;
-            });
-          }
-        });
-      });
-
-      return categories;
-    },
-
-    _sortSessionsByTime: function(report) {
-      var sessions = [];
-      var length = 0;
-
-      $.each(report.sectionReports, function(i, sectionReport){
-        if (!!sectionReport){
-          $.each(sectionReport.pageReports, function(j, pageReport){
-            $.each(pageReport.sessionReports, function(k, sessionReport){
-              if (length === 0) {
-                sessions.push(sessionReport);
-              } else {
-                var time = sessionReport.log.startTime;
-                var inserted = false;
-                for (var x = 0; x < length; x++){
-                  if (time < sessions[x].log.startTime) {
-                    sessions.splice(x, 0, sessionReport);
-                    inserted = true;
-                    break;
-                  }
-                }
-                if (!inserted){
-                  sessions.push(sessionReport);
-                }
-              }
-              length++;
-            });
-          });
-        }
-      });
-
-      return sessions;
-    },
-
-    saveData: function() {
-      if (!!sparks.activity.id && !!sparks.couchDS.user){
-        console.log("Saving data");
-        var score = 0;
-        var self = this;
-        $.each(sparks.activity.sections, function(i, section){
-          score += self.getTotalScoreForSection(section);
-        });
-        sparks.report.score = score;
-
-        var data = sparks.report.toJSON();
-        sparks.couchDS.save(data);
-      }
-    },
-
-    loadReport: function(jsonReport) {
-      sparks.report.score = jsonReport.score;
-      $.each(jsonReport.sectionReports, function(i, jsonSectionReport){
-        var sectionReport = new sparks.SectionReport(),
-            section = sparks.activityController.findSection(jsonSectionReport.sectionId);
-        sparks.report.sectionReports[section] = sectionReport;
-        sectionReport.sectionId = jsonSectionReport.sectionId;
-        sectionReport.sectionTitle = jsonSectionReport.sectionTitle;
-        $.each(jsonSectionReport.pageReports, function(j, jsonPageReport){
-          var pageReport = new sparks.PageReport(),
-              page = section.pages[j];
-          sectionReport.pageReports[page] = pageReport;
-          $.each(jsonPageReport.sessionReports, function(k, jsonSessionReport){
-            var sessionReport = new sparks.SessionReport();
-            $.each(jsonSessionReport, function(key, val){
-              sessionReport[key] = val;
-            });
-            if (sessionReport.timeTaken > 0){
-              section.visited = true;
-            }
-            pageReport.sessionReports.push(sessionReport);
-          });
-        });
-      });
-    },
-
-    showReport: function(studentName) {
-      var ds = new sparks.CouchDS("/couchdb:");
-      ds.loadStudentData(studentName);
-    },
-
-    fixData: function(jsonReport, callback) {
-      if (jsonReport.save_time < 1301500000000){      // reports saved before 3/30/2011 (Tidewater run)
-        this.addSectionIds(jsonReport, callback);
-      }
-    },
-
-    addSectionIds: function(jsonReport, callback) {
-      var feedback = [],
-          sections = ["series-a-1d", "series-b-1a", "series-c-1", "series-c-2", "series-d-1",
-                      "series-d-2", "series-e-1", "series-e-2", "series-f-1"],
-          sectionTitles = ["Understanding a Breadboard", "Understanding Series Resistances", "Calculating Total Circuit R (Series)",
-                            "Calculating V and I in Series Circuits", "Measuring to Calculate Total R",
-                            "Measuring V and I in Series Circuits", "Measuring Series Circuits", "Measuring Series R's in Circuits",
-                            "Troubleshooting a series circuit"],
-          question,
-          sectionAttempt;
-
-      if (!jsonReport.sectionReports || jsonReport.sectionReports.length < 1 || !!jsonReport.sectionReports[0].sectionId){
-        callback(jsonReport);
-        return;
-      }
-
-      question = jsonReport.sectionReports[0].pageReports[0].sessionReports[0].questions[0];
-
-      $.each(question.options, function(i, option){
-        feedback.push(option.feedback);
-      });
-
-      sectionAttempt = 0;
-
-      function trySection(sectionNo){
-        if (sectionNo > sections.length-1){
-          console.log("ERROR fixing report data");
-          console.log(jsonReport);
-          alert("tried to fix data for "+jsonReport.user.name+"but failed. Check console");
-        }
-        $.couch.db("sparks").openDoc(sections[sectionNo], { success: function(response) {
-          checkSection(response, sectionNo);
-          }}
-        );
-      }
-
-      trySection(sectionAttempt);
-
-      function arraysAreEquivalent(ar1, ar2){
-        var equiv = true;
-        $.each(ar1, function(i, val){
-          if (sparks.util.contains(ar2, val) === -1){
-            equiv = false;
-          }
-        });
-        return equiv;
-      }
-
-      function checkSection(section, sectionNo){
-        var sectionQuestion = section.pages[0].questions[0];
-        var sectionFeedback = [];
-        $.each(sectionQuestion.options, function(i, option){
-          sectionFeedback.push(option.feedback);
-        });
-        if (arraysAreEquivalent(feedback, sectionFeedback)){
-          setSectionNames(sectionNo);
-        } else {
-          sectionAttempt++;
-          trySection(sectionAttempt);
-        }
-      }
-
-      function setSectionNames(sectionNo){
-        $.each(jsonReport.sectionReports, function(i, sectionReport){
-          sectionReport.sectionId = sections[sectionNo + i];
-          sectionReport.sectionTitle = sectionTitles[sectionNo + i];
-        });
-
-
-        // FIXME: Should use regular save, so _rev changes if we fix multiple things
-        if (!sparks.activity.dataService){
-          var tempDs = new sparks.CouchDS("/couchdb:sparks_data");
-          tempDs.saveRawData(jsonReport);
-        } else {
-          sparks.activity.dataService.saveRawData(jsonReport);
-        }
-
-        callback(jsonReport);
-      }
-
-    }
-
-  };
-
-  sparks.reportController = new sparks.ReportController();
-})();
-/*global sparks $ alert*/
-
-
-(function() {
-
-  /*
-   * Sparks Class Report Controller can be accessed by the
-   * singleton variable sparks.classReportController
-   *
-   * There is only one singlton sparks.classReport object. This
-   * controller creates it when the controller is created.
-   */
-  sparks.ClassReportController = function(){
-    // sparks.classReport = new sparks.ClassReport();
-    this.reports = [];
-
-    this.className = "";
-    this.teacherName = "";
-    // this.view = new sparks.ClassReportView();
-  };
-
-  sparks.ClassReportController.prototype = {
-
-    getClassData: function(activityId, learnerIds, classId, callback) {
-      var reports = this.reports;
-      var self = this;
-
-      if (classId) {
-        $.get("http://sparks.portal.concord.org/portal/classes/"+classId, function(data) {
-          if (data) {
-            var classElem = $(data).find('strong:contains("Class:")'),
-                className = classElem ? classElem.text().split(": ")[1] : "",
-                teacherElem = $(data).find('li:contains("Teacher")>strong'),
-                teacherName = teacherElem ? teacherElem.text().replace(/\n/g, "") : "";
-            self.className = className;
-            self.teacherName = teacherName;
-
-            if (className && teacherName) {
-              $('#title').html(className + " &nbsp; &mdash; &nbsp; " + teacherName);
-            }
-          }
-        });
-      }
-
-      var receivedData = function(response){
-        if (!!response && !!response.rows && response.rows.length > 0){
-          for (var i = 0, ii = response.rows.length; i < ii; i++){
-            reports.push(response.rows[i].value);
-          }
-          callback(reports);
-        }
-      };
-
-      var fail = function() {
-        alert("Failed to load class report");
-      };
-
-      sparks.couchDS.loadClassDataWithLearnerIds(activityId, learnerIds, receivedData, fail);
-    },
-
-    getLevels: function() {
-      if (this.reports.length > 0){
-        var reportWithMostSections = 0,
-            mostSections = 0;
-        for (var i = 0, ii = this.reports.length; i < ii; i++){
-          var numSections = this.reports[i].sectionReports.length;
-          if (numSections > mostSections){
-            mostSections = numSections;
-            reportWithMostSections = i;
-          }
-        }
-        var sectionReports = this.reports[reportWithMostSections].sectionReports;
-        return $.map(sectionReports, function(report) {
-          return (report.sectionTitle);
-        });
-      }
-      return [];
-    }
-
-  };
-
-  sparks.classReportController = new sparks.ClassReportController();
-})();
 /*global sparks window setTimeout $ */
 
 
@@ -11173,6 +10152,108 @@ window["breadboardView"] = {
   };
 
   sparks.tutorialController = new sparks.TutorialController();
+})();
+/*global sparks $ breadModel */
+
+
+(function() {
+
+  /*
+   * Sparks Activity Controller can be accessed by the
+   * singleton variable sparks.workbenchController
+   */
+  sparks.WorkbenchController = function(){
+    //this.workbenchMap = {}
+    this.workbench = null;    // for now
+  };
+
+  sparks.WorkbenchController.prototype = {
+
+    createWorkbench: function(props, elId) {
+      var workbench = new sparks.Workbench();
+
+      workbench.circuit = props.circuit;
+      if (workbench.circuit) workbench.circuit.referenceFrequency = props.referenceFrequency;
+
+      workbench.faults = props.faults;
+
+      workbench.show_multimeter = !(!(props.show_multimeter) || props.show_multimeter === "false");     // may be a string
+      workbench.show_oscilloscope = !(!(props.show_oscilloscope) || props.show_oscilloscope === "false");
+      workbench.allow_move_yellow_probe = !(!(props.allow_move_yellow_probe) || props.allow_move_yellow_probe === "false");
+      workbench.hide_pink_probe = !(!(props.hide_pink_probe) || props.hide_pink_probe === "false");
+      workbench.disable_multimeter_position = props.disable_multimeter_position;
+
+      workbench.showComponentDrawer = !(!(props.showComponentDrawer) || props.showComponentDrawer === "false");
+      workbench.showComponentEditor = !(!(props.showComponentEditor) || props.showComponentEditor === "false");
+
+      if (workbench.show_multimeter) {
+        workbench.meter.dmm = new sparks.circuit.Multimeter2();
+        if(workbench.disable_multimeter_position){
+          workbench.meter.dmm.set_disable_multimeter_position(workbench.disable_multimeter_position);
+        }
+      } else {
+        workbench.meter.dmm = null;
+      }
+
+      if (workbench.show_oscilloscope) {
+        workbench.meter.oscope = new sparks.circuit.Oscilloscope();
+      } else {
+        workbench.meter.oscope = null;
+      }
+
+      this.workbench = workbench;
+
+      // this shouldn't be here
+      sparks.logController.startNewSession();
+
+      this.loadBreadboard();
+
+      workbench.view = new sparks.WorkbenchView(workbench);
+      workbench.view.layout(elId);
+
+      return workbench;
+    },
+
+    loadBreadboard: function() {
+      var workbench = this.workbench;
+
+      breadModel("clear");
+
+      if (!!workbench.circuit){
+        breadModel("createCircuit", workbench.circuit);
+      }
+
+      if (!!workbench.faults){
+        breadModel("addFaults", workbench.faults);
+      }
+    },
+
+    setDMMVisibility: function(visible) {
+      var workbench = this.workbench;
+      if (visible) {
+        workbench.meter.dmm = new sparks.circuit.Multimeter2();
+        if(workbench.disable_multimeter_position){
+          workbench.meter.dmm.set_disable_multimeter_position(workbench.disable_multimeter_position);
+        }
+      } else {
+        workbench.meter.dmm = null;
+      }
+      sparks.activity.view.showDMM(visible);
+    },
+
+    setOScopeVisibility: function(visible) {
+      var workbench = this.workbench;
+      if (visible) {
+        workbench.meter.oscope = new sparks.circuit.Oscilloscope();
+      } else {
+        workbench.meter.oscope = null;
+      }
+      sparks.activity.view.showOScope(visible);
+    }
+
+  };
+
+  sparks.workbenchController = new sparks.WorkbenchController();
 })();
 /*global sparks $ */
 
@@ -14215,8 +13296,8 @@ window["breadboardView"] = {
     // for now, no validation on frequency. So we might set something QUCS isn't expecting from the given sim type
     setFrequency: function(frequency) {
       this.frequency = frequency;
-      if (sparks.activityController.currentSection.meter) {
-        sparks.activityController.currentSection.meter.update();
+      if (sparks.workbenchController.workbench.meter) {
+        sparks.workbenchController.workbench.meter.update();
       }
     },
 
@@ -14225,8 +13306,8 @@ window["breadboardView"] = {
     // linear circuits -- we'll need to revisit this for nonlinear circuits.
     setAmplitude: function(newAmplitude) {
       this.amplitudeScaleFactor = newAmplitude / this.amplitude;
-      if (sparks.activityController.currentSection.meter) {
-        sparks.activityController.currentSection.meter.update();
+      if (sparks.workbenchController.workbench.meter) {
+        sparks.workbenchController.workbench.meter.update();
       }
     },
 
@@ -14801,8 +13882,6 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
 
 
 
-
-
 /* FILE init.js */
 
 /*global Audio console sparks $ document window onDocumentReady unescape prompt apMessageBox*/
@@ -14813,161 +13892,11 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
   sparks.activity_base_url = "/sparks-activities/";
   sparks.activity_images_base_url = "/sparks-activities/images/";
   sparks.tutorial_base_url = "tutorials/";
-  sparks.soundFiles = {click: "common/sounds/click.ogg"};
+  sparks.soundFiles = {click: "../common/sounds/click.ogg"};
 
   window._gaq = window._gaq || [];      // in case this script loads before the GA queue is created
 
-  $(document).ready(function () {
-      onDocumentReady();
-  });
-
-  this.onDocumentReady = function () {
-    if (window.location.pathname.indexOf("class-report") > -1){
-      this.loadClassReport();
-    } else {
-      this.loadActivity();
-    }
-    this.setupQuitButton();
-    this.setupAboutDialog();
-  };
-
-  this.loadActivity = function () {
-    // We won't be having logged-in users for the foreseeable future. Remove this
-    // code for now, commented-out for easy uncommenting some time in the future.
-     var learner_id = null;
-    // var learner_id = sparks.util.readCookie('learner_id');
-
-    // if (learner_id) {
-    //    console.log("setting user "+learner_id);
-    //    var user = {"learner_id": learner_id, "name": sparks.util.readCookie('student_name'),
-    //      "student_id": sparks.util.readCookie('student_id'), "class_id": sparks.util.readCookie('class_id')};
-    //    sparks.couchDS.setUser(user);
-
-    //    // if there's a logged-in user, we want to stop them before they leave
-    //    var askConfirm = function(){
-    //      return "Are you sure you want to leave this page?";
-    //    };
-    //    window.onbeforeunload = askConfirm;
-    // }
-    sparks.GAHelper.setUserLoggedIn(!!learner_id);
-
-    var activityName = window.location.hash;
-    activityName = activityName.substring(1,activityName.length);
-
-    if (!activityName){
-      activityName = "local/oscilloscope-1";
-    }
-
-    this.loadSounds();
-
-    var startActivity = function(activity) {
-      new sparks.ActivityConstructor(activity);
-    };
-
-    if (activityName === "postMessage") {
-      // setup postMessage listener, then return early to avoid sending a get request
-      function receiveMessage(event) {
-        if (event.data) {
-          var activity = JSON.parse(event.data);
-          startActivity(activity);
-        }
-      }
-      window.addEventListener("message", receiveMessage, false);
-      return;
-    }
-
-    if (activityName.indexOf("local/") === 0) {
-      activityName = activityName.replace("local", "activities") + ".json";
-    } else {
-      activityName = sparks.activity_base_url + activityName + ".json";
-    }
-    $.get(activityName, startActivity);
-  };
-
-  this.loadClassReport = function () {
-    var classStudents,
-        learnerIds = [],
-        activity,
-        classId;
-    if (!!sparks.util.readCookie('class')){
-      classId = sparks.util.readCookie('class');
-      activity = unescape(sparks.util.readCookie('activity_name')).split('#')[1];
-      classStudents = eval(unescape(sparks.util.readCookie('class_students')).replace(/\+/g," "));
-      for (var i=0, ii=classStudents.length; i < ii; i++){
-        learnerIds.push(classStudents[i].id);
-      }
-    } else {
-      activity = prompt("Enter the activity id", "series-parallel-g1");                       // series-resistances
-      classStudents = prompt("Enter a list of learner ids", "568,569");        // 212,213,214,215,216,217,218,219,220,221,222,223,224,225,226,227,228
-      learnerIds = classStudents.split(',');
-    }
-
-    sparks.classReportController.getClassData(
-      activity,
-      learnerIds,
-      classId,
-      function(reports) {
-        $('#loading').hide();
-        var view = new sparks.ClassReportView(),
-            $report = view.getClassReportView(reports);
-        $('#report').append($report);
-        $("#print-link").show();
-      });
-  };
-
-  this.setupQuitButton = function () {
-    $('#return_to_portal').click(function() {
-      if (!!sparks.couchDS.user) {
-        sparks.reportController.saveData();
-        apMessageBox.information({
-          title: "Ready to leave?",
-          message: "All your work up until this page has been saved.",
-          informationImage: "lib/information-32x32.png",
-          width: 400,
-          height: 200,
-          buttons: {
-            "Go to the portal": function () {
-              $(this).dialog("close");
-              window.onbeforeunload = null;
-              window.location.href = "http://sparks.portal.concord.org";
-            },
-            "Keep working": function() {
-              $(this).dialog("close");
-            }
-          }
-        });
-      } else {
-        window.onbeforeunload = null;
-        window.location.href = "http://sparks.portal.concord.org";
-      }
-    });
-  };
-
-  this.setupAboutDialog = function() {
-    $("#credits").on("click", function() {
-      $("#about").toggle();
-    });
-
-    $("#close-about").on("click", function() {
-      $("#about").hide();
-    });
-
-    // share dialog
-    $("#share-prompt").on("click", function() {
-      $("#about").hide();
-      $("#share-link").text("http://sparks.portal.concord.org/activities.html"+window.location.hash);
-      var iframeText = $("#share-iframe-content").html();
-      var hash = /html([^"]*)"/.exec(iframeText)[1];
-      $("#share-iframe-content").html(iframeText.replace(hash, window.location.hash));
-      $("#share-panel").toggle();
-    })
-
-    $("#close-share").on("click", function() {
-      $("#share-panel").hide();
-    });
-  }
-
-  this.loadSounds = function () {
+  loadSounds = function () {
     var soundName, audio;
 
     sparks.sound = {};
@@ -14988,4 +13917,8 @@ sparks.GAHelper.userVisitedTutorial = function (tutorialId) {
       }
     }
   };
+
+  $(document).ready(function () {
+      loadSounds();
+  });
 })();

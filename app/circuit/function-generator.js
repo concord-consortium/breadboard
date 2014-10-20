@@ -66,8 +66,8 @@
     // for now, no validation on frequency. So we might set something QUCS isn't expecting from the given sim type
     setFrequency: function(frequency) {
       this.frequency = frequency;
-      if (sparks.activityController.currentSection.meter) {
-        sparks.activityController.currentSection.meter.update();
+      if (sparks.workbenchController.workbench.meter) {
+        sparks.workbenchController.workbench.meter.update();
       }
     },
 
@@ -76,8 +76,8 @@
     // linear circuits -- we'll need to revisit this for nonlinear circuits.
     setAmplitude: function(newAmplitude) {
       this.amplitudeScaleFactor = newAmplitude / this.amplitude;
-      if (sparks.activityController.currentSection.meter) {
-        sparks.activityController.currentSection.meter.update();
+      if (sparks.workbenchController.workbench.meter) {
+        sparks.workbenchController.workbench.meter.update();
       }
     },
 

@@ -9,7 +9,7 @@
     sparks.breadboardComm.openConnections = {};
 
     sparks.breadboardComm.connectionMade = function(component, hole) {
-      var section = sparks.activityController.currentSection,
+      var workbench = sparks.workbenchController.workbench,
           breadboard, comp, openConnections, openConnectionsArr, connectionReturning, connection;
 
       if (!!hole){
@@ -33,7 +33,7 @@
             if (connection === connectionReturning) {
               comp.connections[i] = breadboard.getHole(hole);
               delete openConnections[connection];
-              sparks.activityController.currentSection.meter.moveProbe(connection, hole);
+              sparks.workbenchController.workbench.meter.moveProbe(connection, hole);
               break;
             }
           }
@@ -46,7 +46,7 @@
       sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
         "type": "connect lead",
         "location": hole});
-      section.meter.update();
+      workbench.meter.update();
     };
 
     sparks.breadboardComm.connectionBroken = function(component, hole) {
@@ -55,31 +55,31 @@
       }
       sparks.breadboardComm.openConnections[component][hole] = true;
 
-      var section = sparks.activityController.currentSection;
+      var workbench = sparks.workbenchController.workbench;
       var newHole = breadModel('getGhostHole', hole+"ghost");
 
       breadModel('mapHole', hole, newHole.nodeName());
       sparks.logController.addEvent(sparks.LogEvent.CHANGED_CIRCUIT, {
         "type": "disconnect lead",
         "location": hole});
-      section.meter.update();
+      workbench.meter.update();
     };
 
     sparks.breadboardComm.probeAdded = function(meter, color, location) {
-      var section = sparks.activityController.currentSection;
-      section.meter.setProbeLocation("probe_"+color, location);
+      var workbench = sparks.workbenchController.workbench;
+      workbench.meter.setProbeLocation("probe_"+color, location);
       sparks.sound.play(sparks.sound.click)
     };
 
     sparks.breadboardComm.probeRemoved = function(meter, color) {
-      var section = sparks.activityController.currentSection;
-      section.meter.setProbeLocation("probe_"+color, null);
+      var workbench = sparks.workbenchController.workbench;
+      workbench.meter.setProbeLocation("probe_"+color, null);
     };
 
     sparks.breadboardComm.dmmDialMoved = function(value) {
-      var section = sparks.activityController.currentSection;
-      section.meter.dmm.dialPosition = value;
-      section.meter.update();
+      var workbench = sparks.workbenchController.workbench;
+      workbench.meter.dmm.dialPosition = value;
+      workbench.meter.update();
     };
 
 })();

@@ -30,11 +30,12 @@
     }
   }
 
-  sparks.AddComponentsView = function(section){
+  sparks.AddComponentsView = function(workbench){
+    console.log("AddComponentsView!")
     var self = this,
         component;
 
-    this.section = section;
+    this.section = workbench;
     this.$drawer = $("#component_drawer").empty();
 
     this.lastHighlightedHole = null;
@@ -42,7 +43,7 @@
     if (sparks.breadboardView) {
       sparks.breadboardView.setRightClickFunction(this.showEditor);
     } else {  // queue it up
-      sparks.activity.view.setRightClickFunction(this.showEditor);
+      workbench.view.setRightClickFunction(this.showEditor);
     }
 
     // create drawer
@@ -80,7 +81,6 @@
       drop: function(evt, ui) {
         var type = ui.draggable.data("type"),
             embeddableComponent = embeddableComponents[type],
-            section = sparks.activityController.currentSection,
             hole = self.lastHighlightedHole.attr("hole"),
             loc = hole + "," + hole,
             possibleValues,
@@ -114,7 +114,7 @@
         breadModel("checkLocation", comp);
 
         // update meters
-        section.meter.update();
+        workbench.meter.update();
 
         // show editor
         self.showEditor(uid);
@@ -131,8 +131,9 @@
     },
 
     showEditor: function(uid) {
+      console.log("showEditor!")
       var comp = getBreadBoard().components[uid],
-          section = sparks.activityController.currentSection,
+          section = sparks.workbenchController.workbench,
           $propertyEditor = null;
       // create editor tooltip
       possibleValues = comp.getEditablePropertyValues();
@@ -140,7 +141,7 @@
       componentValueChanged = function (evt, ui) {
         var val = possibleValues[ui.value],
             eng = sparks.unit.toEngineering(val, comp.editableProperty.units);
-        $("#prop_value_"+uid).text(eng.value + eng.units);
+        $(".prop_value_"+uid).text(eng.value + eng.units);
         comp.changeEditableValue(val);
         section.meter.update();
       }

@@ -2242,7 +2242,7 @@ window["breadboardView"] = {
   var $stack = [];
   // stack of callback functions
 
-  board.util.require(["common/images/sparks.breadboard.svg"], function(data) {
+  board.util.require(["../common/images/sparks.breadboard.svg"], function(data) {
     // create base element
     SVGStorage = new SVGStorage(data["sparks.breadboard"]);
     // pre-cache all needed images
