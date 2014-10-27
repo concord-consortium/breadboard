@@ -11,30 +11,17 @@
 //= require data-source/couch-ds
 //= require helpers/util
 //= require helpers/unit
-//= require models/activity
-//= require models/section
-//= require models/page
-//= require models/question
 //= require models/log
+//= require models/meter
 //= require models/workbench
-//= require views/activity-view
-//= require views/section-view
-//= require views/page-view
-//= require views/question-view
 //= require views/oscilloscope-view
 //= require views/function-generator-view
 //= require views/breadboard-svg-view
 //= require views/add-components-view
 //= require views/svg_view_comm
 //= require views/workbench-view
-//= require controllers/question-controller
-//= require controllers/page-controller
 //= require controllers/log-controller
-//= require controllers/section-controller
-//= require controllers/activity-controller
-//= require controllers/tutorial-controller
 //= require controllers/workbench-controller
-//= require activity-constructor
 //= require helpers/math-parser
 //= require helpers/string
 //= require helpers/ui
@@ -63,7 +50,6 @@
 
   sparks.activity_base_url = "/sparks-activities/";
   sparks.activity_images_base_url = "/sparks-activities/images/";
-  sparks.tutorial_base_url = "tutorials/";
   sparks.soundFiles = {click: "../common/sounds/click.ogg"};
 
   window._gaq = window._gaq || [];      // in case this script loads before the GA queue is created
