@@ -256,6 +256,13 @@ window["breadboardView"] = {
 
   CircuitBoard.prototype.setRightClickFunction = function(func) {
     this.rightClickFunction = func;
+    for (uid in this.component) {
+      this.component[uid].view.bind("contextmenu dblclick", function(evt) {
+        func($(this).attr("uid"));
+        evt.preventDefault();
+        return false;
+      });
+    }
   };
 
   CircuitBoard.prototype.addDMM = function(params) {
