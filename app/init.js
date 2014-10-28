@@ -13,6 +13,7 @@
 //= require helpers/unit
 //= require models/log
 //= require models/meter
+//= require models/oscilloscope
 //= require models/workbench
 //= require views/oscilloscope-view
 //= require views/function-generator-view
@@ -28,7 +29,6 @@
 //= require helpers/complex-number
 //= require circuit/breadboard
 //= require circuit/multimeter2
-//= require circuit/oscilloscope
 //= require circuit/resistor-4band
 //= require circuit/resistor-5band
 //= require circuit/circuit-math
