@@ -328,6 +328,8 @@
           if (sparks.breadboardView) {
             if (newComponent.getViewArguments && newComponent.hasValidConnections() && newComponent.kind !== "battery")
               sparks.breadboardView.addComponent(newComponent.getViewArguments());
+            if (newComponent.kind == "battery" || newComponent.kind == "function generator" ) // FIXME
+              sparks.breadboardView.addBattery("left_negative21,left_positive21");
           }
 
           return newComponent.UID;
@@ -343,22 +345,6 @@
             interfaces.insertComponent(spec.type, spec);
           });
 
-          // check if there is any power source, if not, add a battery
-          if (!breadBoard.components.source) {
-            var battery = {
-              UID: "source",
-              type: "battery",
-              voltage: 9
-            };
-            interfaces.insertComponent("battery", battery);
-          }
-
-          // add default power leads
-          interfaces.insertComponent("powerLead", {
-            UID: "redPowerLead",
-            type: "powerLead",
-            connections: "left_positive21"
-          });
           interfaces.insertComponent("powerLead", {
             UID: "blackPowerLead",
             type: "powerLead",
@@ -593,6 +579,8 @@
             if (component.getViewArguments && component.hasValidConnections() && component.kind !== "battery") {
               sparks.breadboardView.addComponent(component.getViewArguments());
             }
+            if (component.kind == "battery" || component.kind == "function generator" ) // FIXME
+              sparks.breadboardView.addBattery("left_negative21,left_positive21");
           });
         }
       };
