@@ -1,36 +1,33 @@
-/* FILE battery.js */
-//= require ./component
-/*global sparks */
+var extend    = require('../helpers/util').extend,
+    Component = require('./component');
 
-(function () {
+Wire = function (props, breadBoard) {
+  Wire.parentConstructor.call(this, props, breadBoard);
+  this.setViewArguments({color: this.getColor()});
+};
 
-  sparks.circuit.Wire = function (props, breadBoard) {
-    sparks.circuit.Wire.parentConstructor.call(this, props, breadBoard);
-    this.setViewArguments({color: this.getColor()});
-  };
+extend(Wire, Component, {
 
-  sparks.extend(sparks.circuit.Wire, sparks.circuit.Component, {
-
-    getColor: function () {
-      var location = this.getLocation();
-      if (location.indexOf("positive") > -1) {
-        return "red";
-      } else if (location.indexOf("negative") > -1) {
-        return "black";
+  getColor: function () {
+    var location = this.getLocation();
+    if (location.indexOf("positive") > -1) {
+      return "red";
+    } else if (location.indexOf("negative") > -1) {
+      return "black";
+    } else {
+      if (Math.random() < 0.5){
+        return "green";
       } else {
-        if (Math.random() < 0.5){
-          return "green";
-        } else {
-          return "blue";
-        }
+        return "blue";
       }
-    },
-
-    addCiSoComponent: function (ciso) {
-      var resistance  = 1e-6,
-          nodes       = this.getNodes();
-      ciso.addComponent(this.UID, "Resistor", resistance, nodes);
     }
-  });
+  },
 
-})();
+  addCiSoComponent: function (ciso) {
+    var resistance  = 1e-6,
+        nodes       = this.getNodes();
+    ciso.addComponent(this.UID, "Resistor", resistance, nodes);
+  }
+});
+
+module.exports = Wire;

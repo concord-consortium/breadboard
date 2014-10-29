@@ -1,12 +1,13 @@
-//=require libs/rgbcolor.js
-//=require libs/base64.js
-//=require libs/canvg.js
-
 /**
  * @author Mobile.Lab (http://mlearner.com)
  **/
 
-window["breadboardView"] = {
+require('../libs/base64');
+require('../libs/canvg');
+
+var breadboardComm      = require('./svg_view_comm');
+
+window["breadboardSVGView"] = {
   "options" : {
     "rootpath" : "",
     "magnifier" : {
@@ -23,23 +24,23 @@ window["breadboardView"] = {
 };
 
 
-// window["breadboardView"].connectionMade = function(component, location) {
+// window["breadboardSVGView"].connectionMade = function(component, location) {
 //   console.log('Received: connect, component|' + component + '|' + location);
 // };
 
-// window["breadboardView"].connectionBroken = function(component, location) {
+// window["breadboardSVGView"].connectionBroken = function(component, location) {
 //   console.log('Received: disconnect, component|' + component + '|' + location);
 // };
 
-// window["breadboardView"].probeAdded = function(meter, color, location) {
+// window["breadboardSVGView"].probeAdded = function(meter, color, location) {
 //   console.log('Received: connect, ' + meter + '|probe|' + color + '|' + location);
 // };
 
-// window["breadboardView"].probeRemoved = function(meter, color) {
+// window["breadboardSVGView"].probeRemoved = function(meter, color) {
 //   console.log('Received: disconnect, ' + meter + '|probe|' + color);
 // };
 
-// window["breadboardView"].dmmDialMoved = function(value) {
+// window["breadboardSVGView"].dmmDialMoved = function(value) {
 //   console.log('Received: multimeter_dial >> ' + value);
 // };
 
@@ -131,7 +132,7 @@ window["breadboardView"] = {
     });
   };
 
-})(jQuery, window["breadboardView"]);
+})(jQuery, window["breadboardSVGView"]);
 
 /**
  * breadboardView # board
@@ -163,6 +164,8 @@ window["breadboardView"] = {
   };
   // board constructor
   var CircuitBoard = function(id) {
+    this.workbenchController = require('../controllers/workbench-controller')
+
     var self = this;
     // link to main holder
     this.holder = $('.' + id).html('').append(
@@ -214,9 +217,7 @@ window["breadboardView"] = {
   };
 
   CircuitBoard.prototype.sendEventToModel = function(evName, params) {
-    if (sparks && sparks.breadboardComm) {
-      sparks.breadboardComm[evName](params[0], params[1], params[2]);
-    }
+    breadboardComm[evName](this.workbenchController.workbench, params[0], params[1], params[2]);
   };
 
   CircuitBoard.prototype.addComponent = function(elem) {
@@ -2304,4 +2305,4 @@ window["breadboardView"] = {
     }
   };
 
-})(jQuery, window["breadboardView"]);
+})(jQuery, window["breadboardSVGView"]);

@@ -1,68 +1,71 @@
-/*global sparks $ */
 
-(function() {
+var LogEvent  = require('../models/log'),
+    util      = require('../helpers/util');
 
-  /*
-   * Sparks Log Controller can be accessed by the
-   * singleton variable sparks.logController
-   */
-  sparks.LogController = function(){
-    this.currentLog = null;
-  };
+Log = function(startTime){
+  this.events = [];
+  this.startTime = startTime;
+  this.endTime = -1;
+};
 
-  sparks.LogController.prototype = {
+LogController = function(){
+  this.currentLog = null;
+};
 
-    startNewSession: function() {
-      this.currentLog = new sparks.Log(new Date().valueOf());
-    },
+LogController.prototype = {
 
-    endSession: function() {
-      this.currentLog.endTime = new Date().valueOf();
-    },
+  startNewSession: function() {
+    this.currentLog = new Log(new Date().valueOf());
+  },
 
-    addEvent: function (name, value) {
-      var evt = new sparks.LogEvent(name, value, new Date().valueOf());
-      this.currentLog.events.push(evt);
-    },
+  endSession: function() {
+    this.currentLog.endTime = new Date().valueOf();
+  },
 
-    numEvents: function(log, name) {
-      var count = 0;
-      $.each(log.events, function(i, evt){
-        if (evt.name == name){
-          count ++;
-        }
-      });
-      return count;
-    },
+  addEvent: function (name, value) {
+    var evt = new LogEvent(name, value, new Date().valueOf());
+    this.currentLog.events.push(evt);
+  },
 
-    numUniqueMeasurements: function(log, type) {
-      var count = 0;
-      var positions = [];
-      $.each(log.events, function(i, evt){
-        if (evt.name == sparks.LogEvent.DMM_MEASUREMENT){
-          if (evt.value.measurement == type) {
-            var position = evt.value.red_probe + "" + evt.value.black_probe;
-            if (sparks.util.contains(positions, position) === -1) {
-              count++;
-              positions.push(position);
-            }
+  numEvents: function(log, name) {
+    var count = 0;
+    $.each(log.events, function(i, evt){
+      if (evt.name == name){
+        count ++;
+      }
+    });
+    return count;
+  },
+
+  numUniqueMeasurements: function(log, type) {
+    var count = 0;
+    var positions = [];
+    $.each(log.events, function(i, evt){
+      if (evt.name == LogEvent.DMM_MEASUREMENT){
+        if (evt.value.measurement == type) {
+          var position = evt.value.red_probe + "" + evt.value.black_probe;
+          if (util.contains(positions, position) === -1) {
+            count++;
+            positions.push(position);
           }
         }
-      });
-      return count;
-    },
+      }
+    });
+    return count;
+  },
 
-    numConnectionChanges: function(log, type) {
-      var count = 0;
-      $.each(log.events, function(i, evt){
-        if (evt.name == sparks.LogEvent.CHANGED_CIRCUIT && evt.value.type == type){
-          count ++;
-        }
-      });
-      return count;
-    }
+  numConnectionChanges: function(log, type) {
+    var count = 0;
+    $.each(log.events, function(i, evt){
+      if (evt.name == LogEvent.CHANGED_CIRCUIT && evt.value.type == type){
+        count ++;
+      }
+    });
+    return count;
+  }
 
-  };
+};
 
-  sparks.logController = new sparks.LogController();
-})();
+logController = new LogController();
+
+module.exports = logController;

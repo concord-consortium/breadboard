@@ -4,9 +4,11 @@
  * Gabe Lerner (gabelerner@gmail.com)
  * http://code.google.com/p/canvg/
  *
- * Requires: rgbcolor.js - http://www.phpied.com/rgb-color-parser-in-javascript/
  */
 (function(){
+
+	var RGBColor = require('./rgbcolor');
+
 	// canvg(target, s)
 	// empty parameters: replace all 'svg' elements on page with 'canvas' elements
 	// target: canvas element or the id of a canvas element

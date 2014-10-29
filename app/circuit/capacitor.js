@@ -1,38 +1,36 @@
-/* FILE capacitor.js */
-//= require ./reactive-component
-/*global sparks */
 
-(function () {
+var extend            = require('../helpers/util').extend,
+    ReactiveComponent = require('./reactive-component');
 
-  sparks.circuit.Capacitor = function (props, breadBoard) {
-    sparks.circuit.Capacitor.parentConstructor.call(this, props, breadBoard);
-  };
+Capacitor = function (props, breadBoard) {
+  Capacitor.parentConstructor.call(this, props, breadBoard);
+};
 
-  sparks.extend(sparks.circuit.Capacitor, sparks.circuit.ReactiveComponent, {
+extend(Capacitor, ReactiveComponent, {
 
-    getCapacitance: function () {
-      return this.getComponentParameter('capacitance', this.capacitanceFromImpedance);
-    },
+  getCapacitance: function () {
+    return this.getComponentParameter('capacitance', this.capacitanceFromImpedance);
+  },
 
-    capacitanceFromImpedance: function (impedance, frequency) {
-      return 1 / (impedance * 2 * Math.PI * frequency);
-    },
+  capacitanceFromImpedance: function (impedance, frequency) {
+    return 1 / (impedance * 2 * Math.PI * frequency);
+  },
 
-    addCiSoComponent: function (ciso) {
-      var capacitance = this.getCapacitance() || 0,
-          nodes       = this.getNodes();
-      ciso.addComponent(this.UID, "Capacitor", capacitance, nodes);
-    },
+  addCiSoComponent: function (ciso) {
+    var capacitance = this.getCapacitance() || 0,
+        nodes       = this.getNodes();
+    ciso.addComponent(this.UID, "Capacitor", capacitance, nodes);
+  },
 
-    componentTypeName: "Capacitor",
+  componentTypeName: "Capacitor",
 
-    isEditable: true,
+  isEditable: true,
 
-    editableProperty: {name: "capacitance", units: "F"},
+  editableProperty: {name: "capacitance", units: "F"},
 
-    changeEditableValue: function(val) {
-      this.capacitance = val;
-    }
-  });
+  changeEditableValue: function(val) {
+    this.capacitance = val;
+  }
+});
 
-})();
+module.exports = Capacitor;

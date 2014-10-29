@@ -1,38 +1,36 @@
-/* FILE inductor.js */
-//= require ./reactive-component
-/*global sparks */
 
-(function () {
+var extend            = require('../helpers/util').extend,
+    ReactiveComponent = require('./reactive-component');
 
-  sparks.circuit.Inductor = function (props, breadBoard) {
-    sparks.circuit.Inductor.parentConstructor.call(this, props, breadBoard);
-  };
+Inductor = function (props, breadBoard) {
+  Inductor.parentConstructor.call(this, props, breadBoard);
+};
 
-  sparks.extend(sparks.circuit.Inductor, sparks.circuit.ReactiveComponent, {
+extend(Inductor, ReactiveComponent, {
 
-    getInductance: function () {
-      return this.getComponentParameter('inductance', this.inductanceFromImpedance);
-    },
+  getInductance: function () {
+    return this.getComponentParameter('inductance', this.inductanceFromImpedance);
+  },
 
-    inductanceFromImpedance: function (impedance, frequency) {
-      return impedance / (2 * Math.PI * frequency);
-    },
+  inductanceFromImpedance: function (impedance, frequency) {
+    return impedance / (2 * Math.PI * frequency);
+  },
 
-    addCiSoComponent: function (ciso) {
-      var inductance = this.getInductance() || 0,
-          nodes       = this.getNodes();
-      ciso.addComponent(this.UID, "Inductor", inductance, nodes);
-    },
+  addCiSoComponent: function (ciso) {
+    var inductance = this.getInductance() || 0,
+        nodes       = this.getNodes();
+    ciso.addComponent(this.UID, "Inductor", inductance, nodes);
+  },
 
-    componentTypeName: "Inductor",
+  componentTypeName: "Inductor",
 
-    isEditable: true,
+  isEditable: true,
 
-    editableProperty: {name: "inductance", units: "H"},
+  editableProperty: {name: "inductance", units: "H"},
 
-    changeEditableValue: function(val) {
-      this.inductance = val;
-    }
-  });
+  changeEditableValue: function(val) {
+    this.inductance = val;
+  }
+});
 
-})();
+module.exports = Inductor;

@@ -1,199 +1,195 @@
-/* FILE resistor.js */
-/*global sparks $ getBreadBoard*/
 
-(function () {
+Component = function (props, breadBoard) {
 
-    sparks.circuit.Component = function (props, breadBoard) {
+  for (var i in props) {
+    this[i]=props[i];
+  }
 
-      for (var i in props) {
-        this[i]=props[i];
-      }
+  this.breadBoard = breadBoard;
+  this.breadBoard.components[props.UID] = this;
 
-      this.breadBoard = breadBoard;
-      this.breadBoard.components[props.UID] = this;
+  if (!this.label){
+    this.label = !!this.UID.split("/")[1] ? this.UID.split("/")[1] : "";
+  }
 
-      if (!this.label){
-        this.label = !!this.UID.split("/")[1] ? this.UID.split("/")[1] : "";
-      }
+  if (typeof this.connections === "string") {
+    this.connections = this.connections.replace(/ /g,'').split(",");
+  }
 
-      if (typeof this.connections === "string") {
-        this.connections = this.connections.replace(/ /g,'').split(",");
-      }
+  for (i in this.connections) {
+    this.connections[i] = this.breadBoard.getHole(this.connections[i]);
 
-      for (i in this.connections) {
-        this.connections[i] = this.breadBoard.getHole(this.connections[i]);
+    if (!!this.breadBoard.holes[this.connections[i]]) {
+      this.breadBoard.holes[this.connections[i]].connections[this.breadBoard.holes[this.connections[i]].connections.length] = this;
+    }
+  }
+  this._ensureFloat("resistance");
+  this._ensureFloat("nominalResistance");
+  this._ensureFloat("voltage");
+  this._ensureFloat("capacitance");
+  this._ensureFloat("inductance");
+  this._ensureFloat("impedance");
+  this.draggable = !!this.draggable;
 
-        if (!!this.breadBoard.holes[this.connections[i]]) {
-          this.breadBoard.holes[this.connections[i]].connections[this.breadBoard.holes[this.connections[i]].connections.length] = this;
+  this.viewArguments = {
+    type: this.type,
+    UID: this.UID,
+    connections: this.getLocation(),
+    draggable: this.draggable
+  };
+
+  if (this.label) {
+    this.viewArguments.label = this.label;
+  }
+};
+
+Component.prototype = {
+  setViewArguments: function (args) {
+    for (var arg in args) {
+      if (!args.hasOwnProperty(arg)) continue;
+      this.viewArguments[arg] = args[arg];
+    }
+  },
+
+  getViewArguments: function () {
+    this.viewArguments.connections = this.getLocation(); // update location
+    return this.viewArguments;
+  },
+
+  move: function (connections) {
+    var i, j;
+    for (i in this.connections) {
+      for (j in this.connections[i].connections) {
+        if (this.connections[i].connections[j] === this) {
+          this.connections[i].connections = [];
         }
       }
-      this._ensureFloat("resistance");
-      this._ensureFloat("nominalResistance");
-      this._ensureFloat("voltage");
-      this._ensureFloat("capacitance");
-      this._ensureFloat("inductance");
-      this._ensureFloat("impedance");
-      this.draggable = !!this.draggable;
+      this.connections[i] = [];
+    }
+    this.connections = [];
+    for (i in connections){
+      this.connections[i] = this.breadBoard.holes[connections[i]];
+      this.breadBoard.holes[connections[i]].connections[this.breadBoard.holes[connections[i]].connections.length] = this;
+    }
 
-      this.viewArguments = {
-        type: this.type,
-        UID: this.UID,
-        connections: this.getLocation(),
-        draggable: this.draggable
-      };
+    this.setViewArguments({connections: this.getLocation()});
+  },
 
-      if (this.label) {
-        this.viewArguments.label = this.label;
+  destroy: function (){
+    var i, j;
+    for(i in this.connections){
+      for(j in this.connections[i].connections ){
+        if( this.connections[i].connections[j] === this ){
+          this.connections[i].connections = [];
+        }
       }
-    };
+      this.connections[i] = [];
+    }
+    this.connections = [];
+    delete this.breadBoard.components[this.UID];
+  },
 
-    sparks.circuit.Component.prototype =
-    {
-      setViewArguments: function (args) {
-        for (var arg in args) {
-          if (!args.hasOwnProperty(arg)) continue;
-          this.viewArguments[arg] = args[arg];
-        }
-      },
+  _ensureFloat: function (val) {
+    if (this[val] && typeof this[val] === "string") {
+      this[val] = parseFloat(this[val], 10);
+    }
+  },
 
-      getViewArguments: function () {
-        this.viewArguments.connections = this.getLocation(); // update location
-        return this.viewArguments;
-      },
+  getNodes: function () {
+    return $.map(this.connections, function (connection) {
+      return connection.nodeName();
+    });
+  },
 
-      move: function (connections) {
-        var i, j;
-        for (i in this.connections) {
-          for (j in this.connections[i].connections) {
-            if (this.connections[i].connections[j] === this) {
-              this.connections[i].connections = [];
-            }
-          }
-          this.connections[i] = [];
-        }
-        this.connections = [];
-        for (i in connections){
-          this.connections[i] = this.breadBoard.holes[connections[i]];
-          this.breadBoard.holes[connections[i]].connections[this.breadBoard.holes[connections[i]].connections.length] = this;
-        }
+  // converts connections to string, for flash arguments
+  getLocation: function () {
+    return this.connections[0].getName() + "," + this.connections[1].getName();
+  },
 
-        this.setViewArguments({connections: this.getLocation()});
-      },
+  canInsertIntoNetlist: function () {
+    return true;
+  },
 
-      destroy: function (){
-        var i, j;
-        for(i in this.connections){
-          for(j in this.connections[i].connections ){
-            if( this.connections[i].connections[j] === this ){
-              this.connections[i].connections = [];
-            }
-          }
-          this.connections[i] = [];
-        }
-        this.connections = [];
-        delete this.breadBoard.components[this.UID];
-      },
+  /**
+    hasValidConnections: check that this component has connections that are valid for generating a QUCS netlist.
 
-      _ensureFloat: function (val) {
-        if (this[val] && typeof this[val] === "string") {
-          this[val] = parseFloat(this[val], 10);
-        }
-      },
+    The only check performed right now is that there be 2 connections, but this validity check could be enhanced
+    to check, for example, that the two connections map to different nodes, etc.
+  */
+  hasValidConnections: function () {
+    return this.connections.length === 2 || (this.type === "powerLead" && this.connections.length === 1);
+  },
 
-      getNodes: function () {
-        return $.map(this.connections, function (connection) {
-          return connection.nodeName();
-        });
-      },
+  getRequestedImpedance: function (spec, steps) {
+    var min, max, factor, step, choosableSteps, i, len;
 
-      // converts connections to string, for flash arguments
-      getLocation: function () {
-        return this.connections[0].getName() + "," + this.connections[1].getName();
-      },
+    if (typeof spec === 'string' || typeof spec === 'number') {
+      return spec;
+    }
 
-      canInsertIntoNetlist: function () {
-        return true;
-      },
+    if (spec[0] !== 'uniform') {
+      throw new Error("Only uniformly-distributed random impedances/resistances are supported right now; received " + spec);
+    }
+    if (spec.length < 3) throw new Error("Random impedance/resistance spec does not specify an upper and lower bound");
+    if (typeof spec[1] !== 'number' || typeof spec[2] !== 'number') throw new Error("Random impedance/resistance spec lower and upper bound were not both numeric");
 
-      /**
-        hasValidConnections: check that this component has connections that are valid for generating a QUCS netlist.
+    min = Math.min(spec[1], spec[2]);
+    max = Math.max(spec[1], spec[2]);
 
-        The only check performed right now is that there be 2 connections, but this validity check could be enhanced
-        to check, for example, that the two connections map to different nodes, etc.
-      */
-      hasValidConnections: function () {
-        return this.connections.length === 2 || (this.type === "powerLead" && this.connections.length === 1);
-      },
+    // if steps array exists, it specifies allowable values, up to the order of magnitude
+    if (steps) {
+      // copy 'steps' array before sorting it so we don't modify the passed-in array
+      steps = steps.slice().sort();
 
-      getRequestedImpedance: function (spec, steps) {
-        var min, max, factor, step, choosableSteps, i, len;
+      factor = Math.pow(10, Math.orderOfMagnitude(min) - Math.orderOfMagnitude(steps[0]));
+      choosableSteps = [];
+      i = 0;
+      len = steps.length;
+      do {
+        step = steps[i++] * factor;
+        if (min <= step && step <= max) choosableSteps.push(step);
 
-        if (typeof spec === 'string' || typeof spec === 'number') {
-          return spec;
-        }
-
-        if (spec[0] !== 'uniform') {
-          throw new Error("Only uniformly-distributed random impedances/resistances are supported right now; received " + spec);
-        }
-        if (spec.length < 3) throw new Error("Random impedance/resistance spec does not specify an upper and lower bound");
-        if (typeof spec[1] !== 'number' || typeof spec[2] !== 'number') throw new Error("Random impedance/resistance spec lower and upper bound were not both numeric");
-
-        min = Math.min(spec[1], spec[2]);
-        max = Math.max(spec[1], spec[2]);
-
-        // if steps array exists, it specifies allowable values, up to the order of magnitude
-        if (steps) {
-          // copy 'steps' array before sorting it so we don't modify the passed-in array
-          steps = steps.slice().sort();
-
-          factor = Math.pow(10, Math.orderOfMagnitude(min) - Math.orderOfMagnitude(steps[0]));
-          choosableSteps = [];
+        if (i >= len) {
+          factor *= 10;
           i = 0;
-          len = steps.length;
-          do {
-            step = steps[i++] * factor;
-            if (min <= step && step <= max) choosableSteps.push(step);
-
-            if (i >= len) {
-              factor *= 10;
-              i = 0;
-            }
-          } while (step < max);
-
-          if (choosableSteps.length > 0) {
-            return choosableSteps[ Math.floor(Math.random() * choosableSteps.length) ];
-          }
         }
+      } while (step < max);
 
-        // if no steps were specified, or none were available between the requested min and max
-        return min + Math.random() * (max - min);
-      },
+      if (choosableSteps.length > 0) {
+        return choosableSteps[ Math.floor(Math.random() * choosableSteps.length) ];
+      }
+    }
 
-      addThisToFaults: function() {
-        var breadBoard = getBreadBoard();
-        if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
-      },
+    // if no steps were specified, or none were available between the requested min and max
+    return min + Math.random() * (max - min);
+  },
 
-      // used by the component edit view
-      componentTypeName: "Component",
+  addThisToFaults: function() {
+    var breadBoard = getBreadBoard();
+    if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
+  },
 
-      // used by the component edit view
-      isEditable: false,
+  // used by the component edit view
+  componentTypeName: "Component",
 
-      // used by the component edit view. Right now we assume any editable component
-      // has only one single editable property. If we change this assumption, we may
-      // want to set an array of properties
-      //
-      // Returns an array of the possible values this property can take
-      getEditablePropertyValues: function() { return [0]; },
-      // The name and base units of the editable property
-      editableProperty: {name: "", units: ""},
+  // used by the component edit view
+  isEditable: false,
 
-      // used by the component edit view. Right now we assume any editable component
-      // has only one single editable property. However, even if we have components with
-      // multiple editable properties, we can keep this API and pass in an array
-      changeEditableValue: function(val) { }
+  // used by the component edit view. Right now we assume any editable component
+  // has only one single editable property. If we change this assumption, we may
+  // want to set an array of properties
+  //
+  // Returns an array of the possible values this property can take
+  getEditablePropertyValues: function() { return [0]; },
+  // The name and base units of the editable property
+  editableProperty: {name: "", units: ""},
 
-    };
+  // used by the component edit view. Right now we assume any editable component
+  // has only one single editable property. However, even if we have components with
+  // multiple editable properties, we can keep this API and pass in an array
+  changeEditableValue: function(val) { }
 
-})();
+};
+
+module.exports = Component;
+

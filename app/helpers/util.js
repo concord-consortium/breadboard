@@ -1,6 +1,6 @@
-/* FILE util.js */
+var util = {};
 
-sparks.util.readCookie = function (name) {
+util.readCookie = function (name) {
     var nameEQ = name + "=";
     var ca = document.cookie.split(';');
     for(var i=0;i < ca.length;i++) {
@@ -17,19 +17,19 @@ sparks.util.readCookie = function (name) {
  * Naive deep-cloning of an object.
  * Doesn't check against infinite recursion.
  */
-sparks.util.cloneSimpleObject = function (obj) {
+util.cloneSimpleObject = function (obj) {
     var ret, key;
     if (obj instanceof Array) {
         ret = [];
         for (key in obj) {
-            ret.push(sparks.util.cloneSimpleObject(obj[key]));
+            ret.push(util.cloneSimpleObject(obj[key]));
         }
         return ret;
     }
     else if (typeof obj === 'object') {
         ret = {};
         for (key in obj) {
-            ret[key] = sparks.util.cloneSimpleObject(obj[key]);
+            ret[key] = util.cloneSimpleObject(obj[key]);
         }
         return ret;
     }
@@ -40,13 +40,13 @@ sparks.util.cloneSimpleObject = function (obj) {
 
 // The "next" function returns a different value each time
 // alternating between the two input values x, y.
-sparks.util.Alternator = function (x, y)
+util.Alternator = function (x, y)
 {
     this.x = x;
     this.y = y;
     this.cnt = 0;
 };
-sparks.util.Alternator.prototype =
+util.Alternator.prototype =
 {
     next : function () {
         ++this.cnt;
@@ -55,7 +55,7 @@ sparks.util.Alternator.prototype =
 };
 
 // Return a string representation of time lapsed between start and end
-sparks.util.timeLapseStr = function (start, end) {
+util.timeLapseStr = function (start, end) {
     var seconds = Math.floor((end - start) / 1000);
     var minutes = Math.floor(seconds / 60);
     seconds = seconds % 60;
@@ -73,7 +73,7 @@ as the actual keys in the result object.  This requires more careful naming but 
 makes using the returned object easier.  It could be improved to handle dates and
 numbers perhaps using style classes to tag them as such.
 */
-sparks.util.serializeForm = function (form) {
+util.serializeForm = function (form) {
     var result = {};
     form.map(function () {
         return this.elements ? jQuery.makeArray(this.elements) : this;
@@ -99,7 +99,7 @@ sparks.util.serializeForm = function (form) {
 
 // Returns a string representation of the input date
 // date: either a Date or a number in milliseconds
-sparks.util.formatDate = function (date) {
+util.formatDate = function (date) {
     function fillZero(val) {
         return val < 10 ? '0' + val : String(val);
     }
@@ -116,7 +116,7 @@ sparks.util.formatDate = function (date) {
     return s;
 };
 
-sparks.util.todaysDate = function() {
+util.todaysDate = function() {
   var monthNames = ["January","February","March","April","May","June","July",
                     "August","September","October","November","December"];
 
@@ -125,7 +125,7 @@ sparks.util.todaysDate = function() {
 }
 
 // Pretty print an object. Mainly intended for debugging JSON objects
-sparks.util.prettyPrint = function (obj, indent) {
+util.prettyPrint = function (obj, indent) {
     var t = '';
     if (typeof obj === 'object') {
         for (var key in obj) {
@@ -137,7 +137,7 @@ sparks.util.prettyPrint = function (obj, indent) {
                 if (typeof obj[key] === 'object') {
                     t += '\n';
                 }
-                t += sparks.util.prettyPrint(obj[key], indent + 4);
+                t += util.prettyPrint(obj[key], indent + 4);
             }
         }
         return t;
@@ -147,7 +147,7 @@ sparks.util.prettyPrint = function (obj, indent) {
     }
 };
 
-sparks.util.getRubric = function (id, callback, local) {
+util.getRubric = function (id, callback, local) {
     var self = this;
     var url;
 
@@ -156,7 +156,7 @@ sparks.util.getRubric = function (id, callback, local) {
     }
     else {
         //get it from server
-        url = unescape(sparks.util.readCookie('rubric_path') + '/' + id + '.json');
+        url = unescape(util.readCookie('rubric_path') + '/' + id + '.json');
     }
     console.log('url=' + url);
     $.ajax({
@@ -171,12 +171,12 @@ sparks.util.getRubric = function (id, callback, local) {
     });
 };
 
-sparks.util.shuffle = function (o) {
+util.shuffle = function (o) {
   for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
   return o;
 };
 
-sparks.util.contains = function (array, obj) {
+util.contains = function (array, obj) {
   var i = array.length;
     while (i--) {
        if (array[i] === obj) {
@@ -186,7 +186,7 @@ sparks.util.contains = function (array, obj) {
     return -1;
 };
 
-sparks.util.getKeys = function (json) {
+util.getKeys = function (json) {
   var keys = [];
   $.each(json, function(key){
     keys.push(key);
@@ -204,7 +204,7 @@ sparks.util.getKeys = function (json) {
 // @array an array of numbers, complex or real
 // @actual the number we want
 // @isComplex whether the numbers in the array are complex or real
-sparks.util.getClosestIndex = function(array, actual, isComplex) {
+util.getClosestIndex = function(array, actual, isComplex) {
   var minDiff = Infinity,
       index;
   // this could be shortened as a CS exercise, but it takes 0 ms over an array of
@@ -219,73 +219,40 @@ sparks.util.getClosestIndex = function(array, actual, isComplex) {
   return index;
 };
 
-////// data work
-
-sparks.data;
-
-sparks.getDataArray = function(){
-  sparks.data = [];
-  $.couch.urlPrefix = "/couchdb/learnerdata";
-  $.couch.db('').view(
-    "session_scores/Scores%20per%20activity",
-    {
-      success: function(response) {
-        $.each(response.rows, function(i, obj) {
-            // if (sparks.util.contains(obj.key, activityName)) {
-              sparks.data.push(obj);
-            // }
-          }
-        );
+// YUI-style inheritance
+util.extend = function(Child, Parent, properties) {
+  var F = function() {};
+  F.prototype = Parent.prototype;
+  Child.prototype = new F();
+  if (properties) {
+      for (var k in properties) {
+          Child.prototype[k] = properties[k];
       }
+  }
+  Child.prototype.constructor = Child;
+  Child.parentConstructor = Parent;
+  Child.uber = Parent.prototype;
+};
+
+module.exports = util;
+
+
+// Shim to add ECMA262-5 Array methods if not supported natively
+if ( !Array.prototype.indexOf ) {
+  Array.prototype.indexOf= function(find, i /*opt*/) {
+      if (i===undefined) i= 0;
+      if (i<0) i+= this.length;
+      if (i<0) i= 0;
+      for (var n= this.length; i<n; i++)
+          if (i in this && this[i]===find)
+              return i;
+      return -1;
+  };
+}
+if ( !Array.prototype.forEach ) {
+  Array.prototype.forEach = function(fn, scope) {
+    for(var i = 0, len = this.length; i < len; ++i) {
+      fn.call(scope, this[i], i, this);
     }
-  );
-
-};
-
-sparks.createPointsCSV = function(data) {
-  var csv = "";
-  csv += "Activity|Student|Level|Page|Try|Score\n"
-  $.each(sparks.data, function(i, obj){
-    var sections = obj.value.sectionReports;
-    $.each(sections, function(j, sec){
-      $.each(sec.pageReports, function(k, page){
-        $.each(page.sessionReports, function(l, sess){
-          csv += obj.key[1] + "|";
-          csv += obj.key[0] + "|";
-          csv += (j+1) + ": " + sec.sectionTitle + "|";
-          csv += (k+1) + "|";
-          csv += (l+1) + "|";
-          csv += sess.score + "\n";
-        });
-      });
-    });
-  });
-  return csv;
-};
-
-sparks.createQuestionsCSV = function(data) {
-  var csv = "";
-  csv += "Activity|Student|Level|Page|Try|Question|Answer|Correct Answer|Feedback|Score\n"
-  $.each(sparks.data, function(i, obj){
-    var sections = obj.value.sectionReports;
-    $.each(sections, function(j, sec){
-      $.each(sec.pageReports, function(k, page){
-        $.each(page.sessionReports, function(l, sess){
-          $.each(sess.questions, function(m, ques){
-            csv += obj.key[1] + "|";
-            csv += obj.key[0] + "|";
-            csv += (j+1) + ": " + sec.sectionTitle + "|";
-            csv += (k+1) + "|";
-            csv += (l+1) + "|";
-            csv += (m+1) + ": " + ques.shortPrompt + "|";
-            csv += ques.answer + "|";
-            csv += ques.correct_answer + "|";
-            csv += ques.feedback + "|";
-            csv += ques.points_earned + "\n";
-          });
-        });
-      });
-    });
-  });
-  return csv;
-};
+  }
+}

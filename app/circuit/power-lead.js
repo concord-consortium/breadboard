@@ -1,31 +1,28 @@
-/* FILE powerlead.js */
-//= require ./component
-/*global sparks */
+var extend    = require('../helpers/util').extend,
+    Component = require('./component');
 
-(function () {
+PowerLead = function (props, breadBoard) {
+  PowerLead.parentConstructor.call(this, props, breadBoard);
+};
 
-  sparks.circuit.PowerLead = function (props, breadBoard) {
-    sparks.circuit.PowerLead.parentConstructor.call(this, props, breadBoard);
-  };
+extend(PowerLead, Component, {
 
-  sparks.extend(sparks.circuit.PowerLead, sparks.circuit.Component, {
+  getColor: function () {
+    var location = this.getLocation();
+    if (location.indexOf("positive") > -1) {
+      return "redPowerWire";
+    } else {
+      return "blackPowerWire";
+    }
+  },
 
-    getColor: function () {
-      var location = this.getLocation();
-      if (location.indexOf("positive") > -1) {
-        return "redPowerWire";
-      } else {
-        return "blackPowerWire";
-      }
-    },
+  getLocation: function () {
+    return this.connections[0].getName() + ",a1";       // Flash coding issue means we need to give this a second argument...
+  },
 
-    getLocation: function () {
-      return this.connections[0].getName() + ",a1";       // Flash coding issue means we need to give this a second argument...
-    },
+  addCiSoComponent: function () { },
 
-    addCiSoComponent: function () { },
+  getViewArguments: null
+});
 
-    getViewArguments: null
-  });
-
-})();
+module.exports = PowerLead;

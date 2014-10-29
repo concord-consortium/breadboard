@@ -1,37 +1,30 @@
-//= require ./resistor
-//= require ./r-values
-/*global sparks */
+var extend    = require('../helpers/util').extend,
+    Resistor  = require('./resistor');
 
-/* FILE variable-resistor.js */
+VariableResistor = function (props, breadBoard) {
+  Resistor.parentConstructor.call(this, props, breadBoard);
+  var superclass = VariableResistor.uber;
+  superclass.init.apply(this, [props.UID]);
+  this.resistance = this.minimumResistance;
+};
 
-(function () {
+extend(VariableResistor, Resistor, {
 
-    var circuit = sparks.circuit;
+  getMinResistance: function() {
+    return this.minimumResistance;
+  },
 
-    circuit.VariableResistor = function (props, breadBoard) {
-      sparks.circuit.Resistor.parentConstructor.call(this, props, breadBoard);
-      var superclass = sparks.circuit.VariableResistor.uber;
-      superclass.init.apply(this, [props.UID]);
-      this.resistance = this.minimumResistance;
-    };
+  getMaxResistance: function() {
+    return this.maximumResistance;
+  },
 
-    sparks.extend(circuit.VariableResistor, circuit.Resistor, {
+  scaleResistance: function(value) {
+    var perc = value / 10,       // values are 0-10
+        range = this.maximumResistance - this.minimumResistance,
+        newValue = this.minimumResistance + (range * perc);
+    this.resistance = newValue;
+  }
 
-      getMinResistance: function() {
-        return this.minimumResistance;
-      },
+});
 
-      getMaxResistance: function() {
-        return this.maximumResistance;
-      },
-
-      scaleResistance: function(value) {
-        var perc = value / 10,       // values are 0-10
-            range = this.maximumResistance - this.minimumResistance,
-            newValue = this.minimumResistance + (range * perc);
-        this.resistance = newValue;
-      }
-
-    });
-
-})();
+module.exports = VariableResistor;
