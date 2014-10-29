@@ -32,7 +32,7 @@ breadboardComm.connectionMade = function(workbench, component, hole) {
         if (connection === connectionReturning) {
           comp.connections[i] = breadboard.getHole(hole);
           delete openConnections[connection];
-          workbenchController.workbench.meter.moveProbe(connection, hole);
+          workbench.meter.moveProbe(connection, hole);
           break;
         }
       }
