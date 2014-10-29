@@ -108,6 +108,8 @@
       </g>
     </g>
     <g info="holes" transform="matrix(0.8 0 0 0.8 0 0)">
+      <use hole="off_3" xlink:href="#$:hole_not_connected" transform="matrix(1 0 0 1 25700 4400)"/>
+      <use hole="off_9" xlink:href="#$:hole_not_connected" transform="matrix(1 0 0 1 -1000 5800)"/>
       <use hole="left_positive1" xlink:href="#$:hole_not_connected" transform="matrix(1 0 0 1 14700 5400)"/>
       <use hole="left_positive2" xlink:href="#$:hole_not_connected" transform="matrix(1 0 0 1 14300 5400)"/>
       <use hole="left_positive3" xlink:href="#$:hole_not_connected" transform="matrix(1 0 0 1 13900 5400)"/>
