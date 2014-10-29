@@ -1,6 +1,6 @@
 require('./breadboard-svg-view');
 
-var AddComponentsView     = require('./oscilloscope-view'),
+var AddComponentsView     = require('./add-components-view'),
     FunctionGeneratorView = require('./function-generator-view'),
     OscilloscopeView      = require('./oscilloscope-view'),
     workbenchController   = require('../controllers/workbench-controller'),
@@ -22,8 +22,7 @@ WorkbenchView.prototype = {
       breadboard:       this.getOrCreateDiv('breadboard'),
       scope:            this.getOrCreateDiv('oscope_mini'),
       fg:               this.getOrCreateDiv('fg_mini', true),
-      addCompsWrapper:  this.getOrCreateDiv('add_components'),
-      addCompsBtn:      this.getOrCreateDiv('add_components_btn')
+      addCompsWrapper:  this.getOrCreateDiv('add_components')
     };
 
     this.divs.breadboard.html('');
@@ -61,12 +60,18 @@ WorkbenchView.prototype = {
     this.workbench.meter.reset();
 
     if (this.workbench.showComponentDrawer || this.workbench.showComponentEditor) {
+      var drawer = $('<div id="component_drawer" class="retracted"></div>'),
+          button = $('<button id="add_components_btn">Add a new Component</button>');
+
+      // this.divs.addCompsWrapper.append(drawer);
+      // this.divs.addCompsWrapper.append(button);
+
       var addComponentsView = new AddComponentsView(this.workbench);
 
       if (this.workbench.showComponentDrawer) {
         this.divs.addCompsWrapper.show();
-        this.divs.addCompsBtn.off();
-        this.divs.addCompsBtn.on('click', addComponentsView.openPane);
+        button.off();
+        button.on('click', addComponentsView.openPane);
       }
     }
   },

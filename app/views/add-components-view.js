@@ -5,25 +5,25 @@ var workbenchController = require('../controllers/workbench-controller');
 
 embeddableComponents = {
   resistor: {
-    image: "common/images/blank-resistor.png",
+    image: "/common/images/blank-resistor.png",
     imageWidth: 108,
     property: "resistance",
     initialValue: 100
   },
   capacitor: {
-    image: "common/images/capacitor.png",
+    image: "/common/images/capacitor.png",
     imageWidth: 48,
     property: "capacitance",
     initialValue: 1e-6
   },
   inductor: {
-    image: "common/images/inductor.png",
+    image: "/common/images/inductor.png",
     imageWidth: 80,
     property: "inductance",
     initialValue: 1e-6
   },
   wire: {
-    image: "common/images/wire.png",
+    image: "/common/images/wire.png",
     imageWidth: 80,
     leadDistance: 5
   }
