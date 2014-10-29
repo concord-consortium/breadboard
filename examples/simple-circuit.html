@@ -14,13 +14,24 @@
     <script src="../sparks.js"></script>
     <script>
     </script>
+    <style>
+        #breadboard-wrapper {
+            position: absolute;
+            border: 2px solid black;
+            width: 800px;
+            left: 20%;
+            top: 61px;
+        }
+    </style>
   </head>
   <body>
+    <h2>Breadboard: Simple Circuit</h2>
 
     <div id="breadboard-wrapper">
     </div>
     <script>
       sparks.createWorkbench({
+        "showComponentDrawer": true,
         "show_oscilloscope": "true",
          "allow_move_yellow_probe": "true",
          "circuit": [
