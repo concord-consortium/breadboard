@@ -5,94 +5,34 @@ See license.md for license information.
 
 == Testing SPARKS locally
 
-The SPARKS project contains all the built code needed to run the project locally. However, because the application uses XHR requests to load the application files, most browsers will require a local server, such as Apache, to be serving the site.
+The SPARKS project contains all the built code needed to run the project locally. However, because the application uses XHR requests to load the application files, most browsers will require a local server, such as Apache or Python's SimpleHTTPServer, to be serving the site.
 
-In order to load the example activities in the /activities folder, the local server needs to simply serve the SPARKS directory.
+In order to load the example activities in the /examples folder, the local server needs to simply serve the SPARKS directory.
 
-To serve the main set of authored activities, the path /sparks-activities/ needs to proxy to the contents of the sparks-activities repository (https://github.com/concord-consortium/sparks-activities). This can be done by pointing to a local checkout, or to the gh-pages branch hosted at http://concord-consortium.github.io/sparks-activities/.
+The easiest way to do this is using python:
 
-We've supplied a simple Ruby rack server configuration for running locally.
+    cd breadboard
+    python -m SimpleHTTPServer
 
-The Rack server also proxies database requests for the full activity set available on github
-here: http://concord-consortium.github.io/sparks-activities/
+The server runs on port 8000 by default. Open a browser and navigate to
 
-The following will start up a local server using rack running on port 9292 (after installing the development dependencies listed below):
+http://localhost:8000/examples/
 
-  bin/rackup server.ru
+== Modifying and building the library
 
-You can then open the index page here: http://localhost:9292/index.html
+Breadboard uses [Browserify](http://browserify.org/) to build the script and create the sparks.js file.
 
-Alternatively, if you can run Apache on your system, you can set up the local server by modifying the file proxy/apache.conf.sample with your information (modify the paths at the bottom of the file to point to the location of your local sparks directory), and then save the file as apache.conf (i.e. remove the .sample from the file name). You can then start a local Apache server by running
+Browserify requires [npm](https://github.com/npm/npm).
 
- apachectl -f "`pwd`/proxy/apache.conf" -k start
+    npm install -g browserify
 
-Now you will be able to navigate to the html files in the project by pointing your browser to
+After any change to the script files in app, run this command
 
- http://localhost:1234
- http://localhost:1234/activities.html
- http://localhost:1234/activities.html#local/rlc-draggable   // local, does not require internet connection
- http://localhost:1234/activities.html#series-interpretive   // requires proxy
+    browserify app/init.js --standalone sparks > sparks.js
 
-== Building SPARKS and setting up local environment
+Your changes should be built into sparks.js
 
-=== Building Javascript code
-
-Sparks uses the Ruby gem Sprockets (http://getsprockets.org) to manage the javascript code.  Sprockets combines the individual JS files into a single file per activity.
-
-The build system has been tested on Ruby 1.8.7 and 1.9.3.
-
-We use [RVM](https://rvm.io/rvm/install/) to install and manage different versions of Ruby and sets of Ruby gems used in different projects.
-
-In the instructions below I assume Ruby 1.9.3 is being used:
-
-Setup rvm to use Ruby 1.9.3 and a gemset named sparks.
-
- rvm use 1.9.3
- rvm gemset create sparks
- echo "rvm use 1.9.3@sparks" > .rvmrc
- cd .
-
-Install bundler and the necessary gems
-
- gem install bundler
- bundle install --binstubs
-
-Build using sprockets, from top folder
-
- bin/rake
-
-"rake" will need to be called each time a Javascript file is changed ... unless you use Guard (see next sections).
-
-== Using Guard to automatically build the JavaScript code
-
-Start [Guard](https://github.com/guard/guard) to automatically build client-breadboard-activity.js
-whenever changes are made to the files in app/ or lib/
-
-  bin/guard
-
-== Running the tests
-
-*Note: The tests are currently out of date.*
-
-This application is mostly tested using JSPEC. You can install JSPEC with
-
- gem install jspec
-
-To run the tests on the command line with Rhino:
-
- // optinally run bin/rake to rebuild the files
- cd tests/jspec
- java -jar spec/support/js.jar -opt -1 spec/rhino-terminal.js
-
- // or just run
- cd tests/jspec
- ./test.sh
-
-To run the tests in the browser, visit
-
- http://localhost:1234/tests/jspec/spec/dom.html
-
-Note that some of the tests, 'Measuring breadboard components with QUCS' and 'Using multimeter with mock Flash connection' require a response from the QUCS applications. The rest should run fine as long as the code has been built (section 1 above).
+We will soon add an automatic build process using Watchify or Guard.
 
 == Understanding the code
 
