@@ -1,13 +1,11 @@
-= SPARKS
+= breadboard
 === Copyright: (c)2013 Concord Consortium
 
 See license.md for license information.
 
-== Testing SPARKS locally
+== Testing the breadboard library locally
 
-The SPARKS project contains all the built code needed to run the project locally. However, because the application uses XHR requests to load the application files, most browsers will require a local server, such as Apache or Python's SimpleHTTPServer, to be serving the site.
-
-In order to load the example activities in the /examples folder, the local server needs to simply serve the SPARKS directory.
+In order to load the example activities in the /examples folder, you need to serve the contents of the /breadboard directory using a local server, such as Python's SimpleHTTPServer or Apache.
 
 The easiest way to do this is using python:
 
