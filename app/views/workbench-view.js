@@ -3,10 +3,11 @@ require('./breadboard-svg-view');
 var AddComponentsView     = require('./add-components-view'),
     FunctionGeneratorView = require('./function-generator-view'),
     OscilloscopeView      = require('./oscilloscope-view'),
-    workbenchController   = require('../controllers/workbench-controller'),
-    sound                 = require('../helpers/sound');
+    sound                 = require('../helpers/sound'),
+    workbenchController;
 
 WorkbenchView = function(workbench){
+  workbenchController   = require('../controllers/workbench-controller');     // grrr
   this.workbench = workbench;
 };
 

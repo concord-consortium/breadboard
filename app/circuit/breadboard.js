@@ -19,7 +19,7 @@
         VariableResistor      = require('./variable-resistor'),
         Component             = require('./component'),
         Wire                  = require('./wire'),
-        workbenchController   = require('../controllers/workbench-controller');
+        workbenchController;
 
     ////////////////////////////////////////////////////////////////////////////////
     //// GLOBAL DEFAULTS ///////////////////////////////////////////////////////////
@@ -600,6 +600,10 @@
 
       // The inward interface between Flash's ExternalInterface and JavaScript's BreadBoard prototype model instance
       this.breadModel = function () {
+        if (!workbenchController) {
+          workbenchController = require('../controllers/workbench-controller');   // grrr
+        }
+
         var newArgs = [];
         for(var i=1,l=arguments.length;i< l;i++){
           newArgs[newArgs.length] = arguments[i];

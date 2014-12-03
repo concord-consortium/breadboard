@@ -53,7 +53,7 @@ module.exports = Battery;
         VariableResistor      = require('./variable-resistor'),
         Component             = require('./component'),
         Wire                  = require('./wire'),
-        workbenchController   = require('../controllers/workbench-controller');
+        workbenchController;
 
     ////////////////////////////////////////////////////////////////////////////////
     //// GLOBAL DEFAULTS ///////////////////////////////////////////////////////////
@@ -634,6 +634,10 @@ module.exports = Battery;
 
       // The inward interface between Flash's ExternalInterface and JavaScript's BreadBoard prototype model instance
       this.breadModel = function () {
+        if (!workbenchController) {
+          workbenchController = require('../controllers/workbench-controller');   // grrr
+        }
+
         var newArgs = [];
         for(var i=1,l=arguments.length;i< l;i++){
           newArgs[newArgs.length] = arguments[i];
@@ -10363,10 +10367,11 @@ require('./breadboard-svg-view');
 var AddComponentsView     = require('./add-components-view'),
     FunctionGeneratorView = require('./function-generator-view'),
     OscilloscopeView      = require('./oscilloscope-view'),
-    workbenchController   = require('../controllers/workbench-controller'),
-    sound                 = require('../helpers/sound');
+    sound                 = require('../helpers/sound'),
+    workbenchController;
 
 WorkbenchView = function(workbench){
+  workbenchController   = require('../controllers/workbench-controller');     // grrr
   this.workbench = workbench;
 };
 
