@@ -339,9 +339,9 @@
 
           // update view
           if (workbenchController.breadboardView) {
-            if (newComponent.getViewArguments && newComponent.hasValidConnections() && newComponent.kind !== "battery")
+            if (newComponent.getViewArguments && newComponent.hasValidConnections() && newComponent.kind !== "battery" && !newComponent.hide)
               workbenchController.breadboardView.addComponent(newComponent.getViewArguments());
-            if (newComponent.kind == "battery" || newComponent.kind == "function generator" ) // FIXME
+            if (newComponent.kind == "battery" || newComponent.kind == "function generator" && !newComponent.hide) // FIXME
               workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
           }
 
@@ -589,10 +589,10 @@
         },
         updateView: function() {
           $.each(breadBoard.components, function(i, component) {
-            if (component.getViewArguments && component.hasValidConnections() && component.kind !== "battery") {
+            if (component.getViewArguments && component.hasValidConnections() && component.kind !== "battery" && !component.hide) {
               workbenchController.breadboardView.addComponent(component.getViewArguments());
             }
-            if (component.kind == "battery" || component.kind == "function generator" ) // FIXME
+            if (component.kind == "battery" || component.kind == "function generator" && !component.hide) // FIXME
               workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
           });
         }
