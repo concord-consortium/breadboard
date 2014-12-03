@@ -499,3 +499,5 @@ set_disable_multimeter_position: function (disabled) {
             this.powerOn;
     }
 };
+
+module.exports = MultimeterBase;

@@ -1572,6 +1572,8 @@ set_disable_multimeter_position: function (disabled) {
     }
 };
 
+module.exports = MultimeterBase;
+
 },{"../controllers/workbench-controller":17}],8:[function(require,module,exports){
 
 var LogEvent        = require('../models/log'),
