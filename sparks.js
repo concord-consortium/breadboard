@@ -3440,6 +3440,10 @@ sparks.createWorkbench = function(props, elId) {
   workbenchController.createWorkbench(props, elId);
 }
 
+sparks.removeComponent = function(uid) {
+  workbenchController.breadboardView.removeComponent(uid);
+}
+
 module.exports = sparks;
 
 },{"../lib/apMessageBox":37,"../lib/circuitSolver.min":38,"../lib/jquery/jquery-1.8.1.min":39,"../lib/jquery/jquery-ui-1.8.24.custom.min":40,"../lib/jquery/plugins/jquery.cookie":41,"../lib/jquery/plugins/jquery.easyTooltip":42,"../lib/jquery/plugins/jquery.event.drag-2.0.min":43,"../lib/jquery/plugins/jquery.flashembed":44,"../lib/jquery/plugins/jquery.tablesorter.min":45,"../lib/jquery/plugins/jquery.url.packed":46,"../lib/raphael-min":47,"./controllers/workbench-controller":17,"./helpers/sound":19}],24:[function(require,module,exports){

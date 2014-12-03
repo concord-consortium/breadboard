@@ -36,4 +36,8 @@ sparks.createWorkbench = function(props, elId) {
   workbenchController.createWorkbench(props, elId);
 }
 
+sparks.removeComponent = function(uid) {
+  workbenchController.breadboardView.removeComponent(uid);
+}
+
 module.exports = sparks;
