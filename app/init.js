@@ -40,4 +40,7 @@ sparks.removeComponent = function(uid) {
   workbenchController.breadboardView.removeComponent(uid);
 }
 
+// this is probably too much access for an API, but doing it now for simplicity
+sparks.workbenchController = workbenchController;
+
 module.exports = sparks;
