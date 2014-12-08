@@ -1,5 +1,5 @@
 
-var workbenchController   = require('../controllers/workbench-controller');
+var workbenchController;
 
 /*
  * Digital Multimeter
@@ -13,6 +13,8 @@ MultimeterBase.prototype = {
     modes : { ohmmeter : 0, voltmeter : 1, ammeter : 2 },
 
     init: function () {
+        workbenchController   = require('../controllers/workbench-controller');
+
         this.mode = this.modes.ohmmeter;
 
         this.absoluteValue = 0;   //current meter value

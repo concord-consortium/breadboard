@@ -1075,7 +1075,7 @@ module.exports = Inductor;
 
 },{"../helpers/util":22,"./reactive-component":11}],7:[function(require,module,exports){
 
-var workbenchController   = require('../controllers/workbench-controller');
+var workbenchController;
 
 /*
  * Digital Multimeter
@@ -1089,6 +1089,8 @@ MultimeterBase.prototype = {
     modes : { ohmmeter : 0, voltmeter : 1, ammeter : 2 },
 
     init: function () {
+        workbenchController   = require('../controllers/workbench-controller');
+
         this.mode = this.modes.ohmmeter;
 
         this.absoluteValue = 0;   //current meter value
@@ -6971,7 +6973,7 @@ module.exports = Workbench;
 },{"../views/workbench-view":36,"./meter":28}],31:[function(require,module,exports){
 unit = require('../helpers/unit');
 
-var workbenchController = require('../controllers/workbench-controller');
+var workbenchController;
 
 
 embeddableComponents = {
@@ -7001,7 +7003,8 @@ embeddableComponents = {
 }
 
 AddComponentsView = function(workbench){
-  console.log("AddComponentsView!")
+  workbenchController = require('../controllers/workbench-controller');
+
   var self = this,
       component;
 

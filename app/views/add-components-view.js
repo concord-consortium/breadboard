@@ -1,6 +1,6 @@
 unit = require('../helpers/unit');
 
-var workbenchController = require('../controllers/workbench-controller');
+var workbenchController;
 
 
 embeddableComponents = {
@@ -30,7 +30,8 @@ embeddableComponents = {
 }
 
 AddComponentsView = function(workbench){
-  console.log("AddComponentsView!")
+  workbenchController = require('../controllers/workbench-controller');
+
   var self = this,
       component;
 
