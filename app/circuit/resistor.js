@@ -2,9 +2,11 @@ var extend                = require('../helpers/util').extend,
     Component             = require('./component'),
     r_values              = require('./r-values'),
     Resistor4band         = require('./resistor-4band'),
-    workbenchController   = require('../controllers/workbench-controller');
+    workbenchController;
 
 Resistor = function (props, breadBoard) {
+  workbenchController   = require('../controllers/workbench-controller');
+
   var tolerance, steps;
 
   // translate the requested resistance (which may be of the form ["uniform", 10, 100] into a real number
