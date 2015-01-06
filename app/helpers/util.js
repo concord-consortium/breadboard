@@ -1,18 +1,5 @@
 var util = {};
 
-util.readCookie = function (name) {
-    var nameEQ = name + "=";
-    var ca = document.cookie.split(';');
-    for(var i=0;i < ca.length;i++) {
-        var c = ca[i];
-        while (c.charAt(0)==' ') c = c.substring(1,c.length);
-        if (c.indexOf(nameEQ) === 0) {
-            return c.substring(nameEQ.length,c.length);
-        }
-    }
-    return null;
-};
-
 /**
  * Naive deep-cloning of an object.
  * Doesn't check against infinite recursion.
@@ -145,30 +132,6 @@ util.prettyPrint = function (obj, indent) {
     else {
         return obj + '\n';
     }
-};
-
-util.getRubric = function (id, callback, local) {
-    var self = this;
-    var url;
-
-    if (local) {
-        url = 'rubric.json';
-    }
-    else {
-        //get it from server
-        url = unescape(util.readCookie('rubric_path') + '/' + id + '.json');
-    }
-    console.log('url=' + url);
-    $.ajax({
-        url: url,
-        dataType: 'json',
-        success: function (rubric) {
-            callback(rubric);
-        },
-        error: function (request, status, error) {
-            console.log('Activity#getRubric ERROR:\nstatus: ' + status + '\nerror: ' + error + '\nurl=' + url);
-        }
-    });
 };
 
 util.shuffle = function (o) {

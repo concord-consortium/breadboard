@@ -1,3 +1,4 @@
+require('../../bower_components/raphael/raphael-min');
 var sparksMath = require('../helpers/sparks-math');
 
 OscilloscopeView = function () {

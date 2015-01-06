@@ -3,7 +3,7 @@
 .rvmrc
 .bundle/config
 start.sh
-bin/*
+bower_components/*
 proxy/accept*
 proxy/apache.conf
 proxy/apache.pid

@@ -1,14 +1,9 @@
-require('../lib/jquery/jquery-1.8.1.min');
+require('../bower_components/jquery/jquery');
 require('../lib/jquery/jquery-ui-1.8.24.custom.min');
-require('../lib/circuitSolver.min');
-require('../lib/jquery/plugins/jquery.url.packed');
-require('../lib/jquery/plugins/jquery.cookie');
-require('../lib/jquery/plugins/jquery.easyTooltip');
-require('../lib/jquery/plugins/jquery.tablesorter.min');
 require('../lib/jquery/plugins/jquery.event.drag-2.0.min');
-require('../lib/jquery/plugins/jquery.flashembed');
+require('../bower_components/jquery-nearest/src/jquery.nearest.min');
 require('../lib/apMessageBox');
-require('../lib/raphael-min');
+require('../bower_components/circuit-solver/dist/circuitSolver.min');
 
 var workbenchController = require('./controllers/workbench-controller'),
     sound               = require('./helpers/sound'),

@@ -116,20 +116,6 @@ table.finalReport td button {
   background: #f0e0b0;
 }
 
-/* tablesorter */
-table.tablesorter thead tr .header {
-	background-image: url("../../common/icons/doublearrow.gif");
-	background-repeat: no-repeat;
-	background-position: center right;
-	cursor: pointer;
-}
-table.tablesorter thead tr .headerSortUp {
-	background-image: url("../../common/icons/asc.gif");
-}
-table.tablesorter thead tr .headerSortDown {
-	background-image: url("../../common/icons/desc.gif");
-}
-
 #rcc_model {
   border: 4px #ffbb7d solid;
 }
@@ -247,13 +233,6 @@ border-bottom-style:solid;
 #return_to_portal img {
   position: absolute;
   left: -20px;
-}
-
-#easyTooltip{
-	padding:5px 10px;
-	border:1px solid #195fa4;
-	background:#195fa4 url(../../common/icons/bg.gif) repeat-x;
-	color:#fff;
 }
 
 #oscope {
@@ -513,10 +492,6 @@ border-bottom-style:solid;
 
 .ui-slider-horizontal .ui-slider-handle {
   top: -.5em;
-}
-
-#easyTooltip {
-  z-index: 5000;
 }
 
 .passive-input {
