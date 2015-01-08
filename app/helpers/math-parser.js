@@ -1,4 +1,5 @@
-unit = require('./unit');
+var unit        = require('./unit'),
+    Breadboard  = require('../circuit/breadboard');
 
 mathParser = {};
 
@@ -62,12 +63,12 @@ p.replaceCircuitVariables = function(formula){
 
   // first add all the components as circuit variables at the start of the script
   // add all breadboard components as variables
-  $.each(getBreadBoard().components, function(i, component){
-    formula = "var " + i + " = getBreadBoard().components['"+i+"']; " + formula;
+  $.each(Breadboard.getBreadBoard().components, function(i, component){
+    formula = "var " + i + " = Breadboard.getBreadBoard().components['"+i+"']; " + formula;
   });
 
   // add the breadboard itself as a variable
-  formula = "var breadboard = getBreadBoard(); " + formula;
+  formula = "var breadboard = Breadboard.getBreadBoard(); " + formula;
 
   // then support old method of accessing circuit variables using ${...}
   // NOTE: This is obsolete (but tested)
@@ -80,7 +81,7 @@ p.replaceCircuitVariables = function(formula){
     var component = variable[0];
     var property = variable[1];
 
-    var components = getBreadBoard().components;
+    var components = Breadboard.getBreadBoard().components;
 
     if (!components[component]){
       console.log("ERROR calculating sum: No component name '"+component+"' in circuit");

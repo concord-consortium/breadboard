@@ -1,7 +1,6 @@
-unit = require('../helpers/unit');
-
-var workbenchController;
-
+var unit        = require('../helpers/unit'),
+    Breadboard  = require('../circuit/breadboard'),
+    workbenchController;
 
 embeddableComponents = {
   resistor: {
@@ -106,12 +105,12 @@ AddComponentsView = function(workbench){
        "connections": loc
       };
       props[embeddableComponent.property] = embeddableComponent.initialValue;
-      uid = breadModel("insertComponent", type, props);
+      uid = Breadboard.breadModel("insertComponent", type, props);
 
-      comp = getBreadBoard().components[uid];
+      comp = Breadboard.getBreadBoard().components[uid];
 
       // move leads to correct width
-      breadModel("checkLocation", comp);
+      Breadboard.breadModel("checkLocation", comp);
 
       // update meters
       workbench.meter.update();
@@ -131,7 +130,7 @@ AddComponentsView.prototype = {
   },
 
   showEditor: function(uid) {
-    var comp = getBreadBoard().components[uid],
+    var comp = Breadboard.getBreadBoard().components[uid],
         section = workbenchController.workbench,
         $propertyEditor = null;
     // create editor tooltip
@@ -169,7 +168,7 @@ AddComponentsView.prototype = {
       $propertyEditor
     ).append(
       $("<button>").text("Remove").on('click', function() {
-        breadModel("removeComponent", comp);
+        Breadboard.breadModel("removeComponent", comp);
         section.meter.update();
         $(".speech-bubble").trigger('mouseleave');
       })

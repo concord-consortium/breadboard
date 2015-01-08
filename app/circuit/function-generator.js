@@ -1,12 +1,11 @@
 
 var extend              = require('../helpers/util').extend,
-    Component           = require('./component'),
-    workbenchController;
+    Component           = require('./component');
 
-FunctionGenerator = function (props, breadBoard) {
-  workbenchController = require('../controllers/workbench-controller');     // grrrrr....
-
+FunctionGenerator = function (props, breadBoard, workbenchController) {
   FunctionGenerator.parentConstructor.call(this, props, breadBoard);
+
+  this.workbenchController = workbenchController;
 
   this.amplitudeScaleFactor = 1;
 
@@ -67,8 +66,8 @@ extend(FunctionGenerator, Component, {
   // for now, no validation on frequency. So we might set something QUCS isn't expecting from the given sim type
   setFrequency: function(frequency) {
     this.frequency = frequency;
-    if (workbenchController.workbench.meter) {
-      workbenchController.workbench.meter.update();
+    if (this.workbenchController.workbench.meter) {
+      this.workbenchController.workbench.meter.update();
     }
   },
 
@@ -77,8 +76,8 @@ extend(FunctionGenerator, Component, {
   // linear circuits -- we'll need to revisit this for nonlinear circuits.
   setAmplitude: function(newAmplitude) {
     this.amplitudeScaleFactor = newAmplitude / this.amplitude;
-    if (workbenchController.workbench.meter) {
-      workbenchController.workbench.meter.update();
+    if (this.workbenchController.workbench.meter) {
+      this.workbenchController.workbench.meter.update();
     }
   },
 

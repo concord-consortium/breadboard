@@ -1,9 +1,8 @@
-require('../circuit/breadboard');       // until breadboard refactoring....
-
 var Oscilloscope  = require('../models/oscilloscope'),
     Workbench     = require('../models/workbench'),
     Multimeter    = require('../circuit/multimeter'),
-    logController = require('../controllers/log-controller');
+    logController = require('../controllers/log-controller'),
+    Breadboard    = require('../circuit/breadboard');
 
 
 WorkbenchController = function(){
@@ -59,14 +58,14 @@ WorkbenchController.prototype = {
   loadBreadboard: function() {
     var workbench = this.workbench;
 
-    breadModel("clear");
+    Breadboard.breadModel("clear");
 
     if (!!workbench.circuit){
-      breadModel("createCircuit", workbench.circuit);
+      Breadboard.breadModel("createCircuit", workbench.circuit);
     }
 
     if (!!workbench.faults){
-      breadModel("addFaults", workbench.faults);
+      Breadboard.breadModel("addFaults", workbench.faults);
     }
   },
 

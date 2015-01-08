@@ -1,3 +1,4 @@
+var Breadboard = require('../circuit/breadboard');
 
 Component = function (props, breadBoard) {
 
@@ -165,7 +166,7 @@ Component.prototype = {
   },
 
   addThisToFaults: function() {
-    var breadBoard = getBreadBoard();
+    var breadBoard = Breadboard.getBreadBoard();
     if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
   },
 

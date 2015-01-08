@@ -1,15 +1,16 @@
 var extend    = require('../helpers/util').extend,
     Resistor  = require('./resistor'),
-    r_values  = require('./r-values');
+    r_values  = require('./r-values'),
+    Breadboard      = require('./breadboard');
 
 Resistor4band = function (id) {
   var superclass = Resistor4band.uber;
   superclass.init.apply(this, [id]);
   this.numBands = 4;
 
-  if (breadModel('getResOrderOfMagnitude') < 0){
+  if (Breadboard.breadModel('getResOrderOfMagnitude') < 0){
     var om = this.randInt(0, 3);
-    breadModel('setResOrderOfMagnitude', om);
+    Breadboard.breadModel('setResOrderOfMagnitude', om);
   }
 
   this.r_values5pct = this.filter(r_values.r_values4band5pct);
@@ -39,7 +40,7 @@ extend(Resistor4band, Resistor, {
             values = this.r_values10pct;
         }
 
-        var om = breadModel('getResOrderOfMagnitude');
+        var om = Breadboard.breadModel('getResOrderOfMagnitude');
         var extra = this.randInt(0, 1);
         om = om + extra;
 
@@ -61,7 +62,7 @@ extend(Resistor4band, Resistor, {
   },
 
   _resistanceIsUnique: function (value) {
-    var components = getBreadBoard().components;
+    var components = Breadboard.getBreadBoard().components;
 
     for (var i in components){
       var resistor  = components[i];

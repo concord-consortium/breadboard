@@ -40,8 +40,6 @@ module.exports = Battery;
 
 /*global sparks CiSo $ breadBoard window console*/
 
-(function () {
-
     var util                  = require('../helpers/util'),
         Battery               = require('./battery'),
         Capacitor             = require('./capacitor'),
@@ -53,34 +51,25 @@ module.exports = Battery;
         VariableResistor      = require('./variable-resistor'),
         Component             = require('./component'),
         Wire                  = require('./wire'),
-        workbenchController;
+        workbenchController,
 
-    ////////////////////////////////////////////////////////////////////////////////
-    //// GLOBAL DEFAULTS ///////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////
 
-    var defs = {
-        rows            : 31,
-        powerRailHoles  : 25,
-        debug           : true
-      },
+        defs = {
+          rows            : 31,
+          powerRailHoles  : 25
+        },
 
-      Hole,
-      GhostHole,
-      Strip,
-      Breadboard,
-      breadBoard,
-      interfaces;
-
-      this.debug = function(){
-      };
+        Hole,
+        GhostHole,
+        Strip,
+        Breadboard,
+        breadBoard;
 
     ////////////////////////////////////////////////////////////////////////////////
     //// B R E A D - B O A R D - M O D E L /////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////////
 
       //// BREADBOARD Prototype Model //////////////////////////////////////////////
-      this.breadBoard = {};
 
       Hole = function Hole( strip, name ){
         this.type ='hole';
@@ -99,7 +88,7 @@ module.exports = Battery;
       };
 
       GhostHole = function GhostHole(name) {
-        this.name = !!name ? name : interfaces.getUID('node');
+        this.name = !!name ? name : breadBoard.getUID('node');
         return this;
       };
 
@@ -131,6 +120,12 @@ module.exports = Battery;
             mapCode;
 
         this.type ='Breadboard';
+
+        this.strips = [];
+        this.components = {};
+        this.holes = {};
+        this.holeMap = {};
+        this.faultyComponents = [];
 
         // Create power-rails
         this.powerRail = { // I was told these were called power-rails
@@ -169,189 +164,189 @@ module.exports = Battery;
         return this;
       };
 
-      Breadboard.prototype.strips=[];
-      Breadboard.prototype.components={};
-      Breadboard.prototype.holes={};
-      Breadboard.prototype.holeMap={};  // map of holes where one replaces the other, e.g. {a1: 'newGhostHole'}
-      Breadboard.prototype.faultyComponents=[];
+      Breadboard.prototype = {
 
-      Breadboard.prototype.makeStrip = function (name) {
-        var stripLen = this.strips.length;
-        this.strips[ stripLen ] = new Strip(null, name);
-        return this.strips[ stripLen ];
-      };
+        strips:           null,   // []
+        components:       null,   // {}
+        holes:            null,   // {}
+        holeMap:          null,   // {} map of holes where one replaces the other, e.g. {a1: 'newGhostHole'}
+        faultyComponents: null,   // []
+        resOrderOfMagnitude: -1,
 
-      Breadboard.prototype.component = function (props) {
-        if(typeof props=='string'){
-          return this.components[props];
-        } else {
+        makeStrip: function (name) {
+          var stripLen = this.strips.length;
+          this.strips[ stripLen ] = new Strip(null, name);
+          return this.strips[ stripLen ];
+        },
 
-          // FIXME refactor this repetitive code
+        component: function (props) {
+          if(typeof props=='string'){
+            return this.components[props];
+          } else {
 
-          if (props.kind === "resistor"){
-            return new Resistor(props, breadBoard);
-          }
-          if (props.kind === "variable resistor"){
-            return new VariableResistor(props, breadBoard);
-          }
-          if (props.kind === 'inductor') {
-            return new Inductor(props, breadBoard);
-          }
-          if (props.kind === 'capacitor') {
-            return new Capacitor(props, breadBoard);
-          }
-          if (props.kind === 'battery') {
-            return new Battery(props, breadBoard);
-          }
-          if (props.kind === 'function generator') {
-            return new FunctionGenerator(props, breadBoard);
-          }
-          if (props.kind === 'wire') {
-            return new Wire(props, breadBoard);
-          }
-          if (props.kind === 'powerLead') {
-            return new PowerLead(props, breadBoard);
-          }
-          return new Component(props, breadBoard);
-        }
-      };
+            // FIXME refactor this repetitive code
 
-      Breadboard.prototype.clear = function () {
-        var destroyed = 0,
-            k;
-
-        this.resOrderOfMagnitude = -1;
-        for( k in this.components ){
-          if (!this.components.hasOwnProperty(k)) continue;
-          destroyed += !!this.component(k).destroy();
-        }
-        this.components = {};
-        this.faultyComponents = [];
-        return !!destroyed;
-      };
-
-      // can pass either a hole or a string
-      Breadboard.prototype.getHole = function(hole) {
-        if (!hole) return;
-
-        if (hole.name){
-          if (!!this.holeMap[hole.name]){
-            return this.getHole(this.holeMap[hole.getName()]);
-          }
-          return hole;
-        }
-
-        // should be a string
-
-        // replace with mapped name
-        if (!!this.holeMap[hole]){
-          hole = this.holeMap[hole];
-        }
-
-        // return hole if it is in breadboard
-        if (!!this.holes[hole]){
-          return this.holes[hole];
-        }
-
-        // otherwise, make a new ghosthole
-        return new GhostHole(hole);
-
-      };
-
-      // Resets all connections, used when holeMap changes
-      Breadboard.prototype.resetConnections = function(oldHoleName, newHoleName) {
-        var i, j;
-
-        for( i in this.components ){
-          if (!this.components.hasOwnProperty(i)) continue;
-          var comp = this.component(i);
-          for (j in comp.connections){
-            if (!comp.connections.hasOwnProperty(j)) continue;
-            if (!!comp.connections[j] && comp.connections[j].getName() === oldHoleName) {
-              comp.connections[j] = this.getHole(newHoleName);
+            if (props.kind === "resistor"){
+              return new Resistor(props, breadBoard);
             }
+            if (props.kind === "variable resistor"){
+              return new VariableResistor(props, breadBoard);
+            }
+            if (props.kind === 'inductor') {
+              return new Inductor(props, breadBoard);
+            }
+            if (props.kind === 'capacitor') {
+              return new Capacitor(props, breadBoard);
+            }
+            if (props.kind === 'battery') {
+              return new Battery(props, breadBoard);
+            }
+            if (props.kind === 'function generator') {
+              return new FunctionGenerator(props, breadBoard, workbenchController);
+            }
+            if (props.kind === 'wire') {
+              return new Wire(props, breadBoard);
+            }
+            if (props.kind === 'powerLead') {
+              return new PowerLead(props, breadBoard);
+            }
+            return new Component(props, breadBoard);
           }
-        }
-      };
+        },
 
-      Breadboard.prototype.resOrderOfMagnitude = -1;
+        clear: function () {
+          var destroyed = 0,
+              k;
 
-      // Adds a fault to an existing circuit. A fault may affect one or
-      // more components. If fault.component is set, it will be applied to
-      // that component. Otherwise, if fault.count or fault.max are set, it
-      // will be applied to a number of random components.
-      Breadboard.prototype.addFault = function(fault) {
-        if (!!fault.component){
-          this.addFaultToComponent(fault, this.components[fault.component]);
-        } else {
-          // find out how many components we should be applying this to
-          var count;
-          if (!!fault.count) {
-            count = fault.count;
-          } else if (!!fault.max) {
-            count = Math.floor(Math.random() * fault.max) + 1;    // between 1 and max faults
+          this.resOrderOfMagnitude = -1;
+          for( k in this.components ){
+            if (!this.components.hasOwnProperty(k)) continue;
+            destroyed += !!this.component(k).destroy();
+          }
+          this.components = {};
+          this.faultyComponents = [];
+
+          this.clearHoleMap();
+
+          return !!destroyed;
+        },
+
+        // can pass either a hole or a string
+        getHole: function(hole) {
+          if (!hole) return;
+
+          if (hole.name){
+            if (!!this.holeMap[hole.name]){
+              return this.getHole(this.holeMap[hole.getName()]);
+            }
+            return hole;
           }
 
+          // should be a string
 
-          // apply fault to valid components 'count' times, with no repitition. No checking is
-          // done to see if there are sufficient valid components for this to be possible, so
-          // application will hang if authored badly.
-          var componentKeys = util.getKeys(this.components);
-          for (var i = 0; i < count; i++){
-            var randomComponent = null;
-            while (randomComponent === null) {
-              var rand = Math.floor(Math.random() * componentKeys.length);
-              var component = this.components[componentKeys[rand]];
-              if (!!component.applyFaults && (util.contains(this.faultyComponents, component) === -1)){
-                randomComponent = component;
+          // replace with mapped name
+          if (!!this.holeMap[hole]){
+            hole = this.holeMap[hole];
+          }
+
+          // return hole if it is in breadboard
+          if (!!this.holes[hole]){
+            return this.holes[hole];
+          }
+
+          // otherwise, make a new ghosthole
+          return new GhostHole(hole);
+        },
+
+        // Resets all connections, used when holeMap changes
+        resetConnections: function(oldHoleName, newHoleName) {
+          var i, j;
+
+          for( i in this.components ){
+            if (!this.components.hasOwnProperty(i)) continue;
+            var comp = this.component(i);
+            for (j in comp.connections){
+              if (!comp.connections.hasOwnProperty(j)) continue;
+              if (!!comp.connections[j] && comp.connections[j].getName() === oldHoleName) {
+                comp.connections[j] = this.getHole(newHoleName);
               }
             }
-            this.addFaultToComponent(fault, randomComponent);
           }
-        }
-      };
+        },
 
-      // adds a fault to a specific component. If fault.type is an array, a random
-      // type will be picked
-      Breadboard.prototype.addFaultToComponent = function(fault, component) {
-        var type;
-        if (fault.type instanceof Array){
-          type = fault.type[Math.floor(Math.random() * fault.type.length)];
-        } else {
-          type = fault.type;
-        }
+        // Adds a fault to an existing circuit. A fault may affect one or
+        // more components. If fault.component is set, it will be applied to
+        // that component. Otherwise, if fault.count or fault.max are set, it
+        // will be applied to a number of random components.
+        addFault: function(fault) {
+          if (!!fault.component){
+            this.addFaultToComponent(fault, this.components[fault.component]);
+          } else {
+            // find out how many components we should be applying this to
+            var count;
+            if (!!fault.count) {
+              count = fault.count;
+            } else if (!!fault.max) {
+              count = Math.floor(Math.random() * fault.max) + 1;    // between 1 and max faults
+            }
 
-        if (type === "open") {
-          component.open = true;
-          component.shorted = false;
-        } else if (type === "shorted") {
-          component.shorted = true;
-          component.open = false;
-        }
-        if (component.applyFaults) {
-          component.applyFaults();
-        }
 
-        this.faultyComponents.push(component);
-      };
+            // apply fault to valid components 'count' times, with no repitition. No checking is
+            // done to see if there are sufficient valid components for this to be possible, so
+            // application will hang if authored badly.
+            var componentKeys = util.getKeys(this.components);
+            for (var i = 0; i < count; i++){
+              var randomComponent = null;
+              while (randomComponent === null) {
+                var rand = Math.floor(Math.random() * componentKeys.length);
+                var component = this.components[componentKeys[rand]];
+                if (!!component.applyFaults && (util.contains(this.faultyComponents, component) === -1)){
+                  randomComponent = component;
+                }
+              }
+              this.addFaultToComponent(fault, randomComponent);
+            }
+          }
+        },
 
-      // returns an array of faults
-      Breadboard.prototype.getFaults = function() {
-        return this.faultyComponents;
-      };
+        // adds a fault to a specific component. If fault.type is an array, a random
+        // type will be picked
+        addFaultToComponent: function(fault, component) {
+          var type;
+          if (fault.type instanceof Array){
+            type = fault.type[Math.floor(Math.random() * fault.type.length)];
+          } else {
+            type = fault.type;
+          }
 
-      // returns first fault
-      Breadboard.prototype.getFault = function() {
-        if (this.faultyComponents.length > 0){
-          return this.faultyComponents[0];
-        }
-        return null;
-      };
+          if (type === "open") {
+            component.open = true;
+            component.shorted = false;
+          } else if (type === "shorted") {
+            component.shorted = true;
+            component.open = false;
+          }
+          if (component.applyFaults) {
+            component.applyFaults();
+          }
 
-      //// BreadBoard Instance & Interface /////////////////////////////////////////
-      breadBoard = new Breadboard();
+          this.faultyComponents.push(component);
+        },
 
-      interfaces = {
+        getFaults: function() {
+          return this.faultyComponents;
+        },
+
+        getFault: function() {
+          if (this.faultyComponents.length > 0){
+            return this.faultyComponents[0];
+          }
+          return null;
+        },
+
+
+
+        // "Public" functions. These used to be the old "interfaces" object
         insertComponent: function(kind, properties){
           // copy props into a new obj, so we don't modify original
           var props = {};
@@ -362,14 +357,14 @@ module.exports = Battery;
           props.kind = kind;
 
           // ensure no dupes, using either passed UID or type
-          props.UID = interfaces.getUID(!!props.UID ? props.UID : props.kind);
+          props.UID = this.getUID(!!props.UID ? props.UID : props.kind);
 
           // if uid is source, and no conections are specified, assume we are connecting to rails
           if (props.UID === "source" && !props.connections){
             props.connections = "left_positive21,left_negative21";
           }
 
-          var newComponent = breadBoard.component(props);
+          var newComponent = this.component(props);
 
           // update view
           if (workbenchController.breadboardView) {
@@ -381,37 +376,40 @@ module.exports = Battery;
 
           return newComponent.UID;
         },
+
         createCircuit: function(jsonCircuit) {
           var circuitHasReferenceFrequency = typeof jsonCircuit.referenceFrequency === 'number';
-
+          var self = this;
           $.each(jsonCircuit, function(i, spec) {
             // allow each component spec to override the circuit-wide reference frequency, if author desires.
             if (circuitHasReferenceFrequency && typeof spec.referenceFrequency === 'undefined') {
               spec.referenceFrequency = jsonCircuit.referenceFrequency;
             }
-            interfaces.insertComponent(spec.type, spec);
+            self.insertComponent(spec.type, spec);
           });
 
-          interfaces.insertComponent("powerLead", {
+          this.insertComponent("powerLead", {
             UID: "blackPowerLead",
             type: "powerLead",
             connections: "left_negative21"
           });
         },
+
         addFaults: function(jsonFaults){
+          var self = this;
           $.each(jsonFaults, function(i, fault){
-            breadBoard.addFault(fault);
+            self.addFault(fault);
           });
         },
+
         getResOrderOfMagnitude: function(){
-          return breadBoard.resOrderOfMagnitude;
+          return this.resOrderOfMagnitude;
         },
+
         setResOrderOfMagnitude: function(om){
-          breadBoard.resOrderOfMagnitude = om;
+          this.resOrderOfMagnitude = om;
         },
-        insert: function(){
-          console.log("ERROR: 'insert' is deprecated. Use 'insertComponent'");
-        },
+
         checkLocation: function(comp){     // ensure that a component's leads aren't too close
           var minDistance = {
                 resistor: 6,
@@ -457,12 +455,12 @@ module.exports = Battery;
               // move right lead one to the right
               newX = comp.coord[rightLead][0] - 1;
               newName = comp.connections[rightLead].name.replace(/\d*$/, newX);
-              comp.connections[rightLead] = breadBoard.getHole(newName);
+              comp.connections[rightLead] = this.getHole(newName);
             } else {
               // move left lead one to the left
               newX = comp.coord[leftLead][0] + 1;
               newName = comp.connections[leftLead].name.replace(/\d*$/, newX);
-              comp.connections[leftLead] = breadBoard.getHole(newName);
+              comp.connections[leftLead] = this.getHole(newName);
             }
           }
 
@@ -473,26 +471,29 @@ module.exports = Battery;
           }
 
         },
+
         getUID: function(_name){
           var name = _name.replace(/ /g, "_");      // no spaces in qucs
 
-          if (!breadBoard.components[name]){
+          if (!this.components[name]){
             return name;
           }
 
           var i = 0;
-          while (!!breadBoard.components[""+name+i]){
+          while (!!this.components[""+name+i]){
             i++;
           }
           return ""+name+i;
         },
+
         remove: function(type, connections){
-          var comp = interfaces.findComponent(type, connections);
+          var comp = this.findComponent(type, connections);
           if (!!comp){
             comp.destroy();
           }
           workbenchController.breadboardView.removeComponent(uid);
         },
+
         removeComponent: function(comp){
           var uid = comp.UID;
           comp.destroy();
@@ -500,14 +501,15 @@ module.exports = Battery;
             workbenchController.breadboardView.removeComponent(uid);
           }
         },
+
         findComponent: function(type, connections){
           var i, component;
 
           if (!!type && !!connections && connections.split(",").length === 2){
             connections = connections.split(",");
-            for (i in breadBoard.components){
-              if (!breadBoard.components.hasOwnProperty(i)) continue;
-              component = breadBoard.components[i];
+            for (i in this.components){
+              if (!this.components.hasOwnProperty(i)) continue;
+              component = this.components[i];
               if (component.kind === type && !!component.connections[0] &&
                 ((component.connections[0].getName() === connections[0] &&
                   component.connections[1].getName() === connections[1]) ||
@@ -519,36 +521,39 @@ module.exports = Battery;
           }
           return null;
         },
+
         destroy: function(component){
-          breadBoard.component(component).destroy();
+          this.component(component).destroy();
         },
-        clear: function() {
-          breadBoard.clear();
-          interfaces.clearHoleMap();
-        },
+
         move: function(component, connections){
-          breadBoard.component(component).move(connections.split(','));
+          this.component(component).move(connections.split(','));
         },
+
         getGhostHole: function(name){
           return new GhostHole(name);
         },
+
         mapHole: function(oldHoleName, newHoleName){
-          breadBoard.holeMap[oldHoleName] = newHoleName;
-          breadBoard.resetConnections(oldHoleName, newHoleName);
+          this.holeMap[oldHoleName] = newHoleName;
+          this.resetConnections(oldHoleName, newHoleName);
         },
+
         unmapHole: function(oldHoleName){
-          var newHoleName = breadBoard.holeMap[oldHoleName];
-          breadBoard.holeMap[oldHoleName] = undefined;
-          breadBoard.resetConnections(newHoleName, oldHoleName);
+          var newHoleName = this.holeMap[oldHoleName];
+          this.holeMap[oldHoleName] = undefined;
+          this.resetConnections(newHoleName, oldHoleName);
         },
+
         clearHoleMap: function(){
-          breadBoard.holeMap = {};
+          this.holeMap = {};
         },
+
         addRandomResistor: function(name, location, options){
           console.log("WARNING: addRandomResistor is deprecated");
           var resistor = new Resistor4band(name);
           resistor.randomize((options | null));
-          interfaces.insert('resistor', location, resistor.getRealValue(), name, resistor.colors);
+          this.insert('resistor', location, resistor.getRealValue(), name, resistor.colors);
           return resistor;
         },
 
@@ -570,32 +575,32 @@ module.exports = Battery;
           if (type === 'resistance') {
             connections = connections.split(',');
             ghost = new GhostHole();
-            ohmmeterBattery = breadBoard.component({
+            ohmmeterBattery = this.component({
               UID: 'ohmmeterBattery',
               kind: 'battery',
               voltage: 1,
               connections: [connections[0], connections[1]]});
-            // var currentProbe = breadBoard.component({
+            // var currentProbe = this.component({
             //   UID: 'meter',
             //   kind: 'iprobe',
             //   connections: [connections[1], ghost]});
             tempComponents.push(ohmmeterBattery);
           } else if (type === 'voltage'){
-            voltmeterResistor = breadBoard.component({
+            voltmeterResistor = this.component({
               UID: 'voltmeterResistor',
               kind: 'resistor',
               resistance: 1e12,
               connections: connections.split(',')});
             tempComponents.push(voltmeterResistor);
           } else if (type === 'current'){
-            ammeterResistor = breadBoard.component({
+            ammeterResistor = this.component({
               UID: 'ammeterResistor',
               kind: 'resistor',
               resistance: 1e-6,
               connections: connections.split(',')});
             tempComponents.push(ammeterResistor);
           } else if (type === 'oscope') {
-            oscopeResistor = breadBoard.component({
+            oscopeResistor = this.component({
               UID: 'oscopeResistor',
               kind: 'resistor',
               resistance: 1e12,
@@ -605,13 +610,13 @@ module.exports = Battery;
 
           ciso = new CiSo();
 
-          $.each(breadBoard.components, function(i, component) {
+          $.each(this.components, function(i, component) {
             component.addCiSoComponent(ciso);
           });
 
           // if ohmmeter, set reference node
           if (type === 'resistance') {
-            node = breadBoard.getHole(connections[1]).nodeName();
+            node = this.getHole(connections[1]).nodeName();
             ciso.setReferenceNode(node);
           }
           // destroy the temporary DMM components
@@ -621,8 +626,9 @@ module.exports = Battery;
 
           callback.call(context, ciso, callbackArgs);
         },
+
         updateView: function() {
-          $.each(breadBoard.components, function(i, component) {
+          $.each(this.components, function(i, component) {
             if (component.getViewArguments && component.hasValidConnections() && component.kind !== "battery" && !component.hide) {
               workbenchController.breadboardView.addComponent(component.getViewArguments());
             }
@@ -630,10 +636,16 @@ module.exports = Battery;
               workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
           });
         }
-      };
+
+      }
+
+      //// BreadBoard Instance & Interface /////////////////////////////////////////
+      breadBoard = new Breadboard();
+
+      var api = {};
 
       // The inward interface between Flash's ExternalInterface and JavaScript's BreadBoard prototype model instance
-      this.breadModel = function () {
+      api.breadModel = function () {
         if (!workbenchController) {
           workbenchController = require('../controllers/workbench-controller');   // grrr
         }
@@ -650,19 +662,19 @@ module.exports = Battery;
             if (conns[0] === 'null' || conns[1] === 'null') {
                 return 0;
             }
-            var v = interfaces.query.apply(window, newArgs);
+            var v = breadBoard.query.apply(breadBoard, newArgs);
             return v;
         }
         else {
-          return interfaces[func].apply(window, newArgs);
+          return breadBoard[func].apply(breadBoard, newArgs);
         }
       };
 
-      this.getBreadBoard = function() {
+      api.getBreadBoard = function() {
         return breadBoard;
       };
 
-})();
+      module.exports = api;
 
 },{"../controllers/workbench-controller":17,"../helpers/util":22,"./battery":1,"./capacitor":3,"./component":4,"./function-generator":5,"./inductor":6,"./power-lead":9,"./resistor":13,"./resistor-4band":12,"./variable-resistor":14,"./wire":15}],3:[function(require,module,exports){
 
@@ -703,6 +715,7 @@ extend(Capacitor, ReactiveComponent, {
 module.exports = Capacitor;
 
 },{"../helpers/util":22,"./reactive-component":11}],4:[function(require,module,exports){
+var Breadboard = require('../circuit/breadboard');
 
 Component = function (props, breadBoard) {
 
@@ -870,7 +883,7 @@ Component.prototype = {
   },
 
   addThisToFaults: function() {
-    var breadBoard = getBreadBoard();
+    var breadBoard = Breadboard.getBreadBoard();
     if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
   },
 
@@ -899,16 +912,15 @@ Component.prototype = {
 module.exports = Component;
 
 
-},{}],5:[function(require,module,exports){
+},{"../circuit/breadboard":2}],5:[function(require,module,exports){
 
 var extend              = require('../helpers/util').extend,
-    Component           = require('./component'),
-    workbenchController;
+    Component           = require('./component');
 
-FunctionGenerator = function (props, breadBoard) {
-  workbenchController = require('../controllers/workbench-controller');     // grrrrr....
-
+FunctionGenerator = function (props, breadBoard, workbenchController) {
   FunctionGenerator.parentConstructor.call(this, props, breadBoard);
+
+  this.workbenchController = workbenchController;
 
   this.amplitudeScaleFactor = 1;
 
@@ -969,8 +981,8 @@ extend(FunctionGenerator, Component, {
   // for now, no validation on frequency. So we might set something QUCS isn't expecting from the given sim type
   setFrequency: function(frequency) {
     this.frequency = frequency;
-    if (workbenchController.workbench.meter) {
-      workbenchController.workbench.meter.update();
+    if (this.workbenchController.workbench.meter) {
+      this.workbenchController.workbench.meter.update();
     }
   },
 
@@ -979,8 +991,8 @@ extend(FunctionGenerator, Component, {
   // linear circuits -- we'll need to revisit this for nonlinear circuits.
   setAmplitude: function(newAmplitude) {
     this.amplitudeScaleFactor = newAmplitude / this.amplitude;
-    if (workbenchController.workbench.meter) {
-      workbenchController.workbench.meter.update();
+    if (this.workbenchController.workbench.meter) {
+      this.workbenchController.workbench.meter.update();
     }
   },
 
@@ -1035,7 +1047,7 @@ extend(FunctionGenerator, Component, {
 
 module.exports = FunctionGenerator;
 
-},{"../controllers/workbench-controller":17,"../helpers/util":22,"./component":4}],6:[function(require,module,exports){
+},{"../helpers/util":22,"./component":4}],6:[function(require,module,exports){
 
 var extend            = require('../helpers/util').extend,
     ReactiveComponent = require('./reactive-component');
@@ -1586,7 +1598,8 @@ var LogEvent        = require('../models/log'),
     util            = require('../helpers/util'),
     logController   = require('../controllers/log-controller'),
     extend          = require('../helpers/util').extend,
-    MultimeterBase  = require('./multimeter-base');
+    MultimeterBase  = require('./multimeter-base'),
+    Breadboard      = require('./breadboard');
 
 /*
  * Digital Multimeter for breadboard activities
@@ -1625,7 +1638,7 @@ extend(Multimeter, MultimeterBase, {
       }
 
       if (!!this.currentMeasurement){
-        breadModel('query', this.currentMeasurement, this.redProbeConnection + ',' + this.blackProbeConnection, this.updateWithData, this);
+        Breadboard.breadModel('query', this.currentMeasurement, this.redProbeConnection + ',' + this.blackProbeConnection, this.updateWithData, this);
       }
     } else {
       this.updateWithData();
@@ -1640,7 +1653,7 @@ extend(Multimeter, MultimeterBase, {
 
     if (ciso) {
       source = ciso.voltageSources[0],
-      b  = getBreadBoard();
+      b  = Breadboard.getBreadBoard();
       p1 = b.getHole(this.redProbeConnection).nodeName();
       p2 = b.getHole(this.blackProbeConnection).nodeName();
       if (measurement === "resistance") {
@@ -1672,7 +1685,7 @@ extend(Multimeter, MultimeterBase, {
 
       if (result){
         // if in wrong voltage mode for AC/DC voltage, show zero
-        source = getBreadBoard().components.source;
+        source = Breadboard.getBreadBoard().components.source;
         if (!!source &&
            ((measurement === 'voltage' && source.frequency) ||
             (measurement === 'ac_voltage' && source.frequency === 0))) {
@@ -1732,7 +1745,7 @@ extend(Multimeter, MultimeterBase, {
 
   _getResultsIndex: function (results) {
     var i = 0,
-        source = getBreadBoard().components.source;
+        source = Breadboard.getBreadBoard().components.source;
     if (source && source.setFrequency && results.acfrequency){
       i = util.getClosestIndex(results.acfrequency, source.frequency, true);
     }
@@ -1742,7 +1755,7 @@ extend(Multimeter, MultimeterBase, {
 
 module.exports = Multimeter;
 
-},{"../controllers/log-controller":16,"../helpers/util":22,"../models/log":27,"./multimeter-base":7}],9:[function(require,module,exports){
+},{"../controllers/log-controller":16,"../helpers/util":22,"../models/log":27,"./breadboard":2,"./multimeter-base":7}],9:[function(require,module,exports){
 var extend    = require('../helpers/util').extend,
     Component = require('./component');
 
@@ -2010,16 +2023,17 @@ module.exports = ReactiveComponent;
 },{"../helpers/sparks-math":20,"../helpers/util":22,"./component":4}],12:[function(require,module,exports){
 var extend    = require('../helpers/util').extend,
     Resistor  = require('./resistor'),
-    r_values  = require('./r-values');
+    r_values  = require('./r-values'),
+    Breadboard      = require('./breadboard');
 
 Resistor4band = function (id) {
   var superclass = Resistor4band.uber;
   superclass.init.apply(this, [id]);
   this.numBands = 4;
 
-  if (breadModel('getResOrderOfMagnitude') < 0){
+  if (Breadboard.breadModel('getResOrderOfMagnitude') < 0){
     var om = this.randInt(0, 3);
-    breadModel('setResOrderOfMagnitude', om);
+    Breadboard.breadModel('setResOrderOfMagnitude', om);
   }
 
   this.r_values5pct = this.filter(r_values.r_values4band5pct);
@@ -2049,7 +2063,7 @@ extend(Resistor4band, Resistor, {
             values = this.r_values10pct;
         }
 
-        var om = breadModel('getResOrderOfMagnitude');
+        var om = Breadboard.breadModel('getResOrderOfMagnitude');
         var extra = this.randInt(0, 1);
         om = om + extra;
 
@@ -2071,7 +2085,7 @@ extend(Resistor4band, Resistor, {
   },
 
   _resistanceIsUnique: function (value) {
-    var components = getBreadBoard().components;
+    var components = Breadboard.getBreadBoard().components;
 
     for (var i in components){
       var resistor  = components[i];
@@ -2112,7 +2126,7 @@ extend(Resistor4band, Resistor, {
 
 module.exports = Resistor4band;
 
-},{"../helpers/util":22,"./r-values":10,"./resistor":13}],13:[function(require,module,exports){
+},{"../helpers/util":22,"./breadboard":2,"./r-values":10,"./resistor":13}],13:[function(require,module,exports){
 var extend                = require('../helpers/util').extend,
     Component             = require('./component'),
     r_values              = require('./r-values'),
@@ -2517,12 +2531,11 @@ logController = new LogController();
 module.exports = logController;
 
 },{"../helpers/util":22,"../models/log":27}],17:[function(require,module,exports){
-require('../circuit/breadboard');       // until breadboard refactoring....
-
 var Oscilloscope  = require('../models/oscilloscope'),
     Workbench     = require('../models/workbench'),
     Multimeter    = require('../circuit/multimeter'),
-    logController = require('../controllers/log-controller');
+    logController = require('../controllers/log-controller'),
+    Breadboard    = require('../circuit/breadboard');
 
 
 WorkbenchController = function(){
@@ -2578,14 +2591,14 @@ WorkbenchController.prototype = {
   loadBreadboard: function() {
     var workbench = this.workbench;
 
-    breadModel("clear");
+    Breadboard.breadModel("clear");
 
     if (!!workbench.circuit){
-      breadModel("createCircuit", workbench.circuit);
+      Breadboard.breadModel("createCircuit", workbench.circuit);
     }
 
     if (!!workbench.faults){
-      breadModel("addFaults", workbench.faults);
+      Breadboard.breadModel("addFaults", workbench.faults);
     }
   },
 
@@ -2619,7 +2632,8 @@ WorkbenchController.prototype = {
 module.exports = new WorkbenchController();
 
 },{"../circuit/breadboard":2,"../circuit/multimeter":8,"../controllers/log-controller":16,"../models/oscilloscope":29,"../models/workbench":30}],18:[function(require,module,exports){
-unit = require('./unit');
+var unit        = require('./unit'),
+    Breadboard  = require('../circuit/breadboard');
 
 mathParser = {};
 
@@ -2683,12 +2697,12 @@ p.replaceCircuitVariables = function(formula){
 
   // first add all the components as circuit variables at the start of the script
   // add all breadboard components as variables
-  $.each(getBreadBoard().components, function(i, component){
-    formula = "var " + i + " = getBreadBoard().components['"+i+"']; " + formula;
+  $.each(Breadboard.getBreadBoard().components, function(i, component){
+    formula = "var " + i + " = Breadboard.getBreadBoard().components['"+i+"']; " + formula;
   });
 
   // add the breadboard itself as a variable
-  formula = "var breadboard = getBreadBoard(); " + formula;
+  formula = "var breadboard = Breadboard.getBreadBoard(); " + formula;
 
   // then support old method of accessing circuit variables using ${...}
   // NOTE: This is obsolete (but tested)
@@ -2701,7 +2715,7 @@ p.replaceCircuitVariables = function(formula){
     var component = variable[0];
     var property = variable[1];
 
-    var components = getBreadBoard().components;
+    var components = Breadboard.getBreadBoard().components;
 
     if (!components[component]){
       console.log("ERROR calculating sum: No component name '"+component+"' in circuit");
@@ -2725,7 +2739,7 @@ p.replaceCircuitVariables = function(formula){
 
 module.exports = mathParser;
 
-},{"./unit":21}],19:[function(require,module,exports){
+},{"../circuit/breadboard":2,"./unit":21}],19:[function(require,module,exports){
 sound = {};
 
 sound.mute = false;
@@ -6594,7 +6608,8 @@ module.exports = Meter;
 /* FILE oscilloscope.js */
 
 var LogEvent      = require('./log'),
-    logController = require('../controllers/log-controller');
+    logController = require('../controllers/log-controller'),
+    Breadboard    = require('../circuit/breadboard');
 
 Oscilloscope = function () {
   this.probeLocation = [];
@@ -6665,7 +6680,7 @@ Oscilloscope.prototype = {
   },
 
   update: function() {
-    var breadboard = getBreadBoard(),
+    var breadboard = Breadboard.getBreadBoard(),
         source     = breadboard.components.source,
         probeIndex,
         sourceSignal,
@@ -6692,7 +6707,7 @@ Oscilloscope.prototype = {
           this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
           continue;
         }
-        breadModel('query', "oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
+        Breadboard.breadModel('query', "oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
       } else {
         this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
       }
@@ -6701,7 +6716,7 @@ Oscilloscope.prototype = {
 
   updateWithData: function(ciso, probeInfo) {
 
-    var breadboard = getBreadBoard(),
+    var breadboard = Breadboard.getBreadBoard(),
         source     = breadboard.components.source,
         probeNode  = probeInfo[0],
         probeIndex = probeInfo[1],
@@ -6902,7 +6917,7 @@ Oscilloscope.prototype = {
 
 module.exports = Oscilloscope;
 
-},{"../controllers/log-controller":16,"./log":27}],30:[function(require,module,exports){
+},{"../circuit/breadboard":2,"../controllers/log-controller":16,"./log":27}],30:[function(require,module,exports){
 var Meter         = require('./meter'),
     WorkbenchView = require('../views/workbench-view');
 
@@ -6931,10 +6946,9 @@ Workbench.prototype = {
 module.exports = Workbench;
 
 },{"../views/workbench-view":36,"./meter":28}],31:[function(require,module,exports){
-unit = require('../helpers/unit');
-
-var workbenchController;
-
+var unit        = require('../helpers/unit'),
+    Breadboard  = require('../circuit/breadboard'),
+    workbenchController;
 
 embeddableComponents = {
   resistor: {
@@ -7039,12 +7053,12 @@ AddComponentsView = function(workbench){
        "connections": loc
       };
       props[embeddableComponent.property] = embeddableComponent.initialValue;
-      uid = breadModel("insertComponent", type, props);
+      uid = Breadboard.breadModel("insertComponent", type, props);
 
-      comp = getBreadBoard().components[uid];
+      comp = Breadboard.getBreadBoard().components[uid];
 
       // move leads to correct width
-      breadModel("checkLocation", comp);
+      Breadboard.breadModel("checkLocation", comp);
 
       // update meters
       workbench.meter.update();
@@ -7064,7 +7078,7 @@ AddComponentsView.prototype = {
   },
 
   showEditor: function(uid) {
-    var comp = getBreadBoard().components[uid],
+    var comp = Breadboard.getBreadBoard().components[uid],
         section = workbenchController.workbench,
         $propertyEditor = null;
     // create editor tooltip
@@ -7102,7 +7116,7 @@ AddComponentsView.prototype = {
       $propertyEditor
     ).append(
       $("<button>").text("Remove").on('click', function() {
-        breadModel("removeComponent", comp);
+        Breadboard.breadModel("removeComponent", comp);
         section.meter.update();
         $(".speech-bubble").trigger('mouseleave');
       })
@@ -7115,7 +7129,7 @@ AddComponentsView.prototype = {
 
 module.exports = AddComponentsView;
 
-},{"../controllers/workbench-controller":17,"../helpers/unit":21}],32:[function(require,module,exports){
+},{"../circuit/breadboard":2,"../controllers/workbench-controller":17,"../helpers/unit":21}],32:[function(require,module,exports){
 /**
  * @author Mobile.Lab (http://mlearner.com)
  **/
@@ -10243,7 +10257,8 @@ module.exports = OscilloscopeView;
 var LogEvent            = require('../models/log'),
     util                = require('../helpers/util'),
     sound               = require('../helpers/sound'),
-    logController       = require('../controllers/log-controller');
+    logController       = require('../controllers/log-controller'),
+    Breadboard          = require('../circuit/breadboard');
 
 breadboardComm = {};
 
@@ -10257,16 +10272,16 @@ breadboardComm.connectionMade = function(workbench, component, hole) {
     if (!openConnections) return; // shouldn't happen
 
     if (openConnections[hole]) {        // if we're just replacing a lead
-      breadModel('unmapHole', hole);
+      Breadboard.breadModel('unmapHole', hole);
       delete openConnections[hole];
     } else {                            // if we're putting lead in new hole
-      breadboard = getBreadBoard();
+      breadboard = Breadboard.getBreadBoard();
       comp = breadboard.components[component];
       // transform to array
       openConnectionsArr = util.getKeys(openConnections);
       // pick first open lead
       connectionReturning = openConnectionsArr[0];
-      breadModel('unmapHole', connectionReturning);
+      Breadboard.breadModel('unmapHole', connectionReturning);
       //swap
       for (var i = 0; i < comp.connections.length; i++) {
         connection = comp.connections[i].getName();
@@ -10279,7 +10294,7 @@ breadboardComm.connectionMade = function(workbench, component, hole) {
       }
 
       // check that we don't have two leads to close together
-      breadModel("checkLocation", comp);
+      Breadboard.breadModel("checkLocation", comp);
     }
 
   }
@@ -10295,9 +10310,9 @@ breadboardComm.connectionBroken = function(workbench, component, hole) {
   }
   breadboardComm.openConnections[component][hole] = true;
 
-  var newHole = breadModel('getGhostHole', hole+"ghost");
+  var newHole = Breadboard.breadModel('getGhostHole', hole+"ghost");
 
-  breadModel('mapHole', hole, newHole.nodeName());
+  Breadboard.breadModel('mapHole', hole, newHole.nodeName());
   logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
     "type": "disconnect lead",
     "location": hole});
@@ -10320,13 +10335,14 @@ breadboardComm.dmmDialMoved = function(workbench, value) {
 
 module.exports = breadboardComm;
 
-},{"../controllers/log-controller":16,"../helpers/sound":19,"../helpers/util":22,"../models/log":27}],36:[function(require,module,exports){
+},{"../circuit/breadboard":2,"../controllers/log-controller":16,"../helpers/sound":19,"../helpers/util":22,"../models/log":27}],36:[function(require,module,exports){
 require('./breadboard-svg-view');
 
 var AddComponentsView     = require('./add-components-view'),
     FunctionGeneratorView = require('./function-generator-view'),
     OscilloscopeView      = require('./oscilloscope-view'),
     sound                 = require('../helpers/sound'),
+    Breadboard          = require('../circuit/breadboard'),
     workbenchController;
 
 WorkbenchView = function(workbench){
@@ -10360,7 +10376,7 @@ WorkbenchView.prototype = {
         workbenchController.breadboardView.setRightClickFunction(self.rightClickFunction);
       }
 
-      breadModel('updateView');
+      Breadboard.breadModel('updateView');
 
       sound.mute = true;
 
@@ -10374,7 +10390,7 @@ WorkbenchView.prototype = {
       self.workbench.meter.update();
     });
 
-    var source = getBreadBoard().components.source;
+    var source = Breadboard.getBreadBoard().components.source;
     if (source && source.frequency) {
       var fgView = new FunctionGeneratorView(source);
       var $fg = fgView.getView();
@@ -10458,7 +10474,7 @@ WorkbenchView.prototype = {
 
 module.exports = WorkbenchView;
 
-},{"../controllers/workbench-controller":17,"../helpers/sound":19,"./add-components-view":31,"./breadboard-svg-view":32,"./function-generator-view":33,"./oscilloscope-view":34}],37:[function(require,module,exports){
+},{"../circuit/breadboard":2,"../controllers/workbench-controller":17,"../helpers/sound":19,"./add-components-view":31,"./breadboard-svg-view":32,"./function-generator-view":33,"./oscilloscope-view":34}],37:[function(require,module,exports){
 (function(){var d=function(){this.components=[];this.nodeMap={};this.nodes=[];this.voltageSources=[];this.AMatrix=[];this.ZMatrix=[];this.referenceNode=null;this.referenceNodeIndex=null};d.prototype.getLinkedComponents=function(e){return this.nodeMap[e]};d.prototype.getDiagonalMatrixElement=function(h,k){var l=this.nodeMap[h],e=$Comp(0,0),g,f;for(f=l.length-1;f>=0;f--){g=l[f].getImpedance(k);e=e.add(g.inverse())}return e};d.prototype.getNodeIndexes=function(f){var e=[];e[0]=this.getNodeIndex(f.nodes[0]);e[1]=this.getNodeIndex(f.nodes[1]);return e};d.prototype.getNodeIndex=function(f){var e=this.nodes.indexOf(f);if(e===this.referenceNodeIndex){return -1}if(e>this.referenceNodeIndex){return e-1}return e};var b=function(h,f,g,e){this.id=h;this.type=f;this.value=g;this.nodes=e};var c=2*Math.PI;b.prototype.getImpedance=function(f){var e=$Comp(0,0);if(this.type==="Resistor"){e.real=this.value;e.imag=0}else{if(this.type=="Capacitor"){e.real=0;e.imag=-1/(c*f*this.value)}else{if(this.type=="Inductor"){e.real=0;e.imag=c*f*this.value}}}return e};b.prototype.getOffDiagonalMatrixElement=function(e){return this.getImpedance(e).inverse().negative()};var a=function(i,h,f,e,g){this.id=i;this.voltage=h;this.positiveNode=f;this.negativeNode=e;this.frequency=g||0};d.prototype.addComponent=function(n,h,m,l){var e=new b(n,h,m,l),f,g,k;this.components.push(e);for(f=0,g=l.length;f<g;f++){k=l[f];if(!this.nodeMap[k]){this.nodeMap[k]=[];this.nodes.push(k)}this.nodeMap[k].push(e)}};d.prototype.addVoltageSource=function(k,i,f,e,h){var g=new a(k,i,f,e,h);this.voltageSources.push(g);if(!this.nodeMap[f]){this.nodeMap[f]=[];this.nodes.push(f)}if(!this.nodeMap[e]){this.nodeMap[e]=[];this.nodes.push(e)}if(!this.referenceNode){this.setReferenceNode(e)}};d.prototype.setReferenceNode=function(e){this.referenceNode=e;this.referenceNodeIndex=this.nodes.indexOf(e)};d.prototype.createAMatrix=function(){this.createEmptyAMatrix();this.addGMatrix();this.addBCMatrix()};d.prototype.createEmptyAMatrix=function(){var g=$Comp(0,0),k=this.nodes.length,e=this.voltageSources.length,l=k-1+e,h,f;this.AMatrix=[];for(h=0;h<l;h++){this.AMatrix[h]=[];for(f=0;f<l;f++){this.AMatrix[h][f]=g.copy()}}};d.prototype.addGMatrix=function(){var l,m,h,g,k,f,n,e;if(this.voltageSources.length>0){l=this.voltageSources[0];m=l.frequency}for(h=0;h<this.nodes.length;h++){k=this.nodes[h];if(k===this.referenceNode){continue}f=this.getNodeIndex(k);this.AMatrix[f][f]=this.getDiagonalMatrixElement(k,m)}for(h=0;h<this.components.length;h++){n=this.getNodeIndexes(this.components[h])[0];e=this.getNodeIndexes(this.components[h])[1];if(n===-1||e===-1){continue}this.AMatrix[n][e]=this.AMatrix[e][n]=this.AMatrix[n][e].add(this.components[h].getOffDiagonalMatrixElement(m))}};d.prototype.addBCMatrix=function(){if(this.voltageSources.length===0){return}var g=$Comp(1,0),n=g.negative(),e=this.voltageSources,k,l,h,m,f;for(f=0;f<e.length;f++){k=e[f];l=k.positiveNode;if(l!==this.referenceNode){m=this.getNodeIndex(l);this.AMatrix[this.nodes.length-1+f][m]=g.copy();this.AMatrix[m][this.nodes.length-1+f]=g.copy()}h=k.negativeNode;if(h!==this.referenceNode){m=this.getNodeIndex(h);this.AMatrix[this.nodes.length-1+f][m]=n.copy();this.AMatrix[m][this.nodes.length-1+f]=n.copy()}}};d.prototype.createZMatrix=function(){var g=$Comp(0,0),k=this.nodes.length,e=this.voltageSources.length,l=k-1+e,f=this.voltageSources,h;this.ZMatrix=[[]];for(h=0;h<l;h++){this.ZMatrix[0][h]=g.copy()}for(h=0;h<f.length;h++){this.ZMatrix[0][k-1+h].real=f[h].voltage}};d.prototype.cleanCircuit=function(){var f=this.nodes,q=this.nodeMap,m=this.components,r,o=this.referenceNode,s=[],e,g,h,t;function p(u){var w=[];for(var v in u){w[v]=u[v]}return w}q=p(q);function k(u){var x=[];for(var v=0,w=u.length;v<w;v++){if(u[v]!==null){x.push(u[v])}}return x}function n(v,B){var x=B[v],C,w,D=[],u,z,E,y,A;if(v===o){return true}if(~s.indexOf(v)){return true}if(!x||x.length===0){return false}delete B[v];for(z=0,E=x.length;z<E;z++){C=x[z];w=p(C.nodes);w.splice(w.indexOf(v),1);D=D.concat(w)}for(y=0,A=D.length;y<A;y++){if(n(D[y],B)){s.push(v);return true}}return false}for(h=0,t=f.length;h<t;h++){g=f[h];if(g){if(!n(g,q)){f[h]=null}}}this.nodes=k(f);q=this.nodeMap;function l(u,y){var x=p(q[y]),v,w;q[y]=[];for(v=0,w=x.length;v<w;v++){if(x[v].id!==u.id){q[y].push(x[v])}}}for(h=0,t=m.length;h<t;h++){r=m[h];if(!(~f.indexOf(r.nodes[0])&&~f.indexOf(r.nodes[1]))){l(r,r.nodes[0]);l(r,r.nodes[1]);m[h]=null}}this.components=k(m);for(h=0,t=this.voltageSources.length;h<t;h++){e=this.voltageSources[h];if(!(~f.indexOf(e.positiveNode)&&~f.indexOf(e.negativeNode))){this.voltageSources[h]=null}}this.voltageSources=k(this.voltageSources);this.referenceNodeIndex=this.nodes.indexOf(o)};d.prototype.solve=function(){this.cleanCircuit();this.createAMatrix();this.createZMatrix();aM=$M(this.AMatrix);zM=$M(this.ZMatrix);invAM=aM.inv();res=zM.x(invAM);return res};d.prototype.getVoltageAt=function(g){if(g===this.referenceNode){return $Comp(0)}try{var f=this.solve();return f.elements[0][this.getNodeIndex(g)]}catch(h){return $Comp(0)}};d.prototype.getVoltageBetween=function(f,e){return this.getVoltageAt(f).subtract(this.getVoltageAt(e))};d.prototype.getCurrent=function(n){var k,g,f=null,h,l;try{k=this.solve()}catch(m){return $Comp(0)}g=this.voltageSources;for(h=0,l=g.length;h<l;h++){if(g[h].id==n){f=h;break}}if(f===null){try{throw Error("No voltage source "+n)}catch(m){return $Comp(0)}}try{return k.elements[0][this.nodes.length-1+f]}catch(m){return $Comp(0)}};window.CiSo=d})();var Complex=function(b,a){if(!(this instanceof Complex)){return new Complex(b,a)}if(typeof b==="string"&&a===null){return Complex.parse(b)}this.real=b||0;this.imag=a||0;this.magnitude=Math.sqrt(this.real*this.real+this.imag*this.imag);this.angle=Math.atan2(this.imag,this.real)};Complex.prototype={copy:function(){return new Complex(this.real,this.imag)},add:function(a){var c,b;if(a instanceof Complex){c=a.real;b=a.imag}else{c=a;b=0}return new Complex(this.real+c,this.imag+b)},subtract:function(a){var c,b;if(a instanceof Complex){c=a.real;b=a.imag}else{c=a;b=0}return new Complex(this.real-c,this.imag-b)},multiply:function(a){var e,d,c,b;if(a instanceof Complex){e=a.real;d=a.imag}else{e=a;d=0}c=this.real*e-this.imag*d;b=this.real*d+this.imag*e;return new Complex(c,b)},divide:function(a){var f,e,b,d,c;if(a instanceof Complex){f=a.real;e=a.imag}else{f=a;e=0}b=f*f+e*e;d=(this.real*f+this.imag*e)/b;c=(this.imag*f-this.real*e)/b;return new Complex(d,c)},inverse:function(){var a=new Complex(1,0);return a.divide(this)},negative:function(){var a=new Complex(0,0);return a.subtract(this)},equals:function(a){if(a instanceof Complex){return this.real===a.real&&this.imag===a.imag}else{if(typeof a==="number"){return this.real===a&&this.imag===0}}return false},toString:function(){return this.real+"i"+this.imag}};Complex.parse=function(c){if(!c){return null}var b=/(.*)([+,\-].*i)/.exec(c),d,a;if(b&&b.length===3){d=parseFloat(b[1]);a=parseFloat(b[2].replace("i",""))}else{d=parseFloat(c);a=0}if(isNaN(d)||isNaN(a)){throw new Error("Invalid input to Complex.parse, expecting a + bi format, instead was: "+c)}return new Complex(d,a)};$Comp=function(){if(typeof arguments[0]==="string"){return Complex.parse(arguments[0])}return new Complex(arguments[0],arguments[1])};var Sylvester={version:"0.1.3-cc",precision:0.000001};function Matrix(){}Matrix.prototype={dup:function(){return Matrix.create(this.elements)},canMultiplyFromLeft:function(a){var b=a.elements||a;if(typeof(b[0][0])=="undefined"){b=Matrix.create(b).elements}return(this.elements[0].length==b.length)},multiply:function(q){if(!q.elements){return this.map(function(c){return c.multiply(q)})}var h=q.modulus?true:false;var n=q.elements||q;if(typeof(n[0][0])=="undefined"){n=Matrix.create(n).elements}if(!this.canMultiplyFromLeft(n)){return null}var e=this.elements.length,f=e,l,b,d=n[0].length,g;var p=this.elements[0].length,a=[],m,k,o;do{l=f-e;a[l]=[];b=d;do{g=d-b;m=$Comp(0,0);k=p;do{o=p-k;m=m.add(this.elements[l][o].multiply(n[o][g]))}while(--k);a[l][g]=m}while(--b)}while(--e);var n=Matrix.create(a);return h?n.col(1):n},x:function(a){return this.multiply(a)},isSquare:function(){return(this.elements.length==this.elements[0].length)},toRightTriangular:function(){var f=this.dup(),d;var b=this.elements.length,c=b,e,g,h=this.elements[0].length,a;do{e=c-b;if(f.elements[e][e].equals(0)){for(j=e+1;j<c;j++){if(!f.elements[j][e].equals(0)){d=[];g=h;do{a=h-g;d.push(f.elements[e][a].add(f.elements[j][a]))}while(--g);f.elements[e]=d;break}}}if(!f.elements[e][e].equals(0)){for(j=e+1;j<c;j++){var l=f.elements[j][e].divide(f.elements[e][e]);d=[];g=h;do{a=h-g;d.push(a<=e?$Comp(0):f.elements[j][a].subtract(f.elements[e][a].multiply(l)))}while(--g);f.elements[j]=d}}}while(--b);return f},toUpperTriangular:function(){return this.toRightTriangular()},determinant:function(){if(!this.isSquare()){return null}var e=this.toRightTriangular();var c=e.elements[0][0],d=e.elements.length-1,a=d,b;do{b=a-d+1;c=c.multiply(e.elements[b][b])}while(--d);return c},det:function(){return this.determinant()},isSingular:function(){return(this.isSquare()&&this.determinant().equals(0))},augment:function(l){var h=l.elements||l;if(typeof(h[0][0])=="undefined"){h=Matrix.create(h).elements}var e=this.dup(),k=e.elements[0].length;var c=e.elements.length,d=c,g,a,b=h[0].length,f;if(c!=h.length){return null}do{g=d-c;a=b;do{f=b-a;e.elements[g][k+f]=h[g][f]}while(--a)}while(--c);return e},inverse:function(){if(!this.isSquare()||this.isSingular()){return null}var c=this.elements.length,d=c,h,g;var k=this.augment(Matrix.I(c)).toRightTriangular();var l,m=k.elements[0].length,a,f,b;var n=[],e;do{h=c-1;f=[];l=m;n[h]=[];b=k.elements[h][h];do{a=m-l;e=k.elements[h][a].divide(b);f.push(e);if(a>=d){n[h].push(e)}}while(--l);k.elements[h]=f;for(g=0;g<h;g++){f=[];l=m;do{a=m-l;f.push(k.elements[g][a].subtract(k.elements[h][a].multiply(k.elements[g][h])))}while(--l);k.elements[g]=f}}while(--c);return Matrix.create(n)},inv:function(){return this.inverse()},setElements:function(h){var m,a=h.elements||h;if(typeof(a[0][0])!="undefined"){var d=a.length,f=d,b,c,l;this.elements=[];do{m=f-d;b=a[m].length;c=b;this.elements[m]=[];do{l=c-b;this.elements[m][l]=a[m][l]}while(--b)}while(--d);return this}var e=a.length,g=e;this.elements=[];do{m=g-e;this.elements.push([a[m]])}while(--e);return this}};Matrix.create=function(a){var b=new Matrix();return b.setElements(a)};Matrix.I=function(f){var e=[],a=f,d,c,b;do{d=a-f;e[d]=[];c=a;do{b=a-c;e[d][b]=(d==b)?$Comp(1,0):$Comp(0)}while(--c)}while(--f);return Matrix.create(e)};var $M=Matrix.create;
 },{}],38:[function(require,module,exports){
 /*!

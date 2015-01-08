@@ -4,6 +4,7 @@ var AddComponentsView     = require('./add-components-view'),
     FunctionGeneratorView = require('./function-generator-view'),
     OscilloscopeView      = require('./oscilloscope-view'),
     sound                 = require('../helpers/sound'),
+    Breadboard          = require('../circuit/breadboard'),
     workbenchController;
 
 WorkbenchView = function(workbench){
@@ -37,7 +38,7 @@ WorkbenchView.prototype = {
         workbenchController.breadboardView.setRightClickFunction(self.rightClickFunction);
       }
 
-      breadModel('updateView');
+      Breadboard.breadModel('updateView');
 
       sound.mute = true;
 
@@ -51,7 +52,7 @@ WorkbenchView.prototype = {
       self.workbench.meter.update();
     });
 
-    var source = getBreadBoard().components.source;
+    var source = Breadboard.getBreadBoard().components.source;
     if (source && source.frequency) {
       var fgView = new FunctionGeneratorView(source);
       var $fg = fgView.getView();

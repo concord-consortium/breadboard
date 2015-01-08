@@ -2,7 +2,8 @@
 /* FILE oscilloscope.js */
 
 var LogEvent      = require('./log'),
-    logController = require('../controllers/log-controller');
+    logController = require('../controllers/log-controller'),
+    Breadboard    = require('../circuit/breadboard');
 
 Oscilloscope = function () {
   this.probeLocation = [];
@@ -73,7 +74,7 @@ Oscilloscope.prototype = {
   },
 
   update: function() {
-    var breadboard = getBreadBoard(),
+    var breadboard = Breadboard.getBreadBoard(),
         source     = breadboard.components.source,
         probeIndex,
         sourceSignal,
@@ -100,7 +101,7 @@ Oscilloscope.prototype = {
           this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
           continue;
         }
-        breadModel('query', "oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
+        Breadboard.breadModel('query', "oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
       } else {
         this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
       }
@@ -109,7 +110,7 @@ Oscilloscope.prototype = {
 
   updateWithData: function(ciso, probeInfo) {
 
-    var breadboard = getBreadBoard(),
+    var breadboard = Breadboard.getBreadBoard(),
         source     = breadboard.components.source,
         probeNode  = probeInfo[0],
         probeIndex = probeInfo[1],

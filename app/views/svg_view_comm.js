@@ -2,7 +2,8 @@
 var LogEvent            = require('../models/log'),
     util                = require('../helpers/util'),
     sound               = require('../helpers/sound'),
-    logController       = require('../controllers/log-controller');
+    logController       = require('../controllers/log-controller'),
+    Breadboard          = require('../circuit/breadboard');
 
 breadboardComm = {};
 
@@ -16,16 +17,16 @@ breadboardComm.connectionMade = function(workbench, component, hole) {
     if (!openConnections) return; // shouldn't happen
 
     if (openConnections[hole]) {        // if we're just replacing a lead
-      breadModel('unmapHole', hole);
+      Breadboard.breadModel('unmapHole', hole);
       delete openConnections[hole];
     } else {                            // if we're putting lead in new hole
-      breadboard = getBreadBoard();
+      breadboard = Breadboard.getBreadBoard();
       comp = breadboard.components[component];
       // transform to array
       openConnectionsArr = util.getKeys(openConnections);
       // pick first open lead
       connectionReturning = openConnectionsArr[0];
-      breadModel('unmapHole', connectionReturning);
+      Breadboard.breadModel('unmapHole', connectionReturning);
       //swap
       for (var i = 0; i < comp.connections.length; i++) {
         connection = comp.connections[i].getName();
@@ -38,7 +39,7 @@ breadboardComm.connectionMade = function(workbench, component, hole) {
       }
 
       // check that we don't have two leads to close together
-      breadModel("checkLocation", comp);
+      Breadboard.breadModel("checkLocation", comp);
     }
 
   }
@@ -54,9 +55,9 @@ breadboardComm.connectionBroken = function(workbench, component, hole) {
   }
   breadboardComm.openConnections[component][hole] = true;
 
-  var newHole = breadModel('getGhostHole', hole+"ghost");
+  var newHole = Breadboard.breadModel('getGhostHole', hole+"ghost");
 
-  breadModel('mapHole', hole, newHole.nodeName());
+  Breadboard.breadModel('mapHole', hole, newHole.nodeName());
   logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
     "type": "disconnect lead",
     "location": hole});
