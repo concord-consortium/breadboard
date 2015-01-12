@@ -4,11 +4,11 @@ var AddComponentsView     = require('./add-components-view'),
     FunctionGeneratorView = require('./function-generator-view'),
     OscilloscopeView      = require('./oscilloscope-view'),
     sound                 = require('../helpers/sound'),
-    Breadboard          = require('../circuit/breadboard'),
     workbenchController;
 
-WorkbenchView = function(workbench){
+WorkbenchView = function(workbench, breadboardController){
   workbenchController   = require('../controllers/workbench-controller');     // grrr
+  this.breadboardController = breadboardController;
   this.workbench = workbench;
 };
 
@@ -35,10 +35,10 @@ WorkbenchView.prototype = {
 
       // pass queued-up component right-click function to breadboard view
       if (self.rightClickFunction) {
-        workbenchController.breadboardView.setRightClickFunction(self.rightClickFunction);
+        workbenchController.breadboardView.setRightClickFunction(self.rightClickObj, self.rightClickFunction);
       }
 
-      Breadboard.breadModel('updateView');
+      self.breadboardController.breadModel('updateView');
 
       sound.mute = true;
 
@@ -52,7 +52,7 @@ WorkbenchView.prototype = {
       self.workbench.meter.update();
     });
 
-    var source = Breadboard.getBreadBoard().components.source;
+    var source = this.breadboardController.getComponents().source;
     if (source && source.frequency) {
       var fgView = new FunctionGeneratorView(source);
       var $fg = fgView.getView();
@@ -68,7 +68,7 @@ WorkbenchView.prototype = {
       // this.divs.addCompsWrapper.append(drawer);
       // this.divs.addCompsWrapper.append(button);
 
-      var addComponentsView = new AddComponentsView(this.workbench);
+      var addComponentsView = new AddComponentsView(this.workbench, this.breadboardController);
 
       if (this.workbench.showComponentDrawer) {
         this.divs.addCompsWrapper.show();
@@ -121,7 +121,8 @@ WorkbenchView.prototype = {
   hidePinkProbe: function() {
   },
 
-  setRightClickFunction: function(func) {
+  setRightClickFunction: function(obj, func) {
+    this.rightClickObj = obj;
     this.rightClickFunction = func;
   },
 

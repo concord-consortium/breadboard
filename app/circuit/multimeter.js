@@ -1,17 +1,16 @@
-
 var LogEvent        = require('../models/log'),
     util            = require('../helpers/util'),
     logController   = require('../controllers/log-controller'),
     extend          = require('../helpers/util').extend,
-    MultimeterBase  = require('./multimeter-base'),
-    Breadboard      = require('./breadboard');
+    MultimeterBase  = require('./multimeter-base');
 
 /*
  * Digital Multimeter for breadboard activities
  *
  */
-Multimeter = function () {
+Multimeter = function (breadboardController) {
   Multimeter.uber.init.apply(this);
+  this.breadboardController = breadboardController;
   this.reset();
 };
 
@@ -43,7 +42,7 @@ extend(Multimeter, MultimeterBase, {
       }
 
       if (!!this.currentMeasurement){
-        Breadboard.breadModel('query', this.currentMeasurement, this.redProbeConnection + ',' + this.blackProbeConnection, this.updateWithData, this);
+        this.breadboardController.breadModel('query', this.currentMeasurement, this.redProbeConnection + ',' + this.blackProbeConnection, this.updateWithData, this);
       }
     } else {
       this.updateWithData();
@@ -58,7 +57,7 @@ extend(Multimeter, MultimeterBase, {
 
     if (ciso) {
       source = ciso.voltageSources[0],
-      b  = Breadboard.getBreadBoard();
+      b  = this.breadboardController;
       p1 = b.getHole(this.redProbeConnection).nodeName();
       p2 = b.getHole(this.blackProbeConnection).nodeName();
       if (measurement === "resistance") {
@@ -90,7 +89,7 @@ extend(Multimeter, MultimeterBase, {
 
       if (result){
         // if in wrong voltage mode for AC/DC voltage, show zero
-        source = Breadboard.getBreadBoard().components.source;
+        source = this.breadboardController.getComponents().source;
         if (!!source &&
            ((measurement === 'voltage' && source.frequency) ||
             (measurement === 'ac_voltage' && source.frequency === 0))) {
@@ -150,7 +149,7 @@ extend(Multimeter, MultimeterBase, {
 
   _getResultsIndex: function (results) {
     var i = 0,
-        source = Breadboard.getBreadBoard().components.source;
+        source = this.breadboardController.getComponents().source;
     if (source && source.setFrequency && results.acfrequency){
       i = util.getClosestIndex(results.acfrequency, source.frequency, true);
     }

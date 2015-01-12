@@ -1,13 +1,10 @@
-var Breadboard = require('../circuit/breadboard');
-
-Component = function (props, breadBoard) {
+Component = function (props, breadboardController) {
 
   for (var i in props) {
     this[i]=props[i];
   }
 
-  this.breadBoard = breadBoard;
-  this.breadBoard.components[props.UID] = this;
+  this.breadboardController = breadboardController;
 
   if (!this.label){
     this.label = !!this.UID.split("/")[1] ? this.UID.split("/")[1] : "";
@@ -18,10 +15,10 @@ Component = function (props, breadBoard) {
   }
 
   for (i in this.connections) {
-    this.connections[i] = this.breadBoard.getHole(this.connections[i]);
+    this.connections[i] = this.breadboardController.getHole(this.connections[i]);
 
-    if (!!this.breadBoard.holes[this.connections[i]]) {
-      this.breadBoard.holes[this.connections[i]].connections[this.breadBoard.holes[this.connections[i]].connections.length] = this;
+    if (!!this.breadboardController.getHoles[this.connections[i]]) {
+      this.breadboardController.getHoles[this.connections[i]].connections[this.breadboardController.getHoles[this.connections[i]].connections.length] = this;
     }
   }
   this._ensureFloat("resistance");
@@ -69,8 +66,8 @@ Component.prototype = {
     }
     this.connections = [];
     for (i in connections){
-      this.connections[i] = this.breadBoard.holes[connections[i]];
-      this.breadBoard.holes[connections[i]].connections[this.breadBoard.holes[connections[i]].connections.length] = this;
+      this.connections[i] = this.breadboardController.getHoles[connections[i]];
+      this.breadboardController.getHoles[connections[i]].connections[this.breadboardController.getHoles[connections[i]].connections.length] = this;
     }
 
     this.setViewArguments({connections: this.getLocation()});
@@ -87,7 +84,7 @@ Component.prototype = {
       this.connections[i] = [];
     }
     this.connections = [];
-    delete this.breadBoard.components[this.UID];
+    this.breadboardController.deleteComponentFromMap(this.UID);
   },
 
   _ensureFloat: function (val) {
@@ -166,8 +163,7 @@ Component.prototype = {
   },
 
   addThisToFaults: function() {
-    var breadBoard = Breadboard.getBreadBoard();
-    if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
+    this.breadboardController.addFaultyComponent(this);
   },
 
   // used by the component edit view

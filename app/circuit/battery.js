@@ -1,10 +1,10 @@
 var extend    = require('../helpers/util').extend,
     Component = require('./component');
 
-Battery = function (props, breadBoard) {
+Battery = function (props, breadboardController) {
   var range;
 
-  Battery.parentConstructor.call(this, props, breadBoard);
+  Battery.parentConstructor.call(this, props, breadboardController);
 
   // if voltages are specified as an array, then if it has only value, set the
   // voltage to that value, otherwise set it to a random voltage between the first

@@ -4,7 +4,7 @@ var extend                = require('../helpers/util').extend,
     Resistor4band         = require('./resistor-4band'),
     workbenchController;
 
-Resistor = function (props, breadBoard) {
+Resistor = function (props, breadboardController) {
   workbenchController   = require('../controllers/workbench-controller');
 
   var tolerance, steps;
@@ -16,7 +16,7 @@ Resistor = function (props, breadBoard) {
     props.resistance = this.getRequestedImpedance( props.resistance, steps );
   }
 
-  Resistor.parentConstructor.call(this, props, breadBoard);
+  Resistor.parentConstructor.call(this, props, breadboardController);
 
   // if we have colors defined and not resistance
   if ((this.resistance === undefined) && this.colors){
@@ -25,7 +25,7 @@ Resistor = function (props, breadBoard) {
 
   // if we have neither colors nor resistance
   if ((this.resistance === undefined) && !this.colors) {
-    var resistor = new Resistor4band();
+    var resistor = new Resistor4band(this.UID, breadboardController);
     resistor.randomize(null);
     this.resistance = resistor.getRealValue();
     this.tolerance = resistor.tolerance;

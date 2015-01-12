@@ -2,10 +2,10 @@
 /* FILE oscilloscope.js */
 
 var LogEvent      = require('./log'),
-    logController = require('../controllers/log-controller'),
-    Breadboard    = require('../circuit/breadboard');
+    logController = require('../controllers/log-controller');
 
-Oscilloscope = function () {
+Oscilloscope = function (breadboardController) {
+  this.breadboardController = breadboardController;
   this.probeLocation = [];
   this.probeLocation[0] = null;     // pink probe
   this.probeLocation[1] = null;     // yellow probe
@@ -74,8 +74,7 @@ Oscilloscope.prototype = {
   },
 
   update: function() {
-    var breadboard = Breadboard.getBreadBoard(),
-        source     = breadboard.components.source,
+    var source     = this.breadboardController.getComponents().source,
         probeIndex,
         sourceSignal,
         probeNode;
@@ -86,7 +85,7 @@ Oscilloscope.prototype = {
 
     for (probeIndex = 0; probeIndex < 2; probeIndex++) {
       if (this.probeLocation[probeIndex]) {
-        probeNode = breadboard.getHole(this.probeLocation[probeIndex]).nodeName();
+        probeNode = this.breadboardController.getHole(this.probeLocation[probeIndex]).nodeName();
         if (probeNode === 'gnd') {
           // short-circuit this operation and just return a flat trace
           this.setSignal(this.PROBE_CHANNEL[probeIndex], {amplitude: 0, frequency: 0, phase: 0});
@@ -101,7 +100,7 @@ Oscilloscope.prototype = {
           this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
           continue;
         }
-        Breadboard.breadModel('query', "oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
+        this.breadboardController.breadModel('query', "oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
       } else {
         this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
       }
@@ -110,8 +109,7 @@ Oscilloscope.prototype = {
 
   updateWithData: function(ciso, probeInfo) {
 
-    var breadboard = Breadboard.getBreadBoard(),
-        source     = breadboard.components.source,
+    var source     = this.breadboardController.getComponents().source,
         probeNode  = probeInfo[0],
         probeIndex = probeInfo[1],
         result,

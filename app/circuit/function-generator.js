@@ -1,9 +1,8 @@
-
 var extend              = require('../helpers/util').extend,
     Component           = require('./component');
 
-FunctionGenerator = function (props, breadBoard, workbenchController) {
-  FunctionGenerator.parentConstructor.call(this, props, breadBoard);
+FunctionGenerator = function (props, breadboardController, workbenchController) {
+  FunctionGenerator.parentConstructor.call(this, props, breadboardController);
 
   this.workbenchController = workbenchController;
 

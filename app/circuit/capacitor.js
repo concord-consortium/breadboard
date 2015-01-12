@@ -1,9 +1,8 @@
-
 var extend            = require('../helpers/util').extend,
     ReactiveComponent = require('./reactive-component');
 
-Capacitor = function (props, breadBoard) {
-  Capacitor.parentConstructor.call(this, props, breadBoard);
+Capacitor = function (props, breadboardController) {
+  Capacitor.parentConstructor.call(this, props, breadboardController);
 };
 
 extend(Capacitor, ReactiveComponent, {

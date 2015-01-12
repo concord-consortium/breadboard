@@ -1,5 +1,4 @@
 var unit        = require('../helpers/unit'),
-    Breadboard  = require('../circuit/breadboard'),
     workbenchController;
 
 embeddableComponents = {
@@ -28,8 +27,9 @@ embeddableComponents = {
   }
 }
 
-AddComponentsView = function(workbench){
+AddComponentsView = function(workbench, breadboardController){
   workbenchController = require('../controllers/workbench-controller');
+  this.breadboardController = breadboardController;
 
   var self = this,
       component;
@@ -40,9 +40,9 @@ AddComponentsView = function(workbench){
   this.lastHighlightedHole = null;
 
   if (workbenchController.breadboardView) {
-    workbenchController.breadboardView.setRightClickFunction(this.showEditor);
+    workbenchController.breadboardView.setRightClickFunction(this, "showEditor");
   } else {  // queue it up
-    workbench.view.setRightClickFunction(this.showEditor);
+    workbench.view.setRightClickFunction(this, "showEditor");
   }
 
   // create drawer
@@ -105,12 +105,12 @@ AddComponentsView = function(workbench){
        "connections": loc
       };
       props[embeddableComponent.property] = embeddableComponent.initialValue;
-      uid = Breadboard.breadModel("insertComponent", type, props);
+      uid = this.breadboardController.breadModel("insertComponent", type, props);
 
-      comp = Breadboard.getBreadBoard().components[uid];
+      comp = this.breadboardController.getComponents()[uid];
 
       // move leads to correct width
-      Breadboard.breadModel("checkLocation", comp);
+      this.breadboardController.breadModel("checkLocation", comp);
 
       // update meters
       workbench.meter.update();
@@ -130,9 +130,10 @@ AddComponentsView.prototype = {
   },
 
   showEditor: function(uid) {
-    var comp = Breadboard.getBreadBoard().components[uid],
+    var comp = this.breadboardController.getComponents()[uid],
         section = workbenchController.workbench,
-        $propertyEditor = null;
+        $propertyEditor = null,
+        self = this;
     // create editor tooltip
     possibleValues = comp.getEditablePropertyValues();
 
@@ -168,7 +169,7 @@ AddComponentsView.prototype = {
       $propertyEditor
     ).append(
       $("<button>").text("Remove").on('click', function() {
-        Breadboard.breadModel("removeComponent", comp);
+        self.breadboardController.breadModel("removeComponent", comp);
         section.meter.update();
         $(".speech-bubble").trigger('mouseleave');
       })

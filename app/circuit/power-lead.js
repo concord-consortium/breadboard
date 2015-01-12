@@ -1,8 +1,8 @@
 var extend    = require('../helpers/util').extend,
     Component = require('./component');
 
-PowerLead = function (props, breadBoard) {
-  PowerLead.parentConstructor.call(this, props, breadBoard);
+PowerLead = function (props, breadboardController) {
+  PowerLead.parentConstructor.call(this, props, breadboardController);
 };
 
 extend(PowerLead, Component, {

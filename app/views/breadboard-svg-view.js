@@ -217,7 +217,7 @@ window["breadboardSVGView"] = {
   };
 
   CircuitBoard.prototype.sendEventToModel = function(evName, params) {
-    breadboardComm[evName](this.workbenchController.workbench, params[0], params[1], params[2]);
+    breadboardComm[evName](this.workbenchController, params[0], params[1], params[2]);
   };
 
   CircuitBoard.prototype.addComponent = function(elem) {
@@ -229,10 +229,11 @@ window["breadboardSVGView"] = {
     this.component[elem["UID"]]["image"] = new SVGImage(this, elem["UID"]);
 
     if (this.rightClickFunction) {
-      var rightClickFunction = this.rightClickFunction;
+      var rightClickObj = this.rightClickObj,
+          func = this.rightClickFunction;
 
       this.component[elem["UID"]].view.bind("contextmenu dblclick", function(evt) {
-        rightClickFunction($(this).attr("uid"));
+        rightClickObj[func]($(this).attr("uid"));
         evt.preventDefault();
         return false;
       });
@@ -255,11 +256,12 @@ window["breadboardSVGView"] = {
     }
   };
 
-  CircuitBoard.prototype.setRightClickFunction = function(func) {
+  CircuitBoard.prototype.setRightClickFunction = function(obj, func) {
+    this.rightClickObj = obj;
     this.rightClickFunction = func;
     for (uid in this.component) {
       this.component[uid].view.bind("contextmenu dblclick", function(evt) {
-        func($(this).attr("uid"));
+        obj[func]($(this).attr("uid"));
         evt.preventDefault();
         return false;
       });

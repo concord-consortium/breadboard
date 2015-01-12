@@ -2,10 +2,10 @@
 var extend    = require('../helpers/util').extend,
     Component = require('./component');
 
-Battery = function (props, breadBoard) {
+Battery = function (props, breadboardController) {
   var range;
 
-  Battery.parentConstructor.call(this, props, breadBoard);
+  Battery.parentConstructor.call(this, props, breadboardController);
 
   // if voltages are specified as an array, then if it has only value, set the
   // voltage to that value, otherwise set it to a random voltage between the first
@@ -31,7 +31,7 @@ extend(Battery, Component, {
 
 module.exports = Battery;
 
-},{"../helpers/util":22,"./component":4}],2:[function(require,module,exports){
+},{"../helpers/util":23,"./component":4}],2:[function(require,module,exports){
 //= require circuit/resistor
 //= require circuit/variable-resistor
 //= require circuit/component
@@ -40,649 +40,148 @@ module.exports = Battery;
 
 /*global sparks CiSo $ breadBoard window console*/
 
-    var util                  = require('../helpers/util'),
-        Battery               = require('./battery'),
-        Capacitor             = require('./capacitor'),
-        FunctionGenerator     = require('./function-generator'),
-        Inductor              = require('./inductor'),
-        PowerLead             = require('./power-lead'),
-        Resistor4band         = require('./resistor-4band'),
-        Resistor              = require('./resistor'),
-        VariableResistor      = require('./variable-resistor'),
-        Component             = require('./component'),
-        Wire                  = require('./wire'),
-        workbenchController,
-
-
-        defs = {
-          rows            : 31,
-          powerRailHoles  : 25
-        },
-
-        Hole,
-        GhostHole,
-        Strip,
-        Breadboard,
-        breadBoard;
-
-    ////////////////////////////////////////////////////////////////////////////////
-    //// B R E A D - B O A R D - M O D E L /////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////////
-
-      //// BREADBOARD Prototype Model //////////////////////////////////////////////
-
-      Hole = function Hole( strip, name ){
-        this.type ='hole';
-        this.strip = strip;
-        this.name = name;
-        this.connections = [];
-        return this;
-      };
-
-      Hole.prototype.nodeName = function() {
-        return this.strip && this.strip.name;
-      };
-
-      Hole.prototype.getName = function() {
-        return this.name;
-      };
-
-      GhostHole = function GhostHole(name) {
-        this.name = !!name ? name : breadBoard.getUID('node');
-        return this;
-      };
-
-      GhostHole.prototype.nodeName = function() {
-        return this.name;
-      };
-
-      GhostHole.prototype.getName = function() {
-        return this.name;
-      };
-
-      Strip = function Strip( holes, name ){
-        this.type ='strip';
-        this.holes={};
-        this.name = name;
-        if (holes) {
-          for (var i=0, l=holes; i < l; i++) {
-            this.holes[''+i] = new Hole();
-            this.holes[''+i].strip = this;
-          }
-        }
-        return this;
-      };
-
-      Breadboard = function Breadboard(){
-        var i, h, l, ll, a,
-            side, sign,
-            newStripL, newStripR,
-            mapCode;
-
-        this.type ='Breadboard';
-
-        this.strips = [];
-        this.components = {};
-        this.holes = {};
-        this.holeMap = {};
-        this.faultyComponents = [];
-
-        // Create power-rails
-        this.powerRail = { // I was told these were called power-rails
-          left:{
-            positive: new Strip( null, "powerPosL"),
-            negative: new Strip( null, "gnd")
-          },
-          right:{
-            positive: new Strip( null, "powerPosR" ),
-            negative: new Strip( null, "gnd" )
-          }
-        };
-
-        for (i=0, l=defs.powerRailHoles; i < l; i++) {
-          for (side in this.powerRail) {
-            if (!this.powerRail.hasOwnProperty(side)) continue;
-            for (sign in this.powerRail[side]) {
-              if (!this.powerRail[side].hasOwnProperty(sign)) continue;
-              h = side + '_' + sign + i;
-              this.powerRail[side][sign][h] = this.holes[h] = new Hole(this.powerRail[side][sign], h);
-            }
-          }
-        }
-
-        // Create board
-        for (i=0, l=defs.rows; i < l; i++) {
-          newStripL = this.makeStrip("L" + i);
-          newStripR = this.makeStrip("R" + i);
-          for (a=0, ll=5; a < ll; a++ ) {
-            mapCode = String.fromCharCode(a+97)+i;
-            newStripL.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripL, mapCode );
-            mapCode = String.fromCharCode(a+102)+i;
-            newStripR.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripR, mapCode );
-          }
-        }
-        return this;
-      };
-
-      Breadboard.prototype = {
-
-        strips:           null,   // []
-        components:       null,   // {}
-        holes:            null,   // {}
-        holeMap:          null,   // {} map of holes where one replaces the other, e.g. {a1: 'newGhostHole'}
-        faultyComponents: null,   // []
-        resOrderOfMagnitude: -1,
-
-        makeStrip: function (name) {
-          var stripLen = this.strips.length;
-          this.strips[ stripLen ] = new Strip(null, name);
-          return this.strips[ stripLen ];
-        },
-
-        component: function (props) {
-          if(typeof props=='string'){
-            return this.components[props];
-          } else {
-
-            // FIXME refactor this repetitive code
-
-            if (props.kind === "resistor"){
-              return new Resistor(props, breadBoard);
-            }
-            if (props.kind === "variable resistor"){
-              return new VariableResistor(props, breadBoard);
-            }
-            if (props.kind === 'inductor') {
-              return new Inductor(props, breadBoard);
-            }
-            if (props.kind === 'capacitor') {
-              return new Capacitor(props, breadBoard);
-            }
-            if (props.kind === 'battery') {
-              return new Battery(props, breadBoard);
-            }
-            if (props.kind === 'function generator') {
-              return new FunctionGenerator(props, breadBoard, workbenchController);
-            }
-            if (props.kind === 'wire') {
-              return new Wire(props, breadBoard);
-            }
-            if (props.kind === 'powerLead') {
-              return new PowerLead(props, breadBoard);
-            }
-            return new Component(props, breadBoard);
-          }
-        },
-
-        clear: function () {
-          var destroyed = 0,
-              k;
-
-          this.resOrderOfMagnitude = -1;
-          for( k in this.components ){
-            if (!this.components.hasOwnProperty(k)) continue;
-            destroyed += !!this.component(k).destroy();
-          }
-          this.components = {};
-          this.faultyComponents = [];
-
-          this.clearHoleMap();
-
-          return !!destroyed;
-        },
-
-        // can pass either a hole or a string
-        getHole: function(hole) {
-          if (!hole) return;
-
-          if (hole.name){
-            if (!!this.holeMap[hole.name]){
-              return this.getHole(this.holeMap[hole.getName()]);
-            }
-            return hole;
-          }
-
-          // should be a string
-
-          // replace with mapped name
-          if (!!this.holeMap[hole]){
-            hole = this.holeMap[hole];
-          }
-
-          // return hole if it is in breadboard
-          if (!!this.holes[hole]){
-            return this.holes[hole];
-          }
-
-          // otherwise, make a new ghosthole
-          return new GhostHole(hole);
-        },
-
-        // Resets all connections, used when holeMap changes
-        resetConnections: function(oldHoleName, newHoleName) {
-          var i, j;
-
-          for( i in this.components ){
-            if (!this.components.hasOwnProperty(i)) continue;
-            var comp = this.component(i);
-            for (j in comp.connections){
-              if (!comp.connections.hasOwnProperty(j)) continue;
-              if (!!comp.connections[j] && comp.connections[j].getName() === oldHoleName) {
-                comp.connections[j] = this.getHole(newHoleName);
-              }
-            }
-          }
-        },
-
-        // Adds a fault to an existing circuit. A fault may affect one or
-        // more components. If fault.component is set, it will be applied to
-        // that component. Otherwise, if fault.count or fault.max are set, it
-        // will be applied to a number of random components.
-        addFault: function(fault) {
-          if (!!fault.component){
-            this.addFaultToComponent(fault, this.components[fault.component]);
-          } else {
-            // find out how many components we should be applying this to
-            var count;
-            if (!!fault.count) {
-              count = fault.count;
-            } else if (!!fault.max) {
-              count = Math.floor(Math.random() * fault.max) + 1;    // between 1 and max faults
-            }
-
-
-            // apply fault to valid components 'count' times, with no repitition. No checking is
-            // done to see if there are sufficient valid components for this to be possible, so
-            // application will hang if authored badly.
-            var componentKeys = util.getKeys(this.components);
-            for (var i = 0; i < count; i++){
-              var randomComponent = null;
-              while (randomComponent === null) {
-                var rand = Math.floor(Math.random() * componentKeys.length);
-                var component = this.components[componentKeys[rand]];
-                if (!!component.applyFaults && (util.contains(this.faultyComponents, component) === -1)){
-                  randomComponent = component;
-                }
-              }
-              this.addFaultToComponent(fault, randomComponent);
-            }
-          }
-        },
-
-        // adds a fault to a specific component. If fault.type is an array, a random
-        // type will be picked
-        addFaultToComponent: function(fault, component) {
-          var type;
-          if (fault.type instanceof Array){
-            type = fault.type[Math.floor(Math.random() * fault.type.length)];
-          } else {
-            type = fault.type;
-          }
-
-          if (type === "open") {
-            component.open = true;
-            component.shorted = false;
-          } else if (type === "shorted") {
-            component.shorted = true;
-            component.open = false;
-          }
-          if (component.applyFaults) {
-            component.applyFaults();
-          }
-
-          this.faultyComponents.push(component);
-        },
-
-        getFaults: function() {
-          return this.faultyComponents;
-        },
-
-        getFault: function() {
-          if (this.faultyComponents.length > 0){
-            return this.faultyComponents[0];
-          }
-          return null;
-        },
-
-
-
-        // "Public" functions. These used to be the old "interfaces" object
-        insertComponent: function(kind, properties){
-          // copy props into a new obj, so we don't modify original
-          var props = {};
-          $.each(properties, function(key, property){
-            props[key] = property;
-          });
-
-          props.kind = kind;
-
-          // ensure no dupes, using either passed UID or type
-          props.UID = this.getUID(!!props.UID ? props.UID : props.kind);
-
-          // if uid is source, and no conections are specified, assume we are connecting to rails
-          if (props.UID === "source" && !props.connections){
-            props.connections = "left_positive21,left_negative21";
-          }
-
-          var newComponent = this.component(props);
-
-          // update view
-          if (workbenchController.breadboardView) {
-            if (newComponent.getViewArguments && newComponent.hasValidConnections() && newComponent.kind !== "battery" && !newComponent.hide)
-              workbenchController.breadboardView.addComponent(newComponent.getViewArguments());
-            if (newComponent.kind == "battery" || newComponent.kind == "function generator" && !newComponent.hide) // FIXME
-              workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
-          }
-
-          return newComponent.UID;
-        },
-
-        createCircuit: function(jsonCircuit) {
-          var circuitHasReferenceFrequency = typeof jsonCircuit.referenceFrequency === 'number';
-          var self = this;
-          $.each(jsonCircuit, function(i, spec) {
-            // allow each component spec to override the circuit-wide reference frequency, if author desires.
-            if (circuitHasReferenceFrequency && typeof spec.referenceFrequency === 'undefined') {
-              spec.referenceFrequency = jsonCircuit.referenceFrequency;
-            }
-            self.insertComponent(spec.type, spec);
-          });
-
-          this.insertComponent("powerLead", {
-            UID: "blackPowerLead",
-            type: "powerLead",
-            connections: "left_negative21"
-          });
-        },
-
-        addFaults: function(jsonFaults){
-          var self = this;
-          $.each(jsonFaults, function(i, fault){
-            self.addFault(fault);
-          });
-        },
-
-        getResOrderOfMagnitude: function(){
-          return this.resOrderOfMagnitude;
-        },
-
-        setResOrderOfMagnitude: function(om){
-          this.resOrderOfMagnitude = om;
-        },
-
-        checkLocation: function(comp){     // ensure that a component's leads aren't too close
-          var minDistance = {
-                resistor: 6,
-                inductor: 5,
-                capacitor: 3,
-                wire: 3
-              },
-              yValue = {
-                left_positive: 1,
-                left_negative: 2,
-                a: 4, b: 5, c: 6, d: 7, e: 8,
-                f: 10, g: 11, h: 12, i: 13, j: 14,
-                right_positive: 16,
-                right_negative: 17
-              },
-              getCoordinate = function(hole) {      // returns [20, 4] for "a20"
-                var name  = hole.name,
-                    split = /(\D*)(.*)/.exec(name),
-                    row   = yValue[split[1]];
-                return [split[2]*1, row];
-              },
-              leadsAreTooClose = function() {
-                var dx, dy, leadDistance;
-
-                comp.coord = [];
-                comp.coord[0] = getCoordinate(comp.connections[0]);
-                comp.coord[1] = getCoordinate(comp.connections[1]);
-                dx = comp.coord[1][0] - comp.coord[0][0];
-                dy = comp.coord[1][1] - comp.coord[0][1];
-                leadDistance = Math.sqrt(dx*dx + dy*dy);
-
-                return (leadDistance < minDistance[comp.type]);
-              },
-              leadsWereTooClose = false;
-
-          while (leadsAreTooClose()) {
-            leadsWereTooClose = true;
-            var rightLead = comp.coord[0][0] < comp.coord[1][0] ? 0 : 1,
-                leftLead = (rightLead - 1) * -1,
-                newX, newName;
-
-            if (comp.coord[rightLead][0] > 1) {
-              // move right lead one to the right
-              newX = comp.coord[rightLead][0] - 1;
-              newName = comp.connections[rightLead].name.replace(/\d*$/, newX);
-              comp.connections[rightLead] = this.getHole(newName);
-            } else {
-              // move left lead one to the left
-              newX = comp.coord[leftLead][0] + 1;
-              newName = comp.connections[leftLead].name.replace(/\d*$/, newX);
-              comp.connections[leftLead] = this.getHole(newName);
-            }
-          }
-
-          // update view
-          if (leadsWereTooClose && workbenchController.breadboardView) {
-            workbenchController.breadboardView.removeComponent(comp.UID);
-            workbenchController.breadboardView.addComponent(comp.getViewArguments());
-          }
-
-        },
-
-        getUID: function(_name){
-          var name = _name.replace(/ /g, "_");      // no spaces in qucs
-
-          if (!this.components[name]){
-            return name;
-          }
-
-          var i = 0;
-          while (!!this.components[""+name+i]){
-            i++;
-          }
-          return ""+name+i;
-        },
-
-        remove: function(type, connections){
-          var comp = this.findComponent(type, connections);
-          if (!!comp){
-            comp.destroy();
-          }
-          workbenchController.breadboardView.removeComponent(uid);
-        },
-
-        removeComponent: function(comp){
-          var uid = comp.UID;
-          comp.destroy();
-          if (uid) {
-            workbenchController.breadboardView.removeComponent(uid);
-          }
-        },
-
-        findComponent: function(type, connections){
-          var i, component;
-
-          if (!!type && !!connections && connections.split(",").length === 2){
-            connections = connections.split(",");
-            for (i in this.components){
-              if (!this.components.hasOwnProperty(i)) continue;
-              component = this.components[i];
-              if (component.kind === type && !!component.connections[0] &&
-                ((component.connections[0].getName() === connections[0] &&
-                  component.connections[1].getName() === connections[1]) ||
-                (component.connections[0].getName() === connections[1] &&
-                  component.connections[1].getName() === connections[0]))){
-                  return component;
-                }
-            }
-          }
-          return null;
-        },
-
-        destroy: function(component){
-          this.component(component).destroy();
-        },
-
-        move: function(component, connections){
-          this.component(component).move(connections.split(','));
-        },
-
-        getGhostHole: function(name){
-          return new GhostHole(name);
-        },
-
-        mapHole: function(oldHoleName, newHoleName){
-          this.holeMap[oldHoleName] = newHoleName;
-          this.resetConnections(oldHoleName, newHoleName);
-        },
-
-        unmapHole: function(oldHoleName){
-          var newHoleName = this.holeMap[oldHoleName];
-          this.holeMap[oldHoleName] = undefined;
-          this.resetConnections(newHoleName, oldHoleName);
-        },
-
-        clearHoleMap: function(){
-          this.holeMap = {};
-        },
-
-        addRandomResistor: function(name, location, options){
-          console.log("WARNING: addRandomResistor is deprecated");
-          var resistor = new Resistor4band(name);
-          resistor.randomize((options | null));
-          this.insert('resistor', location, resistor.getRealValue(), name, resistor.colors);
-          return resistor;
-        },
-
-        // this method will modify the breadboard as necessary to create additional temporary components
-        // that correspond to the measurement-type's circuit changes (e.g. large resistor for a voltmeter),
-        // and then simply call qucsator.qucsate, and return the resulting results object.
-        // NB: This function used to return the final value required by the DMM. It no longer does so, as
-        // it does not assume a DMM is doing the requesting, and instead returns the entire results object.
-        query: function(type, connections, callback, context, callbackArgs){
-          var tempComponents = [],
-              ghost, ohmmeterBattery,
-              voltmeterResistor,
-              ammeterResistor,
-              oscopeResistor,
-              ciso,
-              node;
-
-          // add DMM components as necessary
-          if (type === 'resistance') {
-            connections = connections.split(',');
-            ghost = new GhostHole();
-            ohmmeterBattery = this.component({
-              UID: 'ohmmeterBattery',
-              kind: 'battery',
-              voltage: 1,
-              connections: [connections[0], connections[1]]});
-            // var currentProbe = this.component({
-            //   UID: 'meter',
-            //   kind: 'iprobe',
-            //   connections: [connections[1], ghost]});
-            tempComponents.push(ohmmeterBattery);
-          } else if (type === 'voltage'){
-            voltmeterResistor = this.component({
-              UID: 'voltmeterResistor',
-              kind: 'resistor',
-              resistance: 1e12,
-              connections: connections.split(',')});
-            tempComponents.push(voltmeterResistor);
-          } else if (type === 'current'){
-            ammeterResistor = this.component({
-              UID: 'ammeterResistor',
-              kind: 'resistor',
-              resistance: 1e-6,
-              connections: connections.split(',')});
-            tempComponents.push(ammeterResistor);
-          } else if (type === 'oscope') {
-            oscopeResistor = this.component({
-              UID: 'oscopeResistor',
-              kind: 'resistor',
-              resistance: 1e12,
-              connections: [connections, "gnd"]});
-            tempComponents.push(oscopeResistor);
-          }
-
-          ciso = new CiSo();
-
-          $.each(this.components, function(i, component) {
-            component.addCiSoComponent(ciso);
-          });
-
-          // if ohmmeter, set reference node
-          if (type === 'resistance') {
-            node = this.getHole(connections[1]).nodeName();
-            ciso.setReferenceNode(node);
-          }
-          // destroy the temporary DMM components
-          $.each(tempComponents, function(i, component){
-            component.destroy();
-          });
-
-          callback.call(context, ciso, callbackArgs);
-        },
-
-        updateView: function() {
-          $.each(this.components, function(i, component) {
-            if (component.getViewArguments && component.hasValidConnections() && component.kind !== "battery" && !component.hide) {
-              workbenchController.breadboardView.addComponent(component.getViewArguments());
-            }
-            if (component.kind == "battery" || component.kind == "function generator" && !component.hide) // FIXME
-              workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
-          });
-        }
-
+var util                  = require('../helpers/util'),
+    Battery               = require('./battery'),
+    Capacitor             = require('./capacitor'),
+    FunctionGenerator     = require('./function-generator'),
+    Inductor              = require('./inductor'),
+    PowerLead             = require('./power-lead'),
+    Resistor4band         = require('./resistor-4band'),
+    Resistor              = require('./resistor'),
+    VariableResistor      = require('./variable-resistor'),
+    Component             = require('./component'),
+    Wire                  = require('./wire'),
+    workbenchController,
+
+
+    defs = {
+      rows            : 31,
+      powerRailHoles  : 25
+    },
+
+    Hole,
+    GhostHole,
+    Strip,
+    Breadboard;
+
+////////////////////////////////////////////////////////////////////////////////
+//// B R E A D - B O A R D - M O D E L /////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+//// BREADBOARD Prototype Model //////////////////////////////////////////////
+
+Hole = function Hole( strip, name ){
+  this.type ='hole';
+  this.strip = strip;
+  this.name = name;
+  this.connections = [];
+  return this;
+};
+
+Hole.prototype.nodeName = function() {
+  return this.strip && this.strip.name;
+};
+
+Hole.prototype.getName = function() {
+  return this.name;
+};
+
+GhostHole = function GhostHole(name) {
+  this.name = name;
+  return this;
+};
+
+GhostHole.prototype.nodeName = function() {
+  return this.name;
+};
+
+GhostHole.prototype.getName = function() {
+  return this.name;
+};
+
+Strip = function Strip( holes, name ){
+  this.type ='strip';
+  this.holes={};
+  this.name = name;
+  if (holes) {
+    for (var i=0, l=holes; i < l; i++) {
+      this.holes[''+i] = new Hole();
+      this.holes[''+i].strip = this;
+    }
+  }
+  return this;
+};
+
+Breadboard = function Breadboard(){
+  var i, h, l, ll, a,
+      side, sign,
+      newStripL, newStripR,
+      mapCode;
+
+  this.type ='Breadboard';
+
+  this.strips = [];
+  this.components = {};
+  this.holes = {};
+  this.holeMap = {};
+  this.faultyComponents = [];
+
+  // Create power-rails
+  this.powerRail = {
+    left:{
+      positive: new Strip( null, "powerPosL"),
+      negative: new Strip( null, "gnd")
+    },
+    right:{
+      positive: new Strip( null, "powerPosR" ),
+      negative: new Strip( null, "gnd" )
+    }
+  };
+
+  for (i=0, l=defs.powerRailHoles; i < l; i++) {
+    for (side in this.powerRail) {
+      if (!this.powerRail.hasOwnProperty(side)) continue;
+      for (sign in this.powerRail[side]) {
+        if (!this.powerRail[side].hasOwnProperty(sign)) continue;
+        h = side + '_' + sign + i;
+        this.powerRail[side][sign][h] = this.holes[h] = new Hole(this.powerRail[side][sign], h);
       }
+    }
+  }
 
-      //// BreadBoard Instance & Interface /////////////////////////////////////////
-      breadBoard = new Breadboard();
+  // Create board
+  for (i=0, l=defs.rows; i < l; i++) {
+    newStripL = this.makeStrip("L" + i);
+    newStripR = this.makeStrip("R" + i);
+    for (a=0, ll=5; a < ll; a++ ) {
+      mapCode = String.fromCharCode(a+97)+i;
+      newStripL.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripL, mapCode );
+      mapCode = String.fromCharCode(a+102)+i;
+      newStripR.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripR, mapCode );
+    }
+  }
+};
 
-      var api = {};
+Breadboard.prototype = {
+  makeStrip: function (name) {
+    var stripLen = this.strips.length;
+    this.strips[ stripLen ] = new Strip(null, name);
+    return this.strips[ stripLen ];
+  },
 
-      // The inward interface between Flash's ExternalInterface and JavaScript's BreadBoard prototype model instance
-      api.breadModel = function () {
-        if (!workbenchController) {
-          workbenchController = require('../controllers/workbench-controller');   // grrr
-        }
+  createGhostHole: function(hole) {
+    return new GhostHole(hole);
+  }
+}
 
-        var newArgs = [];
-        for(var i=1,l=arguments.length;i< l;i++){
-          newArgs[newArgs.length] = arguments[i];
-        }
-        var func = arguments[0];
+module.exports = Breadboard;
 
-        if (func === 'query' && !!arguments[2]) {
-            var conns = arguments[2].split(',');
-
-            if (conns[0] === 'null' || conns[1] === 'null') {
-                return 0;
-            }
-            var v = breadBoard.query.apply(breadBoard, newArgs);
-            return v;
-        }
-        else {
-          return breadBoard[func].apply(breadBoard, newArgs);
-        }
-      };
-
-      api.getBreadBoard = function() {
-        return breadBoard;
-      };
-
-      module.exports = api;
-
-},{"../controllers/workbench-controller":17,"../helpers/util":22,"./battery":1,"./capacitor":3,"./component":4,"./function-generator":5,"./inductor":6,"./power-lead":9,"./resistor":13,"./resistor-4band":12,"./variable-resistor":14,"./wire":15}],3:[function(require,module,exports){
-
+},{"../helpers/util":23,"./battery":1,"./capacitor":3,"./component":4,"./function-generator":5,"./inductor":6,"./power-lead":9,"./resistor":13,"./resistor-4band":12,"./variable-resistor":14,"./wire":15}],3:[function(require,module,exports){
 var extend            = require('../helpers/util').extend,
     ReactiveComponent = require('./reactive-component');
 
-Capacitor = function (props, breadBoard) {
-  Capacitor.parentConstructor.call(this, props, breadBoard);
+Capacitor = function (props, breadboardController) {
+  Capacitor.parentConstructor.call(this, props, breadboardController);
 };
 
 extend(Capacitor, ReactiveComponent, {
@@ -714,17 +213,14 @@ extend(Capacitor, ReactiveComponent, {
 
 module.exports = Capacitor;
 
-},{"../helpers/util":22,"./reactive-component":11}],4:[function(require,module,exports){
-var Breadboard = require('../circuit/breadboard');
-
-Component = function (props, breadBoard) {
+},{"../helpers/util":23,"./reactive-component":11}],4:[function(require,module,exports){
+Component = function (props, breadboardController) {
 
   for (var i in props) {
     this[i]=props[i];
   }
 
-  this.breadBoard = breadBoard;
-  this.breadBoard.components[props.UID] = this;
+  this.breadboardController = breadboardController;
 
   if (!this.label){
     this.label = !!this.UID.split("/")[1] ? this.UID.split("/")[1] : "";
@@ -735,10 +231,10 @@ Component = function (props, breadBoard) {
   }
 
   for (i in this.connections) {
-    this.connections[i] = this.breadBoard.getHole(this.connections[i]);
+    this.connections[i] = this.breadboardController.getHole(this.connections[i]);
 
-    if (!!this.breadBoard.holes[this.connections[i]]) {
-      this.breadBoard.holes[this.connections[i]].connections[this.breadBoard.holes[this.connections[i]].connections.length] = this;
+    if (!!this.breadboardController.getHoles[this.connections[i]]) {
+      this.breadboardController.getHoles[this.connections[i]].connections[this.breadboardController.getHoles[this.connections[i]].connections.length] = this;
     }
   }
   this._ensureFloat("resistance");
@@ -786,8 +282,8 @@ Component.prototype = {
     }
     this.connections = [];
     for (i in connections){
-      this.connections[i] = this.breadBoard.holes[connections[i]];
-      this.breadBoard.holes[connections[i]].connections[this.breadBoard.holes[connections[i]].connections.length] = this;
+      this.connections[i] = this.breadboardController.getHoles[connections[i]];
+      this.breadboardController.getHoles[connections[i]].connections[this.breadboardController.getHoles[connections[i]].connections.length] = this;
     }
 
     this.setViewArguments({connections: this.getLocation()});
@@ -804,7 +300,7 @@ Component.prototype = {
       this.connections[i] = [];
     }
     this.connections = [];
-    delete this.breadBoard.components[this.UID];
+    this.breadboardController.deleteComponentFromMap(this.UID);
   },
 
   _ensureFloat: function (val) {
@@ -883,8 +379,7 @@ Component.prototype = {
   },
 
   addThisToFaults: function() {
-    var breadBoard = Breadboard.getBreadBoard();
-    if (!~breadBoard.faultyComponents.indexOf(this)) { breadBoard.faultyComponents.push(this); }
+    this.breadboardController.addFaultyComponent(this);
   },
 
   // used by the component edit view
@@ -912,13 +407,12 @@ Component.prototype = {
 module.exports = Component;
 
 
-},{"../circuit/breadboard":2}],5:[function(require,module,exports){
-
+},{}],5:[function(require,module,exports){
 var extend              = require('../helpers/util').extend,
     Component           = require('./component');
 
-FunctionGenerator = function (props, breadBoard, workbenchController) {
-  FunctionGenerator.parentConstructor.call(this, props, breadBoard);
+FunctionGenerator = function (props, breadboardController, workbenchController) {
+  FunctionGenerator.parentConstructor.call(this, props, breadboardController);
 
   this.workbenchController = workbenchController;
 
@@ -1047,13 +541,12 @@ extend(FunctionGenerator, Component, {
 
 module.exports = FunctionGenerator;
 
-},{"../helpers/util":22,"./component":4}],6:[function(require,module,exports){
-
+},{"../helpers/util":23,"./component":4}],6:[function(require,module,exports){
 var extend            = require('../helpers/util').extend,
     ReactiveComponent = require('./reactive-component');
 
-Inductor = function (props, breadBoard) {
-  Inductor.parentConstructor.call(this, props, breadBoard);
+Inductor = function (props, breadboardController) {
+  Inductor.parentConstructor.call(this, props, breadboardController);
 };
 
 extend(Inductor, ReactiveComponent, {
@@ -1085,8 +578,7 @@ extend(Inductor, ReactiveComponent, {
 
 module.exports = Inductor;
 
-},{"../helpers/util":22,"./reactive-component":11}],7:[function(require,module,exports){
-
+},{"../helpers/util":23,"./reactive-component":11}],7:[function(require,module,exports){
 var workbenchController;
 
 /*
@@ -1592,21 +1084,20 @@ set_disable_multimeter_position: function (disabled) {
 
 module.exports = MultimeterBase;
 
-},{"../controllers/workbench-controller":17}],8:[function(require,module,exports){
-
+},{"../controllers/workbench-controller":18}],8:[function(require,module,exports){
 var LogEvent        = require('../models/log'),
     util            = require('../helpers/util'),
     logController   = require('../controllers/log-controller'),
     extend          = require('../helpers/util').extend,
-    MultimeterBase  = require('./multimeter-base'),
-    Breadboard      = require('./breadboard');
+    MultimeterBase  = require('./multimeter-base');
 
 /*
  * Digital Multimeter for breadboard activities
  *
  */
-Multimeter = function () {
+Multimeter = function (breadboardController) {
   Multimeter.uber.init.apply(this);
+  this.breadboardController = breadboardController;
   this.reset();
 };
 
@@ -1638,7 +1129,7 @@ extend(Multimeter, MultimeterBase, {
       }
 
       if (!!this.currentMeasurement){
-        Breadboard.breadModel('query', this.currentMeasurement, this.redProbeConnection + ',' + this.blackProbeConnection, this.updateWithData, this);
+        this.breadboardController.breadModel('query', this.currentMeasurement, this.redProbeConnection + ',' + this.blackProbeConnection, this.updateWithData, this);
       }
     } else {
       this.updateWithData();
@@ -1653,7 +1144,7 @@ extend(Multimeter, MultimeterBase, {
 
     if (ciso) {
       source = ciso.voltageSources[0],
-      b  = Breadboard.getBreadBoard();
+      b  = this.breadboardController;
       p1 = b.getHole(this.redProbeConnection).nodeName();
       p2 = b.getHole(this.blackProbeConnection).nodeName();
       if (measurement === "resistance") {
@@ -1685,7 +1176,7 @@ extend(Multimeter, MultimeterBase, {
 
       if (result){
         // if in wrong voltage mode for AC/DC voltage, show zero
-        source = Breadboard.getBreadBoard().components.source;
+        source = this.breadboardController.getComponents().source;
         if (!!source &&
            ((measurement === 'voltage' && source.frequency) ||
             (measurement === 'ac_voltage' && source.frequency === 0))) {
@@ -1745,7 +1236,7 @@ extend(Multimeter, MultimeterBase, {
 
   _getResultsIndex: function (results) {
     var i = 0,
-        source = Breadboard.getBreadBoard().components.source;
+        source = this.breadboardController.getComponents().source;
     if (source && source.setFrequency && results.acfrequency){
       i = util.getClosestIndex(results.acfrequency, source.frequency, true);
     }
@@ -1755,12 +1246,12 @@ extend(Multimeter, MultimeterBase, {
 
 module.exports = Multimeter;
 
-},{"../controllers/log-controller":16,"../helpers/util":22,"../models/log":27,"./breadboard":2,"./multimeter-base":7}],9:[function(require,module,exports){
+},{"../controllers/log-controller":17,"../helpers/util":23,"../models/log":28,"./multimeter-base":7}],9:[function(require,module,exports){
 var extend    = require('../helpers/util').extend,
     Component = require('./component');
 
-PowerLead = function (props, breadBoard) {
-  PowerLead.parentConstructor.call(this, props, breadBoard);
+PowerLead = function (props, breadboardController) {
+  PowerLead.parentConstructor.call(this, props, breadboardController);
 };
 
 extend(PowerLead, Component, {
@@ -1785,7 +1276,7 @@ extend(PowerLead, Component, {
 
 module.exports = PowerLead;
 
-},{"../helpers/util":22,"./component":4}],10:[function(require,module,exports){
+},{"../helpers/util":23,"./component":4}],10:[function(require,module,exports){
 
 // Allowable resistance values
 
@@ -1945,17 +1436,16 @@ r_values.r_values4band10pct = [
 module.exports = r_values;
 
 },{}],11:[function(require,module,exports){
-
 var extend    = require('../helpers/util').extend,
     Component = require('./component'),
     sparksMath = require('../helpers/sparks-math');
 
-ReactiveComponent = function (props, breadBoard) {
+ReactiveComponent = function (props, breadboardController) {
   if (typeof props.impedance !== 'undefined') {
     props.impedance = this.getRequestedImpedance( props.impedance );
   }
 
-  ReactiveComponent.parentConstructor.call(this, props, breadBoard);
+  ReactiveComponent.parentConstructor.call(this, props, breadboardController);
 
   this.applyFaults();
 };
@@ -2020,20 +1510,20 @@ extend(ReactiveComponent, Component, {
 
 module.exports = ReactiveComponent;
 
-},{"../helpers/sparks-math":20,"../helpers/util":22,"./component":4}],12:[function(require,module,exports){
+},{"../helpers/sparks-math":21,"../helpers/util":23,"./component":4}],12:[function(require,module,exports){
 var extend    = require('../helpers/util').extend,
     Resistor  = require('./resistor'),
-    r_values  = require('./r-values'),
-    Breadboard      = require('./breadboard');
+    r_values  = require('./r-values');
 
-Resistor4band = function (id) {
+Resistor4band = function (id, breadboardController) {
   var superclass = Resistor4band.uber;
   superclass.init.apply(this, [id]);
   this.numBands = 4;
+  this.breadboardController = breadboardController;
 
-  if (Breadboard.breadModel('getResOrderOfMagnitude') < 0){
+  if (breadboardController.breadModel('getResOrderOfMagnitude') < 0){
     var om = this.randInt(0, 3);
-    Breadboard.breadModel('setResOrderOfMagnitude', om);
+    breadboardController.breadModel('setResOrderOfMagnitude', om);
   }
 
   this.r_values5pct = this.filter(r_values.r_values4band5pct);
@@ -2063,7 +1553,7 @@ extend(Resistor4band, Resistor, {
             values = this.r_values10pct;
         }
 
-        var om = Breadboard.breadModel('getResOrderOfMagnitude');
+        var om = this.breadboardController.breadModel('getResOrderOfMagnitude');
         var extra = this.randInt(0, 1);
         om = om + extra;
 
@@ -2085,7 +1575,7 @@ extend(Resistor4band, Resistor, {
   },
 
   _resistanceIsUnique: function (value) {
-    var components = Breadboard.getBreadBoard().components;
+    var components = this.breadboardController.getComponents();
 
     for (var i in components){
       var resistor  = components[i];
@@ -2126,14 +1616,14 @@ extend(Resistor4band, Resistor, {
 
 module.exports = Resistor4band;
 
-},{"../helpers/util":22,"./breadboard":2,"./r-values":10,"./resistor":13}],13:[function(require,module,exports){
+},{"../helpers/util":23,"./r-values":10,"./resistor":13}],13:[function(require,module,exports){
 var extend                = require('../helpers/util').extend,
     Component             = require('./component'),
     r_values              = require('./r-values'),
     Resistor4band         = require('./resistor-4band'),
     workbenchController;
 
-Resistor = function (props, breadBoard) {
+Resistor = function (props, breadboardController) {
   workbenchController   = require('../controllers/workbench-controller');
 
   var tolerance, steps;
@@ -2145,7 +1635,7 @@ Resistor = function (props, breadBoard) {
     props.resistance = this.getRequestedImpedance( props.resistance, steps );
   }
 
-  Resistor.parentConstructor.call(this, props, breadBoard);
+  Resistor.parentConstructor.call(this, props, breadboardController);
 
   // if we have colors defined and not resistance
   if ((this.resistance === undefined) && this.colors){
@@ -2154,7 +1644,7 @@ Resistor = function (props, breadBoard) {
 
   // if we have neither colors nor resistance
   if ((this.resistance === undefined) && !this.colors) {
-    var resistor = new Resistor4band();
+    var resistor = new Resistor4band(this.UID, breadboardController);
     resistor.randomize(null);
     this.resistance = resistor.getRealValue();
     this.tolerance = resistor.tolerance;
@@ -2390,12 +1880,12 @@ extend(Resistor, Component,
 
 module.exports = Resistor;
 
-},{"../controllers/workbench-controller":17,"../helpers/util":22,"./component":4,"./r-values":10,"./resistor-4band":12}],14:[function(require,module,exports){
+},{"../controllers/workbench-controller":18,"../helpers/util":23,"./component":4,"./r-values":10,"./resistor-4band":12}],14:[function(require,module,exports){
 var extend    = require('../helpers/util').extend,
     Resistor  = require('./resistor');
 
-VariableResistor = function (props, breadBoard) {
-  Resistor.parentConstructor.call(this, props, breadBoard);
+VariableResistor = function (props, breadboardController) {
+  Resistor.parentConstructor.call(this, props, breadboardController);
   var superclass = VariableResistor.uber;
   superclass.init.apply(this, [props.UID]);
   this.resistance = this.minimumResistance;
@@ -2422,12 +1912,12 @@ extend(VariableResistor, Resistor, {
 
 module.exports = VariableResistor;
 
-},{"../helpers/util":22,"./resistor":13}],15:[function(require,module,exports){
+},{"../helpers/util":23,"./resistor":13}],15:[function(require,module,exports){
 var extend    = require('../helpers/util').extend,
     Component = require('./component');
 
-Wire = function (props, breadBoard) {
-  Wire.parentConstructor.call(this, props, breadBoard);
+Wire = function (props, breadboardController) {
+  Wire.parentConstructor.call(this, props, breadboardController);
   this.setViewArguments({color: this.getColor()});
 };
 
@@ -2457,7 +1947,541 @@ extend(Wire, Component, {
 
 module.exports = Wire;
 
-},{"../helpers/util":22,"./component":4}],16:[function(require,module,exports){
+},{"../helpers/util":23,"./component":4}],16:[function(require,module,exports){
+var util                  = require('../helpers/util'),
+    Breadboard            = require('../circuit/breadboard'),
+    Battery               = require('../circuit/battery'),
+    Capacitor             = require('../circuit/capacitor'),
+    FunctionGenerator     = require('../circuit/function-generator'),
+    Inductor              = require('../circuit/inductor'),
+    PowerLead             = require('../circuit/power-lead'),
+    Resistor4band         = require('../circuit/resistor-4band'),
+    Resistor              = require('../circuit/resistor'),
+    VariableResistor      = require('../circuit/variable-resistor'),
+    Component             = require('../circuit/component'),
+    Wire                  = require('../circuit/wire'),
+    componentTypes = {
+      "resistor": Resistor,
+      "variable resistor": VariableResistor,
+      "inductor": Inductor,
+      "capacitor": Capacitor,
+      "battery": Battery,
+      "function generator": FunctionGenerator,
+      "wire": Wire,
+      "powerLead": PowerLead
+    },
+    breadboard,
+    workbenchController,
+    BreadboardController,
+    breadboardController;
+
+
+
+BreadboardController = function() {
+  breadboard = new Breadboard();
+}
+
+BreadboardController.prototype = {
+
+  component: function (props) {
+    if(typeof props=='string'){
+      return breadboard.components[props];
+    } else {
+      var component;
+
+      if (componentTypes[props.kind]){
+        component = new componentTypes[props.kind](props, this, workbenchController);
+      } else {
+        component = new Component(props, this);
+      }
+      breadboard.components[props.UID] = component;
+      return component;
+    }
+  },
+
+  clear: function () {
+    var destroyed = 0,
+        k;
+
+    this.resOrderOfMagnitude = -1;
+    for( k in breadboard.components ){
+      if (!breadboard.components.hasOwnProperty(k)) continue;
+      destroyed += !!this.component(k).destroy();
+    }
+    breadboard.components = {};
+    breadboard.faultyComponents = [];
+
+    this.clearHoleMap();
+
+    return !!destroyed;
+  },
+
+  // can pass either a hole or a string
+  getHole: function(hole) {
+    if (!hole) return;
+
+    if (hole.name){
+      if (!!breadboard.holeMap[hole.name]){
+        return this.getHole(breadboard.holeMap[hole.getName()]);
+      }
+      return hole;
+    }
+
+    // should be a string
+
+    // replace with mapped name
+    if (!!breadboard.holeMap[hole]){
+      hole = breadboard.holeMap[hole];
+    }
+
+    // return hole if it is in breadboard
+    if (!!breadboard.holes[hole]){
+      return breadboard.holes[hole];
+    }
+
+    // otherwise, make a new ghosthole
+    return breadboard.createGhostHole(hole);
+  },
+
+  getHoles: function() {
+    return breadboard.holes;
+  },
+
+  // Resets all connections, used when holeMap changes
+  resetConnections: function(oldHoleName, newHoleName) {
+    var i, j;
+
+    for( i in breadboard.components ){
+      if (!breadboard.components.hasOwnProperty(i)) continue;
+      var comp = this.component(i);
+      for (j in comp.connections){
+        if (!comp.connections.hasOwnProperty(j)) continue;
+        if (!!comp.connections[j] && comp.connections[j].getName() === oldHoleName) {
+          comp.connections[j] = this.getHole(newHoleName);
+        }
+      }
+    }
+  },
+
+  // Adds a fault to an existing circuit. A fault may affect one or
+  // more components. If fault.component is set, it will be applied to
+  // that component. Otherwise, if fault.count or fault.max are set, it
+  // will be applied to a number of random components.
+  addFault: function(fault) {
+    if (!!fault.component){
+      this.addFaultToComponent(fault, breadboard.components[fault.component]);
+    } else {
+      // find out how many components we should be applying this to
+      var count;
+      if (!!fault.count) {
+        count = fault.count;
+      } else if (!!fault.max) {
+        count = Math.floor(Math.random() * fault.max) + 1;    // between 1 and max faults
+      }
+
+
+      // apply fault to valid components 'count' times, with no repitition. No checking is
+      // done to see if there are sufficient valid components for this to be possible, so
+      // application will hang if authored badly.
+      var componentKeys = util.getKeys(breadboard.components);
+      for (var i = 0; i < count; i++){
+        var randomComponent = null;
+        while (randomComponent === null) {
+          var rand = Math.floor(Math.random() * componentKeys.length);
+          var component = breadboard.components[componentKeys[rand]];
+          if (!!component.applyFaults && (util.contains(breadboard.faultyComponents, component) === -1)){
+            randomComponent = component;
+          }
+        }
+        this.addFaultToComponent(fault, randomComponent);
+      }
+    }
+  },
+
+  // adds a fault to a specific component. If fault.type is an array, a random
+  // type will be picked
+  addFaultToComponent: function(fault, component) {
+    var type;
+    if (fault.type instanceof Array){
+      type = fault.type[Math.floor(Math.random() * fault.type.length)];
+    } else {
+      type = fault.type;
+    }
+
+    if (type === "open") {
+      component.open = true;
+      component.shorted = false;
+    } else if (type === "shorted") {
+      component.shorted = true;
+      component.open = false;
+    }
+    if (component.applyFaults) {
+      component.applyFaults();
+    }
+
+    breadboard.faultyComponents.push(component);
+  },
+
+  addFaultyComponent: function(comp) {
+    if (!~breadboard.faultyComponents.indexOf(this)) {
+      brebreadboardadBoard.faultyComponents.push(this);
+    }
+  },
+
+  getFaults: function() {
+    return breadboard.faultyComponents;
+  },
+
+  getFault: function() {
+    if (breadboard.faultyComponents.length > 0){
+      return breadboard.faultyComponents[0];
+    }
+    return null;
+  },
+
+
+
+  // "Public" functions. These used to be the old "interfaces" object
+  insertComponent: function(kind, properties){
+    // copy props into a new obj, so we don't modify original
+    var props = {};
+    $.each(properties, function(key, property){
+      props[key] = property;
+    });
+
+    props.kind = kind;
+
+    // ensure no dupes, using either passed UID or type
+    props.UID = this.getUID(!!props.UID ? props.UID : props.kind);
+
+    // if uid is source, and no conections are specified, assume we are connecting to rails
+    if (props.UID === "source" && !props.connections){
+      props.connections = "left_positive21,left_negative21";
+    }
+
+    var newComponent = this.component(props);
+
+    // update view
+    if (workbenchController.breadboardView) {
+      if (newComponent.getViewArguments && newComponent.hasValidConnections() && newComponent.kind !== "battery" && !newComponent.hide)
+        workbenchController.breadboardView.addComponent(newComponent.getViewArguments());
+      if (newComponent.kind == "battery" || newComponent.kind == "function generator" && !newComponent.hide) // FIXME
+        workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
+    }
+
+    return newComponent.UID;
+  },
+
+  createCircuit: function(jsonCircuit) {
+    var circuitHasReferenceFrequency = typeof jsonCircuit.referenceFrequency === 'number';
+    var self = this;
+    $.each(jsonCircuit, function(i, spec) {
+      // allow each component spec to override the circuit-wide reference frequency, if author desires.
+      if (circuitHasReferenceFrequency && typeof spec.referenceFrequency === 'undefined') {
+        spec.referenceFrequency = jsonCircuit.referenceFrequency;
+      }
+      self.insertComponent(spec.type, spec);
+    });
+
+    this.insertComponent("powerLead", {
+      UID: "blackPowerLead",
+      type: "powerLead",
+      connections: "left_negative21"
+    });
+  },
+
+  addFaults: function(jsonFaults){
+    var self = this;
+    $.each(jsonFaults, function(i, fault){
+      self.addFault(fault);
+    });
+  },
+
+  getResOrderOfMagnitude: function(){
+    return breadboard.resOrderOfMagnitude;
+  },
+
+  setResOrderOfMagnitude: function(om){
+    breadboard.resOrderOfMagnitude = om;
+  },
+
+  checkLocation: function(comp){     // ensure that a component's leads aren't too close
+    var minDistance = {
+          resistor: 6,
+          inductor: 5,
+          capacitor: 3,
+          wire: 3
+        },
+        yValue = {
+          left_positive: 1,
+          left_negative: 2,
+          a: 4, b: 5, c: 6, d: 7, e: 8,
+          f: 10, g: 11, h: 12, i: 13, j: 14,
+          right_positive: 16,
+          right_negative: 17
+        },
+        getCoordinate = function(hole) {      // returns [20, 4] for "a20"
+          var name  = hole.name,
+              split = /(\D*)(.*)/.exec(name),
+              row   = yValue[split[1]];
+          return [split[2]*1, row];
+        },
+        leadsAreTooClose = function() {
+          var dx, dy, leadDistance;
+
+          comp.coord = [];
+          comp.coord[0] = getCoordinate(comp.connections[0]);
+          comp.coord[1] = getCoordinate(comp.connections[1]);
+          dx = comp.coord[1][0] - comp.coord[0][0];
+          dy = comp.coord[1][1] - comp.coord[0][1];
+          leadDistance = Math.sqrt(dx*dx + dy*dy);
+
+          return (leadDistance < minDistance[comp.type]);
+        },
+        leadsWereTooClose = false;
+
+    while (leadsAreTooClose()) {
+      leadsWereTooClose = true;
+      var rightLead = comp.coord[0][0] < comp.coord[1][0] ? 0 : 1,
+          leftLead = (rightLead - 1) * -1,
+          newX, newName;
+
+      if (comp.coord[rightLead][0] > 1) {
+        // move right lead one to the right
+        newX = comp.coord[rightLead][0] - 1;
+        newName = comp.connections[rightLead].name.replace(/\d*$/, newX);
+        comp.connections[rightLead] = this.getHole(newName);
+      } else {
+        // move left lead one to the left
+        newX = comp.coord[leftLead][0] + 1;
+        newName = comp.connections[leftLead].name.replace(/\d*$/, newX);
+        comp.connections[leftLead] = this.getHole(newName);
+      }
+    }
+
+    // update view
+    if (leadsWereTooClose && workbenchController.breadboardView) {
+      workbenchController.breadboardView.removeComponent(comp.UID);
+      workbenchController.breadboardView.addComponent(comp.getViewArguments());
+    }
+
+  },
+
+  getUID: function(_name){
+    var name = _name.replace(/ /g, "_");      // no spaces in qucs
+
+    if (!breadboard.components[name]){
+      return name;
+    }
+
+    var i = 0;
+    while (!!breadboard.components[""+name+i]){
+      i++;
+    }
+    return ""+name+i;
+  },
+
+  // clean up these three overlapping functions
+  remove: function(type, connections){
+    var comp = this.findComponent(type, connections);
+    if (!!comp){
+      comp.destroy();
+    }
+    workbenchController.breadboardView.removeComponent(uid);
+  },
+
+  removeComponent: function(comp){
+    var uid = comp.UID;
+    comp.destroy();
+    if (uid) {
+      workbenchController.breadboardView.removeComponent(uid);
+    }
+  },
+
+  deleteComponentFromMap: function(id) {
+    delete breadboard.components[id];
+  },
+
+  findComponent: function(type, connections){
+    var i, component;
+
+    if (!!type && !!connections && connections.split(",").length === 2){
+      connections = connections.split(",");
+      for (i in breadboard.components){
+        if (!breadboard.components.hasOwnProperty(i)) continue;
+        component = breadboard.components[i];
+        if (component.kind === type && !!component.connections[0] &&
+          ((component.connections[0].getName() === connections[0] &&
+            component.connections[1].getName() === connections[1]) ||
+          (component.connections[0].getName() === connections[1] &&
+            component.connections[1].getName() === connections[0]))){
+            return component;
+          }
+      }
+    }
+    return null;
+  },
+
+  destroy: function(component){
+    this.component(component).destroy();
+  },
+
+  move: function(component, connections){
+    this.component(component).move(connections.split(','));
+  },
+
+  getGhostHole: function(name){
+    return breadboard.createGhostHole(name);
+  },
+
+  mapHole: function(oldHoleName, newHoleName){
+    breadboard.holeMap[oldHoleName] = newHoleName;
+    this.resetConnections(oldHoleName, newHoleName);
+  },
+
+  unmapHole: function(oldHoleName){
+    var newHoleName = breadboard.holeMap[oldHoleName];
+    breadboard.holeMap[oldHoleName] = undefined;
+    this.resetConnections(newHoleName, oldHoleName);
+  },
+
+  clearHoleMap: function(){
+    breadboard.holeMap = {};
+  },
+
+  addRandomResistor: function(name, location, options){
+    console.log("WARNING: addRandomResistor is deprecated");
+    var resistor = new Resistor4band(name);
+    resistor.randomize((options | null));
+    this.insert('resistor', location, resistor.getRealValue(), name, resistor.colors);
+    return resistor;
+  },
+
+  getComponents: function() {
+    return breadboard.components;
+  },
+
+  // this method will modify the breadboard as necessary to create additional temporary components
+  // that correspond to the measurement-type's circuit changes (e.g. large resistor for a voltmeter),
+  // and then simply call qucsator.qucsate, and return the resulting results object.
+  // NB: This function used to return the final value required by the DMM. It no longer does so, as
+  // it does not assume a DMM is doing the requesting, and instead returns the entire results object.
+  query: function(type, connections, callback, context, callbackArgs){
+    var tempComponents = [],
+        ghost, ohmmeterBattery,
+        voltmeterResistor,
+        ammeterResistor,
+        oscopeResistor,
+        ciso,
+        node;
+
+    // add DMM components as necessary
+    if (type === 'resistance') {
+      connections = connections.split(',');
+      ghost = new GhostHole();
+      ohmmeterBattery = this.component({
+        UID: 'ohmmeterBattery',
+        kind: 'battery',
+        voltage: 1,
+        connections: [connections[0], connections[1]]});
+      // var currentProbe = this.component({
+      //   UID: 'meter',
+      //   kind: 'iprobe',
+      //   connections: [connections[1], ghost]});
+      tempComponents.push(ohmmeterBattery);
+    } else if (type === 'voltage'){
+      voltmeterResistor = this.component({
+        UID: 'voltmeterResistor',
+        kind: 'resistor',
+        resistance: 1e12,
+        connections: connections.split(',')});
+      tempComponents.push(voltmeterResistor);
+    } else if (type === 'current'){
+      ammeterResistor = this.component({
+        UID: 'ammeterResistor',
+        kind: 'resistor',
+        resistance: 1e-6,
+        connections: connections.split(',')});
+      tempComponents.push(ammeterResistor);
+    } else if (type === 'oscope') {
+      oscopeResistor = this.component({
+        UID: 'oscopeResistor',
+        kind: 'resistor',
+        resistance: 1e12,
+        connections: [connections, "gnd"]});
+      tempComponents.push(oscopeResistor);
+    }
+
+    ciso = new CiSo();
+
+    $.each(breadboard.components, function(i, component) {
+      component.addCiSoComponent(ciso);
+    });
+
+    // if ohmmeter, set reference node
+    if (type === 'resistance') {
+      node = this.getHole(connections[1]).nodeName();
+      ciso.setReferenceNode(node);
+    }
+    // destroy the temporary DMM components
+    $.each(tempComponents, function(i, component){
+      component.destroy();
+    });
+
+    callback.call(context, ciso, callbackArgs);
+  },
+
+  updateView: function() {
+    $.each(breadboard.components, function(i, component) {
+      if (component.getViewArguments && component.hasValidConnections() && component.kind !== "battery" && !component.hide) {
+        workbenchController.breadboardView.addComponent(component.getViewArguments());
+      }
+      if (component.kind == "battery" || component.kind == "function generator" && !component.hide) // FIXME
+        workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
+    });
+  },
+
+
+  // obsolete, to be removed
+
+  // The inward interface between Flash's ExternalInterface and JavaScript's BreadBoard prototype model instance
+  breadModel: function () {
+    if (!workbenchController) {
+      workbenchController = require('../controllers/workbench-controller');   // grrr
+    }
+
+    var newArgs = [];
+    for(var i=1,l=arguments.length;i< l;i++){
+      newArgs[newArgs.length] = arguments[i];
+    }
+    var func = arguments[0];
+
+    if (func === 'query' && !!arguments[2]) {
+        var conns = arguments[2].split(',');
+
+        if (conns[0] === 'null' || conns[1] === 'null') {
+            return 0;
+        }
+        var v = this.query.apply(this, newArgs);
+        return v;
+    }
+    else {
+      return this[func].apply(this, newArgs);
+    }
+  },
+
+  getBreadBoard: function() {
+    return this;
+  }
+
+}
+
+//// BreadBoard Instance & Interface /////////////////////////////////////////
+breadboardController = new BreadboardController();
+
+module.exports = breadboardController;
+
+},{"../circuit/battery":1,"../circuit/breadboard":2,"../circuit/capacitor":3,"../circuit/component":4,"../circuit/function-generator":5,"../circuit/inductor":6,"../circuit/power-lead":9,"../circuit/resistor":13,"../circuit/resistor-4band":12,"../circuit/variable-resistor":14,"../circuit/wire":15,"../controllers/workbench-controller":18,"../helpers/util":23}],17:[function(require,module,exports){
 
 var LogEvent  = require('../models/log'),
     util      = require('../helpers/util');
@@ -2530,23 +2554,24 @@ logController = new LogController();
 
 module.exports = logController;
 
-},{"../helpers/util":22,"../models/log":27}],17:[function(require,module,exports){
-var Oscilloscope  = require('../models/oscilloscope'),
-    Workbench     = require('../models/workbench'),
-    Multimeter    = require('../circuit/multimeter'),
-    logController = require('../controllers/log-controller'),
-    Breadboard    = require('../circuit/breadboard');
+},{"../helpers/util":23,"../models/log":28}],18:[function(require,module,exports){
+var Oscilloscope          = require('../models/oscilloscope'),
+    Workbench             = require('../models/workbench'),
+    Multimeter            = require('../circuit/multimeter'),
+    logController         = require('./log-controller'),
+    breadboardController  = require('./breadboard-controller');
 
 
 WorkbenchController = function(){
   //this.workbenchMap = {}
   this.workbench = null;    // for now
+  this.breadboardController = breadboardController;
 };
 
 WorkbenchController.prototype = {
 
   createWorkbench: function(props, elId) {
-    var workbench = new Workbench();
+    var workbench = new Workbench(null, this.breadboardController);
     this.workbench = workbench;
 
     workbench.circuit = props.circuit;
@@ -2564,7 +2589,7 @@ WorkbenchController.prototype = {
     workbench.showComponentEditor = !(!(props.showComponentEditor) || props.showComponentEditor === "false");
 
     if (workbench.show_multimeter) {
-      workbench.meter.dmm = new Multimeter();
+      workbench.meter.dmm = new Multimeter(breadboardController);
       if(workbench.disable_multimeter_position){
         workbench.meter.dmm.set_disable_multimeter_position(workbench.disable_multimeter_position);
       }
@@ -2573,7 +2598,7 @@ WorkbenchController.prototype = {
     }
 
     if (workbench.show_oscilloscope) {
-      workbench.meter.oscope = new Oscilloscope();
+      workbench.meter.oscope = new Oscilloscope(breadboardController);
     } else {
       workbench.meter.oscope = null;
     }
@@ -2591,21 +2616,21 @@ WorkbenchController.prototype = {
   loadBreadboard: function() {
     var workbench = this.workbench;
 
-    Breadboard.breadModel("clear");
+    breadboardController.breadModel("clear");
 
     if (!!workbench.circuit){
-      Breadboard.breadModel("createCircuit", workbench.circuit);
+      breadboardController.breadModel("createCircuit", workbench.circuit);
     }
 
     if (!!workbench.faults){
-      Breadboard.breadModel("addFaults", workbench.faults);
+      breadboardController.breadModel("addFaults", workbench.faults);
     }
   },
 
   setDMMVisibility: function(visible) {
     var workbench = this.workbench;
     if (visible) {
-      workbench.meter.dmm = new Multimeter();
+      workbench.meter.dmm = new Multimeter(breadboardController);
       if(workbench.disable_multimeter_position){
         workbench.meter.dmm.set_disable_multimeter_position(workbench.disable_multimeter_position);
       }
@@ -2618,7 +2643,7 @@ WorkbenchController.prototype = {
   setOScopeVisibility: function(visible) {
     var workbench = this.workbench;
     if (visible) {
-      workbench.meter.oscope = new Oscilloscope();
+      workbench.meter.oscope = new Oscilloscope(breadboardController);
     } else {
       workbench.meter.oscope = null;
     }
@@ -2631,42 +2656,12 @@ WorkbenchController.prototype = {
 
 module.exports = new WorkbenchController();
 
-},{"../circuit/breadboard":2,"../circuit/multimeter":8,"../controllers/log-controller":16,"../models/oscilloscope":29,"../models/workbench":30}],18:[function(require,module,exports){
-var unit        = require('./unit'),
-    Breadboard  = require('../circuit/breadboard');
+},{"../circuit/multimeter":8,"../models/oscilloscope":30,"../models/workbench":31,"./breadboard-controller":16,"./log-controller":17}],19:[function(require,module,exports){
+var unit                  = require('./unit');
 
 mathParser = {};
 
 var p = mathParser;
-
-p.calculateMeasurement = function(sum){
-  if (sum === undefined || sum === null || sum === ""){
-    return "";
-  }
-  if (!isNaN(Number(sum))){
-    return sum;
-  }
-
-  answer = ""+sum;
-
-  var sumPattern = /\[[^\]]+\]/g  // find anything between [ ]
-  var matches= answer.match(sumPattern);
-  if (!!matches){
-    $.each(matches, function(i, match){
-      var expression = match;
-      var result = p.calculateSum(expression.substring(1, expression.length-1));
-      answer = answer.replace(match,result);
-    });
-  }
-
-  // now we have e.g. "1000 V"
-
-  answer = unit.convertMeasurement(answer);   // convert 1000 V to 1 kiloV, for instance
-
-  answer = p.standardizeUnits(answer);
-
-  return answer;
-};
 
 p.standardizeUnits = function(string) {
   string = string.replace(/ohms/gi,"&#x2126;");
@@ -2677,69 +2672,9 @@ p.standardizeUnits = function(string) {
   return string;
 };
 
-
-/*
-  When passed a string such as "100 + r1.resistance / r2.nominalResistance"
-  this will first assign variables for components r1 & r2, assuming
-  the components and their properties exist in the circuit, and then perform the
-  calculation.
-*/
-p.calculateSum = function(sum){
-  sum = p.replaceCircuitVariables(sum);
-
-  var calculatedSum = eval(sum);
-
-  return calculatedSum;
-};
-
-
-p.replaceCircuitVariables = function(formula){
-
-  // first add all the components as circuit variables at the start of the script
-  // add all breadboard components as variables
-  $.each(Breadboard.getBreadBoard().components, function(i, component){
-    formula = "var " + i + " = Breadboard.getBreadBoard().components['"+i+"']; " + formula;
-  });
-
-  // add the breadboard itself as a variable
-  formula = "var breadboard = Breadboard.getBreadBoard(); " + formula;
-
-  // then support old method of accessing circuit variables using ${...}
-  // NOTE: This is obsolete (but tested)
-  var varPattern = /\${[^}]+}/g  //  ${ X } --> value of X
-  var matches = formula.match(varPattern);
-  if(!!matches){
-   $.each(matches, function(i, match){
-    console.log("WARN: It is not necessary to use the notation '"+match+"', you can simply use "+match.substring(2,match.length-1))
-    var variable = match.substring(2,match.length-1).split('.');
-    var component = variable[0];
-    var property = variable[1];
-
-    var components = Breadboard.getBreadBoard().components;
-
-    if (!components[component]){
-      console.log("ERROR calculating sum: No component name '"+component+"' in circuit");
-      formula = '-1';
-      return;
-    }
-
-    if (components[component][property] === undefined || components[component][property] === null){
-      console.log("ERROR calculating sum: No property name '"+property+"' in component '"+component+"'");
-      formula = '-1';
-      return;
-    }
-
-    var value = components[component][property];
-    formula = formula.replace(match, value);
-   });
-  }
-
-  return formula;
-};
-
 module.exports = mathParser;
 
-},{"../circuit/breadboard":2,"./unit":21}],19:[function(require,module,exports){
+},{"./unit":22}],20:[function(require,module,exports){
 sound = {};
 
 sound.mute = false;
@@ -2752,7 +2687,7 @@ sound.play = function (sound) {
 
 module.exports = sound;
 
-},{}],20:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 //= require helpers/string
 
 /*globals console sparks */
@@ -2890,7 +2825,7 @@ math.roundToSigDigits = function(x, n) {
  module.exports = math;
 
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 unit = {};
 
 var u = unit;
@@ -3163,7 +3098,7 @@ u.parse = function(string) {
 module.exports = unit;
 
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 var util = {};
 
 /**
@@ -3386,7 +3321,7 @@ if ( !Array.prototype.forEach ) {
   }
 }
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 require('../bower_components/jquery/jquery');
 require('../lib/jquery/jquery-ui-1.8.24.custom.min');
 require('../lib/jquery/plugins/jquery.event.drag-2.0.min');
@@ -3429,7 +3364,7 @@ sparks.workbenchController = workbenchController;
 
 module.exports = sparks;
 
-},{"../bower_components/circuit-solver/dist/circuitSolver.min":37,"../bower_components/jquery-nearest/src/jquery.nearest.min":38,"../bower_components/jquery/jquery":39,"../lib/apMessageBox":41,"../lib/jquery/jquery-ui-1.8.24.custom.min":42,"../lib/jquery/plugins/jquery.event.drag-2.0.min":43,"./controllers/workbench-controller":17,"./helpers/sound":19}],24:[function(require,module,exports){
+},{"../bower_components/circuit-solver/dist/circuitSolver.min":38,"../bower_components/jquery-nearest/src/jquery.nearest.min":39,"../bower_components/jquery/jquery":40,"../lib/apMessageBox":42,"../lib/jquery/jquery-ui-1.8.24.custom.min":43,"../lib/jquery/plugins/jquery.event.drag-2.0.min":44,"./controllers/workbench-controller":18,"./helpers/sound":20}],25:[function(require,module,exports){
 /* Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
  * Version: 1.0
  * LastModified: Dec 25 1999
@@ -3543,7 +3478,7 @@ if (!window.btoa) window.btoa = base64encode;
 if (!window.atob) window.atob = base64decode;
 
 })();
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 /*
  * canvg.js - Javascript SVG parser and renderer on Canvas
  * MIT Licensed
@@ -6243,7 +6178,7 @@ if (CanvasRenderingContext2D) {
 	}
 }
 
-},{"./rgbcolor":26}],26:[function(require,module,exports){
+},{"./rgbcolor":27}],27:[function(require,module,exports){
 /**
  * A class to parse color values
  * @author Stoyan Stefanov <sstoo@gmail.com>
@@ -6534,7 +6469,7 @@ function RGBColor(color_string)
 
 module.exports = RGBColor;
 
-},{}],27:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 LogEvent = function(name, value, time){
   this.name = name;
   this.value = value;
@@ -6553,7 +6488,7 @@ LogEvent.OSCOPE_T_SCALE_CHANGED = "OScope T scale changed";
 
 module.exports = LogEvent;
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 /*global sparks $ */
 
 Meter = function() {};
@@ -6603,15 +6538,15 @@ Meter.prototype = {
 
 module.exports = Meter;
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 /*global sparks getBreadBoard breadModel */
 /* FILE oscilloscope.js */
 
 var LogEvent      = require('./log'),
-    logController = require('../controllers/log-controller'),
-    Breadboard    = require('../circuit/breadboard');
+    logController = require('../controllers/log-controller');
 
-Oscilloscope = function () {
+Oscilloscope = function (breadboardController) {
+  this.breadboardController = breadboardController;
   this.probeLocation = [];
   this.probeLocation[0] = null;     // pink probe
   this.probeLocation[1] = null;     // yellow probe
@@ -6680,8 +6615,7 @@ Oscilloscope.prototype = {
   },
 
   update: function() {
-    var breadboard = Breadboard.getBreadBoard(),
-        source     = breadboard.components.source,
+    var source     = this.breadboardController.getComponents().source,
         probeIndex,
         sourceSignal,
         probeNode;
@@ -6692,7 +6626,7 @@ Oscilloscope.prototype = {
 
     for (probeIndex = 0; probeIndex < 2; probeIndex++) {
       if (this.probeLocation[probeIndex]) {
-        probeNode = breadboard.getHole(this.probeLocation[probeIndex]).nodeName();
+        probeNode = this.breadboardController.getHole(this.probeLocation[probeIndex]).nodeName();
         if (probeNode === 'gnd') {
           // short-circuit this operation and just return a flat trace
           this.setSignal(this.PROBE_CHANNEL[probeIndex], {amplitude: 0, frequency: 0, phase: 0});
@@ -6707,7 +6641,7 @@ Oscilloscope.prototype = {
           this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
           continue;
         }
-        Breadboard.breadModel('query', "oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
+        this.breadboardController.breadModel('query', "oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
       } else {
         this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
       }
@@ -6716,8 +6650,7 @@ Oscilloscope.prototype = {
 
   updateWithData: function(ciso, probeInfo) {
 
-    var breadboard = Breadboard.getBreadBoard(),
-        source     = breadboard.components.source,
+    var source     = this.breadboardController.getComponents().source,
         probeNode  = probeInfo[0],
         probeIndex = probeInfo[1],
         result,
@@ -6917,11 +6850,11 @@ Oscilloscope.prototype = {
 
 module.exports = Oscilloscope;
 
-},{"../circuit/breadboard":2,"../controllers/log-controller":16,"./log":27}],30:[function(require,module,exports){
+},{"../controllers/log-controller":17,"./log":28}],31:[function(require,module,exports){
 var Meter         = require('./meter'),
     WorkbenchView = require('../views/workbench-view');
 
-Workbench = function(props){
+Workbench = function(props, breadboardController){
   this.circuit = null;
   this.meter = new Meter();
 
@@ -6931,7 +6864,7 @@ Workbench = function(props){
   this.hide_pink_probe          = false;
   this.showComponentDrawer      = false;
 
-  this.view = new WorkbenchView(this);
+  this.view = new WorkbenchView(this, breadboardController);
 };
 
 Workbench.prototype = {
@@ -6945,9 +6878,8 @@ Workbench.prototype = {
 
 module.exports = Workbench;
 
-},{"../views/workbench-view":36,"./meter":28}],31:[function(require,module,exports){
+},{"../views/workbench-view":37,"./meter":29}],32:[function(require,module,exports){
 var unit        = require('../helpers/unit'),
-    Breadboard  = require('../circuit/breadboard'),
     workbenchController;
 
 embeddableComponents = {
@@ -6976,8 +6908,9 @@ embeddableComponents = {
   }
 }
 
-AddComponentsView = function(workbench){
+AddComponentsView = function(workbench, breadboardController){
   workbenchController = require('../controllers/workbench-controller');
+  this.breadboardController = breadboardController;
 
   var self = this,
       component;
@@ -6988,9 +6921,9 @@ AddComponentsView = function(workbench){
   this.lastHighlightedHole = null;
 
   if (workbenchController.breadboardView) {
-    workbenchController.breadboardView.setRightClickFunction(this.showEditor);
+    workbenchController.breadboardView.setRightClickFunction(this, "showEditor");
   } else {  // queue it up
-    workbench.view.setRightClickFunction(this.showEditor);
+    workbench.view.setRightClickFunction(this, "showEditor");
   }
 
   // create drawer
@@ -7053,12 +6986,12 @@ AddComponentsView = function(workbench){
        "connections": loc
       };
       props[embeddableComponent.property] = embeddableComponent.initialValue;
-      uid = Breadboard.breadModel("insertComponent", type, props);
+      uid = this.breadboardController.breadModel("insertComponent", type, props);
 
-      comp = Breadboard.getBreadBoard().components[uid];
+      comp = this.breadboardController.getComponents()[uid];
 
       // move leads to correct width
-      Breadboard.breadModel("checkLocation", comp);
+      this.breadboardController.breadModel("checkLocation", comp);
 
       // update meters
       workbench.meter.update();
@@ -7078,9 +7011,10 @@ AddComponentsView.prototype = {
   },
 
   showEditor: function(uid) {
-    var comp = Breadboard.getBreadBoard().components[uid],
+    var comp = this.breadboardController.getComponents()[uid],
         section = workbenchController.workbench,
-        $propertyEditor = null;
+        $propertyEditor = null,
+        self = this;
     // create editor tooltip
     possibleValues = comp.getEditablePropertyValues();
 
@@ -7116,7 +7050,7 @@ AddComponentsView.prototype = {
       $propertyEditor
     ).append(
       $("<button>").text("Remove").on('click', function() {
-        Breadboard.breadModel("removeComponent", comp);
+        self.breadboardController.breadModel("removeComponent", comp);
         section.meter.update();
         $(".speech-bubble").trigger('mouseleave');
       })
@@ -7129,7 +7063,7 @@ AddComponentsView.prototype = {
 
 module.exports = AddComponentsView;
 
-},{"../circuit/breadboard":2,"../controllers/workbench-controller":17,"../helpers/unit":21}],32:[function(require,module,exports){
+},{"../controllers/workbench-controller":18,"../helpers/unit":22}],33:[function(require,module,exports){
 /**
  * @author Mobile.Lab (http://mlearner.com)
  **/
@@ -7349,7 +7283,7 @@ window["breadboardSVGView"] = {
   };
 
   CircuitBoard.prototype.sendEventToModel = function(evName, params) {
-    breadboardComm[evName](this.workbenchController.workbench, params[0], params[1], params[2]);
+    breadboardComm[evName](this.workbenchController, params[0], params[1], params[2]);
   };
 
   CircuitBoard.prototype.addComponent = function(elem) {
@@ -7361,10 +7295,11 @@ window["breadboardSVGView"] = {
     this.component[elem["UID"]]["image"] = new SVGImage(this, elem["UID"]);
 
     if (this.rightClickFunction) {
-      var rightClickFunction = this.rightClickFunction;
+      var rightClickObj = this.rightClickObj,
+          func = this.rightClickFunction;
 
       this.component[elem["UID"]].view.bind("contextmenu dblclick", function(evt) {
-        rightClickFunction($(this).attr("uid"));
+        rightClickObj[func]($(this).attr("uid"));
         evt.preventDefault();
         return false;
       });
@@ -7387,11 +7322,12 @@ window["breadboardSVGView"] = {
     }
   };
 
-  CircuitBoard.prototype.setRightClickFunction = function(func) {
+  CircuitBoard.prototype.setRightClickFunction = function(obj, func) {
+    this.rightClickObj = obj;
     this.rightClickFunction = func;
     for (uid in this.component) {
       this.component[uid].view.bind("contextmenu dblclick", function(evt) {
-        func($(this).attr("uid"));
+        obj[func]($(this).attr("uid"));
         evt.preventDefault();
         return false;
       });
@@ -9439,7 +9375,7 @@ window["breadboardSVGView"] = {
 
 })(jQuery, window["breadboardSVGView"]);
 
-},{"../controllers/workbench-controller":17,"../libs/base64":24,"../libs/canvg":25,"./svg_view_comm":35}],33:[function(require,module,exports){
+},{"../controllers/workbench-controller":18,"../libs/base64":25,"../libs/canvg":26,"./svg_view_comm":36}],34:[function(require,module,exports){
 /*globals sparks Raphael*/
 
 var mathParser  = require('../helpers/math-parser'),
@@ -9633,7 +9569,7 @@ FunctionGeneratorView.prototype = {
 
 module.exports = FunctionGeneratorView;
 
-},{"../helpers/math-parser":18,"../helpers/unit":21,"../helpers/util":22}],34:[function(require,module,exports){
+},{"../helpers/math-parser":19,"../helpers/unit":22,"../helpers/util":23}],35:[function(require,module,exports){
 require('../../bower_components/raphael/raphael-min');
 var sparksMath = require('../helpers/sparks-math');
 
@@ -10252,41 +10188,41 @@ _toggleComboButton: function (isAminusB) {
 module.exports = OscilloscopeView;
 
 
-},{"../../bower_components/raphael/raphael-min":40,"../helpers/sparks-math":20}],35:[function(require,module,exports){
+},{"../../bower_components/raphael/raphael-min":41,"../helpers/sparks-math":21}],36:[function(require,module,exports){
 /*globals console sparks $ document window alert navigator*/
 var LogEvent            = require('../models/log'),
     util                = require('../helpers/util'),
     sound               = require('../helpers/sound'),
-    logController       = require('../controllers/log-controller'),
-    Breadboard          = require('../circuit/breadboard');
+    logController       = require('../controllers/log-controller');
 
 breadboardComm = {};
 
 breadboardComm.openConnections = {};
 
-breadboardComm.connectionMade = function(workbench, component, hole) {
-  var breadboard, comp, openConnections, openConnectionsArr, connectionReturning, connection;
+breadboardComm.connectionMade = function(workbenchController, component, hole) {
+  var workbench = workbenchController.workbench,
+      breadboardController = workbenchController.breadboardController,
+      comp, openConnections, openConnectionsArr, connectionReturning, connection;
 
   if (!!hole){
     openConnections = breadboardComm.openConnections[component];
     if (!openConnections) return; // shouldn't happen
 
     if (openConnections[hole]) {        // if we're just replacing a lead
-      Breadboard.breadModel('unmapHole', hole);
+      breadboardController.breadModel('unmapHole', hole);
       delete openConnections[hole];
     } else {                            // if we're putting lead in new hole
-      breadboard = Breadboard.getBreadBoard();
-      comp = breadboard.components[component];
+      comp = breadboardController.getComponents()[component];
       // transform to array
       openConnectionsArr = util.getKeys(openConnections);
       // pick first open lead
       connectionReturning = openConnectionsArr[0];
-      Breadboard.breadModel('unmapHole', connectionReturning);
+      breadboardController.breadModel('unmapHole', connectionReturning);
       //swap
       for (var i = 0; i < comp.connections.length; i++) {
         connection = comp.connections[i].getName();
         if (connection === connectionReturning) {
-          comp.connections[i] = breadboard.getHole(hole);
+          comp.connections[i] = breadboardController.getHole(hole);
           delete openConnections[connection];
           workbench.meter.moveProbe(connection, hole);
           break;
@@ -10294,7 +10230,7 @@ breadboardComm.connectionMade = function(workbench, component, hole) {
       }
 
       // check that we don't have two leads to close together
-      Breadboard.breadModel("checkLocation", comp);
+      breadboardController.breadModel("checkLocation", comp);
     }
 
   }
@@ -10304,49 +10240,51 @@ breadboardComm.connectionMade = function(workbench, component, hole) {
   workbench.meter.update();
 };
 
-breadboardComm.connectionBroken = function(workbench, component, hole) {
+breadboardComm.connectionBroken = function(workbenchController, component, hole) {
+  var workbench = workbenchController.workbench,
+      breadboardController = workbenchController.breadboardController;
   if (!breadboardComm.openConnections[component]) {
     breadboardComm.openConnections[component] = {}
   }
   breadboardComm.openConnections[component][hole] = true;
 
-  var newHole = Breadboard.breadModel('getGhostHole', hole+"ghost");
+  var newHole = breadboardController.breadModel('getGhostHole', hole+"ghost");
 
-  Breadboard.breadModel('mapHole', hole, newHole.nodeName());
+  breadboardController.breadModel('mapHole', hole, newHole.nodeName());
   logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
     "type": "disconnect lead",
     "location": hole});
   workbench.meter.update();
 };
 
-breadboardComm.probeAdded = function(workbench, meter, color, location) {
-  workbench.meter.setProbeLocation("probe_"+color, location);
+breadboardComm.probeAdded = function(workbenchController, meter, color, location) {
+  workbenchController.workbench.meter.setProbeLocation("probe_"+color, location);
   sound.play(sound.click)
 };
 
-breadboardComm.probeRemoved = function(workbench, meter, color) {
-  workbench.meter.setProbeLocation("probe_"+color, null);
+breadboardComm.probeRemoved = function(workbenchController, meter, color) {
+  workbenchController.workbench.meter.setProbeLocation("probe_"+color, null);
 };
 
-breadboardComm.dmmDialMoved = function(workbench, value) {
-  workbench.meter.dmm.dialPosition = value;
-  workbench.meter.update();
+breadboardComm.dmmDialMoved = function(workbenchController, value) {
+  workbenchController.workbench.meter.dmm.dialPosition = value;
+  workbenchController.workbench.meter.update();
 };
 
 module.exports = breadboardComm;
 
-},{"../circuit/breadboard":2,"../controllers/log-controller":16,"../helpers/sound":19,"../helpers/util":22,"../models/log":27}],36:[function(require,module,exports){
+},{"../controllers/log-controller":17,"../helpers/sound":20,"../helpers/util":23,"../models/log":28}],37:[function(require,module,exports){
 require('./breadboard-svg-view');
 
 var AddComponentsView     = require('./add-components-view'),
     FunctionGeneratorView = require('./function-generator-view'),
     OscilloscopeView      = require('./oscilloscope-view'),
     sound                 = require('../helpers/sound'),
-    Breadboard          = require('../circuit/breadboard'),
     workbenchController;
 
-WorkbenchView = function(workbench){
+WorkbenchView = function(workbench, breadboardController){
   workbenchController   = require('../controllers/workbench-controller');     // grrr
+  this.breadboardController = breadboardController;
   this.workbench = workbench;
 };
 
@@ -10373,10 +10311,10 @@ WorkbenchView.prototype = {
 
       // pass queued-up component right-click function to breadboard view
       if (self.rightClickFunction) {
-        workbenchController.breadboardView.setRightClickFunction(self.rightClickFunction);
+        workbenchController.breadboardView.setRightClickFunction(self.rightClickObj, self.rightClickFunction);
       }
 
-      Breadboard.breadModel('updateView');
+      self.breadboardController.breadModel('updateView');
 
       sound.mute = true;
 
@@ -10390,7 +10328,7 @@ WorkbenchView.prototype = {
       self.workbench.meter.update();
     });
 
-    var source = Breadboard.getBreadBoard().components.source;
+    var source = this.breadboardController.getComponents().source;
     if (source && source.frequency) {
       var fgView = new FunctionGeneratorView(source);
       var $fg = fgView.getView();
@@ -10406,7 +10344,7 @@ WorkbenchView.prototype = {
       // this.divs.addCompsWrapper.append(drawer);
       // this.divs.addCompsWrapper.append(button);
 
-      var addComponentsView = new AddComponentsView(this.workbench);
+      var addComponentsView = new AddComponentsView(this.workbench, this.breadboardController);
 
       if (this.workbench.showComponentDrawer) {
         this.divs.addCompsWrapper.show();
@@ -10459,7 +10397,8 @@ WorkbenchView.prototype = {
   hidePinkProbe: function() {
   },
 
-  setRightClickFunction: function(func) {
+  setRightClickFunction: function(obj, func) {
+    this.rightClickObj = obj;
     this.rightClickFunction = func;
   },
 
@@ -10474,9 +10413,9 @@ WorkbenchView.prototype = {
 
 module.exports = WorkbenchView;
 
-},{"../circuit/breadboard":2,"../controllers/workbench-controller":17,"../helpers/sound":19,"./add-components-view":31,"./breadboard-svg-view":32,"./function-generator-view":33,"./oscilloscope-view":34}],37:[function(require,module,exports){
+},{"../controllers/workbench-controller":18,"../helpers/sound":20,"./add-components-view":32,"./breadboard-svg-view":33,"./function-generator-view":34,"./oscilloscope-view":35}],38:[function(require,module,exports){
 (function(){var d=function(){this.components=[];this.nodeMap={};this.nodes=[];this.voltageSources=[];this.AMatrix=[];this.ZMatrix=[];this.referenceNode=null;this.referenceNodeIndex=null};d.prototype.getLinkedComponents=function(e){return this.nodeMap[e]};d.prototype.getDiagonalMatrixElement=function(h,k){var l=this.nodeMap[h],e=$Comp(0,0),g,f;for(f=l.length-1;f>=0;f--){g=l[f].getImpedance(k);e=e.add(g.inverse())}return e};d.prototype.getNodeIndexes=function(f){var e=[];e[0]=this.getNodeIndex(f.nodes[0]);e[1]=this.getNodeIndex(f.nodes[1]);return e};d.prototype.getNodeIndex=function(f){var e=this.nodes.indexOf(f);if(e===this.referenceNodeIndex){return -1}if(e>this.referenceNodeIndex){return e-1}return e};var b=function(h,f,g,e){this.id=h;this.type=f;this.value=g;this.nodes=e};var c=2*Math.PI;b.prototype.getImpedance=function(f){var e=$Comp(0,0);if(this.type==="Resistor"){e.real=this.value;e.imag=0}else{if(this.type=="Capacitor"){e.real=0;e.imag=-1/(c*f*this.value)}else{if(this.type=="Inductor"){e.real=0;e.imag=c*f*this.value}}}return e};b.prototype.getOffDiagonalMatrixElement=function(e){return this.getImpedance(e).inverse().negative()};var a=function(i,h,f,e,g){this.id=i;this.voltage=h;this.positiveNode=f;this.negativeNode=e;this.frequency=g||0};d.prototype.addComponent=function(n,h,m,l){var e=new b(n,h,m,l),f,g,k;this.components.push(e);for(f=0,g=l.length;f<g;f++){k=l[f];if(!this.nodeMap[k]){this.nodeMap[k]=[];this.nodes.push(k)}this.nodeMap[k].push(e)}};d.prototype.addVoltageSource=function(k,i,f,e,h){var g=new a(k,i,f,e,h);this.voltageSources.push(g);if(!this.nodeMap[f]){this.nodeMap[f]=[];this.nodes.push(f)}if(!this.nodeMap[e]){this.nodeMap[e]=[];this.nodes.push(e)}if(!this.referenceNode){this.setReferenceNode(e)}};d.prototype.setReferenceNode=function(e){this.referenceNode=e;this.referenceNodeIndex=this.nodes.indexOf(e)};d.prototype.createAMatrix=function(){this.createEmptyAMatrix();this.addGMatrix();this.addBCMatrix()};d.prototype.createEmptyAMatrix=function(){var g=$Comp(0,0),k=this.nodes.length,e=this.voltageSources.length,l=k-1+e,h,f;this.AMatrix=[];for(h=0;h<l;h++){this.AMatrix[h]=[];for(f=0;f<l;f++){this.AMatrix[h][f]=g.copy()}}};d.prototype.addGMatrix=function(){var l,m,h,g,k,f,n,e;if(this.voltageSources.length>0){l=this.voltageSources[0];m=l.frequency}for(h=0;h<this.nodes.length;h++){k=this.nodes[h];if(k===this.referenceNode){continue}f=this.getNodeIndex(k);this.AMatrix[f][f]=this.getDiagonalMatrixElement(k,m)}for(h=0;h<this.components.length;h++){n=this.getNodeIndexes(this.components[h])[0];e=this.getNodeIndexes(this.components[h])[1];if(n===-1||e===-1){continue}this.AMatrix[n][e]=this.AMatrix[e][n]=this.AMatrix[n][e].add(this.components[h].getOffDiagonalMatrixElement(m))}};d.prototype.addBCMatrix=function(){if(this.voltageSources.length===0){return}var g=$Comp(1,0),n=g.negative(),e=this.voltageSources,k,l,h,m,f;for(f=0;f<e.length;f++){k=e[f];l=k.positiveNode;if(l!==this.referenceNode){m=this.getNodeIndex(l);this.AMatrix[this.nodes.length-1+f][m]=g.copy();this.AMatrix[m][this.nodes.length-1+f]=g.copy()}h=k.negativeNode;if(h!==this.referenceNode){m=this.getNodeIndex(h);this.AMatrix[this.nodes.length-1+f][m]=n.copy();this.AMatrix[m][this.nodes.length-1+f]=n.copy()}}};d.prototype.createZMatrix=function(){var g=$Comp(0,0),k=this.nodes.length,e=this.voltageSources.length,l=k-1+e,f=this.voltageSources,h;this.ZMatrix=[[]];for(h=0;h<l;h++){this.ZMatrix[0][h]=g.copy()}for(h=0;h<f.length;h++){this.ZMatrix[0][k-1+h].real=f[h].voltage}};d.prototype.cleanCircuit=function(){var f=this.nodes,q=this.nodeMap,m=this.components,r,o=this.referenceNode,s=[],e,g,h,t;function p(u){var w=[];for(var v in u){w[v]=u[v]}return w}q=p(q);function k(u){var x=[];for(var v=0,w=u.length;v<w;v++){if(u[v]!==null){x.push(u[v])}}return x}function n(v,B){var x=B[v],C,w,D=[],u,z,E,y,A;if(v===o){return true}if(~s.indexOf(v)){return true}if(!x||x.length===0){return false}delete B[v];for(z=0,E=x.length;z<E;z++){C=x[z];w=p(C.nodes);w.splice(w.indexOf(v),1);D=D.concat(w)}for(y=0,A=D.length;y<A;y++){if(n(D[y],B)){s.push(v);return true}}return false}for(h=0,t=f.length;h<t;h++){g=f[h];if(g){if(!n(g,q)){f[h]=null}}}this.nodes=k(f);q=this.nodeMap;function l(u,y){var x=p(q[y]),v,w;q[y]=[];for(v=0,w=x.length;v<w;v++){if(x[v].id!==u.id){q[y].push(x[v])}}}for(h=0,t=m.length;h<t;h++){r=m[h];if(!(~f.indexOf(r.nodes[0])&&~f.indexOf(r.nodes[1]))){l(r,r.nodes[0]);l(r,r.nodes[1]);m[h]=null}}this.components=k(m);for(h=0,t=this.voltageSources.length;h<t;h++){e=this.voltageSources[h];if(!(~f.indexOf(e.positiveNode)&&~f.indexOf(e.negativeNode))){this.voltageSources[h]=null}}this.voltageSources=k(this.voltageSources);this.referenceNodeIndex=this.nodes.indexOf(o)};d.prototype.solve=function(){this.cleanCircuit();this.createAMatrix();this.createZMatrix();aM=$M(this.AMatrix);zM=$M(this.ZMatrix);invAM=aM.inv();res=zM.x(invAM);return res};d.prototype.getVoltageAt=function(g){if(g===this.referenceNode){return $Comp(0)}try{var f=this.solve();return f.elements[0][this.getNodeIndex(g)]}catch(h){return $Comp(0)}};d.prototype.getVoltageBetween=function(f,e){return this.getVoltageAt(f).subtract(this.getVoltageAt(e))};d.prototype.getCurrent=function(n){var k,g,f=null,h,l;try{k=this.solve()}catch(m){return $Comp(0)}g=this.voltageSources;for(h=0,l=g.length;h<l;h++){if(g[h].id==n){f=h;break}}if(f===null){try{throw Error("No voltage source "+n)}catch(m){return $Comp(0)}}try{return k.elements[0][this.nodes.length-1+f]}catch(m){return $Comp(0)}};window.CiSo=d})();var Complex=function(b,a){if(!(this instanceof Complex)){return new Complex(b,a)}if(typeof b==="string"&&a===null){return Complex.parse(b)}this.real=b||0;this.imag=a||0;this.magnitude=Math.sqrt(this.real*this.real+this.imag*this.imag);this.angle=Math.atan2(this.imag,this.real)};Complex.prototype={copy:function(){return new Complex(this.real,this.imag)},add:function(a){var c,b;if(a instanceof Complex){c=a.real;b=a.imag}else{c=a;b=0}return new Complex(this.real+c,this.imag+b)},subtract:function(a){var c,b;if(a instanceof Complex){c=a.real;b=a.imag}else{c=a;b=0}return new Complex(this.real-c,this.imag-b)},multiply:function(a){var e,d,c,b;if(a instanceof Complex){e=a.real;d=a.imag}else{e=a;d=0}c=this.real*e-this.imag*d;b=this.real*d+this.imag*e;return new Complex(c,b)},divide:function(a){var f,e,b,d,c;if(a instanceof Complex){f=a.real;e=a.imag}else{f=a;e=0}b=f*f+e*e;d=(this.real*f+this.imag*e)/b;c=(this.imag*f-this.real*e)/b;return new Complex(d,c)},inverse:function(){var a=new Complex(1,0);return a.divide(this)},negative:function(){var a=new Complex(0,0);return a.subtract(this)},equals:function(a){if(a instanceof Complex){return this.real===a.real&&this.imag===a.imag}else{if(typeof a==="number"){return this.real===a&&this.imag===0}}return false},toString:function(){return this.real+"i"+this.imag}};Complex.parse=function(c){if(!c){return null}var b=/(.*)([+,\-].*i)/.exec(c),d,a;if(b&&b.length===3){d=parseFloat(b[1]);a=parseFloat(b[2].replace("i",""))}else{d=parseFloat(c);a=0}if(isNaN(d)||isNaN(a)){throw new Error("Invalid input to Complex.parse, expecting a + bi format, instead was: "+c)}return new Complex(d,a)};$Comp=function(){if(typeof arguments[0]==="string"){return Complex.parse(arguments[0])}return new Complex(arguments[0],arguments[1])};var Sylvester={version:"0.1.3-cc",precision:0.000001};function Matrix(){}Matrix.prototype={dup:function(){return Matrix.create(this.elements)},canMultiplyFromLeft:function(a){var b=a.elements||a;if(typeof(b[0][0])=="undefined"){b=Matrix.create(b).elements}return(this.elements[0].length==b.length)},multiply:function(q){if(!q.elements){return this.map(function(c){return c.multiply(q)})}var h=q.modulus?true:false;var n=q.elements||q;if(typeof(n[0][0])=="undefined"){n=Matrix.create(n).elements}if(!this.canMultiplyFromLeft(n)){return null}var e=this.elements.length,f=e,l,b,d=n[0].length,g;var p=this.elements[0].length,a=[],m,k,o;do{l=f-e;a[l]=[];b=d;do{g=d-b;m=$Comp(0,0);k=p;do{o=p-k;m=m.add(this.elements[l][o].multiply(n[o][g]))}while(--k);a[l][g]=m}while(--b)}while(--e);var n=Matrix.create(a);return h?n.col(1):n},x:function(a){return this.multiply(a)},isSquare:function(){return(this.elements.length==this.elements[0].length)},toRightTriangular:function(){var f=this.dup(),d;var b=this.elements.length,c=b,e,g,h=this.elements[0].length,a;do{e=c-b;if(f.elements[e][e].equals(0)){for(j=e+1;j<c;j++){if(!f.elements[j][e].equals(0)){d=[];g=h;do{a=h-g;d.push(f.elements[e][a].add(f.elements[j][a]))}while(--g);f.elements[e]=d;break}}}if(!f.elements[e][e].equals(0)){for(j=e+1;j<c;j++){var l=f.elements[j][e].divide(f.elements[e][e]);d=[];g=h;do{a=h-g;d.push(a<=e?$Comp(0):f.elements[j][a].subtract(f.elements[e][a].multiply(l)))}while(--g);f.elements[j]=d}}}while(--b);return f},toUpperTriangular:function(){return this.toRightTriangular()},determinant:function(){if(!this.isSquare()){return null}var e=this.toRightTriangular();var c=e.elements[0][0],d=e.elements.length-1,a=d,b;do{b=a-d+1;c=c.multiply(e.elements[b][b])}while(--d);return c},det:function(){return this.determinant()},isSingular:function(){return(this.isSquare()&&this.determinant().equals(0))},augment:function(l){var h=l.elements||l;if(typeof(h[0][0])=="undefined"){h=Matrix.create(h).elements}var e=this.dup(),k=e.elements[0].length;var c=e.elements.length,d=c,g,a,b=h[0].length,f;if(c!=h.length){return null}do{g=d-c;a=b;do{f=b-a;e.elements[g][k+f]=h[g][f]}while(--a)}while(--c);return e},inverse:function(){if(!this.isSquare()||this.isSingular()){return null}var c=this.elements.length,d=c,h,g;var k=this.augment(Matrix.I(c)).toRightTriangular();var l,m=k.elements[0].length,a,f,b;var n=[],e;do{h=c-1;f=[];l=m;n[h]=[];b=k.elements[h][h];do{a=m-l;e=k.elements[h][a].divide(b);f.push(e);if(a>=d){n[h].push(e)}}while(--l);k.elements[h]=f;for(g=0;g<h;g++){f=[];l=m;do{a=m-l;f.push(k.elements[g][a].subtract(k.elements[h][a].multiply(k.elements[g][h])))}while(--l);k.elements[g]=f}}while(--c);return Matrix.create(n)},inv:function(){return this.inverse()},setElements:function(h){var m,a=h.elements||h;if(typeof(a[0][0])!="undefined"){var d=a.length,f=d,b,c,l;this.elements=[];do{m=f-d;b=a[m].length;c=b;this.elements[m]=[];do{l=c-b;this.elements[m][l]=a[m][l]}while(--b)}while(--d);return this}var e=a.length,g=e;this.elements=[];do{m=g-e;this.elements.push([a[m]])}while(--e);return this}};Matrix.create=function(a){var b=new Matrix();return b.setElements(a)};Matrix.I=function(f){var e=[],a=f,d,c,b;do{d=a-f;e[d]=[];c=a;do{b=a-c;e[d][b]=(d==b)?$Comp(1,0):$Comp(0)}while(--c)}while(--f);return Matrix.create(e)};var $M=Matrix.create;
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 /*!
  * jQuery Nearest plugin v1.3.0
  *
@@ -10489,7 +10428,7 @@ module.exports = WorkbenchView;
  */
 !function(t,e){function n(e,n,h){e||(e="div");var a,i,o,s=t(n.container),c=s.offset()||{left:0,top:0},f=[s.width()||0,s.height()||0],u={x:[c.left,c.left+f[0]],y:[c.top,c.top+f[1]],w:[0,f[0]],h:[0,f[1]]};for(a in u)u.hasOwnProperty(a)&&(o=r.exec(n[a]),o&&(i=u[a],n[a]=(i[1]-i[0])*o[1]/100+i[0]));n.sameX===!1&&n.checkHoriz===!1&&(n.sameX=!n.checkHoriz),n.sameY===!1&&n.checkVert===!1&&(n.sameY=!n.checkVert);var l=s.find(e),d=[],p=!!n.furthest,m=!n.sameX,y=!n.sameY,v=!!n.onlyX,x=!!n.onlyY,g=p?0:1/0,k=parseFloat(n.x)||0,w=parseFloat(n.y)||0,X=parseFloat(k+n.w)||k,Y=parseFloat(w+n.h)||w,F=parseFloat(n.tolerance)||0,S=!!t.fn.each2,H=Math.min,M=Math.max;!n.includeSelf&&h&&(l=l.not(h)),0>F&&(F=0),l[S?"each2":"each"](function(e,n){var r,h,a,i,o=S?n:t(this),s=o.offset(),c=s.left,f=s.top,u=o.outerWidth(),l=o.outerHeight(),j=c+u,z=f+l,O=M(c,k),P=H(j,X),V=M(f,w),W=H(z,Y),b=P>=O,q=W>=V;(m&&y||!m&&!y&&b&&q||m&&q||y&&b||m&&v||y&&x)&&(r=b?0:O-P,h=q?0:V-W,a=v||x?v?r:h:b||q?M(r,h):Math.sqrt(r*r+h*h),i=p?a>=g-F:g+F>=a,i&&(g=p?M(g,a):H(g,a),d.push({node:this,dist:a})))});var j,z,O,P,V=d.length,W=[];if(V)for(p?(j=g-F,z=g):(j=g,z=g+F),O=0;V>O;O++)P=d[O],P.dist>=j&&P.dist<=z&&W.push(P.node);return W}var r=/^([\d.]+)%$/;t.each(["nearest","furthest","touching"],function(r,h){var a={x:0,y:0,w:0,h:0,tolerance:1,container:document,furthest:"furthest"==h,includeSelf:!1,sameX:"touching"===h,sameY:"touching"===h,onlyX:!1,onlyY:!1};t[h]=function(r,h,i){if(!r||r.x===e||r.y===e)return t([]);var o=t.extend({},a,r,i||{});return t(n(h,o))},t.fn[h]=function(e,r){if(!this.length)return this.pushStack([]);var h;if(e&&t.isPlainObject(e))return h=t.extend({},a,e,r||{}),this.pushStack(n(this,h));var i=this.offset(),o={x:i.left,y:i.top,w:this.outerWidth(),h:this.outerHeight()};return h=t.extend({},a,o,r||{}),this.pushStack(n(e,h,this))}})}(jQuery);
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v1.8.1
  * http://jquery.com/
@@ -19792,7 +19731,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 
 })( window );
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 /*
  * Raphael 1.4.7 - JavaScript Vector Library
  *
@@ -19910,7 +19849,7 @@ c.d[I](/[mlcxtrv]/g,function(g){return{l:"L",c:"C",x:"z",t:"m",r:"l",v:"c"}[g]||
 b&&(g.face["font-style"]==c||!g.face["font-style"])&&g.face["font-stretch"]==d)break}}return g}};H[p].print=function(a,b,c,d,f,e){e=e||"middle";var g=this.set(),h=D(c)[G](A),i=0;l.is(d,c)&&(d=this.getFont(d));if(d){c=(f||16)/d.face["units-per-em"];var j=d.face.bbox.split(V);f=+j[0];e=+j[1]+(e=="baseline"?j[3]-j[1]+ +d.face.descent:(j[3]-j[1])/2);j=0;for(var m=h[o];j<m;j++){var n=j&&d.glyphs[h[j-1]]||{},r=d.glyphs[h[j]];i+=j?(n.w||d.w)+(n.k&&n.k[h[j]]||0):0;r&&r.d&&g[F](this.path(r.d).attr({fill:"#000",
 stroke:"none",translation:[i,0]}))}g.scale(c,c,f,e).translate(a-f,b-e)}return g};var Ob=/\{(\d+)\}/g;l.format=function(a,b){var c=l.is(b,U)?[0][M](b):arguments;a&&l.is(a,ga)&&c[o]-1&&(a=a[I](Ob,function(d,f){return c[++f]==null?A:c[f]}));return a||A};l.ninja=function(){Qa.was?(Raphael=Qa.is):delete Raphael;return l};l.el=s[p];return l}();
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 /**
  * apMessageBox - apMessageBox is a JavaScript object designed to create quick, 
  * easy popup messages in your JavaScript applications. 
@@ -20116,7 +20055,7 @@ var apMessageBox = apMessageBox || {};
 	
 })(jQuery);
 
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 /*! jQuery UI - v1.8.24 - 2012-09-28
 * https://github.com/jquery/jquery-ui
 * Includes: jquery.ui.core.js
@@ -20162,12 +20101,12 @@ var apMessageBox = apMessageBox || {};
 * Includes: jquery.ui.slider.js
 * Copyright (c) 2012 AUTHORS.txt; Licensed MIT, GPL */
 (function(a,b){var c=5;a.widget("ui.slider",a.ui.mouse,{widgetEventPrefix:"slide",options:{animate:!1,distance:0,max:100,min:0,orientation:"horizontal",range:!1,step:1,value:0,values:null},_create:function(){var b=this,d=this.options,e=this.element.find(".ui-slider-handle").addClass("ui-state-default ui-corner-all"),f="<a class='ui-slider-handle ui-state-default ui-corner-all' href='#'></a>",g=d.values&&d.values.length||1,h=[];this._keySliding=!1,this._mouseSliding=!1,this._animateOff=!0,this._handleIndex=null,this._detectOrientation(),this._mouseInit(),this.element.addClass("ui-slider ui-slider-"+this.orientation+" ui-widget"+" ui-widget-content"+" ui-corner-all"+(d.disabled?" ui-slider-disabled ui-disabled":"")),this.range=a([]),d.range&&(d.range===!0&&(d.values||(d.values=[this._valueMin(),this._valueMin()]),d.values.length&&d.values.length!==2&&(d.values=[d.values[0],d.values[0]])),this.range=a("<div></div>").appendTo(this.element).addClass("ui-slider-range ui-widget-header"+(d.range==="min"||d.range==="max"?" ui-slider-range-"+d.range:"")));for(var i=e.length;i<g;i+=1)h.push(f);this.handles=e.add(a(h.join("")).appendTo(b.element)),this.handle=this.handles.eq(0),this.handles.add(this.range).filter("a").click(function(a){a.preventDefault()}).hover(function(){d.disabled||a(this).addClass("ui-state-hover")},function(){a(this).removeClass("ui-state-hover")}).focus(function(){d.disabled?a(this).blur():(a(".ui-slider .ui-state-focus").removeClass("ui-state-focus"),a(this).addClass("ui-state-focus"))}).blur(function(){a(this).removeClass("ui-state-focus")}),this.handles.each(function(b){a(this).data("index.ui-slider-handle",b)}),this.handles.keydown(function(d){var e=a(this).data("index.ui-slider-handle"),f,g,h,i;if(b.options.disabled)return;switch(d.keyCode){case a.ui.keyCode.HOME:case a.ui.keyCode.END:case a.ui.keyCode.PAGE_UP:case a.ui.keyCode.PAGE_DOWN:case a.ui.keyCode.UP:case a.ui.keyCode.RIGHT:case a.ui.keyCode.DOWN:case a.ui.keyCode.LEFT:d.preventDefault();if(!b._keySliding){b._keySliding=!0,a(this).addClass("ui-state-active"),f=b._start(d,e);if(f===!1)return}}i=b.options.step,b.options.values&&b.options.values.length?g=h=b.values(e):g=h=b.value();switch(d.keyCode){case a.ui.keyCode.HOME:h=b._valueMin();break;case a.ui.keyCode.END:h=b._valueMax();break;case a.ui.keyCode.PAGE_UP:h=b._trimAlignValue(g+(b._valueMax()-b._valueMin())/c);break;case a.ui.keyCode.PAGE_DOWN:h=b._trimAlignValue(g-(b._valueMax()-b._valueMin())/c);break;case a.ui.keyCode.UP:case a.ui.keyCode.RIGHT:if(g===b._valueMax())return;h=b._trimAlignValue(g+i);break;case a.ui.keyCode.DOWN:case a.ui.keyCode.LEFT:if(g===b._valueMin())return;h=b._trimAlignValue(g-i)}b._slide(d,e,h)}).keyup(function(c){var d=a(this).data("index.ui-slider-handle");b._keySliding&&(b._keySliding=!1,b._stop(c,d),b._change(c,d),a(this).removeClass("ui-state-active"))}),this._refreshValue(),this._animateOff=!1},destroy:function(){return this.handles.remove(),this.range.remove(),this.element.removeClass("ui-slider ui-slider-horizontal ui-slider-vertical ui-slider-disabled ui-widget ui-widget-content ui-corner-all").removeData("slider").unbind(".slider"),this._mouseDestroy(),this},_mouseCapture:function(b){var c=this.options,d,e,f,g,h,i,j,k,l;return c.disabled?!1:(this.elementSize={width:this.element.outerWidth(),height:this.element.outerHeight()},this.elementOffset=this.element.offset(),d={x:b.pageX,y:b.pageY},e=this._normValueFromMouse(d),f=this._valueMax()-this._valueMin()+1,h=this,this.handles.each(function(b){var c=Math.abs(e-h.values(b));f>c&&(f=c,g=a(this),i=b)}),c.range===!0&&this.values(1)===c.min&&(i+=1,g=a(this.handles[i])),j=this._start(b,i),j===!1?!1:(this._mouseSliding=!0,h._handleIndex=i,g.addClass("ui-state-active").focus(),k=g.offset(),l=!a(b.target).parents().andSelf().is(".ui-slider-handle"),this._clickOffset=l?{left:0,top:0}:{left:b.pageX-k.left-g.width()/2,top:b.pageY-k.top-g.height()/2-(parseInt(g.css("borderTopWidth"),10)||0)-(parseInt(g.css("borderBottomWidth"),10)||0)+(parseInt(g.css("marginTop"),10)||0)},this.handles.hasClass("ui-state-hover")||this._slide(b,i,e),this._animateOff=!0,!0))},_mouseStart:function(a){return!0},_mouseDrag:function(a){var b={x:a.pageX,y:a.pageY},c=this._normValueFromMouse(b);return this._slide(a,this._handleIndex,c),!1},_mouseStop:function(a){return this.handles.removeClass("ui-state-active"),this._mouseSliding=!1,this._stop(a,this._handleIndex),this._change(a,this._handleIndex),this._handleIndex=null,this._clickOffset=null,this._animateOff=!1,!1},_detectOrientation:function(){this.orientation=this.options.orientation==="vertical"?"vertical":"horizontal"},_normValueFromMouse:function(a){var b,c,d,e,f;return this.orientation==="horizontal"?(b=this.elementSize.width,c=a.x-this.elementOffset.left-(this._clickOffset?this._clickOffset.left:0)):(b=this.elementSize.height,c=a.y-this.elementOffset.top-(this._clickOffset?this._clickOffset.top:0)),d=c/b,d>1&&(d=1),d<0&&(d=0),this.orientation==="vertical"&&(d=1-d),e=this._valueMax()-this._valueMin(),f=this._valueMin()+d*e,this._trimAlignValue(f)},_start:function(a,b){var c={handle:this.handles[b],value:this.value()};return this.options.values&&this.options.values.length&&(c.value=this.values(b),c.values=this.values()),this._trigger("start",a,c)},_slide:function(a,b,c){var d,e,f;this.options.values&&this.options.values.length?(d=this.values(b?0:1),this.options.values.length===2&&this.options.range===!0&&(b===0&&c>d||b===1&&c<d)&&(c=d),c!==this.values(b)&&(e=this.values(),e[b]=c,f=this._trigger("slide",a,{handle:this.handles[b],value:c,values:e}),d=this.values(b?0:1),f!==!1&&this.values(b,c,!0))):c!==this.value()&&(f=this._trigger("slide",a,{handle:this.handles[b],value:c}),f!==!1&&this.value(c))},_stop:function(a,b){var c={handle:this.handles[b],value:this.value()};this.options.values&&this.options.values.length&&(c.value=this.values(b),c.values=this.values()),this._trigger("stop",a,c)},_change:function(a,b){if(!this._keySliding&&!this._mouseSliding){var c={handle:this.handles[b],value:this.value()};this.options.values&&this.options.values.length&&(c.value=this.values(b),c.values=this.values()),this._trigger("change",a,c)}},value:function(a){if(arguments.length){this.options.value=this._trimAlignValue(a),this._refreshValue(),this._change(null,0);return}return this._value()},values:function(b,c){var d,e,f;if(arguments.length>1){this.options.values[b]=this._trimAlignValue(c),this._refreshValue(),this._change(null,b);return}if(!arguments.length)return this._values();if(!a.isArray(arguments[0]))return this.options.values&&this.options.values.length?this._values(b):this.value();d=this.options.values,e=arguments[0];for(f=0;f<d.length;f+=1)d[f]=this._trimAlignValue(e[f]),this._change(null,f);this._refreshValue()},_setOption:function(b,c){var d,e=0;a.isArray(this.options.values)&&(e=this.options.values.length),a.Widget.prototype._setOption.apply(this,arguments);switch(b){case"disabled":c?(this.handles.filter(".ui-state-focus").blur(),this.handles.removeClass("ui-state-hover"),this.handles.propAttr("disabled",!0),this.element.addClass("ui-disabled")):(this.handles.propAttr("disabled",!1),this.element.removeClass("ui-disabled"));break;case"orientation":this._detectOrientation(),this.element.removeClass("ui-slider-horizontal ui-slider-vertical").addClass("ui-slider-"+this.orientation),this._refreshValue();break;case"value":this._animateOff=!0,this._refreshValue(),this._change(null,0),this._animateOff=!1;break;case"values":this._animateOff=!0,this._refreshValue();for(d=0;d<e;d+=1)this._change(null,d);this._animateOff=!1}},_value:function(){var a=this.options.value;return a=this._trimAlignValue(a),a},_values:function(a){var b,c,d;if(arguments.length)return b=this.options.values[a],b=this._trimAlignValue(b),b;c=this.options.values.slice();for(d=0;d<c.length;d+=1)c[d]=this._trimAlignValue(c[d]);return c},_trimAlignValue:function(a){if(a<=this._valueMin())return this._valueMin();if(a>=this._valueMax())return this._valueMax();var b=this.options.step>0?this.options.step:1,c=(a-this._valueMin())%b,d=a-c;return Math.abs(c)*2>=b&&(d+=c>0?b:-b),parseFloat(d.toFixed(5))},_valueMin:function(){return this.options.min},_valueMax:function(){return this.options.max},_refreshValue:function(){var b=this.options.range,c=this.options,d=this,e=this._animateOff?!1:c.animate,f,g={},h,i,j,k;this.options.values&&this.options.values.length?this.handles.each(function(b,i){f=(d.values(b)-d._valueMin())/(d._valueMax()-d._valueMin())*100,g[d.orientation==="horizontal"?"left":"bottom"]=f+"%",a(this).stop(1,1)[e?"animate":"css"](g,c.animate),d.options.range===!0&&(d.orientation==="horizontal"?(b===0&&d.range.stop(1,1)[e?"animate":"css"]({left:f+"%"},c.animate),b===1&&d.range[e?"animate":"css"]({width:f-h+"%"},{queue:!1,duration:c.animate})):(b===0&&d.range.stop(1,1)[e?"animate":"css"]({bottom:f+"%"},c.animate),b===1&&d.range[e?"animate":"css"]({height:f-h+"%"},{queue:!1,duration:c.animate}))),h=f}):(i=this.value(),j=this._valueMin(),k=this._valueMax(),f=k!==j?(i-j)/(k-j)*100:0,g[d.orientation==="horizontal"?"left":"bottom"]=f+"%",this.handle.stop(1,1)[e?"animate":"css"](g,c.animate),b==="min"&&this.orientation==="horizontal"&&this.range.stop(1,1)[e?"animate":"css"]({width:f+"%"},c.animate),b==="max"&&this.orientation==="horizontal"&&this.range[e?"animate":"css"]({width:100-f+"%"},{queue:!1,duration:c.animate}),b==="min"&&this.orientation==="vertical"&&this.range.stop(1,1)[e?"animate":"css"]({height:f+"%"},c.animate),b==="max"&&this.orientation==="vertical"&&this.range[e?"animate":"css"]({height:100-f+"%"},{queue:!1,duration:c.animate}))}}),a.extend(a.ui.slider,{version:"1.8.24"})})(jQuery);;
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 /*! 
  * jquery.event.drag - v 2.0.0 
  * Copyright (c) 2010 Three Dub Media - http://threedubmedia.com
  * Open Source MIT License - http://threedubmedia.com/code/license
  */
 ;(function(f){f.fn.drag=function(b,a,d){var e=typeof b=="string"?b:"",k=f.isFunction(b)?b:f.isFunction(a)?a:null;if(e.indexOf("drag")!==0)e="drag"+e;d=(b==k?a:d)||{};return k?this.bind(e,d,k):this.trigger(e)};var i=f.event,h=i.special,c=h.drag={defaults:{which:1,distance:0,not:":input",handle:null,relative:false,drop:true,click:false},datakey:"dragdata",livekey:"livedrag",add:function(b){var a=f.data(this,c.datakey),d=b.data||{};a.related+=1;if(!a.live&&b.selector){a.live=true;i.add(this,"draginit."+ c.livekey,c.delegate)}f.each(c.defaults,function(e){if(d[e]!==undefined)a[e]=d[e]})},remove:function(){f.data(this,c.datakey).related-=1},setup:function(){if(!f.data(this,c.datakey)){var b=f.extend({related:0},c.defaults);f.data(this,c.datakey,b);i.add(this,"mousedown",c.init,b);this.attachEvent&&this.attachEvent("ondragstart",c.dontstart)}},teardown:function(){if(!f.data(this,c.datakey).related){f.removeData(this,c.datakey);i.remove(this,"mousedown",c.init);i.remove(this,"draginit",c.delegate);c.textselect(true); this.detachEvent&&this.detachEvent("ondragstart",c.dontstart)}},init:function(b){var a=b.data,d;if(!(a.which>0&&b.which!=a.which))if(!f(b.target).is(a.not))if(!(a.handle&&!f(b.target).closest(a.handle,b.currentTarget).length)){a.propagates=1;a.interactions=[c.interaction(this,a)];a.target=b.target;a.pageX=b.pageX;a.pageY=b.pageY;a.dragging=null;d=c.hijack(b,"draginit",a);if(a.propagates){if((d=c.flatten(d))&&d.length){a.interactions=[];f.each(d,function(){a.interactions.push(c.interaction(this,a))})}a.propagates= a.interactions.length;a.drop!==false&&h.drop&&h.drop.handler(b,a);c.textselect(false);i.add(document,"mousemove mouseup",c.handler,a);return false}}},interaction:function(b,a){return{drag:b,callback:new c.callback,droppable:[],offset:f(b)[a.relative?"position":"offset"]()||{top:0,left:0}}},handler:function(b){var a=b.data;switch(b.type){case !a.dragging&&"mousemove":if(Math.pow(b.pageX-a.pageX,2)+Math.pow(b.pageY-a.pageY,2)<Math.pow(a.distance,2))break;b.target=a.target;c.hijack(b,"dragstart",a); if(a.propagates)a.dragging=true;case "mousemove":if(a.dragging){c.hijack(b,"drag",a);if(a.propagates){a.drop!==false&&h.drop&&h.drop.handler(b,a);break}b.type="mouseup"}case "mouseup":i.remove(document,"mousemove mouseup",c.handler);if(a.dragging){a.drop!==false&&h.drop&&h.drop.handler(b,a);c.hijack(b,"dragend",a)}c.textselect(true);if(a.click===false&&a.dragging){jQuery.event.triggered=true;setTimeout(function(){jQuery.event.triggered=false},20);a.dragging=false}break}},delegate:function(b){var a= [],d,e=f.data(this,"events")||{};f.each(e.live||[],function(k,j){if(j.preType.indexOf("drag")===0)if(d=f(b.target).closest(j.selector,b.currentTarget)[0]){i.add(d,j.origType+"."+c.livekey,j.origHandler,j.data);f.inArray(d,a)<0&&a.push(d)}});if(!a.length)return false;return f(a).bind("dragend."+c.livekey,function(){i.remove(this,"."+c.livekey)})},hijack:function(b,a,d,e,k){if(d){var j={event:b.originalEvent,type:b.type},n=a.indexOf("drop")?"drag":"drop",l,o=e||0,g,m;e=!isNaN(e)?e:d.interactions.length; b.type=a;b.originalEvent=null;d.results=[];do if(g=d.interactions[o])if(!(a!=="dragend"&&g.cancelled)){m=c.properties(b,d,g);g.results=[];f(k||g[n]||d.droppable).each(function(q,p){l=(m.target=p)?i.handle.call(p,b,m):null;if(l===false){if(n=="drag"){g.cancelled=true;d.propagates-=1}if(a=="drop")g[n][q]=null}else if(a=="dropinit")g.droppable.push(c.element(l)||p);if(a=="dragstart")g.proxy=f(c.element(l)||g.drag)[0];g.results.push(l);delete b.result;if(a!=="dropinit")return l});d.results[o]=c.flatten(g.results); if(a=="dropinit")g.droppable=c.flatten(g.droppable);a=="dragstart"&&!g.cancelled&&m.update()}while(++o<e);b.type=j.type;b.originalEvent=j.event;return c.flatten(d.results)}},properties:function(b,a,d){var e=d.callback;e.drag=d.drag;e.proxy=d.proxy||d.drag;e.startX=a.pageX;e.startY=a.pageY;e.deltaX=b.pageX-a.pageX;e.deltaY=b.pageY-a.pageY;e.originalX=d.offset.left;e.originalY=d.offset.top;e.offsetX=b.pageX-(a.pageX-e.originalX);e.offsetY=b.pageY-(a.pageY-e.originalY);e.drop=c.flatten((d.drop||[]).slice()); e.available=c.flatten((d.droppable||[]).slice());return e},element:function(b){if(b&&(b.jquery||b.nodeType==1))return b},flatten:function(b){return f.map(b,function(a){return a&&a.jquery?f.makeArray(a):a&&a.length?c.flatten(a):a})},textselect:function(b){f(document)[b?"unbind":"bind"]("selectstart",c.dontstart).attr("unselectable",b?"off":"on").css("MozUserSelect",b?"":"none")},dontstart:function(){return false},callback:function(){}};c.callback.prototype={update:function(){h.drop&&this.available.length&& f.each(this.available,function(b){h.drop.locate(this,b)})}};h.draginit=h.dragstart=h.dragend=c})(jQuery);
-},{}]},{},[23])(23)
+},{}]},{},[24])(24)
 });

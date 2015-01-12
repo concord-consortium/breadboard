@@ -1,8 +1,8 @@
 var extend    = require('../helpers/util').extend,
     Component = require('./component');
 
-Wire = function (props, breadBoard) {
-  Wire.parentConstructor.call(this, props, breadBoard);
+Wire = function (props, breadboardController) {
+  Wire.parentConstructor.call(this, props, breadboardController);
   this.setViewArguments({color: this.getColor()});
 };
 

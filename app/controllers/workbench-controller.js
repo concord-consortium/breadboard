@@ -1,19 +1,20 @@
-var Oscilloscope  = require('../models/oscilloscope'),
-    Workbench     = require('../models/workbench'),
-    Multimeter    = require('../circuit/multimeter'),
-    logController = require('../controllers/log-controller'),
-    Breadboard    = require('../circuit/breadboard');
+var Oscilloscope          = require('../models/oscilloscope'),
+    Workbench             = require('../models/workbench'),
+    Multimeter            = require('../circuit/multimeter'),
+    logController         = require('./log-controller'),
+    breadboardController  = require('./breadboard-controller');
 
 
 WorkbenchController = function(){
   //this.workbenchMap = {}
   this.workbench = null;    // for now
+  this.breadboardController = breadboardController;
 };
 
 WorkbenchController.prototype = {
 
   createWorkbench: function(props, elId) {
-    var workbench = new Workbench();
+    var workbench = new Workbench(null, this.breadboardController);
     this.workbench = workbench;
 
     workbench.circuit = props.circuit;
@@ -31,7 +32,7 @@ WorkbenchController.prototype = {
     workbench.showComponentEditor = !(!(props.showComponentEditor) || props.showComponentEditor === "false");
 
     if (workbench.show_multimeter) {
-      workbench.meter.dmm = new Multimeter();
+      workbench.meter.dmm = new Multimeter(breadboardController);
       if(workbench.disable_multimeter_position){
         workbench.meter.dmm.set_disable_multimeter_position(workbench.disable_multimeter_position);
       }
@@ -40,7 +41,7 @@ WorkbenchController.prototype = {
     }
 
     if (workbench.show_oscilloscope) {
-      workbench.meter.oscope = new Oscilloscope();
+      workbench.meter.oscope = new Oscilloscope(breadboardController);
     } else {
       workbench.meter.oscope = null;
     }
@@ -58,21 +59,21 @@ WorkbenchController.prototype = {
   loadBreadboard: function() {
     var workbench = this.workbench;
 
-    Breadboard.breadModel("clear");
+    breadboardController.breadModel("clear");
 
     if (!!workbench.circuit){
-      Breadboard.breadModel("createCircuit", workbench.circuit);
+      breadboardController.breadModel("createCircuit", workbench.circuit);
     }
 
     if (!!workbench.faults){
-      Breadboard.breadModel("addFaults", workbench.faults);
+      breadboardController.breadModel("addFaults", workbench.faults);
     }
   },
 
   setDMMVisibility: function(visible) {
     var workbench = this.workbench;
     if (visible) {
-      workbench.meter.dmm = new Multimeter();
+      workbench.meter.dmm = new Multimeter(breadboardController);
       if(workbench.disable_multimeter_position){
         workbench.meter.dmm.set_disable_multimeter_position(workbench.disable_multimeter_position);
       }
@@ -85,7 +86,7 @@ WorkbenchController.prototype = {
   setOScopeVisibility: function(visible) {
     var workbench = this.workbench;
     if (visible) {
-      workbench.meter.oscope = new Oscilloscope();
+      workbench.meter.oscope = new Oscilloscope(breadboardController);
     } else {
       workbench.meter.oscope = null;
     }

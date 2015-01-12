@@ -1,7 +1,7 @@
 var Meter         = require('./meter'),
     WorkbenchView = require('../views/workbench-view');
 
-Workbench = function(props){
+Workbench = function(props, breadboardController){
   this.circuit = null;
   this.meter = new Meter();
 
@@ -11,7 +11,7 @@ Workbench = function(props){
   this.hide_pink_probe          = false;
   this.showComponentDrawer      = false;
 
-  this.view = new WorkbenchView(this);
+  this.view = new WorkbenchView(this, breadboardController);
 };
 
 Workbench.prototype = {

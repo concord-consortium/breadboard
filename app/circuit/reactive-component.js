@@ -1,14 +1,13 @@
-
 var extend    = require('../helpers/util').extend,
     Component = require('./component'),
     sparksMath = require('../helpers/sparks-math');
 
-ReactiveComponent = function (props, breadBoard) {
+ReactiveComponent = function (props, breadboardController) {
   if (typeof props.impedance !== 'undefined') {
     props.impedance = this.getRequestedImpedance( props.impedance );
   }
 
-  ReactiveComponent.parentConstructor.call(this, props, breadBoard);
+  ReactiveComponent.parentConstructor.call(this, props, breadboardController);
 
   this.applyFaults();
 };

@@ -1,8 +1,8 @@
 var extend    = require('../helpers/util').extend,
     Resistor  = require('./resistor');
 
-VariableResistor = function (props, breadBoard) {
-  Resistor.parentConstructor.call(this, props, breadBoard);
+VariableResistor = function (props, breadboardController) {
+  Resistor.parentConstructor.call(this, props, breadboardController);
   var superclass = VariableResistor.uber;
   superclass.init.apply(this, [props.UID]);
   this.resistance = this.minimumResistance;
