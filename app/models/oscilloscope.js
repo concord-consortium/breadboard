@@ -100,7 +100,7 @@ Oscilloscope.prototype = {
           this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
           continue;
         }
-        this.breadboardController.breadModel('query', "oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
+        this.breadboardController.query("oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
       } else {
         this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
       }

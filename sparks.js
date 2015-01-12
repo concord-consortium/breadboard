@@ -1131,7 +1131,7 @@ extend(Multimeter, MultimeterBase, {
       }
 
       if (!!this.currentMeasurement){
-        this.breadboardController.breadModel('query', this.currentMeasurement, this.redProbeConnection + ',' + this.blackProbeConnection, this.updateWithData, this);
+        this.breadboardController.query(this.currentMeasurement, this.redProbeConnection + ',' + this.blackProbeConnection, this.updateWithData, this);
       }
     } else {
       this.updateWithData();
@@ -1523,9 +1523,9 @@ Resistor4band = function (id, breadboardController) {
   this.numBands = 4;
   this.breadboardController = breadboardController;
 
-  if (breadboardController.breadModel('getResOrderOfMagnitude') < 0){
+  if (breadboardController.getResOrderOfMagnitude() < 0){
     var om = this.randInt(0, 3);
-    breadboardController.breadModel('setResOrderOfMagnitude', om);
+    breadboardController.setResOrderOfMagnitude(om);
   }
 
   this.r_values5pct = this.filter(r_values.r_values4band5pct);
@@ -1555,7 +1555,7 @@ extend(Resistor4band, Resistor, {
             values = this.r_values10pct;
         }
 
-        var om = this.breadboardController.breadModel('getResOrderOfMagnitude');
+        var om = this.breadboardController.getResOrderOfMagnitude();
         var extra = this.randInt(0, 1);
         om = om + extra;
 
@@ -1985,6 +1985,10 @@ BreadboardController = function() {
 
 BreadboardController.prototype = {
 
+  init: function (_workbenchController) {
+    workbenchController = _workbenchController;
+  },
+
   component: function (props) {
     if(typeof props=='string'){
       return breadboard.components[props];
@@ -2380,7 +2384,7 @@ BreadboardController.prototype = {
     // add DMM components as necessary
     if (type === 'resistance') {
       connections = connections.split(',');
-      ghost = new GhostHole();
+      ghost = breadboard.createGhostHole();
       ohmmeterBattery = this.component({
         UID: 'ohmmeterBattery',
         kind: 'battery',
@@ -2441,39 +2445,6 @@ BreadboardController.prototype = {
       if (component.kind == "battery" || component.kind == "function generator" && !component.hide) // FIXME
         workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
     });
-  },
-
-
-  // obsolete, to be removed
-
-  // The inward interface between Flash's ExternalInterface and JavaScript's BreadBoard prototype model instance
-  breadModel: function () {
-    if (!workbenchController) {
-      workbenchController = require('../controllers/workbench-controller');   // grrr
-    }
-
-    var newArgs = [];
-    for(var i=1,l=arguments.length;i< l;i++){
-      newArgs[newArgs.length] = arguments[i];
-    }
-    var func = arguments[0];
-
-    if (func === 'query' && !!arguments[2]) {
-        var conns = arguments[2].split(',');
-
-        if (conns[0] === 'null' || conns[1] === 'null') {
-            return 0;
-        }
-        var v = this.query.apply(this, newArgs);
-        return v;
-    }
-    else {
-      return this[func].apply(this, newArgs);
-    }
-  },
-
-  getBreadBoard: function() {
-    return this;
   }
 
 }
@@ -2483,7 +2454,7 @@ breadboardController = new BreadboardController();
 
 module.exports = breadboardController;
 
-},{"../circuit/battery":1,"../circuit/breadboard":2,"../circuit/capacitor":3,"../circuit/component":4,"../circuit/function-generator":5,"../circuit/inductor":6,"../circuit/power-lead":9,"../circuit/resistor":13,"../circuit/resistor-4band":12,"../circuit/variable-resistor":14,"../circuit/wire":15,"../controllers/workbench-controller":18,"../helpers/util":23}],17:[function(require,module,exports){
+},{"../circuit/battery":1,"../circuit/breadboard":2,"../circuit/capacitor":3,"../circuit/component":4,"../circuit/function-generator":5,"../circuit/inductor":6,"../circuit/power-lead":9,"../circuit/resistor":13,"../circuit/resistor-4band":12,"../circuit/variable-resistor":14,"../circuit/wire":15,"../helpers/util":23}],17:[function(require,module,exports){
 
 var LogEvent  = require('../models/log'),
     util      = require('../helpers/util');
@@ -2568,6 +2539,7 @@ WorkbenchController = function(){
   //this.workbenchMap = {}
   this.workbench = null;    // for now
   this.breadboardController = breadboardController;
+  this.breadboardController.init(this);
 };
 
 WorkbenchController.prototype = {
@@ -2618,14 +2590,14 @@ WorkbenchController.prototype = {
   loadBreadboard: function() {
     var workbench = this.workbench;
 
-    breadboardController.breadModel("clear");
+    breadboardController.clear();
 
     if (!!workbench.circuit){
-      breadboardController.breadModel("createCircuit", workbench.circuit);
+      breadboardController.createCircuit(workbench.circuit);
     }
 
     if (!!workbench.faults){
-      breadboardController.breadModel("addFaults", workbench.faults);
+      breadboardController.addFaults(workbench.faults);
     }
   },
 
@@ -6642,7 +6614,7 @@ Oscilloscope.prototype = {
           this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
           continue;
         }
-        this.breadboardController.breadModel('query', "oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
+        this.breadboardController.query("oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
       } else {
         this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
       }
@@ -6987,12 +6959,12 @@ AddComponentsView = function(workbench, breadboardController){
        "connections": loc
       };
       props[embeddableComponent.property] = embeddableComponent.initialValue;
-      uid = this.breadboardController.breadModel("insertComponent", type, props);
+      uid = this.breadboardController.insertComponent(type, props);
 
       comp = this.breadboardController.getComponents()[uid];
 
       // move leads to correct width
-      this.breadboardController.breadModel("checkLocation", comp);
+      this.breadboardController.checkLocation(comp);
 
       // update meters
       workbench.meter.update();
@@ -7051,7 +7023,7 @@ AddComponentsView.prototype = {
       $propertyEditor
     ).append(
       $("<button>").text("Remove").on('click', function() {
-        self.breadboardController.breadModel("removeComponent", comp);
+        self.breadboardController.removeComponent(comp);
         section.meter.update();
         $(".speech-bubble").trigger('mouseleave');
       })
@@ -10210,7 +10182,7 @@ breadboardComm.connectionMade = function(workbenchController, component, hole) {
     if (!openConnections) return; // shouldn't happen
 
     if (openConnections[hole]) {        // if we're just replacing a lead
-      breadboardController.breadModel('unmapHole', hole);
+      breadboardController.unmapHole(hole);
       delete openConnections[hole];
     } else {                            // if we're putting lead in new hole
       comp = breadboardController.getComponents()[component];
@@ -10218,7 +10190,7 @@ breadboardComm.connectionMade = function(workbenchController, component, hole) {
       openConnectionsArr = util.getKeys(openConnections);
       // pick first open lead
       connectionReturning = openConnectionsArr[0];
-      breadboardController.breadModel('unmapHole', connectionReturning);
+      breadboardController.unmapHole(connectionReturning);
       //swap
       for (var i = 0; i < comp.connections.length; i++) {
         connection = comp.connections[i].getName();
@@ -10231,7 +10203,7 @@ breadboardComm.connectionMade = function(workbenchController, component, hole) {
       }
 
       // check that we don't have two leads to close together
-      breadboardController.breadModel("checkLocation", comp);
+      breadboardController.checkLocation(comp);
     }
 
   }
@@ -10249,9 +10221,9 @@ breadboardComm.connectionBroken = function(workbenchController, component, hole)
   }
   breadboardComm.openConnections[component][hole] = true;
 
-  var newHole = breadboardController.breadModel('getGhostHole', hole+"ghost");
+  var newHole = breadboardController.getGhostHole(hole+"ghost");
 
-  breadboardController.breadModel('mapHole', hole, newHole.nodeName());
+  breadboardController.mapHole(hole, newHole.nodeName());
   logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
     "type": "disconnect lead",
     "location": hole});
@@ -10315,7 +10287,7 @@ WorkbenchView.prototype = {
         workbenchController.breadboardView.setRightClickFunction(self.rightClickObj, self.rightClickFunction);
       }
 
-      self.breadboardController.breadModel('updateView');
+      self.breadboardController.updateView();
 
       sound.mute = true;
 

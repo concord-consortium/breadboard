@@ -33,6 +33,10 @@ BreadboardController = function() {
 
 BreadboardController.prototype = {
 
+  init: function (_workbenchController) {
+    workbenchController = _workbenchController;
+  },
+
   component: function (props) {
     if(typeof props=='string'){
       return breadboard.components[props];
@@ -428,7 +432,7 @@ BreadboardController.prototype = {
     // add DMM components as necessary
     if (type === 'resistance') {
       connections = connections.split(',');
-      ghost = new GhostHole();
+      ghost = breadboard.createGhostHole();
       ohmmeterBattery = this.component({
         UID: 'ohmmeterBattery',
         kind: 'battery',
@@ -489,39 +493,6 @@ BreadboardController.prototype = {
       if (component.kind == "battery" || component.kind == "function generator" && !component.hide) // FIXME
         workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
     });
-  },
-
-
-  // obsolete, to be removed
-
-  // The inward interface between Flash's ExternalInterface and JavaScript's BreadBoard prototype model instance
-  breadModel: function () {
-    if (!workbenchController) {
-      workbenchController = require('../controllers/workbench-controller');   // grrr
-    }
-
-    var newArgs = [];
-    for(var i=1,l=arguments.length;i< l;i++){
-      newArgs[newArgs.length] = arguments[i];
-    }
-    var func = arguments[0];
-
-    if (func === 'query' && !!arguments[2]) {
-        var conns = arguments[2].split(',');
-
-        if (conns[0] === 'null' || conns[1] === 'null') {
-            return 0;
-        }
-        var v = this.query.apply(this, newArgs);
-        return v;
-    }
-    else {
-      return this[func].apply(this, newArgs);
-    }
-  },
-
-  getBreadBoard: function() {
-    return this;
   }
 
 }

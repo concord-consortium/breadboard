@@ -18,7 +18,7 @@ breadboardComm.connectionMade = function(workbenchController, component, hole) {
     if (!openConnections) return; // shouldn't happen
 
     if (openConnections[hole]) {        // if we're just replacing a lead
-      breadboardController.breadModel('unmapHole', hole);
+      breadboardController.unmapHole(hole);
       delete openConnections[hole];
     } else {                            // if we're putting lead in new hole
       comp = breadboardController.getComponents()[component];
@@ -26,7 +26,7 @@ breadboardComm.connectionMade = function(workbenchController, component, hole) {
       openConnectionsArr = util.getKeys(openConnections);
       // pick first open lead
       connectionReturning = openConnectionsArr[0];
-      breadboardController.breadModel('unmapHole', connectionReturning);
+      breadboardController.unmapHole(connectionReturning);
       //swap
       for (var i = 0; i < comp.connections.length; i++) {
         connection = comp.connections[i].getName();
@@ -39,7 +39,7 @@ breadboardComm.connectionMade = function(workbenchController, component, hole) {
       }
 
       // check that we don't have two leads to close together
-      breadboardController.breadModel("checkLocation", comp);
+      breadboardController.checkLocation(comp);
     }
 
   }
@@ -57,9 +57,9 @@ breadboardComm.connectionBroken = function(workbenchController, component, hole)
   }
   breadboardComm.openConnections[component][hole] = true;
 
-  var newHole = breadboardController.breadModel('getGhostHole', hole+"ghost");
+  var newHole = breadboardController.getGhostHole(hole+"ghost");
 
-  breadboardController.breadModel('mapHole', hole, newHole.nodeName());
+  breadboardController.mapHole(hole, newHole.nodeName());
   logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
     "type": "disconnect lead",
     "location": hole});

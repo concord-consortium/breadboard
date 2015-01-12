@@ -8,9 +8,9 @@ Resistor4band = function (id, breadboardController) {
   this.numBands = 4;
   this.breadboardController = breadboardController;
 
-  if (breadboardController.breadModel('getResOrderOfMagnitude') < 0){
+  if (breadboardController.getResOrderOfMagnitude() < 0){
     var om = this.randInt(0, 3);
-    breadboardController.breadModel('setResOrderOfMagnitude', om);
+    breadboardController.setResOrderOfMagnitude(om);
   }
 
   this.r_values5pct = this.filter(r_values.r_values4band5pct);
@@ -40,7 +40,7 @@ extend(Resistor4band, Resistor, {
             values = this.r_values10pct;
         }
 
-        var om = this.breadboardController.breadModel('getResOrderOfMagnitude');
+        var om = this.breadboardController.getResOrderOfMagnitude();
         var extra = this.randInt(0, 1);
         om = om + extra;
 

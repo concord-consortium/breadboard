@@ -38,7 +38,7 @@ WorkbenchView.prototype = {
         workbenchController.breadboardView.setRightClickFunction(self.rightClickObj, self.rightClickFunction);
       }
 
-      self.breadboardController.breadModel('updateView');
+      self.breadboardController.updateView();
 
       sound.mute = true;
 

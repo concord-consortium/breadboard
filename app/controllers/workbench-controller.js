@@ -9,6 +9,7 @@ WorkbenchController = function(){
   //this.workbenchMap = {}
   this.workbench = null;    // for now
   this.breadboardController = breadboardController;
+  this.breadboardController.init(this);
 };
 
 WorkbenchController.prototype = {
@@ -59,14 +60,14 @@ WorkbenchController.prototype = {
   loadBreadboard: function() {
     var workbench = this.workbench;
 
-    breadboardController.breadModel("clear");
+    breadboardController.clear();
 
     if (!!workbench.circuit){
-      breadboardController.breadModel("createCircuit", workbench.circuit);
+      breadboardController.createCircuit(workbench.circuit);
     }
 
     if (!!workbench.faults){
-      breadboardController.breadModel("addFaults", workbench.faults);
+      breadboardController.addFaults(workbench.faults);
     }
   },
 

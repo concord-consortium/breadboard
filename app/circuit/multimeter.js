@@ -44,7 +44,7 @@ extend(Multimeter, MultimeterBase, {
       }
 
       if (!!this.currentMeasurement){
-        this.breadboardController.breadModel('query', this.currentMeasurement, this.redProbeConnection + ',' + this.blackProbeConnection, this.updateWithData, this);
+        this.breadboardController.query(this.currentMeasurement, this.redProbeConnection + ',' + this.blackProbeConnection, this.updateWithData, this);
       }
     } else {
       this.updateWithData();

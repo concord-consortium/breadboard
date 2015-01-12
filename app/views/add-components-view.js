@@ -105,12 +105,12 @@ AddComponentsView = function(workbench, breadboardController){
        "connections": loc
       };
       props[embeddableComponent.property] = embeddableComponent.initialValue;
-      uid = this.breadboardController.breadModel("insertComponent", type, props);
+      uid = this.breadboardController.insertComponent(type, props);
 
       comp = this.breadboardController.getComponents()[uid];
 
       // move leads to correct width
-      this.breadboardController.breadModel("checkLocation", comp);
+      this.breadboardController.checkLocation(comp);
 
       // update meters
       workbench.meter.update();
@@ -169,7 +169,7 @@ AddComponentsView.prototype = {
       $propertyEditor
     ).append(
       $("<button>").text("Remove").on('click', function() {
-        self.breadboardController.breadModel("removeComponent", comp);
+        self.breadboardController.removeComponent(comp);
         section.meter.update();
         $(".speech-bubble").trigger('mouseleave');
       })
