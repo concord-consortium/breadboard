@@ -1,0 +1,71 @@
+<html>
+  <head>
+    <link href='../lib/jquery/css/ui-lightness/jquery-ui-1.8.24.custom.css' rel='stylesheet' type='text/css' />
+    <link href='http://fonts.googleapis.com/css?family=Anonymous+Pro:700' rel='stylesheet' type='text/css'>
+    <link href='../common/stylesheets/app.css' rel='stylesheet' type='text/css' />
+    <link href='../common/stylesheets/sparks.css' rel='stylesheet' type='text/css' />
+    <link href="../common/stylesheets/breadboard.css" rel="stylesheet" type="text/css" >
+
+    <style>
+      #HTMLLog{display:none;background:#000;color:#c00;height:100px;padding:10px;margin:10px;}
+    </style>
+
+    <script src="../sparks.js"></script>
+    <script>
+    </script>
+    <style>
+        #breadboard-wrapper {
+            position: absolute;
+            border: 2px solid black;
+            width: 800px;
+            left: 20%;
+            top: 61px;
+        }
+    </style>
+  </head>
+  <body>
+    <h2>Breadboard: Simple Circuit</h2>
+
+    <div id="breadboard-wrapper">
+    </div>
+    <script>
+      sparks.createWorkbench({
+        "showComponentDrawer": true,
+        "show_multimeter": "true",
+         "allow_move_yellow_probe": "true",
+         "circuit": [
+             {
+                 "type": "battery",
+                 "UID": "source",
+                 "voltage": 9
+             },
+             {
+                 "type": "resistor",
+                 "UID": "r1",
+                 "resistance": "100",
+                 "connections": "c17,c23",
+                 "label": "R1",
+                 "draggable": true
+             },
+             {
+                 "type": "resistor",
+                 "UID": "r1",
+                 "resistance": "100",
+                 "connections": "b11,b17",
+                 "label": "R1",
+                 "draggable": true
+             },
+             {
+                 "type": "wire",
+                 "connections": "left_negative19,a23",
+                 "draggable": true
+             },
+             {
+                 "type": "wire",
+                 "connections": "left_positive8,a11",
+                 "draggable": true
+             }
+         ],
+      }, "breadboard-wrapper")
+  </script>
+</html>

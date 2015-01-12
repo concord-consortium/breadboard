@@ -1085,6 +1085,8 @@ set_disable_multimeter_position: function (disabled) {
 module.exports = MultimeterBase;
 
 },{"../controllers/workbench-controller":18}],8:[function(require,module,exports){
+require('../../lib/apMessageBox');
+
 var LogEvent        = require('../models/log'),
     util            = require('../helpers/util'),
     logController   = require('../controllers/log-controller'),
@@ -1221,7 +1223,7 @@ extend(Multimeter, MultimeterBase, {
       title: "POW!",
       message: "<b>You just blew the fuse in your multimeter!</b><br><br> Remember not to pass too much current through it."+
       " We've replaced your fuse for you, but you lost some time.",
-      errorImage: "common/error-32x32.png",
+      errorImage: "data:image/png;base64,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",
       width: 400,
       height: 300
     });
@@ -1246,7 +1248,7 @@ extend(Multimeter, MultimeterBase, {
 
 module.exports = Multimeter;
 
-},{"../controllers/log-controller":17,"../helpers/util":23,"../models/log":28,"./multimeter-base":7}],9:[function(require,module,exports){
+},{"../../lib/apMessageBox":42,"../controllers/log-controller":17,"../helpers/util":23,"../models/log":28,"./multimeter-base":7}],9:[function(require,module,exports){
 var extend    = require('../helpers/util').extend,
     Component = require('./component');
 
@@ -3326,7 +3328,6 @@ require('../bower_components/jquery/jquery');
 require('../lib/jquery/jquery-ui-1.8.24.custom.min');
 require('../lib/jquery/plugins/jquery.event.drag-2.0.min');
 require('../bower_components/jquery-nearest/src/jquery.nearest.min');
-require('../lib/apMessageBox');
 require('../bower_components/circuit-solver/dist/circuitSolver.min');
 
 var workbenchController = require('./controllers/workbench-controller'),
@@ -3364,7 +3365,7 @@ sparks.workbenchController = workbenchController;
 
 module.exports = sparks;
 
-},{"../bower_components/circuit-solver/dist/circuitSolver.min":38,"../bower_components/jquery-nearest/src/jquery.nearest.min":39,"../bower_components/jquery/jquery":40,"../lib/apMessageBox":42,"../lib/jquery/jquery-ui-1.8.24.custom.min":43,"../lib/jquery/plugins/jquery.event.drag-2.0.min":44,"./controllers/workbench-controller":18,"./helpers/sound":20}],25:[function(require,module,exports){
+},{"../bower_components/circuit-solver/dist/circuitSolver.min":38,"../bower_components/jquery-nearest/src/jquery.nearest.min":39,"../bower_components/jquery/jquery":40,"../lib/jquery/jquery-ui-1.8.24.custom.min":43,"../lib/jquery/plugins/jquery.event.drag-2.0.min":44,"./controllers/workbench-controller":18,"./helpers/sound":20}],25:[function(require,module,exports){
 /* Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
  * Version: 1.0
  * LastModified: Dec 25 1999
@@ -19851,11 +19852,11 @@ stroke:"none",translation:[i,0]}))}g.scale(c,c,f,e).translate(a-f,b-e)}return g}
 
 },{}],42:[function(require,module,exports){
 /**
- * apMessageBox - apMessageBox is a JavaScript object designed to create quick, 
- * easy popup messages in your JavaScript applications. 
- * 
+ * apMessageBox - apMessageBox is a JavaScript object designed to create quick,
+ * easy popup messages in your JavaScript applications.
+ *
  * http://www.adampresley.com
- * 
+ *
  * This file is part of apMessageBox
  *
  * apMessageBox is free software: you can redistribute it and/or modify
@@ -19870,13 +19871,12 @@ stroke:"none",translation:[i,0]}))}g.scale(c,c,f,e).translate(a-f,b-e)}return g}
  *
  * You should have received a copy of the GNU General Public License
  * along with apMessageBox.  If not, see <http://www.gnu.org/licenses/>.
- *  
+ *
  * @author Adam Presley
  * @copyright Copyright (c) 2010 Adam Presley
  * @param {Object} config
  */
 var apMessageBox = apMessageBox || {};
-
 (function($) {
 
 	/**
@@ -19895,14 +19895,14 @@ var apMessageBox = apMessageBox || {};
 	 * 	* message - The message to display
 	 * 	* callback - A method to be executed once the dialog is closed
 	 * 	* scope - The scope in which to call the callback method
-	 * 
+	 *
 	 * @author Adam Presley
 	 * @class
 	 */
 	apMessageBox = function(config)
 	{
 		/**
-		 * Initializes the message box. This uses jQuery UI to do the 
+		 * Initializes the message box. This uses jQuery UI to do the
 		 * dialog box. When the box is closed the added DOM elements
 		 * are detached from the DOM.
 		 * @author Adam Presley
@@ -19915,9 +19915,9 @@ var apMessageBox = apMessageBox || {};
 			 * dialog.
 			 */
 			__buildDOM(function() {
-			
+
 				$("#" + __config.messageEl).html(__config.message);
-				
+
 				$("#" + __config.dialogEl).dialog({
 					modal: true,
 					width: __config.width,
@@ -19943,21 +19943,21 @@ var apMessageBox = apMessageBox || {};
 					},
 					buttons: __config.buttons
 				}).css("z-index","100");
-				
+
 			});
 		};
-		
+
 		var __buildDOM = function(callback)
 		{
 			/*
 			 * Outer message containing div and message <p>
 			 */
 			var outer = $("<div />");
-			var pEl = $("<p />").attr({ 
+			var pEl = $("<p />").attr({
 				id: __config.messageEl
 			}).css({ "text-align": "left" });
 			var img = null;
-			
+
 			/*
 			 * If this is an error message attach an error icon.
 			 * Otherwise attach an information icon.
@@ -19967,7 +19967,7 @@ var apMessageBox = apMessageBox || {};
 				img = $("<img />").attr({
 					src: __config.errorImage
 				}).css({ "float": "left", "margin-right": "10px" });
-				
+
 				$(outer).append(img);
 			}
 			else
@@ -19975,15 +19975,15 @@ var apMessageBox = apMessageBox || {};
 				img = $("<img />").attr({
 					src: __config.informationImage
 				}).css({ "float": "left", "margin-right": "10px" });
-				
+
 				$(outer).append(img);
 			}
-			
+
 			/*
 			 * Append the <p> to the <div>
 			 */
 			$(outer).append(pEl);
-			
+
 			/*
 			 * Build the dialog <div>. Attach the message and icon <div>
 			 * to it, then attach the dialog <div> to the body.
@@ -19997,14 +19997,14 @@ var apMessageBox = apMessageBox || {};
 
 			$(dialogEl).append(outer);
 			$("body").append(dialogEl);
-			
+
 			/*
 			 * When all is ready execute our callback which
 			 * uses jQuery UI to do the dialog box.
 			 */
 			$(document).ready(callback);
 		};
-		
+
 		var __config = $.extend({
 			dialogEl: "messageDialog",
 			messageEl: "message",
@@ -20024,7 +20024,7 @@ var apMessageBox = apMessageBox || {};
 			}
 		}, config);
 		var __this = this;
-		
+
 		this.initialize();
 	};
 
@@ -20032,27 +20032,31 @@ var apMessageBox = apMessageBox || {};
 	{
 		var msg = new apMessageBox(config || {});
 	};
-	
+
 	apMessageBox.error = function(config)
 	{
 		var newConfig = $.extend({
 			messageType: "error",
 			title: "Error!"
 		}, config);
-		
+
 		apMessageBox.show(newConfig);
 	};
-	
+
 	apMessageBox.information = function(config)
 	{
 		var newConfig = $.extend({
 			messageType: "information",
 			title: "Notice!"
 		}, config);
-		
+
 		apMessageBox.show(newConfig);
 	};
-	
+
+
+	window.apMessageBox = apMessageBox;
+
+
 })(jQuery);
 
 },{}],43:[function(require,module,exports){
