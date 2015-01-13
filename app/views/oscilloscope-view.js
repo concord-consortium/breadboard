@@ -113,7 +113,7 @@ OscilloscopeView.prototype = {
     this.popup.dialog('open').dialog("widget").position({
        my: 'left top',
        at: 'center top',
-       of: $("#breadboard_wrapper")
+       of: $(".breadboard")
     });
 
     window.scrollTo(scrollPosition[0], scrollPosition[1]);

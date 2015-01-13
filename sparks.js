@@ -9426,7 +9426,7 @@ FunctionGeneratorView.prototype = {
        my: 'left top',
        at: 'left top',
        offset: '5, 5',
-       of: $("#breadboard_wrapper")
+       of: $(".breadboard")
     });
 
     window.scrollTo(scrollPosition[0], scrollPosition[1]);
@@ -9665,7 +9665,7 @@ OscilloscopeView.prototype = {
     this.popup.dialog('open').dialog("widget").position({
        my: 'left top',
        at: 'center top',
-       of: $("#breadboard_wrapper")
+       of: $(".breadboard")
     });
 
     window.scrollTo(scrollPosition[0], scrollPosition[1]);

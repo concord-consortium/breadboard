@@ -68,7 +68,7 @@ FunctionGeneratorView.prototype = {
        my: 'left top',
        at: 'left top',
        offset: '5, 5',
-       of: $("#breadboard_wrapper")
+       of: $(".breadboard")
     });
 
     window.scrollTo(scrollPosition[0], scrollPosition[1]);
