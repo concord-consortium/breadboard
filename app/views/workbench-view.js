@@ -62,11 +62,11 @@ WorkbenchView.prototype = {
     this.workbench.meter.reset();
 
     if (this.workbench.showComponentDrawer || this.workbench.showComponentEditor) {
-      var drawer = $('<div id="component_drawer" class="retracted"></div>'),
-          button = $('<button id="add_components_btn">Add a new Component</button>');
+      var drawer = $('<div class="component_drawer retracted"></div>'),
+          button = $('<button class="add_components_btn">Add a new Component</button>');
 
-      // this.divs.addCompsWrapper.append(drawer);
-      // this.divs.addCompsWrapper.append(button);
+      this.divs.addCompsWrapper.append(drawer);
+      this.divs.addCompsWrapper.append(button);
 
       var addComponentsView = new AddComponentsView(this.workbench, this.breadboardController);
 

@@ -6889,7 +6889,7 @@ AddComponentsView = function(workbench, breadboardController){
       component;
 
   this.section = workbench;
-  this.$drawer = $("#component_drawer").empty();
+  this.$drawer = $(".component_drawer").empty();
 
   this.lastHighlightedHole = null;
 
@@ -6906,7 +6906,7 @@ AddComponentsView = function(workbench, breadboardController){
     component = embeddableComponents[componentName];
 
     this.$drawer.append(
-     $("<img class='add_"+componentName+"' class='add_component'>")
+     $("<img class='add_"+componentName+" add_component'>")
       .attr("src", component.image)
       .css("width", component.imageWidth)
       .data("type", componentName)
@@ -6930,7 +6930,7 @@ AddComponentsView = function(workbench, breadboardController){
   }
 
   // todo: don't add this twice
-  $("#breadboard").droppable({
+  $(".breadboard").droppable({
     drop: function(evt, ui) {
       var type = ui.draggable.data("type"),
           embeddableComponent = embeddableComponents[type],
@@ -6943,13 +6943,9 @@ AddComponentsView = function(workbench, breadboardController){
           $editor, props, uid, comp;
 
       if (embeddableComponent.leadDistance) {
-        console.log(hole)
         var num = /\d*$/.exec(hole)[0] * 1;
-        console.log(num)
         num = Math.max(num-embeddableComponent.leadDistance, 1);
-        console.log(num)
         loc = loc.replace(/(\d*)$/, num);
-        console.log(loc)
       }
 
       // insert component into highlighted hole
@@ -6959,12 +6955,12 @@ AddComponentsView = function(workbench, breadboardController){
        "connections": loc
       };
       props[embeddableComponent.property] = embeddableComponent.initialValue;
-      uid = this.breadboardController.insertComponent(type, props);
+      uid = self.breadboardController.insertComponent(type, props);
 
-      comp = this.breadboardController.getComponents()[uid];
+      comp = self.breadboardController.getComponents()[uid];
 
       // move leads to correct width
-      this.breadboardController.checkLocation(comp);
+      self.breadboardController.checkLocation(comp);
 
       // update meters
       workbench.meter.update();
@@ -6978,8 +6974,8 @@ AddComponentsView = function(workbench, breadboardController){
 AddComponentsView.prototype = {
 
   openPane: function() {
-    $("#component_drawer").animate({left: 0}, 300, function(){
-      $("#add_components").css("overflow", "visible");
+    $(".component_drawer").animate({left: 0}, 300, function(){
+      $(".add_components").css("overflow", "visible");
     });
   },
 
@@ -10311,11 +10307,11 @@ WorkbenchView.prototype = {
     this.workbench.meter.reset();
 
     if (this.workbench.showComponentDrawer || this.workbench.showComponentEditor) {
-      var drawer = $('<div id="component_drawer" class="retracted"></div>'),
-          button = $('<button id="add_components_btn">Add a new Component</button>');
+      var drawer = $('<div class="component_drawer retracted"></div>'),
+          button = $('<button class="add_components_btn">Add a new Component</button>');
 
-      // this.divs.addCompsWrapper.append(drawer);
-      // this.divs.addCompsWrapper.append(button);
+      this.divs.addCompsWrapper.append(drawer);
+      this.divs.addCompsWrapper.append(button);
 
       var addComponentsView = new AddComponentsView(this.workbench, this.breadboardController);
 
