@@ -1,6 +1,7 @@
 require('./breadboard-svg-view');
 
 var AddComponentsView     = require('./add-components-view'),
+    EditComponentsView    = require('./edit-components-view'),
     FunctionGeneratorView = require('./function-generator-view'),
     OscilloscopeView      = require('./oscilloscope-view'),
     sound                 = require('../helpers/sound'),
@@ -62,13 +63,17 @@ WorkbenchView.prototype = {
     this.workbench.meter.reset();
 
     if (this.workbench.showComponentDrawer || this.workbench.showComponentEditor) {
+      this.editComponentsView = new EditComponentsView(workbenchController, this.breadboardController);
+    }
+
+    if (this.workbench.showComponentDrawer) {
       var drawer = $('<div class="component_drawer retracted"></div>'),
           button = $('<button class="add_components_btn">Add a new Component</button>');
 
       this.divs.addCompsWrapper.append(drawer);
       this.divs.addCompsWrapper.append(button);
 
-      var addComponentsView = new AddComponentsView(this.workbench, this.breadboardController);
+      var addComponentsView = new AddComponentsView(workbenchController, this.breadboardController);
 
       if (this.workbench.showComponentDrawer) {
         this.divs.addCompsWrapper.show();
@@ -132,6 +137,10 @@ WorkbenchView.prototype = {
       $el = $('<div class="'+clazz+'"></div>').appendTo(this.container);
     if (hide) $el.hide();
     return $el;
+  },
+
+  showComponentEditor: function(id) {
+    this.editComponentsView.showEditor(id);
   }
 }
 

@@ -1,5 +1,4 @@
-var unit        = require('../helpers/unit'),
-    workbenchController;
+var workbenchController;
 
 embeddableComponents = {
   resistor: {
@@ -27,23 +26,15 @@ embeddableComponents = {
   }
 }
 
-AddComponentsView = function(workbench, breadboardController){
-  workbenchController = require('../controllers/workbench-controller');
+AddComponentsView = function(workbenchController, breadboardController){
   this.breadboardController = breadboardController;
 
   var self = this,
       component;
 
-  this.section = workbench;
   this.$drawer = $(".component_drawer").empty();
 
   this.lastHighlightedHole = null;
-
-  if (workbenchController.breadboardView) {
-    workbenchController.breadboardView.setRightClickFunction(this, "showEditor");
-  } else {  // queue it up
-    workbench.view.setRightClickFunction(this, "showEditor");
-  }
 
   // create drawer
   for (componentName in embeddableComponents) {
@@ -109,10 +100,10 @@ AddComponentsView = function(workbench, breadboardController){
       self.breadboardController.checkLocation(comp);
 
       // update meters
-      workbench.meter.update();
+      workbenchController.workbench.meter.update();
 
       // show editor
-      self.showEditor(uid);
+      workbenchController.workbench.view.showComponentEditor(uid);
     }
   })
 };
@@ -123,55 +114,6 @@ AddComponentsView.prototype = {
     $(".component_drawer").animate({left: 0}, 300, function(){
       $(".add_components").css("overflow", "visible");
     });
-  },
-
-  showEditor: function(uid) {
-    var comp = this.breadboardController.getComponents()[uid],
-        section = workbenchController.workbench,
-        $propertyEditor = null,
-        self = this;
-    // create editor tooltip
-    possibleValues = comp.getEditablePropertyValues();
-
-    componentValueChanged = function (evt, ui) {
-      var val = possibleValues[ui.value],
-          eng = unit.toEngineering(val, comp.editableProperty.units);
-      $(".prop_value_"+uid).text(eng.value + eng.units);
-      comp.changeEditableValue(val);
-      section.meter.update();
-    }
-
-    if (comp.isEditable) {
-      propertyName = comp.editableProperty.name.charAt(0).toUpperCase() + comp.editableProperty.name.slice(1);
-      initialValue = comp[comp.editableProperty.name];
-      initialValueEng = unit.toEngineering(initialValue, comp.editableProperty.units);
-      initialValueText = initialValueEng.value + initialValueEng.units;
-      $propertyEditor = $("<div>").append(
-        $("<div>").slider({
-          max: possibleValues.length-1,
-          slide: componentValueChanged,
-          value: possibleValues.indexOf(initialValue)
-        })
-      ).append(
-        $("<div>").html(
-          propertyName + ": <span class='prop_value_"+uid+"'>"+initialValueText+"</span>"
-          )
-      );
-    }
-
-    $editor = $("<div class='editor'>").append(
-      $("<h3>").text("Edit "+comp.componentTypeName)
-    ).append(
-      $propertyEditor
-    ).append(
-      $("<button>").text("Remove").on('click', function() {
-        self.breadboardController.removeComponent(comp);
-        section.meter.update();
-        $(".speech-bubble").trigger('mouseleave');
-      })
-    ).css( { width: 130, textAlign: "right" } );
-
-    workbenchController.breadboardView.showTooltip(uid, $editor);
   }
 
 };
