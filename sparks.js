@@ -2169,10 +2169,12 @@ BreadboardController.prototype = {
 
     // update view
     if (workbenchController.breadboardView) {
-      if (newComponent.getViewArguments && newComponent.hasValidConnections() && newComponent.kind !== "battery" && !newComponent.hide)
+      if (newComponent.getViewArguments && newComponent.hasValidConnections() && newComponent.kind !== "battery" && !newComponent.hidden) {
         workbenchController.breadboardView.addComponent(newComponent.getViewArguments());
-      if (newComponent.kind == "battery" || newComponent.kind == "function generator" && !newComponent.hide) // FIXME
+      }
+      if ((newComponent.kind == "battery" || newComponent.kind == "function generator") && !newComponent.hidden){ // FIXME
         workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
+      }
     }
 
     return newComponent.UID;
@@ -2439,11 +2441,12 @@ BreadboardController.prototype = {
 
   updateView: function() {
     $.each(breadboard.components, function(i, component) {
-      if (component.getViewArguments && component.hasValidConnections() && component.kind !== "battery" && !component.hide) {
+      if (component.getViewArguments && component.hasValidConnections() && component.kind !== "battery" && !component.hidden) {
         workbenchController.breadboardView.addComponent(component.getViewArguments());
       }
-      if (component.kind == "battery" || component.kind == "function generator" && !component.hide) // FIXME
+      if ((component.kind == "battery" || component.kind == "function generator") && !component.hidden) { // FIXME
         workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
+      }
     });
   }
 
@@ -9344,7 +9347,7 @@ EditComponentsView.prototype = {
       $("<button>").text("Remove").on('click', function() {
         self.breadboardController.removeComponent(comp);
         section.meter.update();
-        $(".speech-bubble").trigger('mouseleave');
+        // $(".speech-bubble").trigger('mouseleave');
       })
     ).css( { width: 130, textAlign: "right" } );
 
@@ -10277,6 +10280,11 @@ WorkbenchView.prototype = {
       throw new Error("No DOM element found with the id "+elId);
     }
 
+    if (this.container.classList)
+      this.container.classList.add("breadboard_container");
+    else
+      this.container.className += ' ' + "breadboard_container";
+
     this.divs = {
       breadboard:       this.getOrCreateDiv('breadboard'),
       scope:            this.getOrCreateDiv('oscope_mini'),
@@ -10310,7 +10318,7 @@ WorkbenchView.prototype = {
     });
 
     var source = this.breadboardController.getComponents().source;
-    if (source && source.frequency) {
+    if (source && source.frequency && !source.hidden) {
       var fgView = new FunctionGeneratorView(source);
       var $fg = fgView.getView();
       this.divs.fg.append($fg);

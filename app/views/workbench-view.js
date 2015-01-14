@@ -21,6 +21,11 @@ WorkbenchView.prototype = {
       throw new Error("No DOM element found with the id "+elId);
     }
 
+    if (this.container.classList)
+      this.container.classList.add("breadboard_container");
+    else
+      this.container.className += ' ' + "breadboard_container";
+
     this.divs = {
       breadboard:       this.getOrCreateDiv('breadboard'),
       scope:            this.getOrCreateDiv('oscope_mini'),
@@ -54,7 +59,7 @@ WorkbenchView.prototype = {
     });
 
     var source = this.breadboardController.getComponents().source;
-    if (source && source.frequency) {
+    if (source && source.frequency && !source.hidden) {
       var fgView = new FunctionGeneratorView(source);
       var $fg = fgView.getView();
       this.divs.fg.append($fg);
