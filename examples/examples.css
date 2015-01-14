@@ -26,3 +26,14 @@ h2 {
     width: 800px;
     margin: 0 auto;
 }
+.editors {
+  text-align:center;
+}
+.editors>div {
+  display:inline-block;
+}
+.editors textarea {
+  margin: 5px;
+  width: 393px;
+  height: 165px;
+}

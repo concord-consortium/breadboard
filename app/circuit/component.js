@@ -184,7 +184,30 @@ Component.prototype = {
   // used by the component edit view. Right now we assume any editable component
   // has only one single editable property. However, even if we have components with
   // multiple editable properties, we can keep this API and pass in an array
-  changeEditableValue: function(val) { }
+  changeEditableValue: function(val) { },
+
+  serialize: function() {
+    var jsonComp = {
+      type: this.type,
+      UID:  this.UID
+    };
+
+    if (this.label)             jsonComp.label = this.label;
+    if (this.connections)       jsonComp.connections = this.getLocation();
+    if (this.resistance)        jsonComp.resistance = this.resistance;
+    if (this.nominalResistance) jsonComp.nominalResistance = this.nominalResistance;
+    if (this.voltage)           jsonComp.voltage = this.voltage;
+    if (this.amplitude)         jsonComp.amplitude = this.amplitude;
+    if (this.frequencies)       jsonComp.frequencies = this.frequencies;
+    if (this.initialFrequency)  jsonComp.initialFrequency = this.initialFrequency;
+    if (this.capacitance)       jsonComp.capacitance = this.capacitance;
+    if (this.inductance)        jsonComp.inductance = this.inductance;
+    if (this.impedance)         jsonComp.impedance = this.impedance;
+    if (this.draggable)         jsonComp.draggable = this.draggable;
+    if (this.hidden)            jsonComp.hidden = this.hidden;
+
+    return jsonComp;
+  }
 
 };
 

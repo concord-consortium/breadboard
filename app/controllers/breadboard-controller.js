@@ -496,6 +496,17 @@ BreadboardController.prototype = {
         workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
       }
     });
+  },
+
+  // returns an array of serialized components
+  serialize: function() {
+    var circuit = [];
+
+    $.each(breadboard.components, function(i, component) {
+      circuit.push(component.serialize());
+    });
+
+    return circuit;
   }
 
 }

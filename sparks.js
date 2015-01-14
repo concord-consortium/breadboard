@@ -400,7 +400,30 @@ Component.prototype = {
   // used by the component edit view. Right now we assume any editable component
   // has only one single editable property. However, even if we have components with
   // multiple editable properties, we can keep this API and pass in an array
-  changeEditableValue: function(val) { }
+  changeEditableValue: function(val) { },
+
+  serialize: function() {
+    var jsonComp = {
+      type: this.type,
+      UID:  this.UID
+    };
+
+    if (this.label)             jsonComp.label = this.label;
+    if (this.connections)       jsonComp.connections = this.getLocation();
+    if (this.resistance)        jsonComp.resistance = this.resistance;
+    if (this.nominalResistance) jsonComp.nominalResistance = this.nominalResistance;
+    if (this.voltage)           jsonComp.voltage = this.voltage;
+    if (this.amplitude)         jsonComp.amplitude = this.amplitude;
+    if (this.frequencies)       jsonComp.frequencies = this.frequencies;
+    if (this.initialFrequency)  jsonComp.initialFrequency = this.initialFrequency;
+    if (this.capacitance)       jsonComp.capacitance = this.capacitance;
+    if (this.inductance)        jsonComp.inductance = this.inductance;
+    if (this.impedance)         jsonComp.impedance = this.impedance;
+    if (this.draggable)         jsonComp.draggable = this.draggable;
+    if (this.hidden)            jsonComp.hidden = this.hidden;
+
+    return jsonComp;
+  }
 
 };
 
@@ -2448,6 +2471,17 @@ BreadboardController.prototype = {
         workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
       }
     });
+  },
+
+  // returns an array of serialized components
+  serialize: function() {
+    var circuit = [];
+
+    $.each(breadboard.components, function(i, component) {
+      circuit.push(component.serialize());
+    });
+
+    return circuit;
   }
 
 }
@@ -2551,6 +2585,8 @@ WorkbenchController.prototype = {
     var workbench = new Workbench(null, this.breadboardController);
     this.workbench = workbench;
 
+    this.initialProperties = props;
+
     workbench.circuit = props.circuit;
     if (workbench.circuit) workbench.circuit.referenceFrequency = props.referenceFrequency;
 
@@ -2625,6 +2661,12 @@ WorkbenchController.prototype = {
       workbench.meter.oscope = null;
     }
     sparks.activity.view.showOScope(visible);
+  },
+
+  serialize: function() {
+    var json = this.initialProperties;
+    json.circuit = this.breadboardController.serialize();
+    return JSON.stringify(json, null, '\t');
   }
 
 };
@@ -9347,7 +9389,7 @@ EditComponentsView.prototype = {
       $("<button>").text("Remove").on('click', function() {
         self.breadboardController.removeComponent(comp);
         section.meter.update();
-        // $(".speech-bubble").trigger('mouseleave');
+        $(".speech-bubble").trigger('mouseleave');
       })
     ).css( { width: 130, textAlign: "right" } );
 

@@ -18,6 +18,8 @@ WorkbenchController.prototype = {
     var workbench = new Workbench(null, this.breadboardController);
     this.workbench = workbench;
 
+    this.initialProperties = props;
+
     workbench.circuit = props.circuit;
     if (workbench.circuit) workbench.circuit.referenceFrequency = props.referenceFrequency;
 
@@ -92,6 +94,12 @@ WorkbenchController.prototype = {
       workbench.meter.oscope = null;
     }
     sparks.activity.view.showOScope(visible);
+  },
+
+  serialize: function() {
+    var json = this.initialProperties;
+    json.circuit = this.breadboardController.serialize();
+    return JSON.stringify(json, null, '\t');
   }
 
 };
