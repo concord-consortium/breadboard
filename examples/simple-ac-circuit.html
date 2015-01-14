@@ -6,28 +6,25 @@
     <link href='../common/stylesheets/sparks.css' rel='stylesheet' type='text/css' />
     <link href="../common/stylesheets/breadboard.css" rel="stylesheet" type="text/css" >
 
-    <style>
-      #HTMLLog{display:none;background:#000;color:#c00;height:100px;padding:10px;margin:10px;}
-    </style>
+    <link href="examples.css" rel="stylesheet" type="text/css" >
 
     <script src="../sparks.js"></script>
-    <script>
-    </script>
-    <style>
-        #breadboard-wrapper {
-            position: absolute;
-            border: 2px solid black;
-            width: 800px;
-            left: 20%;
-            top: 61px;
-        }
-    </style>
   </head>
   <body>
-    <h2>Breadboard: Simple Circuit</h2>
+
+    <div class="description">
+
+        <h2>Breadboard: Simple AC Circuit</h2>
+        <p>
+            This example shows a simple AC circuit with a function generator and an oscilloscope. You can edit the values
+            of the resistor and capacitor by right-clicking or double-clicking them, and you can change the frequency and
+            amplitude of the function generator and the view settings on the o-scope by clicking on them.
+        </p>
+    </div>
 
     <div id="breadboard-wrapper">
     </div>
+
     <script>
       sparks.createWorkbench({
         "showComponentEditor": true,

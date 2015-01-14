@@ -6,28 +6,23 @@
     <link href='../common/stylesheets/sparks.css' rel='stylesheet' type='text/css' />
     <link href="../common/stylesheets/breadboard.css" rel="stylesheet" type="text/css" >
 
-    <style>
-      #HTMLLog{display:none;background:#000;color:#c00;height:100px;padding:10px;margin:10px;}
-    </style>
+    <link href="examples.css" rel="stylesheet" type="text/css" >
 
     <script src="../sparks.js"></script>
-    <script>
-    </script>
-    <style>
-        #breadboard-wrapper {
-            position: absolute;
-            border: 2px solid black;
-            width: 800px;
-            left: 20%;
-            top: 61px;
-        }
-    </style>
   </head>
   <body>
-    <h2>Breadboard: Simple Circuit</h2>
+    <h2>Breadboard: Build an AC Circuit</h2>
+
+    <div class="description">
+        <p>
+            This example shows how the Component Drawer and moveable, editable components can be used
+            to allow a student to create arbitrary circuits.
+        </p>
+    </div>
 
     <div id="breadboard-wrapper">
     </div>
+
     <script>
       sparks.createWorkbench({
         "showComponentDrawer": true,
@@ -48,7 +43,7 @@
              },
              {
                  "type": "wire",
-                 "connections": "left_negative19,a23",
+                 "connections": "left_negative20,a20",
                  "draggable": true
              },
              {
