@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <link href='../lib/jquery/css/ui-lightness/jquery-ui-1.8.24.custom.css' rel='stylesheet' type='text/css' />
+    <link href='http://fonts.googleapis.com/css?family=Anonymous+Pro:700' rel='stylesheet' type='text/css'>
+    <link href='../common/stylesheets/app.css' rel='stylesheet' type='text/css' />
+    <link href='../common/stylesheets/sparks.css' rel='stylesheet' type='text/css' />
+    <link href="../common/stylesheets/breadboard.css" rel="stylesheet" type="text/css" >
+
+    <link href="examples.css" rel="stylesheet" type="text/css" >
+
+    <script src="../sparks.js"></script>
+  </head>
+  <body>
+
+    <div id="breadboard-wrapper">
+    </div>
+
+    <script>
+      // a simple API that could be used by external applications
+
+      function loadWorkbench(workbenchDef) {
+        sparks.createWorkbench(workbenchDef, "breadboard-wrapper");
+      }
+
+      function loadWorkbenchFromJSON(json) {
+        var workbenchDef = JSON.parse(json);
+        loadWorkbench(workbenchDef);
+      }
+
+      function saveWorkbench() {
+        return sparks.workbenchController.serialize();
+      }
+
+      // func will be called  each time an event is generated, with
+      // an object representing the event
+      function addLogListener(func) {
+        sparks.logController.addListener(func);
+      }
+
+      // load a blank workbench
+      var blankWorkbench = {
+        "showComponentEditor": true,
+         "circuit": [
+         ],
+      }
+      loadWorkbench(blankWorkbench);
+  </script>
+</html>

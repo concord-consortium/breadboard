@@ -89,8 +89,8 @@
 
       // setup load and save functions
 
-      function loadWorkbench(json) {
-        sparks.createWorkbench(json, "breadboard-wrapper");
+      function loadWorkbench(workbenchDef) {
+        sparks.createWorkbench(workbenchDef, "breadboard-wrapper");
       }
 
       function saveWorkbench() {
@@ -98,14 +98,14 @@
       }
 
       document.getElementById("load_button").onclick = function() {
-        var text = document.getElementById("load_textarea").value,
-            json;
-        // try {
-            json = JSON.parse(text);
-            loadWorkbench(json);
-        // } catch (e) {               // catch malformed json
-            // alert("Oops, there was a problem with your JSON.\nHere is the probably unhelpful error message:\n\n"+e);
-        // }
+        var json = document.getElementById("load_textarea").value,
+            workbenchDef;
+        try {
+            workbenchDef = JSON.parse(json);
+            loadWorkbench(workbenchDef);
+        } catch (e) {               // catch malformed json
+            alert("Oops, there was a problem with your JSON.\nHere is the probably unhelpful error message:\n\n"+e);
+        }
       }
 
       document.getElementById("save_button").onclick = saveWorkbench;
