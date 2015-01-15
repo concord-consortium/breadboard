@@ -26,11 +26,11 @@ After any change to the script files in app, run this command
 
 Your changes should be built into sparks.js
 
-We will soon add an automatic build process using Watchify or Guard.
+(We will soon add an automatic build process using Watchify or Guard.)
 
 ### Testing the breadboard library locally
 
-In order to load the example activities in the /examples folder, you need to serve the contents of the /breadboard directory using a local server, such as Python's SimpleHTTPServer or Apache.
+In order to load the example activities in the /examples folder, you just need to serve the contents of the /breadboard directory using a local server, such as Python's SimpleHTTPServer or Live Server.
 
 The easiest way to do this is using python:
 
@@ -42,6 +42,18 @@ The easiest way to do this is using python:
 The server runs on port 8000 by default. Open a browser and navigate to
 
 http://localhost:8000/examples/
+
+Alternatively, [Live Server](https://www.npmjs.com/package/live-server) will reload pages automatically when it detects changes.
+
+```
+  npm install -g live-server
+  cd breadboard
+  live-server
+```
+
+The server runs on port 8080 by default. Open a browser and navigate to
+
+http://localhost:8080/examples/
 
 
 ### Understanding the code

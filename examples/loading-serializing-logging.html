@@ -15,7 +15,8 @@
 
     <div class="description">
         <p>
-            This example shows how we can load and serialize an interactive via scripts.
+            This example shows how we can load and serialize an interactive via scripts, and how we can log to an
+            arbitrary logger (the lowest text area).
         </p>
     </div>
 
@@ -47,43 +48,43 @@
     <script>
         // setup initial JSON in first text area
         var initialJSON = {
-        "showComponentEditor": true,
-        "show_multimeter": "true",
-         "allow_move_yellow_probe": "true",
-         "circuit": [
-             {
-                 "type": "battery",
-                 "UID": "source",
-                 "voltage": 9
-             },
-             {
-                 "type": "resistor",
-                 "UID": "r1",
-                 "resistance": "100",
-                 "connections": "c17,c23",
-                 "label": "R1",
-                 "draggable": true
-             },
-             {
-                 "type": "resistor",
-                 "UID": "r2",
-                 "resistance": "100",
-                 "connections": "b11,b17",
-                 "label": "R1",
-                 "draggable": true
-             },
-             {
-                 "type": "wire",
-                 "connections": "left_negative19,a23",
-                 "draggable": true
-             },
-             {
-                 "type": "wire",
-                 "connections": "left_positive8,a11",
-                 "draggable": true
-             }
-         ],
-      };
+            "showComponentEditor": true,
+            "show_multimeter": "true",
+             "allow_move_yellow_probe": "true",
+             "circuit": [
+                 {
+                     "type": "battery",
+                     "UID": "source",
+                     "voltage": 9
+                 },
+                 {
+                     "type": "resistor",
+                     "UID": "r1",
+                     "resistance": "100",
+                     "connections": "c17,c23",
+                     "label": "R1",
+                     "draggable": true
+                 },
+                 {
+                     "type": "resistor",
+                     "UID": "r2",
+                     "resistance": "100",
+                     "connections": "b11,b17",
+                     "label": "R1",
+                     "draggable": true
+                 },
+                 {
+                     "type": "wire",
+                     "connections": "left_negative19,a23",
+                     "draggable": true
+                 },
+                 {
+                     "type": "wire",
+                     "connections": "left_positive8,a11",
+                     "draggable": true
+                 }
+             ],
+          };
 
       document.getElementById("load_textarea").value = JSON.stringify(initialJSON, null, '\t');
 
