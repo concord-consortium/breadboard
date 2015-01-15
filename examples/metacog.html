@@ -57,6 +57,8 @@
         on_any_event: function() {}
       });
 
+      Metacog.Logger.start();
+
       addLogListener(function(evt) {
         Metacog.Router.sendEvent({
           event: 'on_any_event',
