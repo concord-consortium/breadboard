@@ -1,0 +1,118 @@
+<html>
+  <head>
+    <link href='../lib/jquery/css/ui-lightness/jquery-ui-1.8.24.custom.css' rel='stylesheet' type='text/css' />
+    <link href='http://fonts.googleapis.com/css?family=Anonymous+Pro:700' rel='stylesheet' type='text/css'>
+    <link href='../common/stylesheets/app.css' rel='stylesheet' type='text/css' />
+    <link href='../common/stylesheets/sparks.css' rel='stylesheet' type='text/css' />
+    <link href="../common/stylesheets/breadboard.css" rel="stylesheet" type="text/css" >
+
+    <link href="examples.css" rel="stylesheet" type="text/css" >
+
+    <script src="../sparks.js"></script>
+
+    <script src="http://cdn.metacog.com/metacog-2.0.0.js" type="text/javascript"></script>
+  </head>
+  <body>
+
+    <div id="breadboard-wrapper">
+    </div>
+
+    <script>
+      // a simple API that could be used by external applications
+
+      function loadWorkbench(workbenchDef) {
+        sparks.createWorkbench(workbenchDef, "breadboard-wrapper");
+      }
+
+      function loadWorkbenchFromJSON(json) {
+        var workbenchDef = JSON.parse(json);
+        loadWorkbench(workbenchDef);
+      }
+
+      function saveWorkbench() {
+        return sparks.workbenchController.serialize();
+      }
+
+      // func will be called  each time an event is generated, with
+      // an object representing the event
+      function addLogListener(func) {
+        sparks.logController.addListener(func);
+      }
+
+      // *** METAGOG STUFF ***
+
+      Metacog.init({
+        "session": {
+            "publisher_id": 'f5f4a2c2',
+            "application_id": '22d4cd0305eea8b55cf928b77e0a3ed2',
+            "widget_id": 'ac-circuit',
+            "learner_id": "User-"+Math.random(),
+            "session_id": "Session-"+Date.now()
+        },
+        log_tab: true,
+        mode:"production"
+      });
+
+      Metacog.Router.init({
+        on_any_event: function() {}
+      });
+
+      addLogListener(function(evt) {
+        Metacog.Router.sendEvent({
+          event: 'on_any_event',
+          data: evt,
+          type: Metacog.EVENT_TYPE.MODEL
+        });
+      });
+
+
+
+      // load an interactive
+      var workbench = {
+        "showComponentEditor": true,
+        "show_oscilloscope": "true",
+         "allow_move_yellow_probe": "true",
+         "circuit": [
+             {
+                 "type": "function generator",
+                 "UID": "source",
+                 "frequencies": [
+                     "logarithmic",
+                     100,
+                     100000,
+                     1001
+                 ],
+                 "initialFrequency": 400,
+                 "amplitude": 20
+             },
+             {
+                 "type": "resistor",
+                 "UID": "r1",
+                 "resistance": "100",
+                 "connections": "c17,c23",
+                 "label": "R1",
+                 "draggable": true
+             },
+             {
+                 "type": "capacitor",
+                 "UID": "c1",
+                 "capacitance": "2.0e-07",
+                 "connections": "b11,b17",
+                 "label": "C1",
+                 "draggable": true
+             },
+             {
+                 "type": "wire",
+                 "connections": "left_negative19,a23",
+                 "draggable": true
+             },
+             {
+                 "type": "wire",
+                 "connections": "left_positive8,a11",
+                 "draggable": true
+             }
+         ],
+      }
+      loadWorkbench(workbench);
+  </script>
+</html>
