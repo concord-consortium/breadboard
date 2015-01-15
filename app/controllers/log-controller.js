@@ -10,6 +10,7 @@ Log = function(startTime){
 
 LogController = function(){
   this.currentLog = null;
+  this.listeners = [];
 };
 
 LogController.prototype = {
@@ -25,6 +26,11 @@ LogController.prototype = {
   addEvent: function (name, value) {
     var evt = new LogEvent(name, value, new Date().valueOf());
     this.currentLog.events.push(evt);
+    for (i in this.listeners) {
+      if (typeof this.listeners[i] == "function") {
+        this.listeners[i](evt);
+      }
+    }
   },
 
   numEvents: function(log, name) {
@@ -62,6 +68,10 @@ LogController.prototype = {
       }
     });
     return count;
+  },
+
+  addListener: function(func) {
+    this.listeners.push(func);
   }
 
 };

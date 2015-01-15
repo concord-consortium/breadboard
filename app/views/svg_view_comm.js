@@ -45,7 +45,8 @@ breadboardComm.connectionMade = function(workbenchController, component, hole) {
   }
   logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
     "type": "connect lead",
-    "location": hole});
+    "location": hole
+  });
   workbench.meter.update();
 };
 
@@ -69,15 +70,26 @@ breadboardComm.connectionBroken = function(workbenchController, component, hole)
 breadboardComm.probeAdded = function(workbenchController, meter, color, location) {
   workbenchController.workbench.meter.setProbeLocation("probe_"+color, location);
   sound.play(sound.click)
+  logController.addEvent(LogEvent.ATTACHED_PROBE, {
+    "color": color,
+    "location": location
+  });
 };
 
 breadboardComm.probeRemoved = function(workbenchController, meter, color) {
   workbenchController.workbench.meter.setProbeLocation("probe_"+color, null);
+  logController.addEvent(LogEvent.DETACHED_PROBE, {
+    "color": color,
+    "location": location
+  });
 };
 
 breadboardComm.dmmDialMoved = function(workbenchController, value) {
   workbenchController.workbench.meter.dmm.dialPosition = value;
   workbenchController.workbench.meter.update();
+  logController.addEvent(LogEvent.MOVED_DMM_DIAL, {
+    "valie": value
+  });
 };
 
 module.exports = breadboardComm;

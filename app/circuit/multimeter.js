@@ -127,7 +127,8 @@ extend(Multimeter, MultimeterBase, {
         "dial_position": this.dialPosition,
         "red_probe": this.redProbeConnection,
         "black_probe": this.blackProbeConnection,
-        "result": this.displayText});
+        "result": this.displayText
+      });
     }
   },
 

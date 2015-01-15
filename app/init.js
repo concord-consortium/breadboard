@@ -36,5 +36,7 @@ sparks.removeComponent = function(uid) {
 
 // this is probably too much access for an API, but doing it now for simplicity
 sparks.workbenchController = workbenchController;
+sparks.logController = workbenchController.logController;
+
 
 module.exports = sparks;

@@ -1237,7 +1237,8 @@ extend(Multimeter, MultimeterBase, {
         "dial_position": this.dialPosition,
         "red_probe": this.redProbeConnection,
         "black_probe": this.blackProbeConnection,
-        "result": this.displayText});
+        "result": this.displayText
+      });
     }
   },
 
@@ -2502,6 +2503,7 @@ Log = function(startTime){
 
 LogController = function(){
   this.currentLog = null;
+  this.listeners = [];
 };
 
 LogController.prototype = {
@@ -2517,6 +2519,11 @@ LogController.prototype = {
   addEvent: function (name, value) {
     var evt = new LogEvent(name, value, new Date().valueOf());
     this.currentLog.events.push(evt);
+    for (i in this.listeners) {
+      if (typeof this.listeners[i] == "function") {
+        this.listeners[i](evt);
+      }
+    }
   },
 
   numEvents: function(log, name) {
@@ -2554,6 +2561,10 @@ LogController.prototype = {
       }
     });
     return count;
+  },
+
+  addListener: function(func) {
+    this.listeners.push(func);
   }
 
 };
@@ -2575,6 +2586,7 @@ WorkbenchController = function(){
   this.workbench = null;    // for now
   this.breadboardController = breadboardController;
   this.breadboardController.init(this);
+  this.logController = logController;
 };
 
 WorkbenchController.prototype = {
@@ -3377,6 +3389,8 @@ sparks.removeComponent = function(uid) {
 
 // this is probably too much access for an API, but doing it now for simplicity
 sparks.workbenchController = workbenchController;
+sparks.logController = workbenchController.logController;
+
 
 module.exports = sparks;
 
@@ -6497,6 +6511,9 @@ LogEvent.CHANGED_TUTORIAL = "Changed tutorial";
 LogEvent.BLEW_FUSE = "Blew fuse";
 LogEvent.DMM_MEASUREMENT = "DMM measurement";
 LogEvent.CHANGED_CIRCUIT = "Changed circuit";
+LogEvent.ATTACHED_PROBE = "Attached probe";
+LogEvent.DETACHED_PROBE = "Detached probe";
+LogEvent.MOVED_DMM_DIAL = "Moved DMM dial";
 LogEvent.OSCOPE_MEASUREMENT = "OScope measurement";
 LogEvent.OSCOPE_V1_SCALE_CHANGED = "OScope V1 scale changed";
 LogEvent.OSCOPE_V2_SCALE_CHANGED = "OScope V2 scale changed";
@@ -10274,7 +10291,8 @@ breadboardComm.connectionMade = function(workbenchController, component, hole) {
   }
   logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
     "type": "connect lead",
-    "location": hole});
+    "location": hole
+  });
   workbench.meter.update();
 };
 
@@ -10298,15 +10316,26 @@ breadboardComm.connectionBroken = function(workbenchController, component, hole)
 breadboardComm.probeAdded = function(workbenchController, meter, color, location) {
   workbenchController.workbench.meter.setProbeLocation("probe_"+color, location);
   sound.play(sound.click)
+  logController.addEvent(LogEvent.ATTACHED_PROBE, {
+    "color": color,
+    "location": location
+  });
 };
 
 breadboardComm.probeRemoved = function(workbenchController, meter, color) {
   workbenchController.workbench.meter.setProbeLocation("probe_"+color, null);
+  logController.addEvent(LogEvent.DETACHED_PROBE, {
+    "color": color,
+    "location": location
+  });
 };
 
 breadboardComm.dmmDialMoved = function(workbenchController, value) {
   workbenchController.workbench.meter.dmm.dialPosition = value;
   workbenchController.workbench.meter.update();
+  logController.addEvent(LogEvent.MOVED_DMM_DIAL, {
+    "valie": value
+  });
 };
 
 module.exports = breadboardComm;

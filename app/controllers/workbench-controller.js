@@ -10,6 +10,7 @@ WorkbenchController = function(){
   this.workbench = null;    // for now
   this.breadboardController = breadboardController;
   this.breadboardController.init(this);
+  this.logController = logController;
 };
 
 WorkbenchController.prototype = {

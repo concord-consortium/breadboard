@@ -37,7 +37,15 @@
     <div id="breadboard-wrapper">
     </div>
 
+    <div class="editors">
+        <div>
+            <h3>Event Log</h3>
+            <textarea id="log_textarea"></textarea>
+        </div>
+    </div>
+
     <script>
+        // setup initial JSON in first text area
         var initialJSON = {
         "showComponentEditor": true,
         "show_multimeter": "true",
@@ -58,7 +66,7 @@
              },
              {
                  "type": "resistor",
-                 "UID": "r1",
+                 "UID": "r2",
                  "resistance": "100",
                  "connections": "b11,b17",
                  "label": "R1",
@@ -79,6 +87,8 @@
 
       document.getElementById("load_textarea").value = JSON.stringify(initialJSON, null, '\t');
 
+      // setup load and save functions
+
       function loadWorkbench(json) {
         sparks.createWorkbench(json, "breadboard-wrapper");
       }
@@ -90,17 +100,29 @@
       document.getElementById("load_button").onclick = function() {
         var text = document.getElementById("load_textarea").value,
             json;
-        try {
+        // try {
             json = JSON.parse(text);
             loadWorkbench(json);
-        } catch (e) {               // catch malformed json
-            alert("Oops, there was a problem with your JSON.\nHere is the probably unhelpful error message:\n\n"+e);
-        }
+        // } catch (e) {               // catch malformed json
+            // alert("Oops, there was a problem with your JSON.\nHere is the probably unhelpful error message:\n\n"+e);
+        // }
       }
 
       document.getElementById("save_button").onclick = saveWorkbench;
 
-      // start by loading a blank workbench
+
+      // setup logging to bottom text area
+
+      sparks.logController.addListener(function(evt) {
+        var stringEvent = JSON.stringify(evt, null, '\t'),
+            currentLog  = document.getElementById("log_textarea").value;
+        if (currentLog) {
+            currentLog += ',\n';
+        }
+        document.getElementById("log_textarea").value = currentLog + stringEvent;
+      });
+
+      // load a blank workbench
       var blankWorkbench = {
         "showComponentEditor": true,
          "circuit": [
