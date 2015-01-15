@@ -1,5 +1,14 @@
 # Breadboard
 
+Breadboard is a JavaScript library for simulating a circuit on a breadboard, with AC and DC inputs, digital
+multimeter, and oscilloscope.
+
+See [the examples here](http://concord-consortium.github.io/breadboard/examples/).
+
+Breadboard was built by [The Concord Consortium](http://concord.org/) for the
+[SPARKS Project](http://concord.org/sparks/virtual-electronics/) and the
+[Teaching Teamworks Project](http://concord.org/projects/teaching-teamwork).
+
 ## Building and Running Locally
 
 ### Dependencies
