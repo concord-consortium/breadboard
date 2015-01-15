@@ -33,11 +33,14 @@ WorkbenchView.prototype = {
       addCompsWrapper:  this.getOrCreateDiv('add_components')
     };
 
-    this.divs.breadboard.html('');
-
     var self = this;
     breadboardSVGView.ready(function() {
-      workbenchController.breadboardView = breadboardSVGView.create("breadboard");
+      if (workbenchController.breadboardView) {
+        breadboardSVGView.clear(workbenchController.breadboardView);
+      } else {
+        self.divs.breadboard.html('');
+        workbenchController.breadboardView = breadboardSVGView.create("breadboard");
+      }
 
       // pass queued-up component right-click function to breadboard view
       if (self.rightClickFunction) {

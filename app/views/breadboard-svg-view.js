@@ -245,6 +245,7 @@ window["breadboardSVGView"] = {
   };
 
   CircuitBoard.prototype.removeComponent = function(id) {
+    if (!this.component[id]) return;
     this.component[id].hole[0].disconnected();
     this.component[id].hole[1].disconnected();
     this.component[id].view.remove();
@@ -290,9 +291,11 @@ window["breadboardSVGView"] = {
   };
 
   CircuitBoard.prototype.removeDMM = function() {
-    this.multimeter.probe['black'].view.hide();
-    this.multimeter.probe['red'].view.hide();
-    this.multimeter.mmbox.view.hide();
+    if (this.multimeter) {
+      this.multimeter.probe['black'].view.hide();
+      this.multimeter.probe['red'].view.hide();
+      this.multimeter.mmbox.view.hide();
+    }
   };
 
   CircuitBoard.prototype.addBattery = function(connections) {
@@ -317,8 +320,8 @@ window["breadboardSVGView"] = {
   CircuitBoard.prototype.removeBattery = function() {
     if (this.battery) {
       this.battery.btbox.view.hide();
-      this.battery.blackWire.hide();
-      this.battery.redWire.hide();
+      // this.battery.blackWire.hide();
+      // this.battery.redWire.hide();
 
       this.battery.pts[0].disconnected();
       this.battery.pts[1].disconnected();
@@ -336,8 +339,10 @@ window["breadboardSVGView"] = {
   };
 
   CircuitBoard.prototype.removeOScope = function() {
-    this.oscope.probe['yellow'].view.hide();
-    this.oscope.probe['pink'].view.hide();
+    if (this.oscope) {
+      this.oscope.probe['yellow'].view.hide();
+      this.oscope.probe['pink'].view.hide();
+    }
   };
 
   CircuitBoard.prototype.toFront = function(component) {
@@ -2305,6 +2310,16 @@ window["breadboardSVGView"] = {
     } else {
       $stack.push(callback);
     }
+  };
+
+  board.clear = function(circuitBoard) {
+    for (c in circuitBoard.component) {
+      if (c == "battery") continue;
+      circuitBoard.removeComponent(c);
+    }
+    circuitBoard.removeBattery();
+    circuitBoard.removeDMM();
+    circuitBoard.removeOScope();
   };
 
 })(jQuery, window["breadboardSVGView"]);

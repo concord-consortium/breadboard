@@ -2035,14 +2035,12 @@ BreadboardController.prototype = {
     this.resOrderOfMagnitude = -1;
     for( k in breadboard.components ){
       if (!breadboard.components.hasOwnProperty(k)) continue;
-      destroyed += !!this.component(k).destroy();
+      this.removeComponent(breadboard.components[k]);
     }
     breadboard.components = {};
     breadboard.faultyComponents = [];
 
     this.clearHoleMap();
-
-    return !!destroyed;
   },
 
   // can pass either a hole or a string
@@ -7267,6 +7265,7 @@ window["breadboardSVGView"] = {
   };
 
   CircuitBoard.prototype.removeComponent = function(id) {
+    if (!this.component[id]) return;
     this.component[id].hole[0].disconnected();
     this.component[id].hole[1].disconnected();
     this.component[id].view.remove();
@@ -7312,9 +7311,11 @@ window["breadboardSVGView"] = {
   };
 
   CircuitBoard.prototype.removeDMM = function() {
-    this.multimeter.probe['black'].view.hide();
-    this.multimeter.probe['red'].view.hide();
-    this.multimeter.mmbox.view.hide();
+    if (this.multimeter) {
+      this.multimeter.probe['black'].view.hide();
+      this.multimeter.probe['red'].view.hide();
+      this.multimeter.mmbox.view.hide();
+    }
   };
 
   CircuitBoard.prototype.addBattery = function(connections) {
@@ -7339,8 +7340,8 @@ window["breadboardSVGView"] = {
   CircuitBoard.prototype.removeBattery = function() {
     if (this.battery) {
       this.battery.btbox.view.hide();
-      this.battery.blackWire.hide();
-      this.battery.redWire.hide();
+      // this.battery.blackWire.hide();
+      // this.battery.redWire.hide();
 
       this.battery.pts[0].disconnected();
       this.battery.pts[1].disconnected();
@@ -7358,8 +7359,10 @@ window["breadboardSVGView"] = {
   };
 
   CircuitBoard.prototype.removeOScope = function() {
-    this.oscope.probe['yellow'].view.hide();
-    this.oscope.probe['pink'].view.hide();
+    if (this.oscope) {
+      this.oscope.probe['yellow'].view.hide();
+      this.oscope.probe['pink'].view.hide();
+    }
   };
 
   CircuitBoard.prototype.toFront = function(component) {
@@ -9329,6 +9332,16 @@ window["breadboardSVGView"] = {
     }
   };
 
+  board.clear = function(circuitBoard) {
+    for (c in circuitBoard.component) {
+      if (c == "battery") continue;
+      circuitBoard.removeComponent(c);
+    }
+    circuitBoard.removeBattery();
+    circuitBoard.removeDMM();
+    circuitBoard.removeOScope();
+  };
+
 })(jQuery, window["breadboardSVGView"]);
 
 },{"../controllers/workbench-controller":18,"../libs/base64":25,"../libs/canvg":26,"./svg_view_comm":37}],34:[function(require,module,exports){
@@ -10334,11 +10347,14 @@ WorkbenchView.prototype = {
       addCompsWrapper:  this.getOrCreateDiv('add_components')
     };
 
-    this.divs.breadboard.html('');
-
     var self = this;
     breadboardSVGView.ready(function() {
-      workbenchController.breadboardView = breadboardSVGView.create("breadboard");
+      if (workbenchController.breadboardView) {
+        breadboardSVGView.clear(workbenchController.breadboardView);
+      } else {
+        self.divs.breadboard.html('');
+        workbenchController.breadboardView = breadboardSVGView.create("breadboard");
+      }
 
       // pass queued-up component right-click function to breadboard view
       if (self.rightClickFunction) {

@@ -60,14 +60,12 @@ BreadboardController.prototype = {
     this.resOrderOfMagnitude = -1;
     for( k in breadboard.components ){
       if (!breadboard.components.hasOwnProperty(k)) continue;
-      destroyed += !!this.component(k).destroy();
+      this.removeComponent(breadboard.components[k]);
     }
     breadboard.components = {};
     breadboard.faultyComponents = [];
 
     this.clearHoleMap();
-
-    return !!destroyed;
   },
 
   // can pass either a hole or a string
