@@ -55,18 +55,21 @@ In combination with Gulp above, this will reload your pages any time any source 
 
 ### Deploying
 
-To deploy to gh-pages, simply run `npm run deploy`. This will use the latest from origin/master,
-so make sure your changes are pushed.
+gh-pages and production releases are based on the contents of the /public folder.
 
-Production is branched off gh-pages. To deploy a release to production
+To deploy to gh-pages, simply run `npm run deploy`.
+
+To deploy to production, run `npm run production`.
+
+Check that the production commit looks right, then tag it:
 
 ```
-  git checkout production
-  git merge gh-pages
   git tag           # check existing tags
-  git tag -a x.y.z -m 'release version x.y.z'
-  git push origin production; git push origin --tags
+  git tag -a x.y.z -m 'release version x.y.z' production
+  git push origin --tags
 ```
+
+Feel free to force new commits to production if the previous one had errors or you soon discover it was incomplete (and delete the old tag and re-tag).
 
 
 ### Understanding the code
