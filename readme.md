@@ -27,7 +27,7 @@ We use npm to install the developer tools, and bower to manage the javascript li
 
 Breadboard uses [Browserify](http://browserify.org/) to build the script and create the sparks.js file.
 
-We build automatically and watch for changes using [Gulp](http://gulpjs.com/). Building the public/ folder is as simple as
+We build automatically and watch for changes using [Gulp](http://gulpjs.com/). Building the dist/ folder is as simple as
 
 ```
   npm start
@@ -43,7 +43,7 @@ In order to load the example activities in the /examples folder, you just need t
 
 ```
   npm install -g live-server
-  cd breadboard/public
+  cd breadboard/dist
   live-server
 ```
 
@@ -55,7 +55,7 @@ In combination with Gulp above, this will reload your pages any time any source 
 
 ### Deploying
 
-gh-pages and production releases are based on the contents of the /public folder.
+gh-pages and production releases are based on the contents of the /dist folder.
 
 To deploy to gh-pages, simply run `npm run deploy`.
 
@@ -65,7 +65,7 @@ Check that the production commit looks right, then tag it:
 
 ```
   git tag           # check existing tags
-  git tag -a x.y.z -m 'release version x.y.z' production
+  git tag -a 0.0.1 -m 'release version 0.0.1' production
   git push origin --tags
 ```
 
@@ -80,7 +80,7 @@ The models generally define object classes. Most objects (pages, sections, etc) 
 
 The views generally return a jQuery object representing the view of the particular model object. The parent view is generally responsible for embedding the jQuery object onto the page.
 
-Demo activity JSON files can be found in the /examples folder. This folder is copied into /public.
+Demo activity JSON files can be found in the /examples folder. This folder is copied into /dist.
 
 The circuit calculations are performed by the Circuit Solver library (https://github.com/concord-consortium/circuit-solver)
 

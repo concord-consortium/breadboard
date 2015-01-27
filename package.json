@@ -9,9 +9,9 @@
   "scripts": {
     "prestart": "./node_modules/gulp/bin/gulp.js",
     "start": "",
-    "predeploy": "./node_modules/gulp/bin/gulp.js build-gh-pages",
+    "predeploy": "rm -rf dist && ./node_modules/gulp/bin/gulp.js build-gh-pages",
     "deploy": "./deploy.sh gh-pages",
-    "prerelease": "./node_modules/gulp/bin/gulp.js build-production",
+    "prerelease": "rm -rf dist && ./node_modules/gulp/bin/gulp.js build-production",
     "release": "./deploy.sh production"
   },
   "devDependencies": {
