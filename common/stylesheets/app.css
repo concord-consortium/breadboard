@@ -107,7 +107,6 @@ body {
   margin: 0 0 30px;
   padding: 22px 40px 0 40px;
   width: 100%; }
-color: #999999; }
 
 #content-lower {
   background-color: #fffae6;
@@ -308,7 +307,7 @@ p select {
   margin: 0 2px; }
 
 a.more, ul.more a {
-  background: transparent url(/images/new/icon-arrow-more.gif) right center no-repeat;
+  background: transparent url(../common/images/new/icon-arrow-more.gif) right center no-repeat;
   padding-right: 10px; }
 
 h1 {
@@ -345,7 +344,7 @@ h2, h3 {
   /* Saf3+, Chrome */ }
 
 #project-signin fieldset ul.graphic-input li input {
-  background: transparent url(/images/new/bg-sprite-btns.png) -32px -39px no-repeat !important;
+  background: transparent url(../common/images/new/bg-sprite-btns.png) -32px -39px no-repeat !important;
   border: none !important;
   color: #888888;
   font: 11px arial, helvetica, sans-serif;
@@ -379,7 +378,7 @@ h2, h3 {
   display: block; }
 
 .graphic-input li {
-  background: url(/images/new/bg-sprite-btns.png) right -39px no-repeat;
+  background: url(../common/images/new/bg-sprite-btns.png) right -39px no-repeat;
   position: relative; }
 
 .graphic-input li.remember {
@@ -393,11 +392,11 @@ h2, h3 {
     font-weight: normal; }
 
 #page #header li.graphic-input {
-  background: url(/images/new/bg-sprite-btns.png) right -39px no-repeat;
+  background: url(../common/images/new/bg-sprite-btns.png) right -39px no-repeat;
   padding-right: 8px;
   width: 153px; }
 #page #wrapper #secondary .graphic-input {
-  background: url(/images/new/bg-sprite-btns.png) right -39px no-repeat;
+  background: url(../common/images/new/bg-sprite-btns.png) right -39px no-repeat;
   margin-left: 3px;
   width: 166px; }
 

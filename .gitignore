@@ -1,12 +1,6 @@
 .DS_Store
-*~
-.rvmrc
-.bundle/config
-start.sh
 bower_components/*
-proxy/accept*
-proxy/apache.conf
-proxy/apache.pid
-proxy/apache-error.log
+node_modules/*
+public/*
 tests/jspec/test-reports/*
 tests/jspec/reports/*

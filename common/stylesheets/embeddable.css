@@ -4,7 +4,7 @@ body {
 }
 
 #credits {
-  background: url(../images/cc-logo.png) top left no-repeat;
+  background: url(../common/images/cc-logo.png) top left no-repeat;
   position: absolute;
   top: 411px;
   width: 162px;
@@ -13,7 +13,7 @@ body {
 }
 
 #credits:hover {
-  background: url(../images/cc-logo-light.png) top left no-repeat;
+  background: url(../common/images/cc-logo-light.png) top left no-repeat;
 }
 
 #about {

@@ -15,11 +15,11 @@ Breadboard was built by [The Concord Consortium](http://concord.org/) for the
 
 * [Node](http://nodejs.org/) `brew install node`
 * [Bower](http://bower.io/) `npm install -g bower`
-* [Browserify](http://browserify.org/) `npm install -g browserify`
 
-We use bower to manage the javascript libraries.
+We use npm to install the developer tools, and bower to manage the javascript libraries:
 
 ```
+  npm install
   bower install
 ```
 
@@ -27,15 +27,13 @@ We use bower to manage the javascript libraries.
 
 Breadboard uses [Browserify](http://browserify.org/) to build the script and create the sparks.js file.
 
-After any change to the script files in app, run this command
+We build automatically and watch for changes using [Gulp](http://gulpjs.com/). Building the public/ folder is as simple as
 
 ```
-  browserify app/init.js --standalone sparks > sparks.js
+  npm start
 ```
 
-Your changes should be built into sparks.js
-
-(We will soon add an automatic build process using Watchify or Guard.)
+Any changes to the script source, the css, or the examples folder will automatically be rebuilt.
 
 ### Testing the breadboard library locally
 
@@ -44,25 +42,27 @@ In order to load the example activities in the /examples folder, you just need t
 The easiest way to do this is using python:
 
 ```
-  cd breadboard
+  cd breadboard/public
   python -m SimpleHTTPServer
 ```
 
 The server runs on port 8000 by default. Open a browser and navigate to
 
-http://localhost:8000/examples/
+http://localhost:8000/
 
 Alternatively, [Live Server](https://www.npmjs.com/package/live-server) will reload pages automatically when it detects changes.
 
 ```
   npm install -g live-server
-  cd breadboard
+  cd breadboard/public
   live-server
 ```
 
 The server runs on port 8080 by default. Open a browser and navigate to
 
-http://localhost:8080/examples/
+http://localhost:8080/
+
+In combination with Gulp above, this will reload your pages any time any source file is saved.
 
 
 ### Understanding the code

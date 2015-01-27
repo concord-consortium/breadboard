@@ -297,7 +297,7 @@ border-bottom-style:solid;
 }
 
 .oscope_mini {
-  background: url("../images/oscope_mini.png") no-repeat top left;
+  background: url("../common/images/oscope_mini.png") no-repeat top left;
   position: absolute;
   top: 4px;
   left: 296px;
@@ -305,7 +305,7 @@ border-bottom-style:solid;
 }
 
 .oscope_mini_overlay {
-  background: url("../images/oscope_mini_overlay.png") no-repeat top left;
+  background: url("../common/images/oscope_mini_overlay.png") no-repeat top left;
   position: absolute;
   top: -4px;
   left: 0;
@@ -315,11 +315,11 @@ border-bottom-style:solid;
 }
 
 .oscope_mini_overlay:hover {
-  background: url("../images/oscope_mini_overlay.png") 0 -150px no-repeat;
+  background: url("../common/images/oscope_mini_overlay.png") 0 -150px no-repeat;
 }
 
 .oscope_popup .ui-dialog-content{
-  background: url("../images/oscope_large.png") no-repeat -20px -30px;
+  background: url("../common/images/oscope_large.png") no-repeat -20px -30px;
 }
 
 .faceplate button {
@@ -336,7 +336,7 @@ border-bottom-style:solid;
 }
 
 .fg_mini {
-  background: url("../images/fg_mini.png") no-repeat top left;
+  background: url("../common/images/fg_mini.png") no-repeat top left;
   position: absolute;
   top: -6px;
   left: -10px;
@@ -346,7 +346,7 @@ border-bottom-style:solid;
 }
 
 .fg_mini_overlay {
-  background: url("../images/fg_mini_overlay.png") no-repeat top left;
+  background: url("../common/images/fg_mini_overlay.png") no-repeat top left;
   position: absolute;
   top: 11px;
   left: 0px;
@@ -356,7 +356,7 @@ border-bottom-style:solid;
 }
 
 .fg_mini_overlay:hover {
-  background: url("../images/fg_mini_overlay.png") 0 -150px no-repeat;
+  background: url("../common/images/fg_mini_overlay.png") 0 -150px no-repeat;
 }
 
 .fg_value {
@@ -370,7 +370,7 @@ border-bottom-style:solid;
 }
 
 .fg_popup .ui-dialog-content {
-  background: url("../images/fg_large.png") no-repeat -5px 1px;
+  background: url("../common/images/fg_large.png") no-repeat -5px 1px;
 }
 
 .fg_popup .freq_value {
