@@ -1,5 +1,5 @@
 var dest = './public';
-var src = './app';
+var src = './src';
 var common = './common';
 var jquery = './lib/jquery/css';
 
