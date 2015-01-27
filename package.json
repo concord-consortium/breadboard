@@ -9,8 +9,10 @@
   "scripts": {
     "prestart": "./node_modules/gulp/bin/gulp.js",
     "start": "",
-    "predeploy": "./node_modules/gulp/bin/gulp.js build",
-    "deploy": "gh-pages-deploy"
+    "predeploy": "./node_modules/gulp/bin/gulp.js build-gh-pages",
+    "deploy": "./deploy.sh gh-pages",
+    "prerelease": "./node_modules/gulp/bin/gulp.js build-production",
+    "release": "./deploy.sh production"
   },
   "devDependencies": {
     "gulp": "^3.8.7",
@@ -20,10 +22,6 @@
     "require-dir": "^0.1.0",
     "browserify": "^8.1.1",
     "vinyl-transform": "^1.0.0",
-    "gulp-rename": "^1.2.0",
-    "gh-pages-deploy": "^0.1.1"
-  },
-  "gh-pages-deploy": {
-    "staticpath": "public"
+    "gulp-rename": "^1.2.0"
   }
 }

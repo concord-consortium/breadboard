@@ -39,18 +39,7 @@ Any changes to the script source, the css, or the examples folder will automatic
 
 In order to load the example activities in the /examples folder, you just need to serve the contents of the /breadboard directory using a local server, such as Python's SimpleHTTPServer or Live Server.
 
-The easiest way to do this is using python:
-
-```
-  cd breadboard/public
-  python -m SimpleHTTPServer
-```
-
-The server runs on port 8000 by default. Open a browser and navigate to
-
-http://localhost:8000/
-
-Alternatively, [Live Server](https://www.npmjs.com/package/live-server) will reload pages automatically when it detects changes.
+[Live Server](https://www.npmjs.com/package/live-server) is a simple static server that will automatically reload pages when it detects changes to the source.
 
 ```
   npm install -g live-server
@@ -66,28 +55,32 @@ In combination with Gulp above, this will reload your pages any time any source 
 
 ### Deploying
 
+gh-pages and production releases are based on the contents of the /public folder.
+
 To deploy to gh-pages, simply run `npm run deploy`.
 
-To deploy a release to production
+To deploy to production, run `npm run production`.
+
+Check that the production commit looks right, then tag it:
 
 ```
-  git checkout production
-  git merge master
   git tag           # check existing tags
-  git tag -a x.y.z -m 'release version x.y.z'
-  git push origin --follow-tags
+  git tag -a x.y.z -m 'release version x.y.z' production
+  git push origin --tags
 ```
+
+Feel free to force new commits to production if the previous one had errors or you soon discover it was incomplete (and delete the old tag and re-tag).
 
 
 ### Understanding the code
 
-The majority of the application can be found in app/. The application is written in an MVC pattern, and the folders follow suit, except for the circuit components, whose model objects can all be found in /app/circuit.
+The application is found in src/ and is written in an MVC pattern, and the folders follow suit, except for the circuit components, whose model objects can all be found in /src/circuit.
 
 The models generally define object classes. Most objects (pages, sections, etc) are instances of these classes.
 
 The views generally return a jQuery object representing the view of the particular model object. The parent view is generally responsible for embedding the jQuery object onto the page.
 
-Demo activity JSON files can be found in the /activities folder.
+Demo activity JSON files can be found in the /examples folder. This folder is copied into /public.
 
 The circuit calculations are performed by the Circuit Solver library (https://github.com/concord-consortium/circuit-solver)
 

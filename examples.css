@@ -1,0 +1,39 @@
+body {
+
+}
+h2 {
+  font-weight: normal;
+  text-align: center;
+  color: #545454;
+  font: "Calluna Sans","Gill Sans",Calibri,"Trebuchet MS",sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.description {
+  width: 1000px;
+  padding: 20px;
+  margin: 0 auto;
+  font-size: 110%;
+
+  color: #545454;
+  font: 400 16px/1.5 "Calluna Sans","Gill Sans",Calibri,"Trebuchet MS",sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding: 20px;
+  line-height: 18px;
+}
+#breadboard-wrapper {
+    position: relative;
+    border: 2px solid black;
+    width: 800px;
+    margin: 0 auto;
+}
+.editors {
+  text-align:center;
+}
+.editors>div {
+  display:inline-block;
+}
+.editors textarea {
+  margin: 5px;
+  width: 393px;
+  height: 165px;
+}

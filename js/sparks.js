@@ -1,10517 +1,6 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.sparks=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var extend    = require('../helpers/util').extend,
-    Component = require('./component');
-
-Battery = function (props, breadboardController) {
-  var range;
-
-  Battery.parentConstructor.call(this, props, breadboardController);
-
-  // if voltages are specified as an array, then if it has only value, set the
-  // voltage to that value, otherwise set it to a random voltage between the first
-  // and second values
-  if (this.voltage && this.voltage.length) {
-    if (this.voltage.length === 1) {
-      this.voltage = this.voltage[0];
-    } else {
-      range = this.voltage[1] - this.voltage[0];
-      this.voltage = this.voltage[0] + (Math.random() * range);
-    }
-  }
-};
-
-extend(Battery, Component, {
-  addCiSoComponent: function (ciso) {
-    var voltage = this.voltage || 0,
-        nodes      = this.getNodes();
-
-    ciso.addVoltageSource(this.UID, voltage, nodes[0], nodes[1]);
-  }
-});
-
-module.exports = Battery;
-
-},{"../helpers/util":23,"./component":4}],2:[function(require,module,exports){
-//= require circuit/resistor
-//= require circuit/variable-resistor
-//= require circuit/component
-
-/* FILE breadboard.js */
-
-/*global sparks CiSo $ breadBoard window console*/
-
-var util                  = require('../helpers/util'),
-    Battery               = require('./battery'),
-    Capacitor             = require('./capacitor'),
-    FunctionGenerator     = require('./function-generator'),
-    Inductor              = require('./inductor'),
-    PowerLead             = require('./power-lead'),
-    Resistor4band         = require('./resistor-4band'),
-    Resistor              = require('./resistor'),
-    VariableResistor      = require('./variable-resistor'),
-    Component             = require('./component'),
-    Wire                  = require('./wire'),
-    workbenchController,
-
-
-    defs = {
-      rows            : 31,
-      powerRailHoles  : 25
-    },
-
-    Hole,
-    GhostHole,
-    Strip,
-    Breadboard;
-
-////////////////////////////////////////////////////////////////////////////////
-//// B R E A D - B O A R D - M O D E L /////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-//// BREADBOARD Prototype Model //////////////////////////////////////////////
-
-Hole = function Hole( strip, name ){
-  this.type ='hole';
-  this.strip = strip;
-  this.name = name;
-  this.connections = [];
-  return this;
-};
-
-Hole.prototype.nodeName = function() {
-  return this.strip && this.strip.name;
-};
-
-Hole.prototype.getName = function() {
-  return this.name;
-};
-
-GhostHole = function GhostHole(name) {
-  this.name = name;
-  return this;
-};
-
-GhostHole.prototype.nodeName = function() {
-  return this.name;
-};
-
-GhostHole.prototype.getName = function() {
-  return this.name;
-};
-
-Strip = function Strip( holes, name ){
-  this.type ='strip';
-  this.holes={};
-  this.name = name;
-  if (holes) {
-    for (var i=0, l=holes; i < l; i++) {
-      this.holes[''+i] = new Hole();
-      this.holes[''+i].strip = this;
-    }
-  }
-  return this;
-};
-
-Breadboard = function Breadboard(){
-  var i, h, l, ll, a,
-      side, sign,
-      newStripL, newStripR,
-      mapCode;
-
-  this.type ='Breadboard';
-
-  this.strips = [];
-  this.components = {};
-  this.holes = {};
-  this.holeMap = {};
-  this.faultyComponents = [];
-
-  // Create power-rails
-  this.powerRail = {
-    left:{
-      positive: new Strip( null, "powerPosL"),
-      negative: new Strip( null, "gnd")
-    },
-    right:{
-      positive: new Strip( null, "powerPosR" ),
-      negative: new Strip( null, "gnd" )
-    }
-  };
-
-  for (i=0, l=defs.powerRailHoles; i < l; i++) {
-    for (side in this.powerRail) {
-      if (!this.powerRail.hasOwnProperty(side)) continue;
-      for (sign in this.powerRail[side]) {
-        if (!this.powerRail[side].hasOwnProperty(sign)) continue;
-        h = side + '_' + sign + i;
-        this.powerRail[side][sign][h] = this.holes[h] = new Hole(this.powerRail[side][sign], h);
-      }
-    }
-  }
-
-  // Create board
-  for (i=0, l=defs.rows; i < l; i++) {
-    newStripL = this.makeStrip("L" + i);
-    newStripR = this.makeStrip("R" + i);
-    for (a=0, ll=5; a < ll; a++ ) {
-      mapCode = String.fromCharCode(a+97)+i;
-      newStripL.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripL, mapCode );
-      mapCode = String.fromCharCode(a+102)+i;
-      newStripR.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripR, mapCode );
-    }
-  }
-};
-
-Breadboard.prototype = {
-  makeStrip: function (name) {
-    var stripLen = this.strips.length;
-    this.strips[ stripLen ] = new Strip(null, name);
-    return this.strips[ stripLen ];
-  },
-
-  createGhostHole: function(hole) {
-    return new GhostHole(hole);
-  }
-}
-
-module.exports = Breadboard;
-
-},{"../helpers/util":23,"./battery":1,"./capacitor":3,"./component":4,"./function-generator":5,"./inductor":6,"./power-lead":9,"./resistor":13,"./resistor-4band":12,"./variable-resistor":14,"./wire":15}],3:[function(require,module,exports){
-var extend            = require('../helpers/util').extend,
-    ReactiveComponent = require('./reactive-component');
-
-Capacitor = function (props, breadboardController) {
-  Capacitor.parentConstructor.call(this, props, breadboardController);
-};
-
-extend(Capacitor, ReactiveComponent, {
-
-  getCapacitance: function () {
-    return this.getComponentParameter('capacitance', this.capacitanceFromImpedance);
-  },
-
-  capacitanceFromImpedance: function (impedance, frequency) {
-    return 1 / (impedance * 2 * Math.PI * frequency);
-  },
-
-  addCiSoComponent: function (ciso) {
-    var capacitance = this.getCapacitance() || 0,
-        nodes       = this.getNodes();
-    ciso.addComponent(this.UID, "Capacitor", capacitance, nodes);
-  },
-
-  componentTypeName: "Capacitor",
-
-  isEditable: true,
-
-  editableProperty: {name: "capacitance", units: "F"},
-
-  changeEditableValue: function(val) {
-    this.capacitance = val;
-  }
-});
-
-module.exports = Capacitor;
-
-},{"../helpers/util":23,"./reactive-component":11}],4:[function(require,module,exports){
-Component = function (props, breadboardController) {
-
-  for (var i in props) {
-    this[i]=props[i];
-  }
-
-  this.breadboardController = breadboardController;
-
-  if (!this.label){
-    this.label = !!this.UID.split("/")[1] ? this.UID.split("/")[1] : "";
-  }
-
-  if (typeof this.connections === "string") {
-    this.connections = this.connections.replace(/ /g,'').split(",");
-  }
-
-  for (i in this.connections) {
-    this.connections[i] = this.breadboardController.getHole(this.connections[i]);
-
-    if (!!this.breadboardController.getHoles[this.connections[i]]) {
-      this.breadboardController.getHoles[this.connections[i]].connections[this.breadboardController.getHoles[this.connections[i]].connections.length] = this;
-    }
-  }
-  this._ensureFloat("resistance");
-  this._ensureFloat("nominalResistance");
-  this._ensureFloat("voltage");
-  this._ensureFloat("capacitance");
-  this._ensureFloat("inductance");
-  this._ensureFloat("impedance");
-  this.draggable = !!this.draggable;
-
-  this.viewArguments = {
-    type: this.type,
-    UID: this.UID,
-    connections: this.getLocation(),
-    draggable: this.draggable
-  };
-
-  if (this.label) {
-    this.viewArguments.label = this.label;
-  }
-};
-
-Component.prototype = {
-  setViewArguments: function (args) {
-    for (var arg in args) {
-      if (!args.hasOwnProperty(arg)) continue;
-      this.viewArguments[arg] = args[arg];
-    }
-  },
-
-  getViewArguments: function () {
-    this.viewArguments.connections = this.getLocation(); // update location
-    return this.viewArguments;
-  },
-
-  move: function (connections) {
-    var i, j;
-    for (i in this.connections) {
-      for (j in this.connections[i].connections) {
-        if (this.connections[i].connections[j] === this) {
-          this.connections[i].connections = [];
-        }
-      }
-      this.connections[i] = [];
-    }
-    this.connections = [];
-    for (i in connections){
-      this.connections[i] = this.breadboardController.getHoles[connections[i]];
-      this.breadboardController.getHoles[connections[i]].connections[this.breadboardController.getHoles[connections[i]].connections.length] = this;
-    }
-
-    this.setViewArguments({connections: this.getLocation()});
-  },
-
-  destroy: function (){
-    var i, j;
-    for(i in this.connections){
-      for(j in this.connections[i].connections ){
-        if( this.connections[i].connections[j] === this ){
-          this.connections[i].connections = [];
-        }
-      }
-      this.connections[i] = [];
-    }
-    this.connections = [];
-    this.breadboardController.deleteComponentFromMap(this.UID);
-  },
-
-  _ensureFloat: function (val) {
-    if (this[val] && typeof this[val] === "string") {
-      this[val] = parseFloat(this[val], 10);
-    }
-  },
-
-  getNodes: function () {
-    return $.map(this.connections, function (connection) {
-      return connection.nodeName();
-    });
-  },
-
-  // converts connections to string, for flash arguments
-  getLocation: function () {
-    return this.connections[0].getName() + "," + this.connections[1].getName();
-  },
-
-  canInsertIntoNetlist: function () {
-    return true;
-  },
-
-  /**
-    hasValidConnections: check that this component has connections that are valid for generating a QUCS netlist.
-
-    The only check performed right now is that there be 2 connections, but this validity check could be enhanced
-    to check, for example, that the two connections map to different nodes, etc.
-  */
-  hasValidConnections: function () {
-    return this.connections.length === 2 || (this.type === "powerLead" && this.connections.length === 1);
-  },
-
-  getRequestedImpedance: function (spec, steps) {
-    var min, max, factor, step, choosableSteps, i, len;
-
-    if (typeof spec === 'string' || typeof spec === 'number') {
-      return spec;
-    }
-
-    if (spec[0] !== 'uniform') {
-      throw new Error("Only uniformly-distributed random impedances/resistances are supported right now; received " + spec);
-    }
-    if (spec.length < 3) throw new Error("Random impedance/resistance spec does not specify an upper and lower bound");
-    if (typeof spec[1] !== 'number' || typeof spec[2] !== 'number') throw new Error("Random impedance/resistance spec lower and upper bound were not both numeric");
-
-    min = Math.min(spec[1], spec[2]);
-    max = Math.max(spec[1], spec[2]);
-
-    // if steps array exists, it specifies allowable values, up to the order of magnitude
-    if (steps) {
-      // copy 'steps' array before sorting it so we don't modify the passed-in array
-      steps = steps.slice().sort();
-
-      factor = Math.pow(10, Math.orderOfMagnitude(min) - Math.orderOfMagnitude(steps[0]));
-      choosableSteps = [];
-      i = 0;
-      len = steps.length;
-      do {
-        step = steps[i++] * factor;
-        if (min <= step && step <= max) choosableSteps.push(step);
-
-        if (i >= len) {
-          factor *= 10;
-          i = 0;
-        }
-      } while (step < max);
-
-      if (choosableSteps.length > 0) {
-        return choosableSteps[ Math.floor(Math.random() * choosableSteps.length) ];
-      }
-    }
-
-    // if no steps were specified, or none were available between the requested min and max
-    return min + Math.random() * (max - min);
-  },
-
-  addThisToFaults: function() {
-    this.breadboardController.addFaultyComponent(this);
-  },
-
-  // used by the component edit view
-  componentTypeName: "Component",
-
-  // used by the component edit view
-  isEditable: false,
-
-  // used by the component edit view. Right now we assume any editable component
-  // has only one single editable property. If we change this assumption, we may
-  // want to set an array of properties
-  //
-  // Returns an array of the possible values this property can take
-  getEditablePropertyValues: function() { return [0]; },
-  // The name and base units of the editable property
-  editableProperty: {name: "", units: ""},
-
-  // used by the component edit view. Right now we assume any editable component
-  // has only one single editable property. However, even if we have components with
-  // multiple editable properties, we can keep this API and pass in an array
-  changeEditableValue: function(val) { },
-
-  serialize: function() {
-    var jsonComp = {
-      type: this.type,
-      UID:  this.UID
-    };
-
-    if (this.label)             jsonComp.label = this.label;
-    if (this.connections)       jsonComp.connections = this.getLocation();
-    if (this.resistance)        jsonComp.resistance = this.resistance;
-    if (this.nominalResistance) jsonComp.nominalResistance = this.nominalResistance;
-    if (this.voltage)           jsonComp.voltage = this.voltage;
-    if (this.amplitude)         jsonComp.amplitude = this.amplitude;
-    if (this.frequencies)       jsonComp.frequencies = this.frequencies;
-    if (this.initialFrequency)  jsonComp.initialFrequency = this.initialFrequency;
-    if (this.capacitance)       jsonComp.capacitance = this.capacitance;
-    if (this.inductance)        jsonComp.inductance = this.inductance;
-    if (this.impedance)         jsonComp.impedance = this.impedance;
-    if (this.draggable)         jsonComp.draggable = this.draggable;
-    if (this.hidden)            jsonComp.hidden = this.hidden;
-
-    return jsonComp;
-  }
-
-};
-
-module.exports = Component;
-
-
-},{}],5:[function(require,module,exports){
-var extend              = require('../helpers/util').extend,
-    Component           = require('./component');
-
-FunctionGenerator = function (props, breadboardController, workbenchController) {
-  FunctionGenerator.parentConstructor.call(this, props, breadboardController);
-
-  this.workbenchController = workbenchController;
-
-  this.amplitudeScaleFactor = 1;
-
-  // NOTE on validation of initialFrequency.
-  //
-  // If the initial frequency is not in the frequencies we request QUCS to simulate, we only find out after we call
-  // QUCS and get the simulation result back. It sounds like we're thereby missing an opportunity to validate
-  // initialFrequency "up front" at object-creation time, but, really, we're not. From the perspective of an author
-  // who creates a JSON circuit spec with such an invalid initialFrequency, the validation failure only occurs when
-  // the student (or author) actually runs the activity, whether the validation is done when the FunctionGenerator
-  // is created, or whether it is done when QUCS returns. Doing validation at object creation time (below) would
-  // require pre-calculating the frequency list which QUCS generates from a sweep spec.
-  this.frequency = props.initialFrequency;
-
-  // get an initial frequency from the frequency-range specification, if one exists
-  if ( ('undefined' === typeof this.frequency || this.frequency === null) && props.frequencies ) {
-    if ('number' === typeof props.frequencies[0]) {
-      this.frequency = props.frequencies[0];
-    }
-    else if (props.frequencies[0] === 'linear' || props.frequencies[0] === 'logarithmic') {
-      this.frequency = props.frequencies[1];
-    }
-  }
-
-  // store (and generate, if nec.) the set of possible frequencies, so that the view can slide through these
-  if (props.frequencies) {
-    if ('number' === typeof props.frequencies[0]) {
-      this.possibleFrequencies = props.frequencies;
-    }
-    else if (props.frequencies[0] === 'linear' || props.frequencies[0] === 'logarithmic') {
-      this.possibleFrequencies = this._calcPossibleFrequencies(props);
-    }
-  }
-
-  // set a base frequency, so that we don't have to change NetList representation after changing frequency
-  this.baseFrequency = this.frequency;
-
-  if ('undefined' === typeof this.frequency || this.frequency === null) {
-    throw new Error("FunctionGenerator: initialFrequency is undefined and an initial frequency could not be inferred from frequency range specification.");
-  }
-
-  var amplitude = props.amplitude;
-  if ('number' === typeof amplitude){
-    this.amplitude = amplitude;
-  } else if (amplitude.length && amplitude.length >= 2) {
-    this.minAmplitude = amplitude[0];
-    this.maxAmplitude = amplitude[1];
-    if (amplitude[2]) {
-      this.amplitude = amplitude[2];
-    } else {
-      this.amplitude = (this.minAmplitude + this.maxAmplitude) / 2;
-    }
-  }
-};
-
-extend(FunctionGenerator, Component, {
-
-  // for now, no validation on frequency. So we might set something QUCS isn't expecting from the given sim type
-  setFrequency: function(frequency) {
-    this.frequency = frequency;
-    if (this.workbenchController.workbench.meter) {
-      this.workbenchController.workbench.meter.update();
-    }
-  },
-
-  // instead of modifying the base amplitude, which would cause us to re-ask QUCS for new values,
-  // we simply modify a scale factor, which is read by all meters. This works so long as we have
-  // linear circuits -- we'll need to revisit this for nonlinear circuits.
-  setAmplitude: function(newAmplitude) {
-    this.amplitudeScaleFactor = newAmplitude / this.amplitude;
-    if (this.workbenchController.workbench.meter) {
-      this.workbenchController.workbench.meter.update();
-    }
-  },
-
-  getFrequency: function() {
-    return this.frequency;
-  },
-
-  getAmplitude: function() {
-    return this.amplitude * this.amplitudeScaleFactor;
-  },
-
-  getPossibleFrequencies: function() {
-    return this.possibleFrequencies;
-  },
-
-  addCiSoComponent: function (ciso) {
-    var amplitude   = this.amplitude || 0,
-        nodes       = this.getNodes();
-
-    ciso.addVoltageSource(this.UID,amplitude,nodes[0],nodes[1],this.frequency);
-  },
-
-  defaultFrequencySteps: 100,
-
-  _calcPossibleFrequencies: function(props) {
-    var startF   = props.frequencies[1],
-        endF     = props.frequencies[2],
-        steps    = props.frequencies[3],
-        type     = props.frequencies[0],
-        diff     = endF - startF,
-        multiple = endF / startF,
-        stepSize,
-        i;
-
-    var frequencies = [];
-    if (type === 'linear') {
-      stepSize = diff / (steps - 1);
-      for (i = 0; i < steps; i++){
-        frequencies.push(startF + (stepSize * i));
-      }
-    } else if (type === 'logarithmic') {
-      for (i = 0; i < steps; i++){
-        frequencies.push(startF * (Math.pow(multiple, ((i/(steps-1))))));
-      }
-    }
-    return frequencies;
-  },
-
-  getViewArguments: null
-
-});
-
-module.exports = FunctionGenerator;
-
-},{"../helpers/util":23,"./component":4}],6:[function(require,module,exports){
-var extend            = require('../helpers/util').extend,
-    ReactiveComponent = require('./reactive-component');
-
-Inductor = function (props, breadboardController) {
-  Inductor.parentConstructor.call(this, props, breadboardController);
-};
-
-extend(Inductor, ReactiveComponent, {
-
-  getInductance: function () {
-    return this.getComponentParameter('inductance', this.inductanceFromImpedance);
-  },
-
-  inductanceFromImpedance: function (impedance, frequency) {
-    return impedance / (2 * Math.PI * frequency);
-  },
-
-  addCiSoComponent: function (ciso) {
-    var inductance = this.getInductance() || 0,
-        nodes       = this.getNodes();
-    ciso.addComponent(this.UID, "Inductor", inductance, nodes);
-  },
-
-  componentTypeName: "Inductor",
-
-  isEditable: true,
-
-  editableProperty: {name: "inductance", units: "H"},
-
-  changeEditableValue: function(val) {
-    this.inductance = val;
-  }
-});
-
-module.exports = Inductor;
-
-},{"../helpers/util":23,"./reactive-component":11}],7:[function(require,module,exports){
-var workbenchController;
-
-/*
- * Digital Multimeter
- * Base for the Centech DMM
- */
-MultimeterBase = function () {
-};
-
-MultimeterBase.prototype = {
-
-    modes : { ohmmeter : 0, voltmeter : 1, ammeter : 2 },
-
-    init: function () {
-        workbenchController   = require('../controllers/workbench-controller');
-
-        this.mode = this.modes.ohmmeter;
-
-        this.absoluteValue = 0;   //current meter value
-
-        this.displayText = '       ';
-
-        this.redProbeConnection = null;
-        this.blackProbeConnection = null;
-        this.redPlugConnection = null;
-        this.blackPlugConnecton = null;
-        this.dialPosition = 'acv_750';
-        this.powerOn = false;
-        this.disabledPositions = [];
-    },
-
-    // @probe Either "red" or "black"
-    // @location hole name (e.g. 'a1') or null
-    setProbeLocation: function (probe, location) {
-      if (probe === "probe_red") {
-        this.redProbeConnection = location;
-      } else if (probe === "probe_black") {
-        this.blackProbeConnection = location;
-      }
-      this.update();
-    },
-
-    moveProbe: function(oldLoc, newLoc) {
-      if (this.redProbeConnection === oldLoc) {
-        this.redProbeConnection = newLoc;
-      }
-      if (this.blackProbeConnection === oldLoc) {
-        this.blackProbeConnection = newLoc;
-      }
-      this.update();
-    },
-
-    update : function () {
-    },
-
-    updateDisplay : function () {
-        var text = '',
-            vm, imc, im;
-
-        if (!this.powerOn) {
-            this.displayText = '       ';
-            return;
-        }
-
-        if (this.allConnected()) {
-            if (this.dialPosition === 'dcv_20') {
-                if (this.absoluteValue < 19.995) {
-                    text = (Math.round(this.absoluteValue * 100) * 0.01).toString();
-                    text = this.toDisplayString(text, 2);
-                }
-                else {
-                    text = ' 1 .   ';
-                }
-                this.currentUnits = "V";
-
-            } else if (this.dialPosition === 'dcv_200') {
-                if (this.absoluteValue < 199.95) {
-                    text = (Math.round(this.absoluteValue * 10) * 0.1).toString();
-                    text = this.toDisplayString(text, 1);
-                }
-                else {
-                    text = ' 1 .   ';
-                }
-                this.currentUnits = "V";
-
-            } else if (this.dialPosition === 'dcv_1000') {
-                 if (this.absoluteValue < 999.95) {
-                    text = Math.round(this.absoluteValue).toString();
-                    text = this.toDisplayString(text, 0);
-                    text = "h" + text.substring(1);
-                }
-                else {
-                    text = 'h1 .   ';
-                }
-                this.currentUnits = "V";
-
-            } else if (this.dialPosition === 'dcv_2000m') {
-                vm = this.absoluteValue * 1000;
-                if (vm < 1999.5) {
-                    text = Math.round(vm).toString();
-                    text = this.toDisplayString(text, 0);
-                }
-                else {
-                    text = ' 1 .   ';
-                }
-                this.currentUnits = "mV";
-
-            } else if (this.dialPosition === 'dcv_200m') {
-                vm = this.absoluteValue * 1000;
-                if (vm < 195){
-                  text = (Math.round(vm * 100) * 0.01).toString();
-                  text = this.toDisplayString(text, 1);
-                }
-                else {
-                    text = ' 1 .   ';
-                }
-                this.currentUnits = "mV";
-
-            } else if (this.dialPosition === 'acv_200') {
-                if (this.absoluteValue < 199.95) {
-                    text = (Math.round(this.absoluteValue * 10) * 0.1).toString();
-                    text = this.toDisplayString(text, 1);
-                }
-                else {
-                    text = ' 1 .   ';
-                }
-                this.currentUnits = "V";
-
-            } else if (this.dialPosition === 'acv_750') {
-                if (this.absoluteValue < 699.5) {
-                    text = (Math.round(this.absoluteValue)).toString();
-                    text = this.toDisplayString(text, 0);
-                    text = "h"+text.substring(1);
-                }
-                else {
-                    text = 'h1 .   ';
-                }
-                this.currentUnits = "V";
-
-            } else if (this.dialPosition === 'r_200') {
-                if (this.absoluteValue < 199.95) {
-                    text = (Math.round(this.absoluteValue * 10) * 0.1).toString();
-                    text = this.toDisplayString(text, 1);
-                }
-                else {
-                    text = ' 1   . ';
-                }
-                this.currentUnits = "Ohms";
-            } else if (this.dialPosition === 'r_2000') {
-                if (this.absoluteValue < 1999.5) {
-                    text = Math.round(this.absoluteValue).toString();
-                    text = this.toDisplayString(text, 0);
-                }
-                else {
-                    text = ' 1     ';
-                }
-                this.currentUnits = "Ohms";
-            }
-            else if (this.dialPosition === 'r_20k') {
-                if (this.absoluteValue < 19995) {
-                    text = (Math.round(this.absoluteValue * 0.1) * 0.01).toString();
-                    text = this.toDisplayString(text, 2);
-                }
-                else {
-                    text = ' 1 .   ';
-                }
-                this.currentUnits = "kOhms";
-            }
-            else if (this.dialPosition === 'r_200k') {
-                if (this.absoluteValue < 199950) {
-                    text = (Math.round(this.absoluteValue * 0.01) * 0.1).toString();
-                    text = this.toDisplayString(text, 1);
-                }
-                else {
-                    text = ' 1   . ';
-                }
-                this.currentUnits = "kOhms";
-            }
-            else if (this.dialPosition === 'r_2000k') {
-                if (this.absoluteValue < 1999500) {
-                    text = Math.round(this.absoluteValue * 0.001).toString();
-                    text = this.toDisplayString(text, 0);
-                }
-                else {
-                    text = ' 1     ';
-                }
-                this.currentUnits = "kOhms";
-            }
-            else if (this.dialPosition === 'dca_200mc') {
-              imc = this.absoluteValue * 1000000;
-              if (imc < 195){
-                text = (Math.round(imc * 100) * 0.01).toString();
-                text = this.toDisplayString(text, 1);
-              }
-              else {
-                  text = ' 1     ';
-              }
-              this.currentUnits = "μA";
-            }
-            else if (this.dialPosition === 'dca_2000mc') {
-              imc = this.absoluteValue * 1000000;
-              if (imc < 1950){
-                text = (Math.round(imc * 10) * 0.1).toString();
-                text = this.toDisplayString(text, 0);
-              }
-              else {
-                  text = ' 1     ';
-              }
-              this.currentUnits = "μA";
-            }
-            else if (this.dialPosition === 'dca_20m') {
-              im = this.absoluteValue * 1000;
-              if (im < 19.5){
-                text = (Math.round(im * 100) * 0.01).toString();
-                text = this.toDisplayString(text, 2);
-              }
-              else {
-                  text = ' 1     ';
-              }
-              this.currentUnits = "mA";
-            }
-            else if (this.dialPosition === 'dca_200m') {
-              im = this.absoluteValue * 1000;
-              if (im < 195){
-                text = (Math.round(im * 10) * 0.1).toString();
-                text = this.toDisplayString(text, 1);
-              }
-              else {
-                  text = ' 1     ';
-              }
-              this.currentUnits = "mA";
-            }
-            else if (this.dialPosition === 'dcv_200m' || this.dialPosition === 'dcv_200' ||
-                    this.dialPosition === 'acv_200' || this.dialPosition === 'p_9v' ||
-                    this.dialPosition === 'dca_200mc' || this.dialPosition === 'dca_200m') {
-                text = '  0 0.0';
-            }
-            else if (this.dialPosition === 'dcv_2000m' || this.dialPosition === 'dca_2000mc' ||
-                    this.dialPosition === 'hfe') {
-                text = '  0 0 0';
-            }
-            else if (this.dialPosition === 'dcv_20' || this.dialPosition === 'dca_20m' ||
-                    this.dialPosition === 'c_10a') {
-                text = '  0.0 0';
-            }
-            else if (this.dialPosition === 'dcv_1000' || this.dialPosition === 'acv_750') {
-                text = 'h 0 0 0';
-            }
-            else if (this.dialPosition === 'diode') {
-              text = ' 1     ';
-            }
-            else {
-                text = '       ';
-            }
-        }
-        else {    // if not connected
-            if (this.dialPosition === 'dcv_20') {
-                text = '  0.0 0';
-            }
-            else if (this.dialPosition === 'r_200') {
-                text = ' 1   . ';
-            }
-            else if (this.dialPosition === 'r_2000' || this.dialPosition === 'diode') {
-                text = ' 1     ';
-            }
-            else if (this.dialPosition === 'r_20k') {
-                text = ' 1 .   ';
-            }
-            else if (this.dialPosition === 'r_200k') {
-                text = ' 1   . ';
-            }
-            else if (this.dialPosition === 'r_2000k') {
-                text = ' 1     ';
-            }
-            else if (this.dialPosition === 'dcv_200m' || this.dialPosition === 'dcv_200' ||
-                    this.dialPosition === 'acv_200' || this.dialPosition === 'p_9v' ||
-                    this.dialPosition === 'dca_200mc' || this.dialPosition === 'dca_200m') {
-                text = '  0 0.0';
-            }
-            else if (this.dialPosition === 'dcv_2000m' || this.dialPosition === 'dca_2000mc' ||
-                    this.dialPosition === 'hfe') {
-                text = '  0 0 0';
-            }
-            else if (this.dialPosition === 'dcv_20' || this.dialPosition === 'dca_20m' ||
-                    this.dialPosition === 'c_10a') {
-                text = '  0.0 0';
-            }
-            else if (this.dialPosition === 'dcv_1000' || this.dialPosition === 'acv_750') {
-                text = 'h 0 0 0';
-            }
-            else {
-                text = '       ';
-            }
-        }
-        text = this.disable_multimeter_position(text);
-        if (text !== this.displayText) {
-          if (workbenchController.breadboardView) {
-            workbenchController.breadboardView.setDMMText(text);
-          }
-          this.displayText = text;
-          this.currentValue = parseFloat(text.replace(/[^\d\.]/g, ""));
-        }
-    },
-
-
-set_disable_multimeter_position: function (disabled) {
-  this.disabledPositions = disabled.split(',');
-  for(var i=0;i<this.disabledPositions.length;i++){
-  }
-},
-
-
-    disable_multimeter_position : function (displayText) {
-      var i;
-      // how do I pass a variable from the "series" file into here?
-      // something like: sparks.jsonSection.disable_multimeter_position  ??
-
-      // right now this is hard wired to disable R dial positions
-      switch (this.dialPosition)
-      {
-  case 'dcv_20':
-  case 'dcv_200':
-  case 'dcv_1000':
-  case 'dcv_2000m':
-  case 'dcv_200m':
-    for(i=0;i<this.disabledPositions.length;i++){
-      if(this.disabledPositions[i] == 'dcv'){
-        displayText = '-------';
-        break;
-      }
-    }
-    break;
-  case 'r_200':
-  case 'r_2000':
-  case 'r_20k':
-  case 'r_200k':
-  case 'r_2000k':
-    for(i=0;i<this.disabledPositions.length;i++){
-      if(this.disabledPositions[i] == 'r'){
-        displayText = '-------';
-        break;
-      }
-    }
-    break;
-  case 'dca_200mc':
-  case 'dca_2000mc':
-  case 'dca_20m':
-  case 'dca_200m':
-    for(i=0;i<this.disabledPositions.length;i++){
-      if(this.disabledPositions[i] == 'dca'){
-        displayText = '-------';
-        break;
-      }
-    }
-    break;
-  case 'acv_750':
-  case 'acv_200':
-    for(i=0;i<this.disabledPositions.length;i++){
-      if(this.disabledPositions[i] == 'acv'){
-        displayText = '-------';
-        break;
-      }
-    }
-    break;
-  case 'diode':
-  case 'hfe':
-  case 'c_10a':
-  case 'p_9v':
-  default:
-      }
-      return displayText;
-    },
-
-    toDisplayString : function (s, dec) {
-        //console.log('s1=' + s + ' dec=' + dec);
-        var i;
-        var sign = s.charAt(0) === '-' ? s.charAt(0) : ' ';
-        s = s.replace('-', '');
-
-        //console.log('s2=' + s);
-        var pointLoc = s.indexOf('.');
-        var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
-        if (decLen === 0) {
-            s = s.concat('.');
-        }
-        //console.log('s3=' + s);
-        if (dec < decLen) {
-            s = s.substring(0, pointLoc + dec + 1);
-        }
-        else {
-            for (i = 0; i < dec - decLen; ++i) {
-                s = s.concat('0');
-            }
-        }
-        //console.log('s4=' + s);
-        s = s.replace('.', '');
-        //console.log('s5=' + s);
-        var len = s.length;
-        if (len < 4) {
-            for (i = 0; i < 3 - len; ++i) {
-                s = '0' + s;
-            }
-            s = ' ' + s;
-        }
-        //console.log('s6=' + s);
-
-        var dot1;
-        var dot2;
-
-        switch (dec) {
-        case 0:
-            dot1 = ' ';
-            dot2 = ' ';
-            break;
-        case 1:
-            dot1 = ' ';
-            dot2 = '.';
-            break;
-        case 2:
-            dot1 = '.';
-            dot2 = ' ';
-            break;
-        default:
-            console.log('ERROR: invalid dec ' + dec);
-        }
-
-        s = sign + s.substring(0, 2) + dot1 + s.charAt(2) + dot2 + s.charAt(3);
-        //console.log('s7=' + s);
-        return s;
-
-    },
-
-    // Pad 0's to the number text
-    // sig: number of significant digits
-    // dec: number of digits after decimal points
-    formatDecimalString : function (s, dec) {
-        //console.log('s=' + s + ' dec=' + dec);
-        var pointLoc = s.indexOf('.');
-        //console.log('pointLoc=' + pointLoc);
-        var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
-        //console.log('decLen=' + decLen);
-        if (decLen === 0) {
-            s = s.concat('.');
-        }
-        if (dec < decLen) {
-            s = s.substring(0, pointLoc + dec + 1);
-        }
-        else {
-            for (var i = 0; i < dec - decLen; ++i) {
-                s = s.concat('0');
-            }
-        }
-        //console.log('formatDecimalString: formatted=' + s);
-        return s;
-    },
-
-    getDisplayText : function () {
-        return this.displayText;
-    },
-
-    /*
-     * Return value to be shown under optimal setting.
-     * This value is to be compared with the student answer for grading.
-     *
-     * Take three significant digits, four if the first digit is 1.
-     */
-    makeDisplayText : function (value) {
-        var text;
-        if (value < 199.95) {
-            text = (Math.round(value * 10) * 0.1).toString();
-            text = this.formatDecimalString(text, 1);
-        }
-        else if (value < 1999.5) {
-            text = Math.round(value).toString();
-            text = this.formatDecimalString(text, 0);
-        }
-        else if (value < 19995) {
-            text = (Math.round(value * 0.1) * 10).toString();
-        }
-        else if (value < 199950) {
-            text = (Math.round(value * 0.01) * 100).toString();
-        }
-        else if (value < 1999500) {
-            text = (Math.round(value * 0.001) * 1000).toString();
-        }
-        else {
-            text = 'NaN';
-        }
-        return parseFloat(text);
-    },
-
-    allConnected : function () {
-        return this.redProbeConnection !== null &&
-            this.blackProbeConnection !== null &&
-            this.redProbeConnection !== this.blackProbeConnection &&
-            (this.redPlugConnection === 'voma_port' &&
-             this.blackPlugConnection === 'common_port' ||
-             this.redPlugConnection === 'common_port' &&
-             this.blackPlugConnection === 'voma_port') &&
-            this.powerOn;
-    }
-};
-
-module.exports = MultimeterBase;
-
-},{"../controllers/workbench-controller":18}],8:[function(require,module,exports){
-require('../../lib/apMessageBox');
-
-var LogEvent        = require('../models/log'),
-    util            = require('../helpers/util'),
-    logController   = require('../controllers/log-controller'),
-    extend          = require('../helpers/util').extend,
-    MultimeterBase  = require('./multimeter-base');
-
-/*
- * Digital Multimeter for breadboard activities
- *
- */
-Multimeter = function (breadboardController) {
-  Multimeter.uber.init.apply(this);
-  this.breadboardController = breadboardController;
-  this.reset();
-};
-
-extend(Multimeter, MultimeterBase, {
-
-  reset: function() {
-    this.dialPosition = 'dcv_20';
-    this.powerOn = true;
-    this.redProbeConnection = null;
-    this.blackProbeConnection = null;
-    this.displayText = "";
-    this.update();
-  },
-
-  currentMeasurement: null,
-
-  update: function () {
-    if (this.redProbeConnection && this.blackProbeConnection) {
-      if (this.dialPosition.indexOf('dcv_') > -1){
-        this.currentMeasurement = "voltage";
-      } else if (this.dialPosition.indexOf('dca_') > -1){
-        this.currentMeasurement = "current";
-      } else if (this.dialPosition.indexOf('r_') > -1){
-        this.currentMeasurement = "resistance";
-      } else if (this.dialPosition.indexOf('acv_') > -1){
-        this.currentMeasurement = "ac_voltage";
-      } else {
-        this.currentMeasurement = null;
-      }
-
-      if (!!this.currentMeasurement){
-        this.breadboardController.query(this.currentMeasurement, this.redProbeConnection + ',' + this.blackProbeConnection, this.updateWithData, this);
-      }
-    } else {
-      this.updateWithData();
-    }
-  },
-
-  // this is called after update() is called and ciso returns
-  updateWithData: function (ciso) {
-    var measurement = this.currentMeasurement,
-        source, b, p1, p2, v1, v2, current, drop,
-        result;
-
-    if (ciso) {
-      source = ciso.voltageSources[0],
-      b  = this.breadboardController;
-      p1 = b.getHole(this.redProbeConnection).nodeName();
-      p2 = b.getHole(this.blackProbeConnection).nodeName();
-      if (measurement === "resistance") {
-        if (p1 === p2) {
-          result = 0;
-        } else {
-          current = ciso.getCurrent('ohmmeterBattery');
-          result = 1/current.magnitude;
-        }
-      } else if (measurement === "voltage" || measurement === "ac_voltage" || measurement === "current") {
-          v1 = ciso.getVoltageAt(p1);   // complex
-          v2 = ciso.getVoltageAt(p2);
-
-        // exit quickly if ciso was not able to solve circuit
-        if (!v1 || !v2) {
-          this.absoluteValue = 0;
-          this.updateDisplay();
-          return;
-        }
-
-        drop = v1.subtract(v2).magnitude;
-
-        if (measurement === "current") {
-          result = drop / 1e-6;
-        } else {
-          result = drop;
-        }
-      }
-
-      if (result){
-        // if in wrong voltage mode for AC/DC voltage, show zero
-        source = this.breadboardController.getComponents().source;
-        if (!!source &&
-           ((measurement === 'voltage' && source.frequency) ||
-            (measurement === 'ac_voltage' && source.frequency === 0))) {
-          result = 0;
-        } else if (measurement === "ac_voltage" ||
-                    (measurement === 'current' && source && source.frequency)){
-          // the following applies to both RMS voltage and RMS current
-          // first, if we are dealing with a function generator, scale by the appropriate scale factor
-          if (!!source.amplitudeScaleFactor || source.amplitudeScaleFactor === 0){
-            result = result * source.amplitudeScaleFactor;
-          }
-          result = result / Math.sqrt(2);         // RMS voltage or RMS current
-        }
-        result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
-
-        this.absoluteValue = Math.abs(result);
-
-        if (measurement === "current" && this.absoluteValue > 0.44){
-          this.blowFuse();
-        }
-      } else {
-        this.absoluteValue = 0;
-      }
-    } else {
-      this.absoluteValue = 0;
-    }
-
-    this.updateDisplay();
-
-    if (this.redProbeConnection && this.blackProbeConnection) {
-      logController.addEvent(LogEvent.DMM_MEASUREMENT, {
-        "measurement": measurement,
-        "dial_position": this.dialPosition,
-        "red_probe": this.redProbeConnection,
-        "black_probe": this.blackProbeConnection,
-        "result": this.displayText
-      });
-    }
-  },
-
-  blowFuse: function() {
-    apMessageBox.error({
-      title: "POW!",
-      message: "<b>You just blew the fuse in your multimeter!</b><br><br> Remember not to pass too much current through it."+
-      " We've replaced your fuse for you, but you lost some time.",
-      errorImage: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAG10lEQVRYw71Xb2ib5Rb/nTQxTdokq123Ot2WNHVztTSSMoejZYQisusQZhdXLhQs84IfLniloOiQsQ+CA8XrFwfDD7IvBXuxH9ReQV1L6wqmNC7jdhdv2zVYR7tu3ZK8b5O+Sc577oe3b9osSe3uvdwHDs/h/T1/zvM7z3Pec4iZsZ2WX1523R8a+oMyMhLKxGIBbX6+SXI5NwCQzZay+3w3HYFAzBUKjdSdPDls3bVL2dbCzAxd1wv9Zp2ZoUQizTPd3ZciVmsqCugzgH7L7eaV1lY98dxznDh6lFdaWvRbHg/PAHoU0CNWa2qmu/uSEok0/976VIkBTiYdC/3951Y+//wvtSK23X4/POEw6NgxYP9+IJ8HstkN0TQgHodMTCB55QpuLyxAJcrVv/rqX/d+9NH5Ko8nU24fYmYQEUQERAQAWJ2a8s+Fw39DPN62b+9eeN55h/D880L5PCGbhWSzQtksSTYryGZh6pTLGbimCaamKPnll/Lr8jLg9V73Dw6eqmlvnwNQ2EtESg1QfvwxMHvixN9rU6lG3+nTUnX2LMhqJXPTsgbkcuXxdFp4eBjzk5Okut1LzV9/fdzV0RErMcBs6WjU/6+urvEdirLb+/bbQG9vMc0PSi63NW7Kzz8jPjaGhMt1+8APP3Q6g8G5EhfkEwnHjWBwwhGPB5rffFOot7eU4myWkMtVdsFWDE1Py+zUFGW83lhLNHrUumNHRkRgMX2y0N9/DvF4m++FFwSvvAJRFIGiAIpi6KoKUVUxv5fg631BV1WBqgKqauCNjfA98YQgHm9b6O8/JyIbDKSnppr/eeTIP5rr6myey5eBRx4ppZkZOHQIuH4dSCTKU+12A0eOAENDwOpqKb62huS1a5jN5XKHfvqp1dnePmsBgKULF96qFbF5enuJRAiqClJVgqoCigJKpwnt7aBgkKiri6DrIEUhKAoKY6urQWfOEB0/Tjh9GqRpZDJkjqV0mjz19VQrYlu6cOEtACBtcdEV27v3lt/trtnx6aeASLHVug50dgJPPw1YLMbNmZkBPvwQWFkxvu3ZA7zxBuDzmdENGB42xqhq8WXVNCSWlzFnsawGFhYer/qz339y9auv/ri/qwuWAweIMhlCJgOzxzPPgA4fJlgsoPWGRx8F1dYSPv4YuHsX9P77hJaWDZwI1NxsMPjNN6BkkpBMgpJJolSK7CK4o+t2m99/3aqMjIRcAKilBVCU4tNPTwOffWZIZ2dxCAuFgIEBwOMBgsHSEBeLAZ98Aty9Wxr9ALgAKCMjoao/5fNnPcnk47UvvmiE00zGkCtXgG+/Be7dM/pnnwX27SteyecDHnusdPNoFAiHgXi84j9IA5DK59mizc83VdfVGbSrKpGqEr7/HnT1KhUsXloi9PSAxseJjAOAzLi9SSeAKBolhMOgeJw2nXgDX9erAdLm55ssksu5qxwOMd+rRKOCSAQCiLmAAIKlJUhPj8j4uKzHjg18XZdoVCQcFsTjpfPXe1OvAkRyObe1wImiGLd6bKzyv7u6GqipqYwnk8b7f4hmIZstxWtrxjsdGyPK52kzbQXd6wUNDhIFg5VdEAoRDQwQGhpK5z/gAgaIbLaUxe7z3VxTVcEvv0Du3JHNdBUo9HoFg4OQYHADL+cCQCQUEgwMQBoatnTBGiB2n++mxREIxNKZDGF6usjCwgnWT45gcOOdm3g0CoyPY/PFJCJCKASTiUoMpAFyBAIxiysUGlFEIJpW3kl9fUBbW+Wn1tMDjI+X4p2dwJkzZZcUAAoAVyg0Am1x0RWxWlMrRgAtFbud+eJFZk3jQpucZPZ6N8Y0NjKPjm7gmmbMsduL13I6mQMBXgE4YrWmtMVFF5gZM93dl24Yg3Qd0Blgs2eAdbtd54sXWdc0XZ+c1NnrLcYBnRsbWR8d1XVNM8ba7cV4QwPrp07pfPiwfgPgme7uS2yYZWS+EaK1e5VYMJk4f7745A9KYyPzu++WnvzJJ5lfe4359df5ntPJEaI1M2MGM4OZMdfX98E1gLNbGfGwQsTc0cHc38/83nucbW3lawDP9fV9YO5bPiUDhAAyn4ypmzdYtoPX1JC89JLg4EGQ00kyOiqzw8MlKVn5pDSV2u3Ff9EOHgRefhnYuRNwOIDvvkN8aAgJt7tyUlo2LQek6mEYqKsjnDgBaW8XcjpJdF348mXMT0xsnZZvWZgA8BgbVzagoYHk2DGhjg6CywWxWgUTE5T84gv59f793y9MtlWaAfAQgZxOoL7eoHfPHuCpp4CmJmPSb79BYjEkr17F7URiW6XZf1acArxSXa0ndu7kxK5dvOJy6beI/rfF6f+rPP83fLrQt4Oy8N0AAAAASUVORK5CYII=",
-      width: 400,
-      height: 300
-    });
-    logController.addEvent(LogEvent.BLEW_FUSE);
-  },
-
-  allConnected: function () {
-      return this.redProbeConnection !== null &&
-          this.blackProbeConnection !== null &&
-          this.powerOn;
-  },
-
-  _getResultsIndex: function (results) {
-    var i = 0,
-        source = this.breadboardController.getComponents().source;
-    if (source && source.setFrequency && results.acfrequency){
-      i = util.getClosestIndex(results.acfrequency, source.frequency, true);
-    }
-    return i;
-  }
-});
-
-module.exports = Multimeter;
-
-},{"../../lib/apMessageBox":43,"../controllers/log-controller":17,"../helpers/util":23,"../models/log":28,"./multimeter-base":7}],9:[function(require,module,exports){
-var extend    = require('../helpers/util').extend,
-    Component = require('./component');
-
-PowerLead = function (props, breadboardController) {
-  PowerLead.parentConstructor.call(this, props, breadboardController);
-};
-
-extend(PowerLead, Component, {
-
-  getColor: function () {
-    var location = this.getLocation();
-    if (location.indexOf("positive") > -1) {
-      return "redPowerWire";
-    } else {
-      return "blackPowerWire";
-    }
-  },
-
-  getLocation: function () {
-    return this.connections[0].getName() + ",a1";       // Flash coding issue means we need to give this a second argument...
-  },
-
-  addCiSoComponent: function () { },
-
-  getViewArguments: null
-});
-
-module.exports = PowerLead;
-
-},{"../helpers/util":23,"./component":4}],10:[function(require,module,exports){
-
-// Allowable resistance values
-
-r_values = {};
-
-// For 1% tolerance (5-band)
-r_values.r_values5band1pct = [
-    1.00, 1.02, 1.05, 1.07, 1.10, 1.13, 1.15, 1.18, 1.21, 1.24, 1.27,
-    1.30, 1.33, 1.37, 1.40, 1.43, 1.47, 1.50, 1.54, 1.58, 1.62, 1.65, 1.69,
-    1.74, 1.78, 1.82, 1.87, 1.91, 1.96,
-    2.00, 2.05, 2.10, 2.15, 2.21, 2.26, 2.32, 2.37, 2.43, 2.49, 2.55, 2.61,
-    2.67, 2.74, 2.80, 2.87, 2.94,
-    3.01, 3.09, 3.16, 3.24, 3.32, 3.40, 3.48, 3.57, 3.65, 3.74, 3.83, 3.92,
-    4.02, 4.12, 4.22, 4.32, 4.42, 4.53, 4.64, 4.75, 4.87, 4.99,
-    5.11, 5.23, 5.36, 5.49, 5.62, 5.76, 5.90, 6.04, 6.19, 6.34, 6.49, 6.65,
-    6.81, 6.98, 7.15, 7.32, 7.50, 7.68, 7.87, 8.06, 8.25, 8.45, 8.66, 8.87,
-    9.09, 9.31, 9.53, 9.76, 10.0, 10.2, 10.5, 10.7, 11.0, 11.3, 11.5, 11.8,
-    12.1, 12.4, 12.7, 13.0, 13.3, 13.7, 14.0, 14.3, 14.7,
-    15.0, 15.4, 15.8, 16.2, 16.5, 16.9, 17.4, 17.8, 18.2, 18.7, 19.1, 19.6,
-    20.0, 20.5, 21.0, 21.5, 22.1, 22.6, 23.2, 23.7, 24.3, 24.9, 25.5, 26.1,
-    26.7, 27.4, 28.0, 28.7, 29.4, 30.1, 30.9, 31.6, 32.4, 33.2, 34.0, 34.8,
-    35.7, 36.5, 37.4, 38.3, 39.2, 40.2, 41.2, 42.2, 43.2, 44.2, 45.3, 46.4,
-    47.5, 48.7, 49.9, 51.1, 52.3, 53.6, 54.9, 56.2, 57.6, 59.0,
-    60.4, 61.9, 63.4, 64.9, 66.5, 68.1, 69.8, 71.5, 73.2, 75.0, 76.8, 78.7,
-    80.6, 82.5, 84.5, 86.6, 88.7, 90.9, 93.1, 95.3, 97.6,
-    100, 102, 105, 107, 110, 113, 115, 118, 121, 124,
-    127, 130, 133, 137, 140, 143, 147, 150, 154, 158, 162, 165, 169,
-    174, 178, 182, 187, 191, 196,
-    200, 205, 210, 215, 221, 226, 232, 237, 243, 249, 255, 261, 267, 274,
-    280, 287, 294, 301, 309, 316, 324, 332, 340, 348, 357, 365, 374, 383,
-    392, 402, 412, 422, 432, 442, 453, 464, 475, 487, 499,
-    511, 523, 536, 549, 562,
-    576, 590, 604, 619, 634, 649, 665, 681, 698, 715, 732, 750, 768, 787,
-    806, 825, 845, 866, 887, 909, 931, 953, 976,
-    1000, 1020, 1050, 1070, 1100, 1130, 1150, 1180, 1210, 1240, 1270,
-    1300, 1330, 1370, 1400, 1430, 1470, 1500, 1540, 1580, 1620, 1650, 1690,
-    1740, 1780, 1820, 1870, 1910, 1960, 2000, 2050, 2100, 2150, 2210, 2260,
-    2320, 2370, 2430, 2490, 2550, 2610, 2670, 2740, 2800, 2870, 2940,
-    3010, 3090, 3160, 3240, 3320, 3400, 3480, 3570, 3650, 3740, 3830, 3920,
-    4020, 4120, 4220, 4320, 4420, 4530, 4640, 4750, 4870, 4990,
-    5110, 5230, 5360, 5490, 5620, 5760, 5900,
-    6040, 6190, 6340, 6490, 6650, 6810, 6980, 7150, 7320, 7500, 7680, 7870,
-    8060, 8250, 8450, 8660, 8870, 9090, 9310, 9530, 9760,
-    10000, 10200, 10500, 10700, 11000, 11300, 11500, 11800, 12100, 12400,
-    12700, 13000, 13300, 13700, 14000, 14300, 14700, 15000, 15400, 15800,
-    16200, 16500, 16900, 17400, 17800, 18200, 18700, 19100, 19600,
-    20000, 20500, 21000, 21500, 22100, 22600, 23200, 23700, 24300, 24900,
-    25500, 26100, 26700, 27400, 28000, 28700, 29400, 30100, 30900, 31600,
-    32400, 33200, 34000, 34800, 35700, 36500, 37400, 38300, 39200,
-    40200, 41200, 42200, 43200, 44200, 45300, 46400, 47500, 48700, 49900,
-    51100, 52300, 53600, 54900, 56200, 57600, 59000, 60400, 61900, 63400,
-    64900, 66500, 68100, 69800, 71500, 73200, 75000, 76800, 78700,
-    80600, 82500, 84500, 86600, 88700, 90900, 93100, 95300, 97600,
-    100e3, 102e3, 105e3, 107e3, 110e3, 113e3, 115e3, 118e3, 121e3, 124e3,
-    127e3, 130e3, 133e3, 137e3, 140e3, 143e3, 147e3, 150e3, 154e3, 158e3,
-    162e3, 165e3, 169e3, 174e3, 178e3, 182e3, 187e3, 191e3, 196e3,
-    200e3, 205e3, 210e3, 215e3, 221e3, 226e3, 232e3, 237e3, 243e3, 249e3,
-    255e3, 261e3, 267e3, 274e3, 280e3, 287e3, 294e3,
-    301e3, 309e3, 316e3, 324e3, 332e3, 340e3, 348e3, 357e3, 365e3, 374e3,
-    383e3, 392e3,
-    402e3, 412e3, 422e3, 432e3, 442e3, 453e3, 464e3, 475e3, 487e3, 499e3,
-    511e3, 523e3, 536e3, 549e3, 562e3,
-    576e3, 590e3, 604e3, 619e3, 634e3, 649e3, 665e3, 681e3, 698e3,
-    715e3, 732e3, 750e3, 768e3, 787e3, 806e3, 825e3, 845e3, 866e3, 887e3,
-    909e3, 931e3, 953e3, 976e3,
-    1.00e6, 1.02e6, 1.05e6, 1.07e6, 1.10e6, 1.13e6, 1.15e6, 1.18e6,
-    1.21e6, 1.24e6, 1.27e6, 1.30e6, 1.33e6, 1.37e6, 1.40e6, 1.43e6, 1.47e6,
-    1.50e6, 1.54e6, 1.58e6, 1.62e6, 1.65e6, 1.69e6, 1.74e6, 1.78e6,
-    1.82e6, 1.87e6, 1.91e6, 1.96e6,
-    2.00e6, 2.05e6, 2.10e6, 2.15e6, 2.21e6, 2.26e6, 2.32e6, 2.37e6,
-    2.43e6, 2.49e6, 2.55e6, 2.61e6, 2.67e6, 2.74e6, 2.80e6, 2.87e6, 2.94e6,
-    3.01e6, 3.09e6, 3.16e6, 3.24e6, 3.32e6, 3.40e6, 3.48e6, 3.57e6, 3.65e6,
-    3.74e6, 3.83e6, 3.92e6,
-    4.02e6, 4.12e6, 4.22e6, 4.32e6, 4.42e6, 4.53e6, 4.64e6, 4.75e6, 4.87e6,
-    4.99e6, 5.11e6, 5.23e6, 5.36e6, 5.49e6, 5.62e6, 5.76e6, 5.90e6,
-    6.04e6, 6.19e6, 6.34e6, 6.49e6, 6.65e6, 6.81e6, 6.98e6,
-    7.15e6, 7.32e6, 7.50e6, 7.68e6, 7.87e6, 8.06e6, 8.25e6, 8.45e6, 8.66e6,
-    8.87e6, 9.09e6, 9.31e6, 9.53e6, 9.76e6,
-    10.0e6, 10.2e6, 10.5e6, 10.7e6, 11.0e6, 11.3e6, 11.5e6, 11.8e6,
-    12.1e6, 12.4e6, 12.7e6, 13.0e6, 13.3e6, 13.7e6, 14.0e6, 14.3e6, 14.7e6,
-    15.0e6, 15.4e6, 15.8e6, 16.2e6, 16.5e6, 16.9e6, 17.4e6, 17.8e6,
-    18.2e6, 18.7e6, 19.1e6, 19.6e6, 20.0e6, 20.5e6, 21.0e6, 21.5e6,
-    22.1e6, 22.6e6, 23.2e6, 23.7e6, 24.3e6, 24.9e6, 25.5e6, 26.1e6, 26.7e6,
-    27.4e6, 28.0e6, 28.7e6, 29.4e6, 30.1e6, 30.9e6, 31.6e6, 32.4e6, 33.2e6,
-    34.0e6, 34.8e6, 35.7e6, 36.5e6, 37.4e6, 38.3e6, 39.2e6,
-    40.2e6, 41.2e6, 42.2e6, 43.2e6, 44.2e6, 45.3e6, 46.4e6, 47.5e6, 48.7e6,
-    49.9e6, 51.1e6, 52.3e6, 53.6e6, 54.9e6, 56.2e6, 57.6e6, 59.0e6,
-    60.4e6, 61.9e6, 63.4e6, 64.9e6, 66.5e6, 68.1e6, 69.8e6, 71.5e6, 73.2e6,
-    75.0e6, 76.8e6, 78.7e6, 80.6e6, 82.5e6, 84.5e6, 86.6e6, 88.7e6,
-    90.9e6, 93.1e6, 95.3e6, 97.6e6,
-    100e6, 102e6, 105e6, 107e6, 110e6, 113e6, 115e6, 118e6, 121e6, 124e6,
-    127e6, 130e6, 133e6, 137e6, 140e6, 143e6, 147e6, 150e6, 154e6, 158e6,
-    162e6, 165e6, 169e6, 174e6, 178e6, 182e6, 187e6, 191e6, 196e6, 200e6
-];
-
-// For 2% tolerance (5-band)
-r_values.r_values5band2pct = [
-    1.00, 1.05, 1.10, 1.15, 1.21, 1.27, 1.33, 1.40,
-    1.47, 1.54, 1.62, 1.69, 1.78, 1.87, 1.96,
-    2.05, 2.15, 2.26, 2.37, 2.49, 2.61, 2.74, 2.87,
-    3.01, 3.16, 3.32, 3.48, 3.65, 3.83, 4.02, 4.22, 4.42, 4.64, 4.87,
-    5.11, 5.36, 5.62, 5.90, 6.19, 6.49, 6.81, 7.15, 7.50, 7.87,
-    8.25, 8.66, 9.09, 9.53, 10.0, 10.5, 11.0, 11.5, 12.1, 12.7, 13.3,
-    14.0, 14.7, 15.4, 16.2, 16.9, 17.8, 18.7, 19.6,
-    20.5, 21.5, 22.6, 23.7, 24.9, 26.1, 27.4,
-    28.7, 30.1, 31.6, 33.2, 34.8, 36.5, 38.3, 40.2, 42.2, 44.2, 46.4, 48.7,
-    51.1, 53.6, 56.2, 59.0, 61.9, 64.9, 68.1, 71.5, 75.0, 78.7, 82.5, 86.6,
-    90.9, 95.3, 100, 105, 110, 115, 121, 127, 133, 140, 147, 154, 162, 169,
-    178, 187, 196, 205, 215, 226, 237, 249, 261, 274, 287,
-    301, 316, 332, 348, 365, 383, 402, 422, 442, 464, 487,
-    511, 536, 562, 590, 619, 649, 681, 715, 750, 787, 825, 866, 909, 953,
-    1000, 1050, 1100, 1150, 1210, 1270, 1330, 1400, 1470, 1540, 1620, 1690,
-    1780, 1870, 1960, 2050, 2150, 2260, 2370, 2490, 2610, 2740, 2870,
-    3010, 3160, 3320, 3480, 3650, 3830,
-    4020, 4220, 4420, 4640, 4870, 5110, 5360, 5620, 5900, 6190, 6490, 6810,
-    7150, 7500, 7870, 8250, 8660, 9090, 9530,
-    10000, 10500, 11000, 11500, 12100, 12700, 13300, 14000, 14700, 15400,
-    16200, 16900, 17800, 18700, 19600,
-    20500, 21500, 22600, 23700, 24900, 26100, 27400, 28700,
-    30100, 31600, 33200, 34800, 36500, 38300,
-    40200, 42200, 44200, 46400, 48700,
-    51100, 53600, 56200, 59000, 61900, 64900, 68100, 71500, 75000, 78700,
-    82500, 86600, 90900, 95300, 100e3, 105e3, 110e3, 115e3, 121e3, 127e3,
-    133e3, 140e3, 147e3, 154e3, 162e3, 169e3, 178e3, 187e3, 196e3,
-    205e3, 215e3, 226e3, 237e3, 249e3, 261e3, 274e3, 287e3,
-    301e3, 316e3, 332e3, 348e3, 365e3, 383e3, 402e3, 422e3, 442e3, 464e3,
-    487e3, 511e3, 536e3, 562e3, 590e3, 619e3, 649e3, 681e3,
-    715e3, 750e3, 787e3,
-    825e3, 866e3, 909e3, 953e3, 1e6, 1.05e6, 1.1e6, 1.15e6, 1.21e6, 1.27e6,
-    1.33e6, 1.40e6, 1.47e6, 1.54e6, 1.62e6, 1.69e6, 1.78e6, 1.87e6, 1.96e6,
-    2.05e6, 2.15e6, 2.26e6, 2.37e6, 2.49e6, 2.61e6, 2.74e6, 2.87e6,
-    3.01e6, 3.16e6, 3.32e6, 3.48e6, 3.65e6, 3.83e6,
-    4.02e6, 4.22e6, 4.42e6, 4.64e6, 4.87e6, 5.11e6, 5.36e6, 5.62e6, 5.90e6,
-    6.19e6, 6.49e6, 6.81e6, 7.15e6, 7.50e6, 7.87e6, 8.25e6, 8.66e6,
-    9.09e6, 9.53e6, 10.0e6, 10.5e6, 11.0e6, 11.5e6, 12.1e6, 12.7e6, 13.3e6,
-    14.0e6, 14.7e6, 15.4e6, 16.2e6, 16.9e6, 17.8e6, 18.7e6, 19.6e6,
-    20.5e6, 21.5e6, 22.6e6, 23.7e6, 24.9e6, 26.1e6, 27.4e6, 28.7e6,
-    30.1e6, 31.6e6, 33.2e6, 34.8e6, 36.5e6, 38.3e6,
-    40.2e6, 42.2e6, 44.2e6, 46.4e6, 48.7e6, 51.1e6, 53.6e6, 56.2e6, 59.0e6,
-    61.9e6, 64.9e6, 68.1e6, 71.5e6, 75e6, 78.7e6, 82.5e6, 86.6e6,
-    90.9e6, 95.3e6,
-    100e6, 105e6, 110e6, 115e6, 121e6, 127e6, 133e6, 140e6, 147e6, 154e6,
-    162e6, 169e6, 178e6, 187e6, 196e6
-];
-
-// For 5% tolerance (4-band)
-r_values.r_values4band5pct = [
-    10, 11, 12, 13, 15, 16, 18, 20, 22, 24, 27, 30, 33, 36, 39,
-    43, 47, 51, 56, 62, 68, 75, 82, 91
-];
-
-// For 10% tolerance (4-band)
-r_values.r_values4band10pct = [
-    10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82
-];
-
-module.exports = r_values;
-
-},{}],11:[function(require,module,exports){
-var extend    = require('../helpers/util').extend,
-    Component = require('./component'),
-    sparksMath = require('../helpers/sparks-math');
-
-ReactiveComponent = function (props, breadboardController) {
-  if (typeof props.impedance !== 'undefined') {
-    props.impedance = this.getRequestedImpedance( props.impedance );
-  }
-
-  ReactiveComponent.parentConstructor.call(this, props, breadboardController);
-
-  this.applyFaults();
-};
-
-extend(ReactiveComponent, Component, {
-
-  // return named component parameter ('inductance' or 'capacitance') if it is set directly on the component;
-  // otherwise, calculate the component parameter value from the impedance + referenceFrequency of this component.
-  getComponentParameter: function (componentParameterName, componentParameterFromImpedance) {
-    // use a directly specified component parameter if it exists
-    if (typeof this[componentParameterName] !== 'undefined') {
-      return this[componentParameterName];
-    }
-
-    // otherwise, if no cached value, calculate one
-    if (typeof this._componentParameter === 'undefined') {
-      if (typeof this.impedance === 'undefined' || typeof this.referenceFrequency === 'undefined') {
-        throw new Error("An impedance/referenceFrequency pair is needed, but not defined.");
-      }
-
-      this._componentParameter = sparksMath.roundToSigDigits(componentParameterFromImpedance(this.impedance, this.referenceFrequency), 3);
-    }
-
-    return this._componentParameter;
-  },
-
-  applyFaults: function () {
-    // if we're 'open' or 'shorted', we become a broken resistor
-    if (!!this.open){
-      this.resistance = 1e20;
-      this.addThisToFaults();
-    } else if (!!this.shorted) {
-      this.resistance = 1e-6;
-      this.addThisToFaults();
-    } else {
-      this.open = false;
-      this.shorted = false;
-    }
-
-    if (this.resistance > 0) {
-      var self = this;
-    }
-  },
-
-  getEditablePropertyValues: function() {
-    values = [];
-    // standard cap values
-    baseValues = [10, 11, 12, 13, 15, 16, 18,
-                  20, 22, 24, 27, 30, 33, 36, 39,
-                  43, 47, 51, 56, 62, 68, 75, 82, 91];
-
-    for (i = -13; i < -1; i++) {
-      for (j = 0; j < baseValues.length; j++) {
-        values.push(baseValues[j] * Math.pow(10, i));
-      }
-    }
-
-    return values;
-  }
-
-});
-
-module.exports = ReactiveComponent;
-
-},{"../helpers/sparks-math":21,"../helpers/util":23,"./component":4}],12:[function(require,module,exports){
-var extend    = require('../helpers/util').extend,
-    Resistor  = require('./resistor'),
-    r_values  = require('./r-values');
-
-Resistor4band = function (id, breadboardController) {
-  var superclass = Resistor4band.uber;
-  superclass.init.apply(this, [id]);
-  this.numBands = 4;
-  this.breadboardController = breadboardController;
-
-  if (breadboardController.getResOrderOfMagnitude() < 0){
-    var om = this.randInt(0, 3);
-    breadboardController.setResOrderOfMagnitude(om);
-  }
-
-  this.r_values5pct = this.filter(r_values.r_values4band5pct);
-  this.r_values10pct = this.filter(r_values.r_values4band10pct);
-};
-
-extend(Resistor4band, Resistor, {
-
-  toleranceValues: [0.05, 0.1],
-
-  randomize: function (options) {
-
-      var value = 0;
-      do {
-        var ix = this.randInt(0, 1);
-        var values;
-
-        this.tolerance = this.toleranceValues[ix];
-
-        if (options && options.rvalues) {
-            values = options.rvalues;
-        }
-        else if (this.tolerance == 0.05) {
-            values = this.r_values5pct;
-        }
-        else {
-            values = this.r_values10pct;
-        }
-
-        var om = this.breadboardController.getResOrderOfMagnitude();
-        var extra = this.randInt(0, 1);
-        om = om + extra;
-
-        value = values[this.randInt(0, values.length-1)];
-
-        value = value * Math.pow(10,om);
-      } while (!this._resistanceIsUnique(value));
-
-      this.nominalValue = value;
-
-      if (options && options.realEqualsNominal) {
-          this.realValue = this.nominalValue;
-      }
-      else {
-          this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
-      }
-
-      this.colors = this.getColors(this.nominalValue, this.tolerance);
-  },
-
-  _resistanceIsUnique: function (value) {
-    var components = this.breadboardController.getComponents();
-
-    for (var i in components){
-      var resistor  = components[i];
-      var resistance = resistor.nominalResistance;
-      if (resistance == value){
-        return false;
-      }
-    }
-    return true;
-  },
-
-  // rvalue: resistance value
-  getColors: function (ohms, tolerance) {
-      var s = ohms.toString();
-      var decIx = s.indexOf('.'); // real location of the dot in the string
-      // virtual location of dot
-      // e.g., for "324", decLoc is 3, and for "102000", 6
-      var decLoc = decIx > -1 ? decIx : s.length;
-
-      s = s.replace('.', '');
-      var len = s.length;
-
-      // Make sure there are at least three significant digits
-      for (var i = 0; i < 2 - len; ++i) {
-          s += '0';
-      }
-
-      var mult = decLoc > 1 ? decLoc - 2 : 10;
-
-      return [ this.colorMap[s.charAt(0)],
-               this.colorMap[s.charAt(1)],
-               this.colorMap[decLoc - 2],
-               this.toleranceColorMap[tolerance]
-             ];
-  }
-
-});
-
-module.exports = Resistor4band;
-
-},{"../helpers/util":23,"./r-values":10,"./resistor":13}],13:[function(require,module,exports){
-var extend                = require('../helpers/util').extend,
-    Component             = require('./component'),
-    r_values              = require('./r-values'),
-    Resistor4band         = require('./resistor-4band'),
-    workbenchController;
-
-Resistor = function (props, breadboardController) {
-  workbenchController   = require('../controllers/workbench-controller');
-
-  var tolerance, steps;
-
-  // translate the requested resistance (which may be of the form ["uniform", 10, 100] into a real number
-  if (typeof props.resistance !== 'undefined') {
-    tolerance = props.tolerance || 0.05;
-    steps = (tolerance === 0.05) ? r_values.r_values4band5pct : r_values.r_values4band10pct;
-    props.resistance = this.getRequestedImpedance( props.resistance, steps );
-  }
-
-  Resistor.parentConstructor.call(this, props, breadboardController);
-
-  // if we have colors defined and not resistance
-  if ((this.resistance === undefined) && this.colors){
-    this.resistance = this.getResistance( this.colors );
-  }
-
-  // if we have neither colors nor resistance
-  if ((this.resistance === undefined) && !this.colors) {
-    var resistor = new Resistor4band(this.UID, breadboardController);
-    resistor.randomize(null);
-    this.resistance = resistor.getRealValue();
-    this.tolerance = resistor.tolerance;
-    this.colors = resistor.colors;
-  }
-
-  // if we have resistance and no colors
-  if (!this.colors){
-    this.colors = this.getColors4Band( this.resistance, (!!this.tolerance ? this.tolerance : 0.05));
-  }
-
-  // at this point, we must have both real resiatance and colors
-  // calculate nominal resistance, unless nominalResistance is defined
-  if (!this.nominalResistance){
-    this.nominalResistance =  this.getResistance( this.colors );
-  }
-
-  // now that everything has been set, if we have a fault set it now
-  this.applyFaults();
-
-  if (this.resistance > 0) {
-    this.setViewArguments({color: this.colors});
-  } else {
-    this.setViewArguments({type: "wire", color: "green"});      // represent as wire if resistance is zero
-  }
-};
-
-extend(Resistor, Component,
-{
-  nominalValueMagnitude: -1,
-
-    colorMap: { '-1': 'gold', '-2': 'silver',
-        0 : 'black', 1 : 'brown', 2 : 'red', 3 : 'orange',
-        4 : 'yellow', 5 : 'green', 6 : 'blue', 7 : 'violet', 8 : 'grey',
-        9 : 'white' },
-
-    toleranceColorMap: { 0.01 : 'brown', 0.02 : 'red', 5e-3 : 'green',
-        2.5e-3 : 'blue', 1e-3 : 'violet', 5e-4 : 'gray', 5e-2 : 'gold',
-        0.1 : 'silver', 0.2 : 'none' },
-
-    toleranceValues: [ 0.01, 0.02 ],
-
-    init: function (id) {
-          this.id = id;
-          this.nominalValue = 0.0; //resistance value specified by band colors;
-          this.realValue = 0.0; //real resistance value in Ohms
-          this.tolerance = 0.0; //tolerance value
-          this.colors = []; //colors for each resistor band
-    },
-
-    getNumBands: function () {
-        return this.numBands;
-    },
-
-    getNominalValue: function () {
-        return this.nominalValue;
-    },
-
-    setNominalValue: function (value) {
-        this.nominalValue = value;
-    },
-
-    getTolerance: function () {
-        return this.tolerance;
-    },
-
-    setTolerance: function(value) {
-        this.tolerance = value;
-    },
-
-    getRealValue: function () {
-        return this.realValue;
-    },
-
-    setRealValue: function (value) {
-        this.realValue = value;
-    },
-
-    setResistance: function (value) {
-      this.resistance = value;
-      this.updateColors();
-    },
-
-    updateColors: function (resistance, tolerance) {
-        this.colors = this.getColors4Band( this.resistance, (!!this.tolerance ? this.tolerance : 0.05));
-        this.setViewArguments({color: this.colors});
-    },
-
-    show : function() {
-    },
-
-    calcRealValue: function (nominalValue, tolerance) {
-        var chance = Math.random();
-        if (chance > 0.8) {
-            var chance2 = Math.random();
-            if (chance2 < 0.5) {
-                return nominalValue + nominalValue * (tolerance + Math.random() * tolerance);
-            }
-            else {
-                return nominalValue - nominalValue * (tolerance + Math.random() * tolerance);
-            }
-        }
-
-        // Multiply 0.9 just to be comfortably within tolerance
-        var realTolerance = tolerance * 0.9;
-        return nominalValue * this.randFloat(1 - realTolerance, 1 + realTolerance);
-    },
-
-    randInt: function (min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    },
-
-    randFloat: function (min, max) {
-        return this.randPseudoGaussian(3) * (max - min) + min;
-    },
-
-    randPseudoGaussian: function (n) {
-        var r = 0.0;
-        for (var i = 0; i < n; ++i) {
-            r += Math.random();
-        }
-        return r / n;
-    },
-
-    // Filter resistance values according to the requirements of this resistor
-    filter: function (in_values) {
-        var values = [];
-        for (var i = 0; i < in_values.length; ++i) {
-            if (in_values[i] >= 10.0 && in_values[i] < 2e6) {
-                values.push(in_values[i]);
-            }
-        }
-        return values;
-    },
-
-    getColors4Band: function (ohms, tolerance) {
-        var s = ohms.toString(),
-            decIx = s.indexOf('.'),
-            decLoc = decIx > -1 ? decIx : s.length,
-            len, i;
-        s = s.replace('.', '');
-        len = s.length;
-        for (i = 0; i < 2 - len; ++i){ s += '0'; }
-        return [ this.colorMap[s.charAt(0)],
-                 this.colorMap[s.charAt(1)],
-                 this.colorMap[decLoc - 2],
-                 this.toleranceColorMap[tolerance]
-               ];
-    },
-
-    getColors5Band: function (ohms, tolerance) {
-        var s = ohms.toString(),
-            decIx = s.indexOf('.'),
-            decLoc = decIx > -1 ? decIx : s.length,
-            len, i;
-        s = s.replace('.', '');
-        len = s.length;
-        for (i = 0; i < 3 - len; ++i) { s += '0'; }
-        return [ this.colorMap[s.charAt(0)],
-                 this.colorMap[s.charAt(1)],
-                 this.colorMap[s.charAt(2)],
-                 this.colorMap[decLoc - 3],
-                 this.toleranceColorMap[tolerance]
-               ];
-    },
-
-    colorToNumber: function (color) {
-      for (var n in this.colorMap) {
-        if (this.colorMap[n] == color) { return parseInt(n,10); }
-      }
-      // alternate spelling...
-      if (color == "gray") {
-        return 8;
-      }
-      return null;
-    },
-
-    getResistance: function(colors){
-      if (typeof(colors)==="string"){
-        colors = colors.split(",");
-      }
-      var resistance = this.colorToNumber(colors[0]);
-      for (var i = 1; i < colors.length - 2; i++) {
-        resistance = resistance * 10;
-        resistance += this.colorToNumber(colors[i]);
-      }
-      return resistance * Math.pow(10, this.colorToNumber(colors[i]));
-    },
-
-    addCiSoComponent: function (ciso) {
-      var resistance  = this.resistance || 0,
-          nodes       = this.getNodes();
-      ciso.addComponent(this.UID, "Resistor", resistance, nodes);
-    },
-
-    applyFaults: function() {
-      if (!!this.open){
-        this.resistance = 1e20;
-        this.addThisToFaults();
-      } else if (!!this.shorted) {
-        this.resistance = 1e-6;
-        this.addThisToFaults();
-      } else {
-        this.open = false;
-        this.shorted = false;
-      }
-    },
-
-    componentTypeName: "Resistor",
-
-    isEditable: true,
-
-    editableProperty: {name: "resistance", units: "\u2126"},
-
-    getEditablePropertyValues: function() {
-      resValues = [];
-      baseValues = r_values.r_values4band10pct;
-
-      for (i = 0; i < 6; i++) {
-        for (j = 0; j < baseValues.length; j++) {
-          resValues.push(baseValues[j] * Math.pow(10, i));
-        }
-      }
-
-      return resValues;
-    },
-
-    changeEditableValue: function(val) {
-      this.setResistance(val);
-      workbenchController.breadboardView.changeResistorColors(this.UID, this.getViewArguments().color);
-    }
-});
-
-module.exports = Resistor;
-
-},{"../controllers/workbench-controller":18,"../helpers/util":23,"./component":4,"./r-values":10,"./resistor-4band":12}],14:[function(require,module,exports){
-var extend    = require('../helpers/util').extend,
-    Resistor  = require('./resistor');
-
-VariableResistor = function (props, breadboardController) {
-  Resistor.parentConstructor.call(this, props, breadboardController);
-  var superclass = VariableResistor.uber;
-  superclass.init.apply(this, [props.UID]);
-  this.resistance = this.minimumResistance;
-};
-
-extend(VariableResistor, Resistor, {
-
-  getMinResistance: function() {
-    return this.minimumResistance;
-  },
-
-  getMaxResistance: function() {
-    return this.maximumResistance;
-  },
-
-  scaleResistance: function(value) {
-    var perc = value / 10,       // values are 0-10
-        range = this.maximumResistance - this.minimumResistance,
-        newValue = this.minimumResistance + (range * perc);
-    this.resistance = newValue;
-  }
-
-});
-
-module.exports = VariableResistor;
-
-},{"../helpers/util":23,"./resistor":13}],15:[function(require,module,exports){
-var extend    = require('../helpers/util').extend,
-    Component = require('./component');
-
-Wire = function (props, breadboardController) {
-  Wire.parentConstructor.call(this, props, breadboardController);
-  this.setViewArguments({color: this.getColor()});
-};
-
-extend(Wire, Component, {
-
-  getColor: function () {
-    var location = this.getLocation();
-    if (location.indexOf("positive") > -1) {
-      return "red";
-    } else if (location.indexOf("negative") > -1) {
-      return "black";
-    } else {
-      if (Math.random() < 0.5){
-        return "green";
-      } else {
-        return "blue";
-      }
-    }
-  },
-
-  addCiSoComponent: function (ciso) {
-    var resistance  = 1e-6,
-        nodes       = this.getNodes();
-    ciso.addComponent(this.UID, "Resistor", resistance, nodes);
-  }
-});
-
-module.exports = Wire;
-
-},{"../helpers/util":23,"./component":4}],16:[function(require,module,exports){
-var util                  = require('../helpers/util'),
-    Breadboard            = require('../circuit/breadboard'),
-    Battery               = require('../circuit/battery'),
-    Capacitor             = require('../circuit/capacitor'),
-    FunctionGenerator     = require('../circuit/function-generator'),
-    Inductor              = require('../circuit/inductor'),
-    PowerLead             = require('../circuit/power-lead'),
-    Resistor4band         = require('../circuit/resistor-4band'),
-    Resistor              = require('../circuit/resistor'),
-    VariableResistor      = require('../circuit/variable-resistor'),
-    Component             = require('../circuit/component'),
-    Wire                  = require('../circuit/wire'),
-    componentTypes = {
-      "resistor": Resistor,
-      "variable resistor": VariableResistor,
-      "inductor": Inductor,
-      "capacitor": Capacitor,
-      "battery": Battery,
-      "function generator": FunctionGenerator,
-      "wire": Wire,
-      "powerLead": PowerLead
-    },
-    breadboard,
-    workbenchController,
-    BreadboardController,
-    breadboardController;
-
-
-
-BreadboardController = function() {
-  breadboard = new Breadboard();
-}
-
-BreadboardController.prototype = {
-
-  init: function (_workbenchController) {
-    workbenchController = _workbenchController;
-  },
-
-  component: function (props) {
-    if(typeof props=='string'){
-      return breadboard.components[props];
-    } else {
-      var component;
-
-      if (componentTypes[props.kind]){
-        component = new componentTypes[props.kind](props, this, workbenchController);
-      } else {
-        component = new Component(props, this);
-      }
-      breadboard.components[props.UID] = component;
-      return component;
-    }
-  },
-
-  clear: function () {
-    var destroyed = 0,
-        k;
-
-    this.resOrderOfMagnitude = -1;
-    for( k in breadboard.components ){
-      if (!breadboard.components.hasOwnProperty(k)) continue;
-      this.removeComponent(breadboard.components[k]);
-    }
-    breadboard.components = {};
-    breadboard.faultyComponents = [];
-
-    this.clearHoleMap();
-  },
-
-  // can pass either a hole or a string
-  getHole: function(hole) {
-    if (!hole) return;
-
-    if (hole.name){
-      if (!!breadboard.holeMap[hole.name]){
-        return this.getHole(breadboard.holeMap[hole.getName()]);
-      }
-      return hole;
-    }
-
-    // should be a string
-
-    // replace with mapped name
-    if (!!breadboard.holeMap[hole]){
-      hole = breadboard.holeMap[hole];
-    }
-
-    // return hole if it is in breadboard
-    if (!!breadboard.holes[hole]){
-      return breadboard.holes[hole];
-    }
-
-    // otherwise, make a new ghosthole
-    return breadboard.createGhostHole(hole);
-  },
-
-  getHoles: function() {
-    return breadboard.holes;
-  },
-
-  // Resets all connections, used when holeMap changes
-  resetConnections: function(oldHoleName, newHoleName) {
-    var i, j;
-
-    for( i in breadboard.components ){
-      if (!breadboard.components.hasOwnProperty(i)) continue;
-      var comp = this.component(i);
-      for (j in comp.connections){
-        if (!comp.connections.hasOwnProperty(j)) continue;
-        if (!!comp.connections[j] && comp.connections[j].getName() === oldHoleName) {
-          comp.connections[j] = this.getHole(newHoleName);
-        }
-      }
-    }
-  },
-
-  // Adds a fault to an existing circuit. A fault may affect one or
-  // more components. If fault.component is set, it will be applied to
-  // that component. Otherwise, if fault.count or fault.max are set, it
-  // will be applied to a number of random components.
-  addFault: function(fault) {
-    if (!!fault.component){
-      this.addFaultToComponent(fault, breadboard.components[fault.component]);
-    } else {
-      // find out how many components we should be applying this to
-      var count;
-      if (!!fault.count) {
-        count = fault.count;
-      } else if (!!fault.max) {
-        count = Math.floor(Math.random() * fault.max) + 1;    // between 1 and max faults
-      }
-
-
-      // apply fault to valid components 'count' times, with no repitition. No checking is
-      // done to see if there are sufficient valid components for this to be possible, so
-      // application will hang if authored badly.
-      var componentKeys = util.getKeys(breadboard.components);
-      for (var i = 0; i < count; i++){
-        var randomComponent = null;
-        while (randomComponent === null) {
-          var rand = Math.floor(Math.random() * componentKeys.length);
-          var component = breadboard.components[componentKeys[rand]];
-          if (!!component.applyFaults && (util.contains(breadboard.faultyComponents, component) === -1)){
-            randomComponent = component;
-          }
-        }
-        this.addFaultToComponent(fault, randomComponent);
-      }
-    }
-  },
-
-  // adds a fault to a specific component. If fault.type is an array, a random
-  // type will be picked
-  addFaultToComponent: function(fault, component) {
-    var type;
-    if (fault.type instanceof Array){
-      type = fault.type[Math.floor(Math.random() * fault.type.length)];
-    } else {
-      type = fault.type;
-    }
-
-    if (type === "open") {
-      component.open = true;
-      component.shorted = false;
-    } else if (type === "shorted") {
-      component.shorted = true;
-      component.open = false;
-    }
-    if (component.applyFaults) {
-      component.applyFaults();
-    }
-
-    breadboard.faultyComponents.push(component);
-  },
-
-  addFaultyComponent: function(comp) {
-    if (!~breadboard.faultyComponents.indexOf(this)) {
-      brebreadboardadBoard.faultyComponents.push(this);
-    }
-  },
-
-  getFaults: function() {
-    return breadboard.faultyComponents;
-  },
-
-  getFault: function() {
-    if (breadboard.faultyComponents.length > 0){
-      return breadboard.faultyComponents[0];
-    }
-    return null;
-  },
-
-
-
-  // "Public" functions. These used to be the old "interfaces" object
-  insertComponent: function(kind, properties){
-    // copy props into a new obj, so we don't modify original
-    var props = {};
-    $.each(properties, function(key, property){
-      props[key] = property;
-    });
-
-    props.kind = kind;
-
-    // ensure no dupes, using either passed UID or type
-    props.UID = this.getUID(!!props.UID ? props.UID : props.kind);
-
-    // if uid is source, and no conections are specified, assume we are connecting to rails
-    if (props.UID === "source" && !props.connections){
-      props.connections = "left_positive21,left_negative21";
-    }
-
-    var newComponent = this.component(props);
-
-    // update view
-    if (workbenchController.breadboardView) {
-      if (newComponent.getViewArguments && newComponent.hasValidConnections() && newComponent.kind !== "battery" && !newComponent.hidden) {
-        workbenchController.breadboardView.addComponent(newComponent.getViewArguments());
-      }
-      if ((newComponent.kind == "battery" || newComponent.kind == "function generator") && !newComponent.hidden){ // FIXME
-        workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
-      }
-    }
-
-    return newComponent.UID;
-  },
-
-  createCircuit: function(jsonCircuit) {
-    var circuitHasReferenceFrequency = typeof jsonCircuit.referenceFrequency === 'number';
-    var self = this;
-    $.each(jsonCircuit, function(i, spec) {
-      // allow each component spec to override the circuit-wide reference frequency, if author desires.
-      if (circuitHasReferenceFrequency && typeof spec.referenceFrequency === 'undefined') {
-        spec.referenceFrequency = jsonCircuit.referenceFrequency;
-      }
-      self.insertComponent(spec.type, spec);
-    });
-
-    this.insertComponent("powerLead", {
-      UID: "blackPowerLead",
-      type: "powerLead",
-      connections: "left_negative21"
-    });
-  },
-
-  addFaults: function(jsonFaults){
-    var self = this;
-    $.each(jsonFaults, function(i, fault){
-      self.addFault(fault);
-    });
-  },
-
-  getResOrderOfMagnitude: function(){
-    return breadboard.resOrderOfMagnitude;
-  },
-
-  setResOrderOfMagnitude: function(om){
-    breadboard.resOrderOfMagnitude = om;
-  },
-
-  checkLocation: function(comp){     // ensure that a component's leads aren't too close
-    var minDistance = {
-          resistor: 6,
-          inductor: 5,
-          capacitor: 3,
-          wire: 3
-        },
-        yValue = {
-          left_positive: 1,
-          left_negative: 2,
-          a: 4, b: 5, c: 6, d: 7, e: 8,
-          f: 10, g: 11, h: 12, i: 13, j: 14,
-          right_positive: 16,
-          right_negative: 17
-        },
-        getCoordinate = function(hole) {      // returns [20, 4] for "a20"
-          var name  = hole.name,
-              split = /(\D*)(.*)/.exec(name),
-              row   = yValue[split[1]];
-          return [split[2]*1, row];
-        },
-        leadsAreTooClose = function() {
-          var dx, dy, leadDistance;
-
-          comp.coord = [];
-          comp.coord[0] = getCoordinate(comp.connections[0]);
-          comp.coord[1] = getCoordinate(comp.connections[1]);
-          dx = comp.coord[1][0] - comp.coord[0][0];
-          dy = comp.coord[1][1] - comp.coord[0][1];
-          leadDistance = Math.sqrt(dx*dx + dy*dy);
-
-          return (leadDistance < minDistance[comp.type]);
-        },
-        leadsWereTooClose = false;
-
-    while (leadsAreTooClose()) {
-      leadsWereTooClose = true;
-      var rightLead = comp.coord[0][0] < comp.coord[1][0] ? 0 : 1,
-          leftLead = (rightLead - 1) * -1,
-          newX, newName;
-
-      if (comp.coord[rightLead][0] > 1) {
-        // move right lead one to the right
-        newX = comp.coord[rightLead][0] - 1;
-        newName = comp.connections[rightLead].name.replace(/\d*$/, newX);
-        comp.connections[rightLead] = this.getHole(newName);
-      } else {
-        // move left lead one to the left
-        newX = comp.coord[leftLead][0] + 1;
-        newName = comp.connections[leftLead].name.replace(/\d*$/, newX);
-        comp.connections[leftLead] = this.getHole(newName);
-      }
-    }
-
-    // update view
-    if (leadsWereTooClose && workbenchController.breadboardView) {
-      workbenchController.breadboardView.removeComponent(comp.UID);
-      workbenchController.breadboardView.addComponent(comp.getViewArguments());
-    }
-
-  },
-
-  getUID: function(_name){
-    var name = _name.replace(/ /g, "_");      // no spaces in qucs
-
-    if (!breadboard.components[name]){
-      return name;
-    }
-
-    var i = 0;
-    while (!!breadboard.components[""+name+i]){
-      i++;
-    }
-    return ""+name+i;
-  },
-
-  // clean up these three overlapping functions
-  remove: function(type, connections){
-    var comp = this.findComponent(type, connections);
-    if (!!comp){
-      comp.destroy();
-    }
-    workbenchController.breadboardView.removeComponent(uid);
-  },
-
-  removeComponent: function(comp){
-    var uid = comp.UID;
-    comp.destroy();
-    if (uid) {
-      workbenchController.breadboardView.removeComponent(uid);
-    }
-  },
-
-  deleteComponentFromMap: function(id) {
-    delete breadboard.components[id];
-  },
-
-  findComponent: function(type, connections){
-    var i, component;
-
-    if (!!type && !!connections && connections.split(",").length === 2){
-      connections = connections.split(",");
-      for (i in breadboard.components){
-        if (!breadboard.components.hasOwnProperty(i)) continue;
-        component = breadboard.components[i];
-        if (component.kind === type && !!component.connections[0] &&
-          ((component.connections[0].getName() === connections[0] &&
-            component.connections[1].getName() === connections[1]) ||
-          (component.connections[0].getName() === connections[1] &&
-            component.connections[1].getName() === connections[0]))){
-            return component;
-          }
-      }
-    }
-    return null;
-  },
-
-  destroy: function(component){
-    this.component(component).destroy();
-  },
-
-  move: function(component, connections){
-    this.component(component).move(connections.split(','));
-  },
-
-  getGhostHole: function(name){
-    return breadboard.createGhostHole(name);
-  },
-
-  mapHole: function(oldHoleName, newHoleName){
-    breadboard.holeMap[oldHoleName] = newHoleName;
-    this.resetConnections(oldHoleName, newHoleName);
-  },
-
-  unmapHole: function(oldHoleName){
-    var newHoleName = breadboard.holeMap[oldHoleName];
-    breadboard.holeMap[oldHoleName] = undefined;
-    this.resetConnections(newHoleName, oldHoleName);
-  },
-
-  clearHoleMap: function(){
-    breadboard.holeMap = {};
-  },
-
-  addRandomResistor: function(name, location, options){
-    console.log("WARNING: addRandomResistor is deprecated");
-    var resistor = new Resistor4band(name);
-    resistor.randomize((options | null));
-    this.insert('resistor', location, resistor.getRealValue(), name, resistor.colors);
-    return resistor;
-  },
-
-  getComponents: function() {
-    return breadboard.components;
-  },
-
-  // this method will modify the breadboard as necessary to create additional temporary components
-  // that correspond to the measurement-type's circuit changes (e.g. large resistor for a voltmeter),
-  // and then simply call qucsator.qucsate, and return the resulting results object.
-  // NB: This function used to return the final value required by the DMM. It no longer does so, as
-  // it does not assume a DMM is doing the requesting, and instead returns the entire results object.
-  query: function(type, connections, callback, context, callbackArgs){
-    var tempComponents = [],
-        ghost, ohmmeterBattery,
-        voltmeterResistor,
-        ammeterResistor,
-        oscopeResistor,
-        ciso,
-        node;
-
-    // add DMM components as necessary
-    if (type === 'resistance') {
-      connections = connections.split(',');
-      ghost = breadboard.createGhostHole();
-      ohmmeterBattery = this.component({
-        UID: 'ohmmeterBattery',
-        kind: 'battery',
-        voltage: 1,
-        connections: [connections[0], connections[1]]});
-      // var currentProbe = this.component({
-      //   UID: 'meter',
-      //   kind: 'iprobe',
-      //   connections: [connections[1], ghost]});
-      tempComponents.push(ohmmeterBattery);
-    } else if (type === 'voltage'){
-      voltmeterResistor = this.component({
-        UID: 'voltmeterResistor',
-        kind: 'resistor',
-        resistance: 1e12,
-        connections: connections.split(',')});
-      tempComponents.push(voltmeterResistor);
-    } else if (type === 'current'){
-      ammeterResistor = this.component({
-        UID: 'ammeterResistor',
-        kind: 'resistor',
-        resistance: 1e-6,
-        connections: connections.split(',')});
-      tempComponents.push(ammeterResistor);
-    } else if (type === 'oscope') {
-      oscopeResistor = this.component({
-        UID: 'oscopeResistor',
-        kind: 'resistor',
-        resistance: 1e12,
-        connections: [connections, "gnd"]});
-      tempComponents.push(oscopeResistor);
-    }
-
-    ciso = new CiSo();
-
-    $.each(breadboard.components, function(i, component) {
-      component.addCiSoComponent(ciso);
-    });
-
-    // if ohmmeter, set reference node
-    if (type === 'resistance') {
-      node = this.getHole(connections[1]).nodeName();
-      ciso.setReferenceNode(node);
-    }
-    // destroy the temporary DMM components
-    $.each(tempComponents, function(i, component){
-      component.destroy();
-    });
-
-    callback.call(context, ciso, callbackArgs);
-  },
-
-  updateView: function() {
-    $.each(breadboard.components, function(i, component) {
-      if (component.getViewArguments && component.hasValidConnections() && component.kind !== "battery" && !component.hidden) {
-        workbenchController.breadboardView.addComponent(component.getViewArguments());
-      }
-      if ((component.kind == "battery" || component.kind == "function generator") && !component.hidden) { // FIXME
-        workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
-      }
-    });
-  },
-
-  // returns an array of serialized components
-  serialize: function() {
-    var circuit = [];
-
-    $.each(breadboard.components, function(i, component) {
-      circuit.push(component.serialize());
-    });
-
-    return circuit;
-  }
-
-}
-
-//// BreadBoard Instance & Interface /////////////////////////////////////////
-breadboardController = new BreadboardController();
-
-module.exports = breadboardController;
-
-},{"../circuit/battery":1,"../circuit/breadboard":2,"../circuit/capacitor":3,"../circuit/component":4,"../circuit/function-generator":5,"../circuit/inductor":6,"../circuit/power-lead":9,"../circuit/resistor":13,"../circuit/resistor-4band":12,"../circuit/variable-resistor":14,"../circuit/wire":15,"../helpers/util":23}],17:[function(require,module,exports){
-
-var LogEvent  = require('../models/log'),
-    util      = require('../helpers/util');
-
-Log = function(startTime){
-  this.events = [];
-  this.startTime = startTime;
-  this.endTime = -1;
-};
-
-LogController = function(){
-  this.currentLog = null;
-  this.listeners = [];
-};
-
-LogController.prototype = {
-
-  startNewSession: function() {
-    this.currentLog = new Log(new Date().valueOf());
-  },
-
-  endSession: function() {
-    this.currentLog.endTime = new Date().valueOf();
-  },
-
-  addEvent: function (name, value) {
-    var evt = new LogEvent(name, value, new Date().valueOf());
-    this.currentLog.events.push(evt);
-    for (i in this.listeners) {
-      if (typeof this.listeners[i] == "function") {
-        this.listeners[i](evt);
-      }
-    }
-  },
-
-  numEvents: function(log, name) {
-    var count = 0;
-    $.each(log.events, function(i, evt){
-      if (evt.name == name){
-        count ++;
-      }
-    });
-    return count;
-  },
-
-  numUniqueMeasurements: function(log, type) {
-    var count = 0;
-    var positions = [];
-    $.each(log.events, function(i, evt){
-      if (evt.name == LogEvent.DMM_MEASUREMENT){
-        if (evt.value.measurement == type) {
-          var position = evt.value.red_probe + "" + evt.value.black_probe;
-          if (util.contains(positions, position) === -1) {
-            count++;
-            positions.push(position);
-          }
-        }
-      }
-    });
-    return count;
-  },
-
-  numConnectionChanges: function(log, type) {
-    var count = 0;
-    $.each(log.events, function(i, evt){
-      if (evt.name == LogEvent.CHANGED_CIRCUIT && evt.value.type == type){
-        count ++;
-      }
-    });
-    return count;
-  },
-
-  addListener: function(func) {
-    this.listeners.push(func);
-  }
-
-};
-
-logController = new LogController();
-
-module.exports = logController;
-
-},{"../helpers/util":23,"../models/log":28}],18:[function(require,module,exports){
-var Oscilloscope          = require('../models/oscilloscope'),
-    Workbench             = require('../models/workbench'),
-    Multimeter            = require('../circuit/multimeter'),
-    logController         = require('./log-controller'),
-    breadboardController  = require('./breadboard-controller');
-
-
-WorkbenchController = function(){
-  //this.workbenchMap = {}
-  this.workbench = null;    // for now
-  this.breadboardController = breadboardController;
-  this.breadboardController.init(this);
-  this.logController = logController;
-};
-
-WorkbenchController.prototype = {
-
-  createWorkbench: function(props, elId) {
-    var workbench = new Workbench(null, this.breadboardController);
-    this.workbench = workbench;
-
-    this.initialProperties = props;
-
-    workbench.circuit = props.circuit;
-    if (workbench.circuit) workbench.circuit.referenceFrequency = props.referenceFrequency;
-
-    workbench.faults = props.faults;
-
-    workbench.show_multimeter = !(!(props.show_multimeter) || props.show_multimeter === "false");     // may be a string
-    workbench.show_oscilloscope = !(!(props.show_oscilloscope) || props.show_oscilloscope === "false");
-    workbench.allow_move_yellow_probe = !(!(props.allow_move_yellow_probe) || props.allow_move_yellow_probe === "false");
-    workbench.hide_pink_probe = !(!(props.hide_pink_probe) || props.hide_pink_probe === "false");
-    workbench.disable_multimeter_position = props.disable_multimeter_position;
-
-    workbench.showComponentDrawer = !(!(props.showComponentDrawer) || props.showComponentDrawer === "false");
-    workbench.showComponentEditor = !(!(props.showComponentEditor) || props.showComponentEditor === "false");
-
-    if (workbench.show_multimeter) {
-      workbench.meter.dmm = new Multimeter(breadboardController);
-      if(workbench.disable_multimeter_position){
-        workbench.meter.dmm.set_disable_multimeter_position(workbench.disable_multimeter_position);
-      }
-    } else {
-      workbench.meter.dmm = null;
-    }
-
-    if (workbench.show_oscilloscope) {
-      workbench.meter.oscope = new Oscilloscope(breadboardController);
-    } else {
-      workbench.meter.oscope = null;
-    }
-
-    // this shouldn't be here
-    logController.startNewSession();
-
-    this.loadBreadboard();
-
-    workbench.view.layout(elId);
-
-    return workbench;
-  },
-
-  loadBreadboard: function() {
-    var workbench = this.workbench;
-
-    breadboardController.clear();
-
-    if (!!workbench.circuit){
-      breadboardController.createCircuit(workbench.circuit);
-    }
-
-    if (!!workbench.faults){
-      breadboardController.addFaults(workbench.faults);
-    }
-  },
-
-  setDMMVisibility: function(visible) {
-    var workbench = this.workbench;
-    if (visible) {
-      workbench.meter.dmm = new Multimeter(breadboardController);
-      if(workbench.disable_multimeter_position){
-        workbench.meter.dmm.set_disable_multimeter_position(workbench.disable_multimeter_position);
-      }
-    } else {
-      workbench.meter.dmm = null;
-    }
-    sparks.activity.view.showDMM(visible);
-  },
-
-  setOScopeVisibility: function(visible) {
-    var workbench = this.workbench;
-    if (visible) {
-      workbench.meter.oscope = new Oscilloscope(breadboardController);
-    } else {
-      workbench.meter.oscope = null;
-    }
-    sparks.activity.view.showOScope(visible);
-  },
-
-  serialize: function() {
-    var json = this.initialProperties;
-    json.circuit = this.breadboardController.serialize();
-    return JSON.stringify(json, null, '\t');
-  }
-
-};
-
-//var workbenchController = new WorkbenchController();
-
-module.exports = new WorkbenchController();
-
-},{"../circuit/multimeter":8,"../models/oscilloscope":30,"../models/workbench":31,"./breadboard-controller":16,"./log-controller":17}],19:[function(require,module,exports){
-var unit                  = require('./unit');
-
-mathParser = {};
-
-var p = mathParser;
-
-p.standardizeUnits = function(string) {
-  string = string.replace(/ohms/gi,"&#x2126;");
-  string = string.replace("micro","&#x00b5;");
-  string = string.replace("milli","m");
-  string = string.replace("kilo","k");
-  string = string.replace("mega","M");
-  return string;
-};
-
-module.exports = mathParser;
-
-},{"./unit":22}],20:[function(require,module,exports){
-sound = {};
-
-sound.mute = false;
-
-sound.play = function (sound) {
-  if (!!window.Audio && !sound.mute) {
-    sound.play();
-  }
-}
-
-module.exports = sound;
-
-},{}],21:[function(require,module,exports){
-//= require helpers/string
-
-/*globals console sparks */
-
-/* FILE math.js */
-
-str = {};
-
-str.strip = function (s) {
-    s = s.replace(/\s*([^\s]*)\s*/, '$1');
-    return s;
-};
-
-// Remove a dot in the string, and then remove 0's on both sides
-// e.g. '20100' => '201', '0.0020440' => '2044'
-str.stripZerosAndDots = function (s) {
-    s = s.replace('.', '');
-    s = s.replace(/0*([^0].*)/, '$1');
-    s = s.replace(/(.*[^0])0*/, '$1');
-    return s;
-};
-
-str.stripZeros = function (s) {
-    s = s.replace(/0*([^0].*)/, '$1');
-    s = s.replace(/(.*[^0])0*/, '$1');
-    return s;
-};
-
-math = {};
-
-// Return true if number x is 10^z times y where z is an int
-math.equalExceptPowerOfTen = function(x, y) {
-    var sx = str.stripZerosAndDots(x.toString());
-    var sy = str.stripZerosAndDots(y.toString());
-
-    return sx === sy;
-};
-
- // Get 10's power of the most significant digit.
- // e.g. For 4: 0, for 77: 1, for 3753: 3, for 0.02.
- // NOTE: The most significant digit is assumed to be the first non-zero digit,
- // which may be unacceptable for certain applications.
- // NOTE: x is a non-negative number.
- math.leftMostPos = function (x) {
-     x = Number(x);
-     if (isNaN(x) || x < 0) {
-         console.log('ERROR: math.leftMostPos: Invalid input ' + x);
-         return 0;
-     }
-     if (x === 0) {
-         return 0;
-     }
-     var n = 0;
-     var y = x;
-     if (x < 1) {
-         while (y < 1) {
-             y *= 10;
-             n -= 1;
-         }
-     }
-     else {
-         while (y >= 10) {
-             y /= 10;
-             n += 1;
-         }
-     }
-     return n;
- };
-
- // Round x to n significant digits
- // e.g. Returns 12700 for 12678 when n = 3.
-math.roundToSigDigits = function(x, n) {
-  if (x === 0) {
-    return 0;
-  }
-  var order = Math.ceil(Math.log10(x)),
-      factor;
-
-  // Divide into 2 cases to get numerically sane results (i.e., no .xxx999999s)
-  if (n - order > 0) {
-    // Ex. order of x = 1e-4, n = 3 sig digs: so multiply by 1e7, round, then divide by 1e7
-    factor = Math.pow(10, n - order);
-    return Math.round(x * factor) / factor;
-  } else {
-    // Ex. order of x = 1e6, n = 2 sig digs: so divide by 1e4, round, then multiply by 1e4
-    factor = Math.pow(10, order - n);
-    return Math.round(x / factor) * factor;
-  }
-};
-
- // Similar to roundToSigDigits but returns number composed only of the n
- // significant digits; e.g., returns 127 for 12678 when n = 3.
- math.getRoundedSigDigits = function (x, n) {
-     return Math.round(x * Math.pow(10, n - math.leftMostPos(x) - 1));
- };
-
-
- // *** extend the Math object with useful methods ***
-
- Math.log10 = function(x){
-   return Math.log(x)/Math.LN10;
- };
-
- Math.orderOfMagnitude = function(x) {
-   if (x === 0) return 0;
-   return Math.floor( Math.log(Math.abs(x))/Math.LN10 );
- };
-
- Math.powNdigits = function(x,n){
-   return Math.pow(10,Math.floor(Math.log(x)/Math.LN10-n+1));
- };
-
- // Rounds to n sig figs (including adding on trailing zeros if necessary),
- // and returns a string representation of the number.
- Math.toSigFigs = function(num, sigFigs) {
-   num = num.toPrecision(sigFigs);
-   return sigFigs > Math.log(num) * Math.LOG10E ? num : ""+parseFloat(num);
- };
-
- Math.close = function(num, expected, perc) {
-   var perc = perc || 5,
-        dif = expected * (perc/100);
-   return (num >= (expected-dif) && num <= (expected+dif));
- };
-
- // *** extend the Array object with useful methods ***
-
- Array.max = function( array ){
-     return Math.max.apply( Math, array );
- };
- Array.min = function( array ){
-     return Math.min.apply( Math, array );
- };
-
- module.exports = math;
-
-
-},{}],22:[function(require,module,exports){
-unit = {};
-
-var u = unit;
-
-u.labels = { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' };
-
-u.toEngineering = function (value, units){
-  value = Number(value);
-  var isShort = (units.length === 1 || units === "Hz"),
-      prefix  = "";
-
-  if (value >= 1000000){
-    prefix = isShort ? "M" : "mega";
-    value = u.round(value/1000000,2);
-  } else if (value >= 1000){
-    prefix = isShort ? "k" : "kilo";
-    value = u.round(value/1000,2);
-  } else if (value === 0 ) {
-    value = 0;
-  } else if (value < 0.000000001){
-    prefix = isShort ? "p" : "pico";
-    value = u.round(value * 1000000000000,2);
-  } else if (value < 0.000001){
-    prefix = isShort ? "n" : "nano";
-    value = u.round(value * 1000000000,2);
-  } else if (value < 0.001){
-    prefix = isShort ? "μ" : "micro";
-    value = u.round(value * 1000000,2);
-  } else if (value < 1) {
-    prefix = isShort ? "m" : "milli";
-    value = u.round(value * 1000,2);
-  } else {
-    value = u.round(value,2);
-  }
-  units = prefix + units;
-
-  return {"value": value, "units": units};
-};
-
-u.round = function(num, dec) {
-	var result = Math.round( Math.round( num * Math.pow( 10, dec + 2 ) ) / Math.pow( 10, 2 ) ) / Math.pow(10,dec);
-	return result;
-};
-
-u.sigFigs = function(n, sig) {
-    var mult = Math.pow(10,
-        sig - Math.floor(Math.log(n) / Math.LN10) - 1);
-    return Math.round(n * mult) / mult;
-};
-
-// returns true if string is of form "50 ohms" or "0.1V"
-u.isMeasurement = function(string) {
-  var isMeasurementPattern = /^\s?\d+.?\d*\s?\D+\s?$/
-  var matched = string.match(isMeasurementPattern);
-  return !!matched;
-};
-
-/**
-* assumes this will be in the form ddd uu
-* i.e. a pure number and a unit, separated by an optional space
-* '50 ohms' and '50V' are both valid
-*/
-u.convertMeasurement = function(measurement) {
-  if (!this.isMeasurement(measurement)){
-    return measurement
-  }
-
-  var numPattern = /\d+\.?\d*/g
-  var nmatched = measurement.match(numPattern);
-  if (!nmatched){
-    return measurement;
-  }
-  var value = nmatched[0];
-
-  var unitPattern =  /(?=\d*.?\d*)[^\d\.\s]+/g
-  var umatched = measurement.match(unitPattern);
-  if (!umatched){
-    return measurement;
-  }
-  var unit = umatched[0];
-
-  var eng = u.toEngineering(value, unit)
-  return eng.value + " " + eng.units;
-};
-
-u.normalizeToOhms = function (value, unit) {
-    switch (unit) {
-    case u.labels.ohms:
-        return value;
-    case u.labels.kilo_ohms:
-        return value * 1000;
-    case u.labels.mega_ohms:
-        return value * 1e6;
-    }
-    return null;
-};
-
-u.ohmCompatible = function (unit) {
-    if (unit == u.labels.ohms || unit == u.labels.kilo_ohms ||
-        unit == u.labels.mega_ohms)
-    {
-        return true;
-    }
-    return false;
-};
-
-// Return a string with a unit representing the resistance value.
-// value: resistance value in ohms
-u.res_str = function (value) {
-    var vstr, unit, val;
-
-    if (typeof value !== 'number' || isNaN(Number(value))) {
-        return 'Invalid Value ' + String(value);
-    }
-
-    if (value < 1000) {
-        val = value;
-        unit = u.labels.ohms;
-    }
-    else if (value < 1e6) {
-        val = value / 1000;
-        unit = u.labels.kilo_ohms;
-    }
-    else {
-        val = value / 1e6;
-        unit = u.labels.mega_ohms;
-    }
-
-    if (val.toFixed) {
-        val = val.toFixed(6);
-    }
-
-    vstr = String(val).replace(/(\.[0-9]*[1-9])0*/, '$1');
-    vstr = vstr.replace(/([0-9])\.0+$/, '$1');
-    return vstr + ' ' + unit;
-};
-
-u.res_unit_str = function (value, mult) {
-    var vstr;
-    var unit = u.labels.ohms;
-
-    if (mult === 'k') {
-        vstr = String(value / 1000.0);
-        unit = u.labels.kilo_ohms;
-    }
-    else if (mult === 'M') {
-        vstr = String(value / 1000000.0);
-        unit = u.labels.mega_ohms;
-    }
-    else {
-        vstr = String(value);
-        unit = u.labels.ohms;
-    }
-    return vstr + ' ' + unit;
-};
-
-u.pct_str = function (value) {
-    return (value * 100) + ' %';
-};
-
-u.unitEquivalents = {
-  "V": ["v", "volts", "volt", "vol", "vs"],
-  "A": ["a", "amps", "amp", "amper", "ampers", "as"],
-  "Ohms": ["ohms", "oms", "o", "Ω", "os"],
-  "deg": ["deg", "degs", "degree", "degrees", "º"],
-  "F": ["f", "farads", "farad", "fared", "fareds", "fered", "fereds", "feret", "ferets", "ferret", "ferrets", "fs"],
-  "H": ["h", "henries", "henry", "henrys", "hs"],
-  "Hz": ["hz", "herz", "hertz"],
-  "%": ["%", "perc", "percent"]
-}
-
-u.prefixEquivalents = {
-  "femto": ["femto", "fempto", "f"],
-  "pico": ["pico", "picco", "p"],
-  "nano": ["nano", "nanno", "n"],
-  "micro": ["micro", "micron", "μ"],
-  "milli": ["mili", "milli", "millli"],
-  "kilo": ["kilo", "killo", "killlo", "k"],
-  "mega": ["mega", "meg"],
-  "giga": ["giga", "gigga", "g"]
-};
-
-u.prefixValues = {
-  "femto": 1E-15,
-  "pico": 1E-12,
-  "nano": 1E-9,
-  "micro": 1E-6,
-  "milli": 1E-3,
-  "kilo": 1E3,
-  "mega": 1E6,
-  "giga": 1E9
-};
-
-u.parse = function(string) {
-  var value, units, prefix, currPrefix, unit, equivalents, equiv, regex;
-
-  string = string.replace(/ /g, '');                    // rm all whitespace
-  string = string.replace(/['";:,\/?\\]/g, '');         // rm all non-period, non-dash puncutation
-  string = string.replace(/[^\d\.-]*(\d.*)/, '$1');      // if there are numbers, if there are letters before them remove them
-  value =  string.match(/^-?[\d\.]+/);                  // find all numbers before the first letter, parse them to a number, store it
-  if (value) {
-    value = parseFloat(value[0]);
-  }
-  string = string.replace(/^-?[\d\.]*/, '');             // everything after the first value is the units
-  string = string.replace(/['";:,\.\/?\\-]/g, '');       // rm all puncutation
-
-  for (unit in this.unitEquivalents) {                // if the unit can be found in the equivalents table, replace
-    equivalents = this.unitEquivalents[unit];
-    if (equivalents.length > 0) {
-      for (var i = 0, ii = equivalents.length; i<ii; i++) {
-        equiv = equivalents[i];
-        regex = new RegExp('.*('+equiv+')$', 'i');
-        hasUnits =string.match(regex)
-        if (hasUnits && hasUnits.length > 1){
-          units = unit;
-          string = string.replace(hasUnits[1], '');
-          break;
-        }
-      }
-    }
-    if (units) {
-      break;
-    }
-  }
-
-  if (!units) {
-    units = string;
-  }
-
-  for (currPrefix in this.prefixEquivalents) {                 // if we can find a prefix at the start of the string, store it and delete it
-    equivalents = this.prefixEquivalents[currPrefix];
-    if (equivalents.length > 0) {
-      for (var i = 0, ii = equivalents.length; i<ii; i++) {
-        equiv = equivalents[i];
-        regex = new RegExp('^('+equiv+').*', 'i');
-        prefixes = string.match(regex);
-        if (prefixes && prefixes.length > 1){
-          prefix = currPrefix;
-          units = units.replace(prefixes[1], '');
-          break;
-        }
-      }
-    }
-    if (prefix) {
-      break;
-    }
-  }
-
-  if (!prefix) {                                      // if we haven't found a prefix yet, check for case-sensitive m or M at start
-    if (string.match(/^m/)) {
-      prefix = "milli";
-      units = units.replace(/^m/, "");
-    } else if (string.match(/^M/)){
-      prefix = "mega";
-      units = units.replace(/^M/, "");
-    }
-  }
-
-  if (prefix) {
-    value = value * this.prefixValues[prefix];        // if we have a prefix, multiply by that;
-  }
-
-  if (!value) {
-    value = NaN;
-  }
-
-  return {val: value, units: units}
-};
-
-module.exports = unit;
-
-
-},{}],23:[function(require,module,exports){
-var util = {};
-
-/**
- * Naive deep-cloning of an object.
- * Doesn't check against infinite recursion.
- */
-util.cloneSimpleObject = function (obj) {
-    var ret, key;
-    if (obj instanceof Array) {
-        ret = [];
-        for (key in obj) {
-            ret.push(util.cloneSimpleObject(obj[key]));
-        }
-        return ret;
-    }
-    else if (typeof obj === 'object') {
-        ret = {};
-        for (key in obj) {
-            ret[key] = util.cloneSimpleObject(obj[key]);
-        }
-        return ret;
-    }
-    else {
-        return obj;
-    }
-};
-
-// The "next" function returns a different value each time
-// alternating between the two input values x, y.
-util.Alternator = function (x, y)
-{
-    this.x = x;
-    this.y = y;
-    this.cnt = 0;
-};
-util.Alternator.prototype =
-{
-    next : function () {
-        ++this.cnt;
-        return this.cnt % 2 == 1 ? this.x : this.y;
-    }
-};
-
-// Return a string representation of time lapsed between start and end
-util.timeLapseStr = function (start, end) {
-    var seconds = Math.floor((end - start) / 1000);
-    var minutes = Math.floor(seconds / 60);
-    seconds = seconds % 60;
-    var str = seconds + (seconds == 1 ? ' second' : ' seconds');
-    if (minutes > 0) {
-        str = minutes + (minutes == 1 ? ' minute ' : ' minutes ') + str;
-    }
-    return str;
-};
-
-/**
-The initial version of this was copied from the serializeArray method of jQuery
-this version returns a result object and uses the names of the input elements
-as the actual keys in the result object.  This requires more careful naming but it
-makes using the returned object easier.  It could be improved to handle dates and
-numbers perhaps using style classes to tag them as such.
-*/
-util.serializeForm = function (form) {
-    var result = {};
-    form.map(function () {
-        return this.elements ? jQuery.makeArray(this.elements) : this;
-    }).filter(function () {
-        return this.name &&
-        (this.checked || (/select|textarea/i).test(this.nodeName) ||
-        (/text|hidden|password|search/i).test(this.type));
-    }).each(function (i) {
-        var val = jQuery(this).val();
-        if(val === null){
-            return;
-        }
-
-        if (jQuery.isArray(val)) {
-            result[this.name] = jQuery.makeArray(val);
-        }
-        else {
-            result[this.name] = val;
-        }
-    });
-    return result;
-};
-
-// Returns a string representation of the input date
-// date: either a Date or a number in milliseconds
-util.formatDate = function (date) {
-    function fillZero(val) {
-        return val < 10 ? '0' + val : String(val);
-    }
-    if (typeof date === 'number') {
-        date = new Date(date);
-    }
-    var s = fillZero(date.getMonth() + 1) + '/';
-
-    s += fillZero(date.getDate()) + '/';
-    s += String(date.getFullYear()) + ' ';
-    s += fillZero(date.getHours()) + ':';
-    s += fillZero(date.getMinutes()) + ':';
-    s += fillZero(date.getSeconds()) + ' ';
-    return s;
-};
-
-util.todaysDate = function() {
-  var monthNames = ["January","February","March","April","May","June","July",
-                    "August","September","October","November","December"];
-
-  var now = new Date();
-  return monthNames[now.getMonth()] + " " +  now.getDate() + ", " + now.getFullYear();
-}
-
-// Pretty print an object. Mainly intended for debugging JSON objects
-util.prettyPrint = function (obj, indent) {
-    var t = '';
-    if (typeof obj === 'object') {
-        for (var key in obj) {
-            if (typeof obj[key] !== 'function') {
-                for (var i = 0; i < indent; ++i) {
-                    t += ' ';
-                }
-                t += key + ': ';
-                if (typeof obj[key] === 'object') {
-                    t += '\n';
-                }
-                t += util.prettyPrint(obj[key], indent + 4);
-            }
-        }
-        return t;
-    }
-    else {
-        return obj + '\n';
-    }
-};
-
-util.shuffle = function (o) {
-  for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
-  return o;
-};
-
-util.contains = function (array, obj) {
-  var i = array.length;
-    while (i--) {
-       if (array[i] === obj) {
-           return i;
-       }
-    }
-    return -1;
-};
-
-util.getKeys = function (json) {
-  var keys = [];
-  $.each(json, function(key){
-    keys.push(key);
-  })
-  return keys;
-};
-
-// When we define, say, a logaritmic sweep of frequencies, we calculate them on our end
-// for the function generator, and QUCS generates them on its end after being given a
-// simulation type. These two series may not be exactly the same after accounting for
-// different precisions, so we want to pick the QUCS value that's closest to what we
-// think we're generating. So, if we think we're generating 1002.2 Hz, and QUCS comes back
-// with [1000, 1002.22222, 1003.33333], we want to return the index '1'
-//
-// @array an array of numbers, complex or real
-// @actual the number we want
-// @isComplex whether the numbers in the array are complex or real
-util.getClosestIndex = function(array, actual, isComplex) {
-  var minDiff = Infinity,
-      index;
-  // this could be shortened as a CS exercise, but it takes 0 ms over an array of
-  // 10,000 so it's not really worth it...
-  for (var i = 0, ii = array.length; i < ii; i++){
-    var diff = isComplex ? Math.abs(array[i].real - actual) : Math.abs(array[i] - actual);
-    if (diff < minDiff){
-      minDiff = diff;
-      index = i;
-    }
-  }
-  return index;
-};
-
-// YUI-style inheritance
-util.extend = function(Child, Parent, properties) {
-  var F = function() {};
-  F.prototype = Parent.prototype;
-  Child.prototype = new F();
-  if (properties) {
-      for (var k in properties) {
-          Child.prototype[k] = properties[k];
-      }
-  }
-  Child.prototype.constructor = Child;
-  Child.parentConstructor = Parent;
-  Child.uber = Parent.prototype;
-};
-
-module.exports = util;
-
-
-// Shim to add ECMA262-5 Array methods if not supported natively
-if ( !Array.prototype.indexOf ) {
-  Array.prototype.indexOf= function(find, i /*opt*/) {
-      if (i===undefined) i= 0;
-      if (i<0) i+= this.length;
-      if (i<0) i= 0;
-      for (var n= this.length; i<n; i++)
-          if (i in this && this[i]===find)
-              return i;
-      return -1;
-  };
-}
-if ( !Array.prototype.forEach ) {
-  Array.prototype.forEach = function(fn, scope) {
-    for(var i = 0, len = this.length; i < len; ++i) {
-      fn.call(scope, this[i], i, this);
-    }
-  }
-}
-
-},{}],24:[function(require,module,exports){
-require('../bower_components/jquery/jquery');
-require('../lib/jquery/jquery-ui-1.8.24.custom.min');
-require('../lib/jquery/plugins/jquery.event.drag-2.0.min');
-require('../bower_components/jquery-nearest/src/jquery.nearest.min');
-require('../bower_components/circuit-solver/dist/circuitSolver.min');
-
-var workbenchController = require('./controllers/workbench-controller'),
-    sound               = require('./helpers/sound'),
-
-    scripts             = document.getElementsByTagName('script'),
-    path                = scripts[scripts.length-1].src.split('?')[0],      // remove any ?query
-    packageRoot         = path.split('/').slice(0, -2).join('/')+'/',
-
-    soundFiles          = {click: packageRoot + "/common/sounds/click.ogg"};
-
-loadSounds = function () {
-  var soundName, audio;
-
-  for (soundName in soundFiles) {
-    if (!!window.Audio) {
-      audio = new Audio();
-      audio.src = soundFiles[soundName];
-      sound[soundName] = audio;
-    }
-  }
-};
-
-$(document).ready(function () {
-    loadSounds();
-});
-
-var sparks = {};
-
-sparks.createWorkbench = function(props, elId) {
-  workbenchController.createWorkbench(props, elId);
-}
-
-sparks.removeComponent = function(uid) {
-  workbenchController.breadboardView.removeComponent(uid);
-}
-
-// this is probably too much access for an API, but doing it now for simplicity
-sparks.workbenchController = workbenchController;
-sparks.logController = workbenchController.logController;
-
-sparks.packageRoot = packageRoot;
-
-
-module.exports = sparks;
-
-},{"../bower_components/circuit-solver/dist/circuitSolver.min":39,"../bower_components/jquery-nearest/src/jquery.nearest.min":40,"../bower_components/jquery/jquery":41,"../lib/jquery/jquery-ui-1.8.24.custom.min":44,"../lib/jquery/plugins/jquery.event.drag-2.0.min":45,"./controllers/workbench-controller":18,"./helpers/sound":20}],25:[function(require,module,exports){
-/* Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
- * Version: 1.0
- * LastModified: Dec 25 1999
- * This library is free.  You can redistribute it and/or modify it.
- */
-
-/*
- * Interfaces:
- * b64 = base64encode(data);
- * data = base64decode(b64);
- */
-
-(function() {
-
-var base64EncodeChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-var base64DecodeChars = new Array(
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63,
-    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1,
-    -1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
-    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1,
-    -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1);
-
-function base64encode(str) {
-    var out, i, len;
-    var c1, c2, c3;
-
-    len = str.length;
-    i = 0;
-    out = "";
-    while(i < len) {
-  c1 = str.charCodeAt(i++) & 0xff;
-  if(i == len)
-  {
-      out += base64EncodeChars.charAt(c1 >> 2);
-      out += base64EncodeChars.charAt((c1 & 0x3) << 4);
-      out += "==";
-      break;
-  }
-  c2 = str.charCodeAt(i++);
-  if(i == len)
-  {
-      out += base64EncodeChars.charAt(c1 >> 2);
-      out += base64EncodeChars.charAt(((c1 & 0x3)<< 4) | ((c2 & 0xF0) >> 4));
-      out += base64EncodeChars.charAt((c2 & 0xF) << 2);
-      out += "=";
-      break;
-  }
-  c3 = str.charCodeAt(i++);
-  out += base64EncodeChars.charAt(c1 >> 2);
-  out += base64EncodeChars.charAt(((c1 & 0x3)<< 4) | ((c2 & 0xF0) >> 4));
-  out += base64EncodeChars.charAt(((c2 & 0xF) << 2) | ((c3 & 0xC0) >>6));
-  out += base64EncodeChars.charAt(c3 & 0x3F);
-    }
-    return out;
-}
-
-function base64decode(str) {
-    var c1, c2, c3, c4;
-    var i, len, out;
-
-    len = str.length;
-    i = 0;
-    out = "";
-    while(i < len) {
-  /* c1 */
-  do {
-      c1 = base64DecodeChars[str.charCodeAt(i++) & 0xff];
-  } while(i < len && c1 == -1);
-  if(c1 == -1)
-      break;
-
-  /* c2 */
-  do {
-      c2 = base64DecodeChars[str.charCodeAt(i++) & 0xff];
-  } while(i < len && c2 == -1);
-  if(c2 == -1)
-      break;
-
-  out += String.fromCharCode((c1 << 2) | ((c2 & 0x30) >> 4));
-
-  /* c3 */
-  do {
-      c3 = str.charCodeAt(i++) & 0xff;
-      if(c3 == 61)
-    return out;
-      c3 = base64DecodeChars[c3];
-  } while(i < len && c3 == -1);
-  if(c3 == -1)
-      break;
-
-  out += String.fromCharCode(((c2 & 0XF) << 4) | ((c3 & 0x3C) >> 2));
-
-  /* c4 */
-  do {
-      c4 = str.charCodeAt(i++) & 0xff;
-      if(c4 == 61)
-    return out;
-      c4 = base64DecodeChars[c4];
-  } while(i < len && c4 == -1);
-  if(c4 == -1)
-      break;
-  out += String.fromCharCode(((c3 & 0x03) << 6) | c4);
-    }
-    return out;
-}
-
-if (!window.btoa) window.btoa = base64encode;
-if (!window.atob) window.atob = base64decode;
-
-})();
-},{}],26:[function(require,module,exports){
-/*
- * canvg.js - Javascript SVG parser and renderer on Canvas
- * MIT Licensed
- * Gabe Lerner (gabelerner@gmail.com)
- * http://code.google.com/p/canvg/
- *
- */
-(function(){
-
-	var RGBColor = require('./rgbcolor');
-
-	// canvg(target, s)
-	// empty parameters: replace all 'svg' elements on page with 'canvas' elements
-	// target: canvas element or the id of a canvas element
-	// s: svg string, url to svg file, or xml document
-	// opts: optional hash of options
-	//		 ignoreMouse: true => ignore mouse events
-	//		 ignoreAnimation: true => ignore animations
-	//		 ignoreDimensions: true => does not try to resize canvas
-	//		 ignoreClear: true => does not clear canvas
-	//		 offsetX: int => draws at a x offset
-	//		 offsetY: int => draws at a y offset
-	//		 scaleWidth: int => scales horizontally to width
-	//		 scaleHeight: int => scales vertically to height
-	//		 renderCallback: function => will call the function after the first render is completed
-	//		 forceRedraw: function => will call the function on every frame, if it returns true, will redraw
-	this.canvg = function (target, s, opts) {
-		// no parameters
-		if (target == null && s == null && opts == null) {
-			var svgTags = document.getElementsByTagName('svg');
-			for (var i=0; i<svgTags.length; i++) {
-				var svgTag = svgTags[i];
-				var c = document.createElement('canvas');
-				c.width = svgTag.clientWidth;
-				c.height = svgTag.clientHeight;
-				svgTag.parentNode.insertBefore(c, svgTag);
-				svgTag.parentNode.removeChild(svgTag);
-				var div = document.createElement('div');
-				div.appendChild(svgTag);
-				canvg(c, div.innerHTML);
-			}
-			return;
-		}
-		opts = opts || {};
-
-		if (typeof target == 'string') {
-			target = document.getElementById(target);
-		}
-
-		// store class on canvas
-		if (target.svg != null) target.svg.stop();
-		target.svg = svg = build();
-		svg.opts = opts;
-
-		var ctx = target.getContext('2d');
-		if (typeof(s.documentElement) != 'undefined') {
-			// load from xml doc
-			svg.loadXmlDoc(ctx, s);
-		}
-		else if (s.substr(0,1) == '<') {
-			// load from xml string
-			svg.loadXml(ctx, s);
-		}
-		else {
-			// load from url
-			svg.load(ctx, s);
-		}
-	}
-
-	function build() {
-		var svg = { };
-
-		svg.FRAMERATE = 30;
-		svg.MAX_VIRTUAL_PIXELS = 30000;
-
-		// globals
-		svg.init = function(ctx) {
-			svg.Definitions = {};
-			svg.Styles = {};
-			svg.Animations = [];
-			svg.Images = [];
-			svg.ctx = ctx;
-			svg.ViewPort = new (function () {
-				this.viewPorts = [];
-				this.Clear = function() { this.viewPorts = []; }
-				this.SetCurrent = function(width, height) { this.viewPorts.push({ width: width, height: height }); }
-				this.RemoveCurrent = function() { this.viewPorts.pop(); }
-				this.Current = function() { return this.viewPorts[this.viewPorts.length - 1]; }
-				this.width = function() { return this.Current().width; }
-				this.height = function() { return this.Current().height; }
-				this.ComputeSize = function(d) {
-					if (d != null && typeof(d) == 'number') return d;
-					if (d == 'x') return this.width();
-					if (d == 'y') return this.height();
-					return Math.sqrt(Math.pow(this.width(), 2) + Math.pow(this.height(), 2)) / Math.sqrt(2);
-				}
-			});
-		}
-		svg.init();
-
-		// images loaded
-		svg.ImagesLoaded = function() {
-			for (var i=0; i<svg.Images.length; i++) {
-				if (!svg.Images[i].loaded) return false;
-			}
-			return true;
-		}
-
-		// trim
-		svg.trim = function(s) { return s.replace(/^\s+|\s+$/g, ''); }
-
-		// compress spaces
-		svg.compressSpaces = function(s) { return s.replace(/[\s\r\t\n]+/gm,' '); }
-
-		// ajax
-		svg.ajax = function(url) {
-			var AJAX;
-			if(window.XMLHttpRequest){AJAX=new XMLHttpRequest();}
-			else{AJAX=new ActiveXObject('Microsoft.XMLHTTP');}
-			if(AJAX){
-			   AJAX.open('GET',url,false);
-			   AJAX.send(null);
-			   return AJAX.responseText;
-			}
-			return null;
-		}
-
-		// parse xml
-		svg.parseXml = function(xml) {
-			if (window.DOMParser)
-			{
-				var parser = new DOMParser();
-				return parser.parseFromString(xml, 'text/xml');
-			}
-			else
-			{
-				xml = xml.replace(/<!DOCTYPE svg[^>]*>/, '');
-				var xmlDoc = new ActiveXObject('Microsoft.XMLDOM');
-				xmlDoc.async = 'false';
-				xmlDoc.loadXML(xml);
-				return xmlDoc;
-			}
-		}
-
-		svg.Property = function(name, value) {
-			this.name = name;
-			this.value = value;
-		}
-			svg.Property.prototype.getValue = function() {
-				return this.value;
-			}
-
-			svg.Property.prototype.hasValue = function() {
-				return (this.value != null && this.value !== '');
-			}
-
-			// return the numerical value of the property
-			svg.Property.prototype.numValue = function() {
-				if (!this.hasValue()) return 0;
-
-				var n = parseFloat(this.value);
-				if ((this.value + '').match(/%$/)) {
-					n = n / 100.0;
-				}
-				return n;
-			}
-
-			svg.Property.prototype.valueOrDefault = function(def) {
-				if (this.hasValue()) return this.value;
-				return def;
-			}
-
-			svg.Property.prototype.numValueOrDefault = function(def) {
-				if (this.hasValue()) return this.numValue();
-				return def;
-			}
-
-			// color extensions
-				// augment the current color value with the opacity
-				svg.Property.prototype.addOpacity = function(opacity) {
-					var newValue = this.value;
-					if (opacity != null && opacity != '' && typeof(this.value)=='string') { // can only add opacity to colors, not patterns
-						var color = new RGBColor(this.value);
-						if (color.ok) {
-							newValue = 'rgba(' + color.r + ', ' + color.g + ', ' + color.b + ', ' + opacity + ')';
-						}
-					}
-					return new svg.Property(this.name, newValue);
-				}
-
-			// definition extensions
-				// get the definition from the definitions table
-				svg.Property.prototype.getDefinition = function() {
-					var name = this.value.replace(/^(url\()?#([^\)]+)\)?$/, '$2');
-					return svg.Definitions[name];
-				}
-
-				svg.Property.prototype.isUrlDefinition = function() {
-					return this.value.indexOf('url(') == 0
-				}
-
-				svg.Property.prototype.getFillStyleDefinition = function(e) {
-					var def = this.getDefinition();
-
-					// gradient
-					if (def != null && def.createGradient) {
-						return def.createGradient(svg.ctx, e);
-					}
-
-					// pattern
-					if (def != null && def.createPattern) {
-						return def.createPattern(svg.ctx, e);
-					}
-
-					return null;
-				}
-
-			// length extensions
-				svg.Property.prototype.getDPI = function(viewPort) {
-					return 96.0; // TODO: compute?
-				}
-
-				svg.Property.prototype.getEM = function(viewPort) {
-					var em = 12;
-
-					var fontSize = new svg.Property('fontSize', svg.Font.Parse(svg.ctx.font).fontSize);
-					if (fontSize.hasValue()) em = fontSize.toPixels(viewPort);
-
-					return em;
-				}
-
-				svg.Property.prototype.getUnits = function() {
-					var s = this.value+'';
-					return s.replace(/[0-9\.\-]/g,'');
-				}
-
-				// get the length as pixels
-				svg.Property.prototype.toPixels = function(viewPort) {
-					if (!this.hasValue()) return 0;
-					var s = this.value+'';
-					if (s.match(/em$/)) return this.numValue() * this.getEM(viewPort);
-					if (s.match(/ex$/)) return this.numValue() * this.getEM(viewPort) / 2.0;
-					if (s.match(/px$/)) return this.numValue();
-					if (s.match(/pt$/)) return this.numValue() * this.getDPI(viewPort) * (1.0 / 72.0);
-					if (s.match(/pc$/)) return this.numValue() * 15;
-					if (s.match(/cm$/)) return this.numValue() * this.getDPI(viewPort) / 2.54;
-					if (s.match(/mm$/)) return this.numValue() * this.getDPI(viewPort) / 25.4;
-					if (s.match(/in$/)) return this.numValue() * this.getDPI(viewPort);
-					if (s.match(/%$/)) return this.numValue() * svg.ViewPort.ComputeSize(viewPort);
-					return this.numValue();
-				}
-
-			// time extensions
-				// get the time as milliseconds
-				svg.Property.prototype.toMilliseconds = function() {
-					if (!this.hasValue()) return 0;
-					var s = this.value+'';
-					if (s.match(/s$/)) return this.numValue() * 1000;
-					if (s.match(/ms$/)) return this.numValue();
-					return this.numValue();
-				}
-
-			// angle extensions
-				// get the angle as radians
-				svg.Property.prototype.toRadians = function() {
-					if (!this.hasValue()) return 0;
-					var s = this.value+'';
-					if (s.match(/deg$/)) return this.numValue() * (Math.PI / 180.0);
-					if (s.match(/grad$/)) return this.numValue() * (Math.PI / 200.0);
-					if (s.match(/rad$/)) return this.numValue();
-					return this.numValue() * (Math.PI / 180.0);
-				}
-
-		// fonts
-		svg.Font = new (function() {
-			this.Styles = 'normal|italic|oblique|inherit';
-			this.Variants = 'normal|small-caps|inherit';
-			this.Weights = 'normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900|inherit';
-
-			this.CreateFont = function(fontStyle, fontVariant, fontWeight, fontSize, fontFamily, inherit) {
-				var f = inherit != null ? this.Parse(inherit) : this.CreateFont('', '', '', '', '', svg.ctx.font);
-				return {
-					fontFamily: fontFamily || f.fontFamily,
-					fontSize: fontSize || f.fontSize,
-					fontStyle: fontStyle || f.fontStyle,
-					fontWeight: fontWeight || f.fontWeight,
-					fontVariant: fontVariant || f.fontVariant,
-					toString: function () { return [this.fontStyle, this.fontVariant, this.fontWeight, this.fontSize, this.fontFamily].join(' ') }
-				}
-			}
-
-			var that = this;
-			this.Parse = function(s) {
-				var f = {};
-				var d = svg.trim(svg.compressSpaces(s || '')).split(' ');
-				var set = { fontSize: false, fontStyle: false, fontWeight: false, fontVariant: false }
-				var ff = '';
-				for (var i=0; i<d.length; i++) {
-					if (!set.fontStyle && that.Styles.indexOf(d[i]) != -1) { if (d[i] != 'inherit') f.fontStyle = d[i]; set.fontStyle = true; }
-					else if (!set.fontVariant && that.Variants.indexOf(d[i]) != -1) { if (d[i] != 'inherit') f.fontVariant = d[i]; set.fontStyle = set.fontVariant = true;	}
-					else if (!set.fontWeight && that.Weights.indexOf(d[i]) != -1) {	if (d[i] != 'inherit') f.fontWeight = d[i]; set.fontStyle = set.fontVariant = set.fontWeight = true; }
-					else if (!set.fontSize) { if (d[i] != 'inherit') f.fontSize = d[i].split('/')[0]; set.fontStyle = set.fontVariant = set.fontWeight = set.fontSize = true; }
-					else { if (d[i] != 'inherit') ff += d[i]; }
-				} if (ff != '') f.fontFamily = ff;
-				return f;
-			}
-		});
-
-		// points and paths
-		svg.ToNumberArray = function(s) {
-			var a = svg.trim(svg.compressSpaces((s || '').replace(/,/g, ' '))).split(' ');
-			for (var i=0; i<a.length; i++) {
-				a[i] = parseFloat(a[i]);
-			}
-			return a;
-		}
-		svg.Point = function(x, y) {
-			this.x = x;
-			this.y = y;
-		}
-			svg.Point.prototype.angleTo = function(p) {
-				return Math.atan2(p.y - this.y, p.x - this.x);
-			}
-
-			svg.Point.prototype.applyTransform = function(v) {
-				var xp = this.x * v[0] + this.y * v[2] + v[4];
-				var yp = this.x * v[1] + this.y * v[3] + v[5];
-				this.x = xp;
-				this.y = yp;
-			}
-
-		svg.CreatePoint = function(s) {
-			var a = svg.ToNumberArray(s);
-			return new svg.Point(a[0], a[1]);
-		}
-		svg.CreatePath = function(s) {
-			var a = svg.ToNumberArray(s);
-			var path = [];
-			for (var i=0; i<a.length; i+=2) {
-				path.push(new svg.Point(a[i], a[i+1]));
-			}
-			return path;
-		}
-
-		// bounding box
-		svg.BoundingBox = function(x1, y1, x2, y2) { // pass in initial points if you want
-			this.x1 = Number.NaN;
-			this.y1 = Number.NaN;
-			this.x2 = Number.NaN;
-			this.y2 = Number.NaN;
-
-			this.x = function() { return this.x1; }
-			this.y = function() { return this.y1; }
-			this.width = function() { return this.x2 - this.x1; }
-			this.height = function() { return this.y2 - this.y1; }
-
-			this.addPoint = function(x, y) {
-				if (x != null) {
-					if (isNaN(this.x1) || isNaN(this.x2)) {
-						this.x1 = x;
-						this.x2 = x;
-					}
-					if (x < this.x1) this.x1 = x;
-					if (x > this.x2) this.x2 = x;
-				}
-
-				if (y != null) {
-					if (isNaN(this.y1) || isNaN(this.y2)) {
-						this.y1 = y;
-						this.y2 = y;
-					}
-					if (y < this.y1) this.y1 = y;
-					if (y > this.y2) this.y2 = y;
-				}
-			}
-			this.addX = function(x) { this.addPoint(x, null); }
-			this.addY = function(y) { this.addPoint(null, y); }
-
-			this.addBoundingBox = function(bb) {
-				this.addPoint(bb.x1, bb.y1);
-				this.addPoint(bb.x2, bb.y2);
-			}
-
-			this.addQuadraticCurve = function(p0x, p0y, p1x, p1y, p2x, p2y) {
-				var cp1x = p0x + 2/3 * (p1x - p0x); // CP1 = QP0 + 2/3 *(QP1-QP0)
-				var cp1y = p0y + 2/3 * (p1y - p0y); // CP1 = QP0 + 2/3 *(QP1-QP0)
-				var cp2x = cp1x + 1/3 * (p2x - p0x); // CP2 = CP1 + 1/3 *(QP2-QP0)
-				var cp2y = cp1y + 1/3 * (p2y - p0y); // CP2 = CP1 + 1/3 *(QP2-QP0)
-				this.addBezierCurve(p0x, p0y, cp1x, cp2x, cp1y,	cp2y, p2x, p2y);
-			}
-
-			this.addBezierCurve = function(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y) {
-				// from http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
-				var p0 = [p0x, p0y], p1 = [p1x, p1y], p2 = [p2x, p2y], p3 = [p3x, p3y];
-				this.addPoint(p0[0], p0[1]);
-				this.addPoint(p3[0], p3[1]);
-
-				for (i=0; i<=1; i++) {
-					var f = function(t) {
-						return Math.pow(1-t, 3) * p0[i]
-						+ 3 * Math.pow(1-t, 2) * t * p1[i]
-						+ 3 * (1-t) * Math.pow(t, 2) * p2[i]
-						+ Math.pow(t, 3) * p3[i];
-					}
-
-					var b = 6 * p0[i] - 12 * p1[i] + 6 * p2[i];
-					var a = -3 * p0[i] + 9 * p1[i] - 9 * p2[i] + 3 * p3[i];
-					var c = 3 * p1[i] - 3 * p0[i];
-
-					if (a == 0) {
-						if (b == 0) continue;
-						var t = -c / b;
-						if (0 < t && t < 1) {
-							if (i == 0) this.addX(f(t));
-							if (i == 1) this.addY(f(t));
-						}
-						continue;
-					}
-
-					var b2ac = Math.pow(b, 2) - 4 * c * a;
-					if (b2ac < 0) continue;
-					var t1 = (-b + Math.sqrt(b2ac)) / (2 * a);
-					if (0 < t1 && t1 < 1) {
-						if (i == 0) this.addX(f(t1));
-						if (i == 1) this.addY(f(t1));
-					}
-					var t2 = (-b - Math.sqrt(b2ac)) / (2 * a);
-					if (0 < t2 && t2 < 1) {
-						if (i == 0) this.addX(f(t2));
-						if (i == 1) this.addY(f(t2));
-					}
-				}
-			}
-
-			this.isPointInBox = function(x, y) {
-				return (this.x1 <= x && x <= this.x2 && this.y1 <= y && y <= this.y2);
-			}
-
-			this.addPoint(x1, y1);
-			this.addPoint(x2, y2);
-		}
-
-		// transforms
-		svg.Transform = function(v) {
-			var that = this;
-			this.Type = {}
-
-			// translate
-			this.Type.translate = function(s) {
-				this.p = svg.CreatePoint(s);
-				this.apply = function(ctx) {
-					ctx.translate(this.p.x || 0.0, this.p.y || 0.0);
-				}
-				this.applyToPoint = function(p) {
-					p.applyTransform([1, 0, 0, 1, this.p.x || 0.0, this.p.y || 0.0]);
-				}
-			}
-
-			// rotate
-			this.Type.rotate = function(s) {
-				var a = svg.ToNumberArray(s);
-				this.angle = new svg.Property('angle', a[0]);
-				this.cx = a[1] || 0;
-				this.cy = a[2] || 0;
-				this.apply = function(ctx) {
-					ctx.translate(this.cx, this.cy);
-					ctx.rotate(this.angle.toRadians());
-					ctx.translate(-this.cx, -this.cy);
-				}
-				this.applyToPoint = function(p) {
-					var a = this.angle.toRadians();
-					p.applyTransform([1, 0, 0, 1, this.p.x || 0.0, this.p.y || 0.0]);
-					p.applyTransform([Math.cos(a), Math.sin(a), -Math.sin(a), Math.cos(a), 0, 0]);
-					p.applyTransform([1, 0, 0, 1, -this.p.x || 0.0, -this.p.y || 0.0]);
-				}
-			}
-
-			this.Type.scale = function(s) {
-				this.p = svg.CreatePoint(s);
-				this.apply = function(ctx) {
-					ctx.scale(this.p.x || 1.0, this.p.y || this.p.x || 1.0);
-				}
-				this.applyToPoint = function(p) {
-					p.applyTransform([this.p.x || 0.0, 0, 0, this.p.y || 0.0, 0, 0]);
-				}
-			}
-
-			this.Type.matrix = function(s) {
-				this.m = svg.ToNumberArray(s);
-				this.apply = function(ctx) {
-					ctx.transform(this.m[0], this.m[1], this.m[2], this.m[3], this.m[4], this.m[5]);
-				}
-				this.applyToPoint = function(p) {
-					p.applyTransform(this.m);
-				}
-			}
-
-			this.Type.SkewBase = function(s) {
-				this.base = that.Type.matrix;
-				this.base(s);
-				this.angle = new svg.Property('angle', s);
-			}
-			this.Type.SkewBase.prototype = new this.Type.matrix;
-
-			this.Type.skewX = function(s) {
-				this.base = that.Type.SkewBase;
-				this.base(s);
-				this.m = [1, 0, Math.tan(this.angle.toRadians()), 1, 0, 0];
-			}
-			this.Type.skewX.prototype = new this.Type.SkewBase;
-
-			this.Type.skewY = function(s) {
-				this.base = that.Type.SkewBase;
-				this.base(s);
-				this.m = [1, Math.tan(this.angle.toRadians()), 0, 1, 0, 0];
-			}
-			this.Type.skewY.prototype = new this.Type.SkewBase;
-
-			this.transforms = [];
-
-			this.apply = function(ctx) {
-				for (var i=0; i<this.transforms.length; i++) {
-					this.transforms[i].apply(ctx);
-				}
-			}
-
-			this.applyToPoint = function(p) {
-				for (var i=0; i<this.transforms.length; i++) {
-					this.transforms[i].applyToPoint(p);
-				}
-			}
-
-			var data = svg.trim(svg.compressSpaces(v)).split(/\s(?=[a-z])/);
-			for (var i=0; i<data.length; i++) {
-				var type = data[i].split('(')[0];
-				var s = data[i].split('(')[1].replace(')','');
-				var transform = new this.Type[type](s);
-				this.transforms.push(transform);
-			}
-		}
-
-		// aspect ratio
-		svg.AspectRatio = function(ctx, aspectRatio, width, desiredWidth, height, desiredHeight, minX, minY, refX, refY) {
-			// aspect ratio - http://www.w3.org/TR/SVG/coords.html#PreserveAspectRatioAttribute
-			aspectRatio = svg.compressSpaces(aspectRatio);
-			aspectRatio = aspectRatio.replace(/^defer\s/,''); // ignore defer
-			var align = aspectRatio.split(' ')[0] || 'xMidYMid';
-			var meetOrSlice = aspectRatio.split(' ')[1] || 'meet';
-
-			// calculate scale
-			var scaleX = width / desiredWidth;
-			var scaleY = height / desiredHeight;
-			var scaleMin = Math.min(scaleX, scaleY);
-			var scaleMax = Math.max(scaleX, scaleY);
-			if (meetOrSlice == 'meet') { desiredWidth *= scaleMin; desiredHeight *= scaleMin; }
-			if (meetOrSlice == 'slice') { desiredWidth *= scaleMax; desiredHeight *= scaleMax; }
-
-			refX = new svg.Property('refX', refX);
-			refY = new svg.Property('refY', refY);
-			if (refX.hasValue() && refY.hasValue()) {
-				ctx.translate(-scaleMin * refX.toPixels('x'), -scaleMin * refY.toPixels('y'));
-			}
-			else {
-				// align
-				if (align.match(/^xMid/) && ((meetOrSlice == 'meet' && scaleMin == scaleY) || (meetOrSlice == 'slice' && scaleMax == scaleY))) ctx.translate(width / 2.0 - desiredWidth / 2.0, 0);
-				if (align.match(/YMid$/) && ((meetOrSlice == 'meet' && scaleMin == scaleX) || (meetOrSlice == 'slice' && scaleMax == scaleX))) ctx.translate(0, height / 2.0 - desiredHeight / 2.0);
-				if (align.match(/^xMax/) && ((meetOrSlice == 'meet' && scaleMin == scaleY) || (meetOrSlice == 'slice' && scaleMax == scaleY))) ctx.translate(width - desiredWidth, 0);
-				if (align.match(/YMax$/) && ((meetOrSlice == 'meet' && scaleMin == scaleX) || (meetOrSlice == 'slice' && scaleMax == scaleX))) ctx.translate(0, height - desiredHeight);
-			}
-
-			// scale
-			if (align == 'none') ctx.scale(scaleX, scaleY);
-			else if (meetOrSlice == 'meet') ctx.scale(scaleMin, scaleMin);
-			else if (meetOrSlice == 'slice') ctx.scale(scaleMax, scaleMax);
-
-			// translate
-			ctx.translate(minX == null ? 0 : -minX, minY == null ? 0 : -minY);
-		}
-
-		// elements
-		svg.Element = {}
-
-		svg.EmptyProperty = new svg.Property('EMPTY', '');
-
-		svg.Element.ElementBase = function(node) {
-			this.attributes = {};
-			this.styles = {};
-			this.children = [];
-
-			// get or create attribute
-			this.attribute = function(name, createIfNotExists) {
-				var a = this.attributes[name];
-				if (a != null) return a;
-
-				if (createIfNotExists == true) { a = new svg.Property(name, ''); this.attributes[name] = a; }
-				return a || svg.EmptyProperty;
-			}
-
-			// get or create style, crawls up node tree
-			this.style = function(name, createIfNotExists) {
-				var s = this.styles[name];
-				if (s != null) return s;
-
-				var a = this.attribute(name);
-				if (a != null && a.hasValue()) {
-					this.styles[name] = a; // move up to me to cache
-					return a;
-				}
-
-				var p = this.parent;
-				if (p != null) {
-					var ps = p.style(name);
-					if (ps != null && ps.hasValue()) {
-						return ps;
-					}
-				}
-
-				if (createIfNotExists == true) { s = new svg.Property(name, ''); this.styles[name] = s; }
-				return s || svg.EmptyProperty;
-			}
-
-			// base render
-			this.render = function(ctx) {
-				// don't render display=none
-				if (this.style('display').value == 'none') return;
-
-				// don't render visibility=hidden
-				if (this.attribute('visibility').value == 'hidden') return;
-
-				ctx.save();
-					this.setContext(ctx);
-						// mask
-						if (this.attribute('mask').hasValue()) {
-							var mask = this.attribute('mask').getDefinition();
-							if (mask != null) mask.apply(ctx, this);
-						}
-						else if (this.style('filter').hasValue()) {
-							var filter = this.style('filter').getDefinition();
-							if (filter != null) filter.apply(ctx, this);
-						}
-						else this.renderChildren(ctx);
-					this.clearContext(ctx);
-				ctx.restore();
-			}
-
-			// base set context
-			this.setContext = function(ctx) {
-				// OVERRIDE ME!
-			}
-
-			// base clear context
-			this.clearContext = function(ctx) {
-				// OVERRIDE ME!
-			}
-
-			// base render children
-			this.renderChildren = function(ctx) {
-				for (var i=0; i<this.children.length; i++) {
-					this.children[i].render(ctx);
-				}
-			}
-
-			this.addChild = function(childNode, create) {
-				var child = childNode;
-				if (create) child = svg.CreateElement(childNode);
-				child.parent = this;
-				this.children.push(child);
-			}
-
-			if (node != null && node.nodeType == 1) { //ELEMENT_NODE
-				// add children
-				for (var i=0; i<node.childNodes.length; i++) {
-					var childNode = node.childNodes[i];
-					if (childNode.nodeType == 1) this.addChild(childNode, true); //ELEMENT_NODE
-				}
-
-				// add attributes
-				for (var i=0; i<node.attributes.length; i++) {
-					var attribute = node.attributes[i];
-					this.attributes[attribute.nodeName] = new svg.Property(attribute.nodeName, attribute.nodeValue);
-				}
-
-				// add tag styles
-				var styles = svg.Styles[node.nodeName];
-				if (styles != null) {
-					for (var name in styles) {
-						this.styles[name] = styles[name];
-					}
-				}
-
-				// add class styles
-				if (this.attribute('class').hasValue()) {
-					var classes = svg.compressSpaces(this.attribute('class').value).split(' ');
-					for (var j=0; j<classes.length; j++) {
-						styles = svg.Styles['.'+classes[j]];
-						if (styles != null) {
-							for (var name in styles) {
-								this.styles[name] = styles[name];
-							}
-						}
-						styles = svg.Styles[node.nodeName+'.'+classes[j]];
-						if (styles != null) {
-							for (var name in styles) {
-								this.styles[name] = styles[name];
-							}
-						}
-					}
-				}
-
-				// add id styles
-				if (this.attribute('id').hasValue()) {
-					var styles = svg.Styles['#' + this.attribute('id').value];
-					if (styles != null) {
-						for (var name in styles) {
-							this.styles[name] = styles[name];
-						}
-					}
-				}
-
-				// add inline styles
-				if (this.attribute('style').hasValue()) {
-					var styles = this.attribute('style').value.split(';');
-					for (var i=0; i<styles.length; i++) {
-						if (svg.trim(styles[i]) != '') {
-							var style = styles[i].split(':');
-							var name = svg.trim(style[0]);
-							var value = svg.trim(style[1]);
-							this.styles[name] = new svg.Property(name, value);
-						}
-					}
-				}
-
-				// add id
-				if (this.attribute('id').hasValue()) {
-					if (svg.Definitions[this.attribute('id').value] == null) {
-						svg.Definitions[this.attribute('id').value] = this;
-					}
-				}
-			}
-		}
-
-		svg.Element.RenderedElementBase = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.setContext = function(ctx) {
-				// fill
-				if (this.style('fill').isUrlDefinition()) {
-					var fs = this.style('fill').getFillStyleDefinition(this);
-					if (fs != null) ctx.fillStyle = fs;
-				}
-				else if (this.style('fill').hasValue()) {
-					var fillStyle = this.style('fill');
-					if (fillStyle.value == 'currentColor') fillStyle.value = this.style('color').value;
-					ctx.fillStyle = (fillStyle.value == 'none' ? 'rgba(0,0,0,0)' : fillStyle.value);
-				}
-				if (this.style('fill-opacity').hasValue()) {
-					var fillStyle = new svg.Property('fill', ctx.fillStyle);
-					fillStyle = fillStyle.addOpacity(this.style('fill-opacity').value);
-					ctx.fillStyle = fillStyle.value;
-				}
-
-				// stroke
-				if (this.style('stroke').isUrlDefinition()) {
-					var fs = this.style('stroke').getFillStyleDefinition(this);
-					if (fs != null) ctx.strokeStyle = fs;
-				}
-				else if (this.style('stroke').hasValue()) {
-					var strokeStyle = this.style('stroke');
-					if (strokeStyle.value == 'currentColor') strokeStyle.value = this.style('color').value;
-					ctx.strokeStyle = (strokeStyle.value == 'none' ? 'rgba(0,0,0,0)' : strokeStyle.value);
-				}
-				if (this.style('stroke-opacity').hasValue()) {
-					var strokeStyle = new svg.Property('stroke', ctx.strokeStyle);
-					strokeStyle = strokeStyle.addOpacity(this.style('stroke-opacity').value);
-					ctx.strokeStyle = strokeStyle.value;
-				}
-				if (this.style('stroke-width').hasValue()) ctx.lineWidth = this.style('stroke-width').toPixels();
-				if (this.style('stroke-linecap').hasValue()) ctx.lineCap = this.style('stroke-linecap').value;
-				if (this.style('stroke-linejoin').hasValue()) ctx.lineJoin = this.style('stroke-linejoin').value;
-				if (this.style('stroke-miterlimit').hasValue()) ctx.miterLimit = this.style('stroke-miterlimit').value;
-
-				// font
-				if (typeof(ctx.font) != 'undefined') {
-					ctx.font = svg.Font.CreateFont(
-						this.style('font-style').value,
-						this.style('font-variant').value,
-						this.style('font-weight').value,
-						this.style('font-size').hasValue() ? this.style('font-size').toPixels() + 'px' : '',
-						this.style('font-family').value).toString();
-				}
-
-				// transform
-				if (this.attribute('transform').hasValue()) {
-					var transform = new svg.Transform(this.attribute('transform').value);
-					transform.apply(ctx);
-				}
-
-				// clip
-				if (this.attribute('clip-path').hasValue()) {
-					var clip = this.attribute('clip-path').getDefinition();
-					if (clip != null) clip.apply(ctx);
-				}
-
-				// opacity
-				if (this.style('opacity').hasValue()) {
-					ctx.globalAlpha = this.style('opacity').numValue();
-				}
-			}
-		}
-		svg.Element.RenderedElementBase.prototype = new svg.Element.ElementBase;
-
-		svg.Element.PathElementBase = function(node) {
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			this.path = function(ctx) {
-				if (ctx != null) ctx.beginPath();
-				return new svg.BoundingBox();
-			}
-
-			this.renderChildren = function(ctx) {
-				this.path(ctx);
-				svg.Mouse.checkPath(this, ctx);
-				if (ctx.fillStyle != '') ctx.fill();
-				if (ctx.strokeStyle != '') ctx.stroke();
-
-				var markers = this.getMarkers();
-				if (markers != null) {
-					if (this.style('marker-start').isUrlDefinition()) {
-						var marker = this.style('marker-start').getDefinition();
-						marker.render(ctx, markers[0][0], markers[0][1]);
-					}
-					if (this.style('marker-mid').isUrlDefinition()) {
-						var marker = this.style('marker-mid').getDefinition();
-						for (var i=1;i<markers.length-1;i++) {
-							marker.render(ctx, markers[i][0], markers[i][1]);
-						}
-					}
-					if (this.style('marker-end').isUrlDefinition()) {
-						var marker = this.style('marker-end').getDefinition();
-						marker.render(ctx, markers[markers.length-1][0], markers[markers.length-1][1]);
-					}
-				}
-			}
-
-			this.getBoundingBox = function() {
-				return this.path();
-			}
-
-			this.getMarkers = function() {
-				return null;
-			}
-		}
-		svg.Element.PathElementBase.prototype = new svg.Element.RenderedElementBase;
-
-		// svg element
-		svg.Element.svg = function(node) {
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			this.baseClearContext = this.clearContext;
-			this.clearContext = function(ctx) {
-				this.baseClearContext(ctx);
-				svg.ViewPort.RemoveCurrent();
-			}
-
-			this.baseSetContext = this.setContext;
-			this.setContext = function(ctx) {
-				// initial values
-				ctx.strokeStyle = 'rgba(0,0,0,0)';
-				ctx.lineCap = 'butt';
-				ctx.lineJoin = 'miter';
-				ctx.miterLimit = 4;
-
-				this.baseSetContext(ctx);
-
-				// create new view port
-				if (!this.attribute('x').hasValue()) this.attribute('x', true).value = 0;
-				if (!this.attribute('y').hasValue()) this.attribute('y', true).value = 0;
-				ctx.translate(this.attribute('x').toPixels('x'), this.attribute('y').toPixels('y'));
-
-				var width = svg.ViewPort.width();
-				var height = svg.ViewPort.height();
-
-				if (!this.attribute('width').hasValue()) this.attribute('width', true).value = '100%';
-				if (!this.attribute('height').hasValue()) this.attribute('height', true).value = '100%';
-				if (typeof(this.root) == 'undefined') {
-					width = this.attribute('width').toPixels('x');
-					height = this.attribute('height').toPixels('y');
-
-					var x = 0;
-					var y = 0;
-					if (this.attribute('refX').hasValue() && this.attribute('refY').hasValue()) {
-						x = -this.attribute('refX').toPixels('x');
-						y = -this.attribute('refY').toPixels('y');
-					}
-
-					ctx.beginPath();
-					ctx.moveTo(x, y);
-					ctx.lineTo(width, y);
-					ctx.lineTo(width, height);
-					ctx.lineTo(x, height);
-					ctx.closePath();
-					ctx.clip();
-				}
-				svg.ViewPort.SetCurrent(width, height);
-
-				// viewbox
-				if (this.attribute('viewBox').hasValue()) {
-					var viewBox = svg.ToNumberArray(this.attribute('viewBox').value);
-					var minX = viewBox[0];
-					var minY = viewBox[1];
-					width = viewBox[2];
-					height = viewBox[3];
-
-					svg.AspectRatio(ctx,
-									this.attribute('preserveAspectRatio').value,
-									svg.ViewPort.width(),
-									width,
-									svg.ViewPort.height(),
-									height,
-									minX,
-									minY,
-									this.attribute('refX').value,
-									this.attribute('refY').value);
-
-					svg.ViewPort.RemoveCurrent();
-					svg.ViewPort.SetCurrent(viewBox[2], viewBox[3]);
-				}
-			}
-		}
-		svg.Element.svg.prototype = new svg.Element.RenderedElementBase;
-
-		// rect element
-		svg.Element.rect = function(node) {
-			this.base = svg.Element.PathElementBase;
-			this.base(node);
-
-			this.path = function(ctx) {
-				var x = this.attribute('x').toPixels('x');
-				var y = this.attribute('y').toPixels('y');
-				var width = this.attribute('width').toPixels('x');
-				var height = this.attribute('height').toPixels('y');
-				var rx = this.attribute('rx').toPixels('x');
-				var ry = this.attribute('ry').toPixels('y');
-				if (this.attribute('rx').hasValue() && !this.attribute('ry').hasValue()) ry = rx;
-				if (this.attribute('ry').hasValue() && !this.attribute('rx').hasValue()) rx = ry;
-
-				if (ctx != null) {
-					ctx.beginPath();
-					ctx.moveTo(x + rx, y);
-					ctx.lineTo(x + width - rx, y);
-					ctx.quadraticCurveTo(x + width, y, x + width, y + ry)
-					ctx.lineTo(x + width, y + height - ry);
-					ctx.quadraticCurveTo(x + width, y + height, x + width - rx, y + height)
-					ctx.lineTo(x + rx, y + height);
-					ctx.quadraticCurveTo(x, y + height, x, y + height - ry)
-					ctx.lineTo(x, y + ry);
-					ctx.quadraticCurveTo(x, y, x + rx, y)
-					ctx.closePath();
-				}
-
-				return new svg.BoundingBox(x, y, x + width, y + height);
-			}
-		}
-		svg.Element.rect.prototype = new svg.Element.PathElementBase;
-
-		// circle element
-		svg.Element.circle = function(node) {
-			this.base = svg.Element.PathElementBase;
-			this.base(node);
-
-			this.path = function(ctx) {
-				var cx = this.attribute('cx').toPixels('x');
-				var cy = this.attribute('cy').toPixels('y');
-				var r = this.attribute('r').toPixels();
-
-				if (ctx != null) {
-					ctx.beginPath();
-					ctx.arc(cx, cy, r, 0, Math.PI * 2, true);
-					ctx.closePath();
-				}
-
-				return new svg.BoundingBox(cx - r, cy - r, cx + r, cy + r);
-			}
-		}
-		svg.Element.circle.prototype = new svg.Element.PathElementBase;
-
-		// ellipse element
-		svg.Element.ellipse = function(node) {
-			this.base = svg.Element.PathElementBase;
-			this.base(node);
-
-			this.path = function(ctx) {
-				var KAPPA = 4 * ((Math.sqrt(2) - 1) / 3);
-				var rx = this.attribute('rx').toPixels('x');
-				var ry = this.attribute('ry').toPixels('y');
-				var cx = this.attribute('cx').toPixels('x');
-				var cy = this.attribute('cy').toPixels('y');
-
-				if (ctx != null) {
-					ctx.beginPath();
-					ctx.moveTo(cx, cy - ry);
-					ctx.bezierCurveTo(cx + (KAPPA * rx), cy - ry,  cx + rx, cy - (KAPPA * ry), cx + rx, cy);
-					ctx.bezierCurveTo(cx + rx, cy + (KAPPA * ry), cx + (KAPPA * rx), cy + ry, cx, cy + ry);
-					ctx.bezierCurveTo(cx - (KAPPA * rx), cy + ry, cx - rx, cy + (KAPPA * ry), cx - rx, cy);
-					ctx.bezierCurveTo(cx - rx, cy - (KAPPA * ry), cx - (KAPPA * rx), cy - ry, cx, cy - ry);
-					ctx.closePath();
-				}
-
-				return new svg.BoundingBox(cx - rx, cy - ry, cx + rx, cy + ry);
-			}
-		}
-		svg.Element.ellipse.prototype = new svg.Element.PathElementBase;
-
-		// line element
-		svg.Element.line = function(node) {
-			this.base = svg.Element.PathElementBase;
-			this.base(node);
-
-			this.getPoints = function() {
-				return [
-					new svg.Point(this.attribute('x1').toPixels('x'), this.attribute('y1').toPixels('y')),
-					new svg.Point(this.attribute('x2').toPixels('x'), this.attribute('y2').toPixels('y'))];
-			}
-
-			this.path = function(ctx) {
-				var points = this.getPoints();
-
-				if (ctx != null) {
-					ctx.beginPath();
-					ctx.moveTo(points[0].x, points[0].y);
-					ctx.lineTo(points[1].x, points[1].y);
-				}
-
-				return new svg.BoundingBox(points[0].x, points[0].y, points[1].x, points[1].y);
-			}
-
-			this.getMarkers = function() {
-				var points = this.getPoints();
-				var a = points[0].angleTo(points[1]);
-				return [[points[0], a], [points[1], a]];
-			}
-		}
-		svg.Element.line.prototype = new svg.Element.PathElementBase;
-
-		// polyline element
-		svg.Element.polyline = function(node) {
-			this.base = svg.Element.PathElementBase;
-			this.base(node);
-
-			this.points = svg.CreatePath(this.attribute('points').value);
-			this.path = function(ctx) {
-				var bb = new svg.BoundingBox(this.points[0].x, this.points[0].y);
-				if (ctx != null) {
-					ctx.beginPath();
-					ctx.moveTo(this.points[0].x, this.points[0].y);
-				}
-				for (var i=1; i<this.points.length; i++) {
-					bb.addPoint(this.points[i].x, this.points[i].y);
-					if (ctx != null) ctx.lineTo(this.points[i].x, this.points[i].y);
-				}
-				return bb;
-			}
-
-			this.getMarkers = function() {
-				var markers = [];
-				for (var i=0; i<this.points.length - 1; i++) {
-					markers.push([this.points[i], this.points[i].angleTo(this.points[i+1])]);
-				}
-				markers.push([this.points[this.points.length-1], markers[markers.length-1][1]]);
-				return markers;
-			}
-		}
-		svg.Element.polyline.prototype = new svg.Element.PathElementBase;
-
-		// polygon element
-		svg.Element.polygon = function(node) {
-			this.base = svg.Element.polyline;
-			this.base(node);
-
-			this.basePath = this.path;
-			this.path = function(ctx) {
-				var bb = this.basePath(ctx);
-				if (ctx != null) {
-					ctx.lineTo(this.points[0].x, this.points[0].y);
-					ctx.closePath();
-				}
-				return bb;
-			}
-		}
-		svg.Element.polygon.prototype = new svg.Element.polyline;
-
-		// path element
-		svg.Element.path = function(node) {
-			this.base = svg.Element.PathElementBase;
-			this.base(node);
-
-			var d = this.attribute('d').value;
-			// TODO: convert to real lexer based on http://www.w3.org/TR/SVG11/paths.html#PathDataBNF
-			d = d.replace(/,/gm,' '); // get rid of all commas
-			d = d.replace(/([MmZzLlHhVvCcSsQqTtAa])([MmZzLlHhVvCcSsQqTtAa])/gm,'$1 $2'); // separate commands from commands
-			d = d.replace(/([MmZzLlHhVvCcSsQqTtAa])([MmZzLlHhVvCcSsQqTtAa])/gm,'$1 $2'); // separate commands from commands
-			d = d.replace(/([MmZzLlHhVvCcSsQqTtAa])([^\s])/gm,'$1 $2'); // separate commands from points
-			d = d.replace(/([^\s])([MmZzLlHhVvCcSsQqTtAa])/gm,'$1 $2'); // separate commands from points
-			d = d.replace(/([0-9])([+\-])/gm,'$1 $2'); // separate digits when no comma
-			d = d.replace(/(\.[0-9]*)(\.)/gm,'$1 $2'); // separate digits when no comma
-			d = d.replace(/([Aa](\s+[0-9]+){3})\s+([01])\s*([01])/gm,'$1 $3 $4 '); // shorthand elliptical arc path syntax
-			d = svg.compressSpaces(d); // compress multiple spaces
-			d = svg.trim(d);
-			this.PathParser = new (function(d) {
-				this.tokens = d.split(' ');
-
-				this.reset = function() {
-					this.i = -1;
-					this.command = '';
-					this.previousCommand = '';
-					this.start = new svg.Point(0, 0);
-					this.control = new svg.Point(0, 0);
-					this.current = new svg.Point(0, 0);
-					this.points = [];
-					this.angles = [];
-				}
-
-				this.isEnd = function() {
-					return this.i >= this.tokens.length - 1;
-				}
-
-				this.isCommandOrEnd = function() {
-					if (this.isEnd()) return true;
-					return this.tokens[this.i + 1].match(/^[A-Za-z]$/) != null;
-				}
-
-				this.isRelativeCommand = function() {
-					switch(this.command)
-					{
-						case 'm':
-						case 'l':
-						case 'h':
-						case 'v':
-						case 'c':
-						case 's':
-						case 'q':
-						case 't':
-						case 'a':
-						case 'z':
-							return true;
-							break;
-					}
-					return false;
-				}
-
-				this.getToken = function() {
-					this.i++;
-					return this.tokens[this.i];
-				}
-
-				this.getScalar = function() {
-					return parseFloat(this.getToken());
-				}
-
-				this.nextCommand = function() {
-					this.previousCommand = this.command;
-					this.command = this.getToken();
-				}
-
-				this.getPoint = function() {
-					var p = new svg.Point(this.getScalar(), this.getScalar());
-					return this.makeAbsolute(p);
-				}
-
-				this.getAsControlPoint = function() {
-					var p = this.getPoint();
-					this.control = p;
-					return p;
-				}
-
-				this.getAsCurrentPoint = function() {
-					var p = this.getPoint();
-					this.current = p;
-					return p;
-				}
-
-				this.getReflectedControlPoint = function() {
-					if (this.previousCommand.toLowerCase() != 'c' && this.previousCommand.toLowerCase() != 's') {
-						return this.current;
-					}
-
-					// reflect point
-					var p = new svg.Point(2 * this.current.x - this.control.x, 2 * this.current.y - this.control.y);
-					return p;
-				}
-
-				this.makeAbsolute = function(p) {
-					if (this.isRelativeCommand()) {
-						p.x += this.current.x;
-						p.y += this.current.y;
-					}
-					return p;
-				}
-
-				this.addMarker = function(p, from, priorTo) {
-					// if the last angle isn't filled in because we didn't have this point yet ...
-					if (priorTo != null && this.angles.length > 0 && this.angles[this.angles.length-1] == null) {
-						this.angles[this.angles.length-1] = this.points[this.points.length-1].angleTo(priorTo);
-					}
-					this.addMarkerAngle(p, from == null ? null : from.angleTo(p));
-				}
-
-				this.addMarkerAngle = function(p, a) {
-					this.points.push(p);
-					this.angles.push(a);
-				}
-
-				this.getMarkerPoints = function() { return this.points; }
-				this.getMarkerAngles = function() {
-					for (var i=0; i<this.angles.length; i++) {
-						if (this.angles[i] == null) {
-							for (var j=i+1; j<this.angles.length; j++) {
-								if (this.angles[j] != null) {
-									this.angles[i] = this.angles[j];
-									break;
-								}
-							}
-						}
-					}
-					return this.angles;
-				}
-			})(d);
-
-			this.path = function(ctx) {
-				var pp = this.PathParser;
-				pp.reset();
-
-				var bb = new svg.BoundingBox();
-				if (ctx != null) ctx.beginPath();
-				while (!pp.isEnd()) {
-					pp.nextCommand();
-					switch (pp.command) {
-					case 'M':
-					case 'm':
-						var p = pp.getAsCurrentPoint();
-						pp.addMarker(p);
-						bb.addPoint(p.x, p.y);
-						if (ctx != null) ctx.moveTo(p.x, p.y);
-						pp.start = pp.current;
-						while (!pp.isCommandOrEnd()) {
-							var p = pp.getAsCurrentPoint();
-							pp.addMarker(p, pp.start);
-							bb.addPoint(p.x, p.y);
-							if (ctx != null) ctx.lineTo(p.x, p.y);
-						}
-						break;
-					case 'L':
-					case 'l':
-						while (!pp.isCommandOrEnd()) {
-							var c = pp.current;
-							var p = pp.getAsCurrentPoint();
-							pp.addMarker(p, c);
-							bb.addPoint(p.x, p.y);
-							if (ctx != null) ctx.lineTo(p.x, p.y);
-						}
-						break;
-					case 'H':
-					case 'h':
-						while (!pp.isCommandOrEnd()) {
-							var newP = new svg.Point((pp.isRelativeCommand() ? pp.current.x : 0) + pp.getScalar(), pp.current.y);
-							pp.addMarker(newP, pp.current);
-							pp.current = newP;
-							bb.addPoint(pp.current.x, pp.current.y);
-							if (ctx != null) ctx.lineTo(pp.current.x, pp.current.y);
-						}
-						break;
-					case 'V':
-					case 'v':
-						while (!pp.isCommandOrEnd()) {
-							var newP = new svg.Point(pp.current.x, (pp.isRelativeCommand() ? pp.current.y : 0) + pp.getScalar());
-							pp.addMarker(newP, pp.current);
-							pp.current = newP;
-							bb.addPoint(pp.current.x, pp.current.y);
-							if (ctx != null) ctx.lineTo(pp.current.x, pp.current.y);
-						}
-						break;
-					case 'C':
-					case 'c':
-						while (!pp.isCommandOrEnd()) {
-							var curr = pp.current;
-							var p1 = pp.getPoint();
-							var cntrl = pp.getAsControlPoint();
-							var cp = pp.getAsCurrentPoint();
-							pp.addMarker(cp, cntrl, p1);
-							bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-							if (ctx != null) ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-						}
-						break;
-					case 'S':
-					case 's':
-						while (!pp.isCommandOrEnd()) {
-							var curr = pp.current;
-							var p1 = pp.getReflectedControlPoint();
-							var cntrl = pp.getAsControlPoint();
-							var cp = pp.getAsCurrentPoint();
-							pp.addMarker(cp, cntrl, p1);
-							bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-							if (ctx != null) ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
-						}
-						break;
-					case 'Q':
-					case 'q':
-						while (!pp.isCommandOrEnd()) {
-							var curr = pp.current;
-							var cntrl = pp.getAsControlPoint();
-							var cp = pp.getAsCurrentPoint();
-							pp.addMarker(cp, cntrl, cntrl);
-							bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
-							if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
-						}
-						break;
-					case 'T':
-					case 't':
-						while (!pp.isCommandOrEnd()) {
-							var curr = pp.current;
-							var cntrl = pp.getReflectedControlPoint();
-							pp.control = cntrl;
-							var cp = pp.getAsCurrentPoint();
-							pp.addMarker(cp, cntrl, cntrl);
-							bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
-							if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
-						}
-						break;
-					case 'A':
-					case 'a':
-						while (!pp.isCommandOrEnd()) {
-						    var curr = pp.current;
-							var rx = pp.getScalar();
-							var ry = pp.getScalar();
-							var xAxisRotation = pp.getScalar() * (Math.PI / 180.0);
-							var largeArcFlag = pp.getScalar();
-							var sweepFlag = pp.getScalar();
-							var cp = pp.getAsCurrentPoint();
-
-							// Conversion from endpoint to center parameterization
-							// http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
-							// x1', y1'
-							var currp = new svg.Point(
-								Math.cos(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.sin(xAxisRotation) * (curr.y - cp.y) / 2.0,
-								-Math.sin(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.cos(xAxisRotation) * (curr.y - cp.y) / 2.0
-							);
-							// adjust radii
-							var l = Math.pow(currp.x,2)/Math.pow(rx,2)+Math.pow(currp.y,2)/Math.pow(ry,2);
-							if (l > 1) {
-								rx *= Math.sqrt(l);
-								ry *= Math.sqrt(l);
-							}
-							// cx', cy'
-							var s = (largeArcFlag == sweepFlag ? -1 : 1) * Math.sqrt(
-								((Math.pow(rx,2)*Math.pow(ry,2))-(Math.pow(rx,2)*Math.pow(currp.y,2))-(Math.pow(ry,2)*Math.pow(currp.x,2))) /
-								(Math.pow(rx,2)*Math.pow(currp.y,2)+Math.pow(ry,2)*Math.pow(currp.x,2))
-							);
-							if (isNaN(s)) s = 0;
-							var cpp = new svg.Point(s * rx * currp.y / ry, s * -ry * currp.x / rx);
-							// cx, cy
-							var centp = new svg.Point(
-								(curr.x + cp.x) / 2.0 + Math.cos(xAxisRotation) * cpp.x - Math.sin(xAxisRotation) * cpp.y,
-								(curr.y + cp.y) / 2.0 + Math.sin(xAxisRotation) * cpp.x + Math.cos(xAxisRotation) * cpp.y
-							);
-							// vector magnitude
-							var m = function(v) { return Math.sqrt(Math.pow(v[0],2) + Math.pow(v[1],2)); }
-							// ratio between two vectors
-							var r = function(u, v) { return (u[0]*v[0]+u[1]*v[1]) / (m(u)*m(v)) }
-							// angle between two vectors
-							var a = function(u, v) { return (u[0]*v[1] < u[1]*v[0] ? -1 : 1) * Math.acos(r(u,v)); }
-							// initial angle
-							var a1 = a([1,0], [(currp.x-cpp.x)/rx,(currp.y-cpp.y)/ry]);
-							// angle delta
-							var u = [(currp.x-cpp.x)/rx,(currp.y-cpp.y)/ry];
-							var v = [(-currp.x-cpp.x)/rx,(-currp.y-cpp.y)/ry];
-							var ad = a(u, v);
-							if (r(u,v) <= -1) ad = Math.PI;
-							if (r(u,v) >= 1) ad = 0;
-
-							if (sweepFlag == 0 && ad > 0) ad = ad - 2 * Math.PI;
-							if (sweepFlag == 1 && ad < 0) ad = ad + 2 * Math.PI;
-
-							// for markers
-							var halfWay = new svg.Point(
-								centp.x + rx * Math.cos((a1 + (a1 + ad)) / 2),
-								centp.y + ry * Math.sin((a1 + (a1 + ad)) / 2)
-							);
-							pp.addMarkerAngle(halfWay, (a1 + (a1 + ad)) / 2 + (sweepFlag == 0 ? -1 : 1) * Math.PI / 2);
-							pp.addMarkerAngle(cp, (a1 + ad) + (sweepFlag == 0 ? -1 : 1) * Math.PI / 2);
-
-							bb.addPoint(cp.x, cp.y); // TODO: this is too naive, make it better
-							if (ctx != null) {
-								var r = rx > ry ? rx : ry;
-								var sx = rx > ry ? 1 : rx / ry;
-								var sy = rx > ry ? ry / rx : 1;
-
-								ctx.translate(centp.x, centp.y);
-								ctx.rotate(xAxisRotation);
-								ctx.scale(sx, sy);
-								ctx.arc(0, 0, r, a1, a1 + ad, 1 - sweepFlag);
-								ctx.scale(1/sx, 1/sy);
-								ctx.rotate(-xAxisRotation);
-								ctx.translate(-centp.x, -centp.y);
-							}
-						}
-						break;
-					case 'Z':
-					case 'z':
-						if (ctx != null) ctx.closePath();
-						pp.current = pp.start;
-					}
-				}
-
-				return bb;
-			}
-
-			this.getMarkers = function() {
-				var points = this.PathParser.getMarkerPoints();
-				var angles = this.PathParser.getMarkerAngles();
-
-				var markers = [];
-				for (var i=0; i<points.length; i++) {
-					markers.push([points[i], angles[i]]);
-				}
-				return markers;
-			}
-		}
-		svg.Element.path.prototype = new svg.Element.PathElementBase;
-
-		// pattern element
-		svg.Element.pattern = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.createPattern = function(ctx, element) {
-				// render me using a temporary svg element
-				var tempSvg = new svg.Element.svg();
-				tempSvg.attributes['viewBox'] = new svg.Property('viewBox', this.attribute('viewBox').value);
-				tempSvg.attributes['x'] = new svg.Property('x', this.attribute('x').value);
-				tempSvg.attributes['y'] = new svg.Property('y', this.attribute('y').value);
-				tempSvg.attributes['width'] = new svg.Property('width', this.attribute('width').value);
-				tempSvg.attributes['height'] = new svg.Property('height', this.attribute('height').value);
-				tempSvg.children = this.children;
-
-				var c = document.createElement('canvas');
-				document.body.appendChild(c);
-				c.width = this.attribute('width').toPixels('x') + this.attribute('x').toPixels('x');
-				c.height = this.attribute('height').toPixels('y')  + this.attribute('y').toPixels('y');
-				tempSvg.render(c.getContext('2d'));
-				return ctx.createPattern(c, 'repeat');
-			}
-		}
-		svg.Element.pattern.prototype = new svg.Element.ElementBase;
-
-		// marker element
-		svg.Element.marker = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.baseRender = this.render;
-			this.render = function(ctx, point, angle) {
-				ctx.translate(point.x, point.y);
-				if (this.attribute('orient').valueOrDefault('auto') == 'auto') ctx.rotate(angle);
-				if (this.attribute('markerUnits').valueOrDefault('strokeWidth') == 'strokeWidth') ctx.scale(ctx.lineWidth, ctx.lineWidth);
-				ctx.save();
-
-				// render me using a temporary svg element
-				var tempSvg = new svg.Element.svg();
-				tempSvg.attributes['viewBox'] = new svg.Property('viewBox', this.attribute('viewBox').value);
-				tempSvg.attributes['refX'] = new svg.Property('refX', this.attribute('refX').value);
-				tempSvg.attributes['refY'] = new svg.Property('refY', this.attribute('refY').value);
-				tempSvg.attributes['width'] = new svg.Property('width', this.attribute('markerWidth').value);
-				tempSvg.attributes['height'] = new svg.Property('height', this.attribute('markerHeight').value);
-				tempSvg.attributes['fill'] = new svg.Property('fill', this.attribute('fill').valueOrDefault('black'));
-				tempSvg.attributes['stroke'] = new svg.Property('stroke', this.attribute('stroke').valueOrDefault('none'));
-				tempSvg.children = this.children;
-				tempSvg.render(ctx);
-
-				ctx.restore();
-				if (this.attribute('markerUnits').valueOrDefault('strokeWidth') == 'strokeWidth') ctx.scale(1/ctx.lineWidth, 1/ctx.lineWidth);
-				if (this.attribute('orient').valueOrDefault('auto') == 'auto') ctx.rotate(-angle);
-				ctx.translate(-point.x, -point.y);
-			}
-		}
-		svg.Element.marker.prototype = new svg.Element.ElementBase;
-
-		// definitions element
-		svg.Element.defs = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.render = function(ctx) {
-				// NOOP
-			}
-		}
-		svg.Element.defs.prototype = new svg.Element.ElementBase;
-
-		// base for gradients
-		svg.Element.GradientBase = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.gradientUnits = this.attribute('gradientUnits').valueOrDefault('objectBoundingBox');
-
-			this.stops = [];
-			for (var i=0; i<this.children.length; i++) {
-				var child = this.children[i];
-				this.stops.push(child);
-			}
-
-			this.getGradient = function() {
-				// OVERRIDE ME!
-			}
-
-			this.createGradient = function(ctx, element) {
-				var stopsContainer = this;
-				if (this.attribute('xlink:href').hasValue()) {
-					stopsContainer = this.attribute('xlink:href').getDefinition();
-				}
-
-				var g = this.getGradient(ctx, element);
-				if (g == null) return stopsContainer.stops[stopsContainer.stops.length - 1].color;
-				for (var i=0; i<stopsContainer.stops.length; i++) {
-					g.addColorStop(stopsContainer.stops[i].offset, stopsContainer.stops[i].color);
-				}
-
-				if (this.attribute('gradientTransform').hasValue()) {
-					// render as transformed pattern on temporary canvas
-					var rootView = svg.ViewPort.viewPorts[0];
-
-					var rect = new svg.Element.rect();
-					rect.attributes['x'] = new svg.Property('x', -svg.MAX_VIRTUAL_PIXELS/3.0);
-					rect.attributes['y'] = new svg.Property('y', -svg.MAX_VIRTUAL_PIXELS/3.0);
-					rect.attributes['width'] = new svg.Property('width', svg.MAX_VIRTUAL_PIXELS);
-					rect.attributes['height'] = new svg.Property('height', svg.MAX_VIRTUAL_PIXELS);
-
-					var group = new svg.Element.g();
-					group.attributes['transform'] = new svg.Property('transform', this.attribute('gradientTransform').value);
-					group.children = [ rect ];
-
-					var tempSvg = new svg.Element.svg();
-					tempSvg.attributes['x'] = new svg.Property('x', 0);
-					tempSvg.attributes['y'] = new svg.Property('y', 0);
-					tempSvg.attributes['width'] = new svg.Property('width', rootView.width);
-					tempSvg.attributes['height'] = new svg.Property('height', rootView.height);
-					tempSvg.children = [ group ];
-
-					var c = document.createElement('canvas');
-					c.width = rootView.width;
-					c.height = rootView.height;
-					var tempCtx = c.getContext('2d');
-					tempCtx.fillStyle = g;
-					tempSvg.render(tempCtx);
-					return tempCtx.createPattern(c, 'no-repeat');
-				}
-
-				return g;
-			}
-		}
-		svg.Element.GradientBase.prototype = new svg.Element.ElementBase;
-
-		// linear gradient element
-		svg.Element.linearGradient = function(node) {
-			this.base = svg.Element.GradientBase;
-			this.base(node);
-
-			this.getGradient = function(ctx, element) {
-				var bb = element.getBoundingBox();
-
-				var x1 = (this.gradientUnits == 'objectBoundingBox'
-					? bb.x() + bb.width() * this.attribute('x1').numValue()
-					: this.attribute('x1').toPixels('x'));
-				var y1 = (this.gradientUnits == 'objectBoundingBox'
-					? bb.y() + bb.height() * this.attribute('y1').numValue()
-					: this.attribute('y1').toPixels('y'));
-				var x2 = (this.gradientUnits == 'objectBoundingBox'
-					? bb.x() + bb.width() * this.attribute('x2').numValue()
-					: this.attribute('x2').toPixels('x'));
-				var y2 = (this.gradientUnits == 'objectBoundingBox'
-					? bb.y() + bb.height() * this.attribute('y2').numValue()
-					: this.attribute('y2').toPixels('y'));
-
-				if (x1 == x2 && y1 == y2) return null;
-				return ctx.createLinearGradient(x1, y1, x2, y2);
-			}
-		}
-		svg.Element.linearGradient.prototype = new svg.Element.GradientBase;
-
-		// radial gradient element
-		svg.Element.radialGradient = function(node) {
-			this.base = svg.Element.GradientBase;
-			this.base(node);
-
-			this.getGradient = function(ctx, element) {
-				var bb = element.getBoundingBox();
-
-				if (!this.attribute('cx').hasValue()) this.attribute('cx', true).value = '50%';
-				if (!this.attribute('cy').hasValue()) this.attribute('cy', true).value = '50%';
-				if (!this.attribute('r').hasValue()) this.attribute('r', true).value = '50%';
-
-				var cx = (this.gradientUnits == 'objectBoundingBox'
-					? bb.x() + bb.width() * this.attribute('cx').numValue()
-					: this.attribute('cx').toPixels('x'));
-				var cy = (this.gradientUnits == 'objectBoundingBox'
-					? bb.y() + bb.height() * this.attribute('cy').numValue()
-					: this.attribute('cy').toPixels('y'));
-
-				var fx = cx;
-				var fy = cy;
-				if (this.attribute('fx').hasValue()) {
-					fx = (this.gradientUnits == 'objectBoundingBox'
-					? bb.x() + bb.width() * this.attribute('fx').numValue()
-					: this.attribute('fx').toPixels('x'));
-				}
-				if (this.attribute('fy').hasValue()) {
-					fy = (this.gradientUnits == 'objectBoundingBox'
-					? bb.y() + bb.height() * this.attribute('fy').numValue()
-					: this.attribute('fy').toPixels('y'));
-				}
-
-				var r = (this.gradientUnits == 'objectBoundingBox'
-					? (bb.width() + bb.height()) / 2.0 * this.attribute('r').numValue()
-					: this.attribute('r').toPixels());
-
-				return ctx.createRadialGradient(fx, fy, 0, cx, cy, r);
-			}
-		}
-		svg.Element.radialGradient.prototype = new svg.Element.GradientBase;
-
-		// gradient stop element
-		svg.Element.stop = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.offset = this.attribute('offset').numValue();
-
-			var stopColor = this.style('stop-color');
-			if (this.style('stop-opacity').hasValue()) stopColor = stopColor.addOpacity(this.style('stop-opacity').value);
-			this.color = stopColor.value;
-		}
-		svg.Element.stop.prototype = new svg.Element.ElementBase;
-
-		// animation base element
-		svg.Element.AnimateBase = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			svg.Animations.push(this);
-
-			this.duration = 0.0;
-			this.begin = this.attribute('begin').toMilliseconds();
-			this.maxDuration = this.begin + this.attribute('dur').toMilliseconds();
-
-			this.getProperty = function() {
-				var attributeType = this.attribute('attributeType').value;
-				var attributeName = this.attribute('attributeName').value;
-
-				if (attributeType == 'CSS') {
-					return this.parent.style(attributeName, true);
-				}
-				return this.parent.attribute(attributeName, true);
-			};
-
-			this.initialValue = null;
-			this.initialUnits = '';
-			this.removed = false;
-
-			this.calcValue = function() {
-				// OVERRIDE ME!
-				return '';
-			}
-
-			this.update = function(delta) {
-				// set initial value
-				if (this.initialValue == null) {
-					this.initialValue = this.getProperty().value;
-					this.initialUnits = this.getProperty().getUnits();
-				}
-
-				// if we're past the end time
-				if (this.duration > this.maxDuration) {
-					// loop for indefinitely repeating animations
-					if (this.attribute('repeatCount').value == 'indefinite') {
-						this.duration = 0.0
-					}
-					else if (this.attribute('fill').valueOrDefault('remove') == 'remove' && !this.removed) {
-						this.removed = true;
-						this.getProperty().value = this.initialValue;
-						return true;
-					}
-					else {
-						return false; // no updates made
-					}
-				}
-				this.duration = this.duration + delta;
-
-				// if we're past the begin time
-				var updated = false;
-				if (this.begin < this.duration) {
-					var newValue = this.calcValue(); // tween
-
-					if (this.attribute('type').hasValue()) {
-						// for transform, etc.
-						var type = this.attribute('type').value;
-						newValue = type + '(' + newValue + ')';
-					}
-
-					this.getProperty().value = newValue;
-					updated = true;
-				}
-
-				return updated;
-			}
-
-			this.from = this.attribute('from');
-			this.to = this.attribute('to');
-			this.values = this.attribute('values');
-			if (this.values.hasValue()) this.values.value = this.values.value.split(';');
-
-			// fraction of duration we've covered
-			this.progress = function() {
-				var ret = { progress: (this.duration - this.begin) / (this.maxDuration - this.begin) };
-				if (this.values.hasValue()) {
-					var p = ret.progress * (this.values.value.length - 1);
-					var lb = Math.floor(p), ub = Math.ceil(p);
-					ret.from = new svg.Property('from', parseFloat(this.values.value[lb]));
-					ret.to = new svg.Property('to', parseFloat(this.values.value[ub]));
-					ret.progress = (p - lb) / (ub - lb);
-				}
-				else {
-					ret.from = this.from;
-					ret.to = this.to;
-				}
-				return ret;
-			}
-		}
-		svg.Element.AnimateBase.prototype = new svg.Element.ElementBase;
-
-		// animate element
-		svg.Element.animate = function(node) {
-			this.base = svg.Element.AnimateBase;
-			this.base(node);
-
-			this.calcValue = function() {
-				var p = this.progress();
-
-				// tween value linearly
-				var newValue = p.from.numValue() + (p.to.numValue() - p.from.numValue()) * p.progress;
-				return newValue + this.initialUnits;
-			};
-		}
-		svg.Element.animate.prototype = new svg.Element.AnimateBase;
-
-		// animate color element
-		svg.Element.animateColor = function(node) {
-			this.base = svg.Element.AnimateBase;
-			this.base(node);
-
-			this.calcValue = function() {
-				var p = this.progress();
-				var from = new RGBColor(p.from.value);
-				var to = new RGBColor(p.to.value);
-
-				if (from.ok && to.ok) {
-					// tween color linearly
-					var r = from.r + (to.r - from.r) * p.progress;
-					var g = from.g + (to.g - from.g) * p.progress;
-					var b = from.b + (to.b - from.b) * p.progress;
-					return 'rgb('+parseInt(r,10)+','+parseInt(g,10)+','+parseInt(b,10)+')';
-				}
-				return this.attribute('from').value;
-			};
-		}
-		svg.Element.animateColor.prototype = new svg.Element.AnimateBase;
-
-		// animate transform element
-		svg.Element.animateTransform = function(node) {
-			this.base = svg.Element.animate;
-			this.base(node);
-		}
-		svg.Element.animateTransform.prototype = new svg.Element.animate;
-
-		// font element
-		svg.Element.font = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.horizAdvX = this.attribute('horiz-adv-x').numValue();
-
-			this.isRTL = false;
-			this.isArabic = false;
-			this.fontFace = null;
-			this.missingGlyph = null;
-			this.glyphs = [];
-			for (var i=0; i<this.children.length; i++) {
-				var child = this.children[i];
-				if (child.type == 'font-face') {
-					this.fontFace = child;
-					if (child.style('font-family').hasValue()) {
-						svg.Definitions[child.style('font-family').value] = this;
-					}
-				}
-				else if (child.type == 'missing-glyph') this.missingGlyph = child;
-				else if (child.type == 'glyph') {
-					if (child.arabicForm != '') {
-						this.isRTL = true;
-						this.isArabic = true;
-						if (typeof(this.glyphs[child.unicode]) == 'undefined') this.glyphs[child.unicode] = [];
-						this.glyphs[child.unicode][child.arabicForm] = child;
-					}
-					else {
-						this.glyphs[child.unicode] = child;
-					}
-				}
-			}
-		}
-		svg.Element.font.prototype = new svg.Element.ElementBase;
-
-		// font-face element
-		svg.Element.fontface = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.ascent = this.attribute('ascent').value;
-			this.descent = this.attribute('descent').value;
-			this.unitsPerEm = this.attribute('units-per-em').numValue();
-		}
-		svg.Element.fontface.prototype = new svg.Element.ElementBase;
-
-		// missing-glyph element
-		svg.Element.missingglyph = function(node) {
-			this.base = svg.Element.path;
-			this.base(node);
-
-			this.horizAdvX = 0;
-		}
-		svg.Element.missingglyph.prototype = new svg.Element.path;
-
-		// glyph element
-		svg.Element.glyph = function(node) {
-			this.base = svg.Element.path;
-			this.base(node);
-
-			this.horizAdvX = this.attribute('horiz-adv-x').numValue();
-			this.unicode = this.attribute('unicode').value;
-			this.arabicForm = this.attribute('arabic-form').value;
-		}
-		svg.Element.glyph.prototype = new svg.Element.path;
-
-		// text element
-		svg.Element.text = function(node) {
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			if (node != null) {
-				// add children
-				this.children = [];
-				for (var i=0; i<node.childNodes.length; i++) {
-					var childNode = node.childNodes[i];
-					if (childNode.nodeType == 1) { // capture tspan and tref nodes
-						this.addChild(childNode, true);
-					}
-					else if (childNode.nodeType == 3) { // capture text
-						this.addChild(new svg.Element.tspan(childNode), false);
-					}
-				}
-			}
-
-			this.baseSetContext = this.setContext;
-			this.setContext = function(ctx) {
-				this.baseSetContext(ctx);
-				if (this.style('dominant-baseline').hasValue()) ctx.textBaseline = this.style('dominant-baseline').value;
-				if (this.style('alignment-baseline').hasValue()) ctx.textBaseline = this.style('alignment-baseline').value;
-			}
-
-			this.renderChildren = function(ctx) {
-				var textAnchor = this.style('text-anchor').valueOrDefault('start');
-				var x = this.attribute('x').toPixels('x');
-				var y = this.attribute('y').toPixels('y');
-				for (var i=0; i<this.children.length; i++) {
-					var child = this.children[i];
-
-					if (child.attribute('x').hasValue()) {
-						child.x = child.attribute('x').toPixels('x');
-					}
-					else {
-						if (this.attribute('dx').hasValue()) y += this.attribute('dx').toPixels('x');
-						if (child.attribute('dx').hasValue()) x += child.attribute('dx').toPixels('x');
-						child.x = x;
-					}
-
-					var childLength = child.measureText(ctx);
-					if (textAnchor != 'start' && (i==0 || child.attribute('x').hasValue())) { // new group?
-						// loop through rest of children
-						var groupLength = childLength;
-						for (var j=i+1; j<this.children.length; j++) {
-							var childInGroup = this.children[j];
-							if (childInGroup.attribute('x').hasValue()) break; // new group
-							groupLength += childInGroup.measureText(ctx);
-						}
-						child.x -= (textAnchor == 'end' ? groupLength : groupLength / 2.0);
-					}
-					x = child.x + childLength;
-
-					if (child.attribute('y').hasValue()) {
-						child.y = child.attribute('y').toPixels('y');
-					}
-					else {
-						if (this.attribute('dy').hasValue()) y += this.attribute('dy').toPixels('y');
-						if (child.attribute('dy').hasValue()) y += child.attribute('dy').toPixels('y');
-						child.y = y;
-					}
-					y = child.y;
-
-					child.render(ctx);
-				}
-			}
-		}
-		svg.Element.text.prototype = new svg.Element.RenderedElementBase;
-
-		// text base
-		svg.Element.TextElementBase = function(node) {
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			this.getGlyph = function(font, text, i) {
-				var c = text[i];
-				var glyph = null;
-				if (font.isArabic) {
-					var arabicForm = 'isolated';
-					if ((i==0 || text[i-1]==' ') && i<text.length-2 && text[i+1]!=' ') arabicForm = 'terminal';
-					if (i>0 && text[i-1]!=' ' && i<text.length-2 && text[i+1]!=' ') arabicForm = 'medial';
-					if (i>0 && text[i-1]!=' ' && (i == text.length-1 || text[i+1]==' ')) arabicForm = 'initial';
-					if (typeof(font.glyphs[c]) != 'undefined') {
-						glyph = font.glyphs[c][arabicForm];
-						if (glyph == null && font.glyphs[c].type == 'glyph') glyph = font.glyphs[c];
-					}
-				}
-				else {
-					glyph = font.glyphs[c];
-				}
-				if (glyph == null) glyph = font.missingGlyph;
-				return glyph;
-			}
-
-			this.renderChildren = function(ctx) {
-				var customFont = this.parent.style('font-family').getDefinition();
-				if (customFont != null) {
-					var fontSize = this.parent.style('font-size').numValueOrDefault(svg.Font.Parse(svg.ctx.font).fontSize);
-					var fontStyle = this.parent.style('font-style').valueOrDefault(svg.Font.Parse(svg.ctx.font).fontStyle);
-					var text = this.getText();
-					if (customFont.isRTL) text = text.split("").reverse().join("");
-
-					var dx = svg.ToNumberArray(this.parent.attribute('dx').value);
-					for (var i=0; i<text.length; i++) {
-						var glyph = this.getGlyph(customFont, text, i);
-						var scale = fontSize / customFont.fontFace.unitsPerEm;
-						ctx.translate(this.x, this.y);
-						ctx.scale(scale, -scale);
-						var lw = ctx.lineWidth;
-						ctx.lineWidth = ctx.lineWidth * customFont.fontFace.unitsPerEm / fontSize;
-						if (fontStyle == 'italic') ctx.transform(1, 0, .4, 1, 0, 0);
-						glyph.render(ctx);
-						if (fontStyle == 'italic') ctx.transform(1, 0, -.4, 1, 0, 0);
-						ctx.lineWidth = lw;
-						ctx.scale(1/scale, -1/scale);
-						ctx.translate(-this.x, -this.y);
-
-						this.x += fontSize * (glyph.horizAdvX || customFont.horizAdvX) / customFont.fontFace.unitsPerEm;
-						if (typeof(dx[i]) != 'undefined' && !isNaN(dx[i])) {
-							this.x += dx[i];
-						}
-					}
-					return;
-				}
-
-				if (ctx.strokeStyle != '') ctx.strokeText(svg.compressSpaces(this.getText()), this.x, this.y);
-				if (ctx.fillStyle != '') ctx.fillText(svg.compressSpaces(this.getText()), this.x, this.y);
-			}
-
-			this.getText = function() {
-				// OVERRIDE ME
-			}
-
-			this.measureText = function(ctx) {
-				var customFont = this.parent.style('font-family').getDefinition();
-				if (customFont != null) {
-					var fontSize = this.parent.style('font-size').numValueOrDefault(svg.Font.Parse(svg.ctx.font).fontSize);
-					var measure = 0;
-					var text = this.getText();
-					if (customFont.isRTL) text = text.split("").reverse().join("");
-					var dx = svg.ToNumberArray(this.parent.attribute('dx').value);
-					for (var i=0; i<text.length; i++) {
-						var glyph = this.getGlyph(customFont, text, i);
-						measure += (glyph.horizAdvX || customFont.horizAdvX) * fontSize / customFont.fontFace.unitsPerEm;
-						if (typeof(dx[i]) != 'undefined' && !isNaN(dx[i])) {
-							measure += dx[i];
-						}
-					}
-					return measure;
-				}
-
-				var textToMeasure = svg.compressSpaces(this.getText());
-				if (!ctx.measureText) return textToMeasure.length * 10;
-
-				ctx.save();
-				this.setContext(ctx);
-				var width = ctx.measureText(textToMeasure).width;
-				ctx.restore();
-				return width;
-			}
-		}
-		svg.Element.TextElementBase.prototype = new svg.Element.RenderedElementBase;
-
-		// tspan
-		svg.Element.tspan = function(node) {
-			this.base = svg.Element.TextElementBase;
-			this.base(node);
-
-			this.text = node.nodeType == 3 ? node.nodeValue : // text
-						node.childNodes.length > 0 ? node.childNodes[0].nodeValue : // element
-						node.text;
-			this.getText = function() {
-				return this.text;
-			}
-		}
-		svg.Element.tspan.prototype = new svg.Element.TextElementBase;
-
-		// tref
-		svg.Element.tref = function(node) {
-			this.base = svg.Element.TextElementBase;
-			this.base(node);
-
-			this.getText = function() {
-				var element = this.attribute('xlink:href').getDefinition();
-				if (element != null) return element.children[0].getText();
-			}
-		}
-		svg.Element.tref.prototype = new svg.Element.TextElementBase;
-
-		// a element
-		svg.Element.a = function(node) {
-			this.base = svg.Element.TextElementBase;
-			this.base(node);
-
-			this.hasText = true;
-			for (var i=0; i<node.childNodes.length; i++) {
-				if (node.childNodes[i].nodeType != 3) this.hasText = false;
-			}
-
-			// this might contain text
-			this.text = this.hasText ? node.childNodes[0].nodeValue : '';
-			this.getText = function() {
-				return this.text;
-			}
-
-			this.baseRenderChildren = this.renderChildren;
-			this.renderChildren = function(ctx) {
-				if (this.hasText) {
-					// render as text element
-					this.baseRenderChildren(ctx);
-					var fontSize = new svg.Property('fontSize', svg.Font.Parse(svg.ctx.font).fontSize);
-					svg.Mouse.checkBoundingBox(this, new svg.BoundingBox(this.x, this.y - fontSize.toPixels('y'), this.x + this.measureText(ctx), this.y));
-				}
-				else {
-					// render as temporary group
-					var g = new svg.Element.g();
-					g.children = this.children;
-					g.parent = this;
-					g.render(ctx);
-				}
-			}
-
-			this.onclick = function() {
-				window.open(this.attribute('xlink:href').value);
-			}
-
-			this.onmousemove = function() {
-				svg.ctx.canvas.style.cursor = 'pointer';
-			}
-		}
-		svg.Element.a.prototype = new svg.Element.TextElementBase;
-
-		// image element
-		svg.Element.image = function(node) {
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			var href = this.attribute('xlink:href').value;
-			var isSvg = href.match(/\.svg$/)
-
-			svg.Images.push(this);
-			this.loaded = false;
-			if (!isSvg) {
-				this.img = document.createElement('img');
-				var self = this;
-				this.img.onload = function() { self.loaded = true; }
-				this.img.onerror = function() { if (console) console.log('ERROR: image "' + href + '" not found'); self.loaded = true; }
-				this.img.src = href;
-			}
-			else {
-				this.img = svg.ajax(href);
-				this.loaded = true;
-			}
-
-			this.renderChildren = function(ctx) {
-				var x = this.attribute('x').toPixels('x');
-				var y = this.attribute('y').toPixels('y');
-
-				var width = this.attribute('width').toPixels('x');
-				var height = this.attribute('height').toPixels('y');
-				if (width == 0 || height == 0) return;
-
-				ctx.save();
-				if (isSvg) {
-					ctx.drawSvg(this.img, x, y, width, height);
-				}
-				else {
-					ctx.translate(x, y);
-					svg.AspectRatio(ctx,
-									this.attribute('preserveAspectRatio').value,
-									width,
-									this.img.width,
-									height,
-									this.img.height,
-									0,
-									0);
-					ctx.drawImage(this.img, 0, 0);
-				}
-				ctx.restore();
-			}
-		}
-		svg.Element.image.prototype = new svg.Element.RenderedElementBase;
-
-		// group element
-		svg.Element.g = function(node) {
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			this.getBoundingBox = function() {
-				var bb = new svg.BoundingBox();
-				for (var i=0; i<this.children.length; i++) {
-					bb.addBoundingBox(this.children[i].getBoundingBox());
-				}
-				return bb;
-			};
-		}
-		svg.Element.g.prototype = new svg.Element.RenderedElementBase;
-
-		// symbol element
-		svg.Element.symbol = function(node) {
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			this.baseSetContext = this.setContext;
-			this.setContext = function(ctx) {
-				this.baseSetContext(ctx);
-
-				// viewbox
-				if (this.attribute('viewBox').hasValue()) {
-					var viewBox = svg.ToNumberArray(this.attribute('viewBox').value);
-					var minX = viewBox[0];
-					var minY = viewBox[1];
-					width = viewBox[2];
-					height = viewBox[3];
-
-					svg.AspectRatio(ctx,
-									this.attribute('preserveAspectRatio').value,
-									this.attribute('width').toPixels('x'),
-									width,
-									this.attribute('height').toPixels('y'),
-									height,
-									minX,
-									minY);
-
-					svg.ViewPort.SetCurrent(viewBox[2], viewBox[3]);
-				}
-			}
-		}
-		svg.Element.symbol.prototype = new svg.Element.RenderedElementBase;
-
-		// style element
-		svg.Element.style = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			// text, or spaces then CDATA
-			var css = node.childNodes[0].nodeValue + (node.childNodes.length > 1 ? node.childNodes[1].nodeValue : '');
-			css = css.replace(/(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(^[\s]*\/\/.*)/gm, ''); // remove comments
-			css = svg.compressSpaces(css); // replace whitespace
-			var cssDefs = css.split('}');
-			for (var i=0; i<cssDefs.length; i++) {
-				if (svg.trim(cssDefs[i]) != '') {
-					var cssDef = cssDefs[i].split('{');
-					var cssClasses = cssDef[0].split(',');
-					var cssProps = cssDef[1].split(';');
-					for (var j=0; j<cssClasses.length; j++) {
-						var cssClass = svg.trim(cssClasses[j]);
-						if (cssClass != '') {
-							var props = {};
-							for (var k=0; k<cssProps.length; k++) {
-								var prop = cssProps[k].indexOf(':');
-								var name = cssProps[k].substr(0, prop);
-								var value = cssProps[k].substr(prop + 1, cssProps[k].length - prop);
-								if (name != null && value != null) {
-									props[svg.trim(name)] = new svg.Property(svg.trim(name), svg.trim(value));
-								}
-							}
-							svg.Styles[cssClass] = props;
-							if (cssClass == '@font-face') {
-								var fontFamily = props['font-family'].value.replace(/"/g,'');
-								var srcs = props['src'].value.split(',');
-								for (var s=0; s<srcs.length; s++) {
-									if (srcs[s].indexOf('format("svg")') > 0) {
-										var urlStart = srcs[s].indexOf('url');
-										var urlEnd = srcs[s].indexOf(')', urlStart);
-										var url = srcs[s].substr(urlStart + 5, urlEnd - urlStart - 6);
-										var doc = svg.parseXml(svg.ajax(url));
-										var fonts = doc.getElementsByTagName('font');
-										for (var f=0; f<fonts.length; f++) {
-											var font = svg.CreateElement(fonts[f]);
-											svg.Definitions[fontFamily] = font;
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		}
-		svg.Element.style.prototype = new svg.Element.ElementBase;
-
-		// use element
-		svg.Element.use = function(node) {
-			this.base = svg.Element.RenderedElementBase;
-			this.base(node);
-
-			this.baseSetContext = this.setContext;
-			this.setContext = function(ctx) {
-				this.baseSetContext(ctx);
-				if (this.attribute('x').hasValue()) ctx.translate(this.attribute('x').toPixels('x'), 0);
-				if (this.attribute('y').hasValue()) ctx.translate(0, this.attribute('y').toPixels('y'));
-			}
-
-			this.getDefinition = function() {
-				var element = this.attribute('xlink:href').getDefinition();
-				if (this.attribute('width').hasValue()) element.attribute('width', true).value = this.attribute('width').value;
-				if (this.attribute('height').hasValue()) element.attribute('height', true).value = this.attribute('height').value;
-				return element;
-			}
-
-			this.path = function(ctx) {
-				var element = this.getDefinition();
-				if (element != null) element.path(ctx);
-			}
-
-			this.renderChildren = function(ctx) {
-				var element = this.getDefinition();
-				if (element != null) {
-					// temporarily detach from parent and render
-					var oldParent = element.parent;
-					element.parent = null;
-					element.render(ctx);
-					element.parent = oldParent;
-				}
-			}
-		}
-		svg.Element.use.prototype = new svg.Element.RenderedElementBase;
-
-		// mask element
-		svg.Element.mask = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.apply = function(ctx, element) {
-				// render as temp svg
-				var x = this.attribute('x').toPixels('x');
-				var y = this.attribute('y').toPixels('y');
-				var width = this.attribute('width').toPixels('x');
-				var height = this.attribute('height').toPixels('y');
-
-				// temporarily remove mask to avoid recursion
-				var mask = element.attribute('mask').value;
-				element.attribute('mask').value = '';
-
-					var cMask = document.createElement('canvas');
-					cMask.width = x + width;
-					cMask.height = y + height;
-					var maskCtx = cMask.getContext('2d');
-					this.renderChildren(maskCtx);
-
-					var c = document.createElement('canvas');
-					c.width = x + width;
-					c.height = y + height;
-					var tempCtx = c.getContext('2d');
-					element.render(tempCtx);
-					tempCtx.globalCompositeOperation = 'destination-in';
-					tempCtx.fillStyle = maskCtx.createPattern(cMask, 'no-repeat');
-					tempCtx.fillRect(0, 0, x + width, y + height);
-
-					ctx.fillStyle = tempCtx.createPattern(c, 'no-repeat');
-					ctx.fillRect(0, 0, x + width, y + height);
-
-				// reassign mask
-				element.attribute('mask').value = mask;
-			}
-
-			this.render = function(ctx) {
-				// NO RENDER
-			}
-		}
-		svg.Element.mask.prototype = new svg.Element.ElementBase;
-
-		// clip element
-		svg.Element.clipPath = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.apply = function(ctx) {
-				for (var i=0; i<this.children.length; i++) {
-					if (this.children[i].path) {
-						this.children[i].path(ctx);
-						ctx.clip();
-					}
-				}
-			}
-
-			this.render = function(ctx) {
-				// NO RENDER
-			}
-		}
-		svg.Element.clipPath.prototype = new svg.Element.ElementBase;
-
-		// filters
-		svg.Element.filter = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			this.apply = function(ctx, element) {
-				// render as temp svg
-				var bb = element.getBoundingBox();
-				var x = this.attribute('x').toPixels('x');
-				var y = this.attribute('y').toPixels('y');
-				if (x == 0 || y == 0) {
-					x = bb.x1;
-					y = bb.y1;
-				}
-				var width = this.attribute('width').toPixels('x');
-				var height = this.attribute('height').toPixels('y');
-				if (width == 0 || height == 0) {
-					width = bb.width();
-					height = bb.height();
-				}
-
-				// temporarily remove filter to avoid recursion
-				var filter = element.style('filter').value;
-				element.style('filter').value = '';
-
-				// max filter distance
-				var extraPercent = .20;
-				var px = extraPercent * width;
-				var py = extraPercent * height;
-
-				var c = document.createElement('canvas');
-				c.width = width + 2*px;
-				c.height = height + 2*py;
-				var tempCtx = c.getContext('2d');
-				tempCtx.translate(-x + px, -y + py);
-				element.render(tempCtx);
-
-				// apply filters
-				for (var i=0; i<this.children.length; i++) {
-					this.children[i].apply(tempCtx, 0, 0, width + 2*px, height + 2*py);
-				}
-
-				// render on me
-				ctx.drawImage(c, 0, 0, width + 2*px, height + 2*py, x - px, y - py, width + 2*px, height + 2*py);
-
-				// reassign filter
-				element.style('filter', true).value = filter;
-			}
-
-			this.render = function(ctx) {
-				// NO RENDER
-			}
-		}
-		svg.Element.filter.prototype = new svg.Element.ElementBase;
-
-		svg.Element.feGaussianBlur = function(node) {
-			this.base = svg.Element.ElementBase;
-			this.base(node);
-
-			function make_fgauss(sigma) {
-				sigma = Math.max(sigma, 0.01);
-				var len = Math.ceil(sigma * 4.0) + 1;
-				mask = [];
-				for (var i = 0; i < len; i++) {
-					mask[i] = Math.exp(-0.5 * (i / sigma) * (i / sigma));
-				}
-				return mask;
-			}
-
-			function normalize(mask) {
-				var sum = 0;
-				for (var i = 1; i < mask.length; i++) {
-					sum += Math.abs(mask[i]);
-				}
-				sum = 2 * sum + Math.abs(mask[0]);
-				for (var i = 0; i < mask.length; i++) {
-					mask[i] /= sum;
-				}
-				return mask;
-			}
-
-			function convolve_even(src, dst, mask, width, height) {
-			  for (var y = 0; y < height; y++) {
-				for (var x = 0; x < width; x++) {
-				  var a = imGet(src, x, y, width, height, 3)/255;
-				  for (var rgba = 0; rgba < 4; rgba++) {
-					  var sum = mask[0] * (a==0?255:imGet(src, x, y, width, height, rgba)) * (a==0||rgba==3?1:a);
-					  for (var i = 1; i < mask.length; i++) {
-						var a1 = imGet(src, Math.max(x-i,0), y, width, height, 3)/255;
-					    var a2 = imGet(src, Math.min(x+i, width-1), y, width, height, 3)/255;
-						sum += mask[i] *
-						  ((a1==0?255:imGet(src, Math.max(x-i,0), y, width, height, rgba)) * (a1==0||rgba==3?1:a1) +
-						   (a2==0?255:imGet(src, Math.min(x+i, width-1), y, width, height, rgba)) * (a2==0||rgba==3?1:a2));
-					  }
-					  imSet(dst, y, x, height, width, rgba, sum);
-				  }
-				}
-			  }
-			}
-
-			function imGet(img, x, y, width, height, rgba) {
-				return img[y*width*4 + x*4 + rgba];
-			}
-
-			function imSet(img, x, y, width, height, rgba, val) {
-				img[y*width*4 + x*4 + rgba] = val;
-			}
-
-			function blur(ctx, width, height, sigma)
-			{
-				var srcData = ctx.getImageData(0, 0, width, height);
-				var mask = make_fgauss(sigma);
-				mask = normalize(mask);
-				tmp = [];
-				convolve_even(srcData.data, tmp, mask, width, height);
-				convolve_even(tmp, srcData.data, mask, height, width);
-				ctx.clearRect(0, 0, width, height);
-				ctx.putImageData(srcData, 0, 0);
-			}
-
-			this.apply = function(ctx, x, y, width, height) {
-				// assuming x==0 && y==0 for now
-				blur(ctx, width, height, this.attribute('stdDeviation').numValue());
-			}
-		}
-		svg.Element.filter.prototype = new svg.Element.feGaussianBlur;
-
-		// title element, do nothing
-		svg.Element.title = function(node) {
-		}
-		svg.Element.title.prototype = new svg.Element.ElementBase;
-
-		// desc element, do nothing
-		svg.Element.desc = function(node) {
-		}
-		svg.Element.desc.prototype = new svg.Element.ElementBase;
-
-		svg.Element.MISSING = function(node) {
-			if (console) console.log('ERROR: Element \'' + node.nodeName + '\' not yet implemented.');
-		}
-		svg.Element.MISSING.prototype = new svg.Element.ElementBase;
-
-		// element factory
-		svg.CreateElement = function(node) {
-			var className = node.nodeName.replace(/^[^:]+:/,''); // remove namespace
-			className = className.replace(/\-/g,''); // remove dashes
-			var e = null;
-			if (typeof(svg.Element[className]) != 'undefined') {
-				e = new svg.Element[className](node);
-			}
-			else {
-				e = new svg.Element.MISSING(node);
-			}
-
-			e.type = node.nodeName;
-			return e;
-		}
-
-		// load from url
-		svg.load = function(ctx, url) {
-			svg.loadXml(ctx, svg.ajax(url));
-		}
-
-		// load from xml
-		svg.loadXml = function(ctx, xml) {
-			svg.loadXmlDoc(ctx, svg.parseXml(xml));
-		}
-
-		svg.loadXmlDoc = function(ctx, dom) {
-			svg.init(ctx);
-
-			var mapXY = function(p) {
-				var e = ctx.canvas;
-				while (e) {
-					p.x -= e.offsetLeft;
-					p.y -= e.offsetTop;
-					e = e.offsetParent;
-				}
-				if (window.scrollX) p.x += window.scrollX;
-				if (window.scrollY) p.y += window.scrollY;
-				return p;
-			}
-
-			// bind mouse
-			if (svg.opts['ignoreMouse'] != true) {
-				ctx.canvas.onclick = function(e) {
-					var p = mapXY(new svg.Point(e != null ? e.clientX : event.clientX, e != null ? e.clientY : event.clientY));
-					svg.Mouse.onclick(p.x, p.y);
-				};
-				ctx.canvas.onmousemove = function(e) {
-					var p = mapXY(new svg.Point(e != null ? e.clientX : event.clientX, e != null ? e.clientY : event.clientY));
-					svg.Mouse.onmousemove(p.x, p.y);
-				};
-			}
-
-			var e = svg.CreateElement(dom.documentElement);
-			e.root = true;
-
-			// render loop
-			var isFirstRender = true;
-			var draw = function() {
-				svg.ViewPort.Clear();
-				if (ctx.canvas.parentNode) svg.ViewPort.SetCurrent(ctx.canvas.parentNode.clientWidth, ctx.canvas.parentNode.clientHeight);
-
-				if (svg.opts['ignoreDimensions'] != true) {
-					// set canvas size
-					if (e.style('width').hasValue()) {
-						ctx.canvas.width = e.style('width').toPixels('x');
-						ctx.canvas.style.width = ctx.canvas.width + 'px';
-					}
-					if (e.style('height').hasValue()) {
-						ctx.canvas.height = e.style('height').toPixels('y');
-						ctx.canvas.style.height = ctx.canvas.height + 'px';
-					}
-				}
-				var cWidth = ctx.canvas.clientWidth || ctx.canvas.width;
-				var cHeight = ctx.canvas.clientHeight || ctx.canvas.height;
-				if (svg.opts['ignoreDimensions'] == true && e.style('width').hasValue() && e.style('height').hasValue()) {
-					cWidth = e.style('width').toPixels('x');
-					cHeight = e.style('height').toPixels('y');
-				}
-				svg.ViewPort.SetCurrent(cWidth, cHeight);
-
-				if (svg.opts['offsetX'] != null) e.attribute('x', true).value = svg.opts['offsetX'];
-				if (svg.opts['offsetY'] != null) e.attribute('y', true).value = svg.opts['offsetY'];
-				if (svg.opts['scaleWidth'] != null && svg.opts['scaleHeight'] != null) {
-					var xRatio = 1, yRatio = 1, viewBox = svg.ToNumberArray(e.attribute('viewBox').value);
-					if (e.attribute('width').hasValue()) xRatio = e.attribute('width').toPixels('x') / svg.opts['scaleWidth'];
-					else if (!isNaN(viewBox[2])) xRatio = viewBox[2] / svg.opts['scaleWidth'];
-					if (e.attribute('height').hasValue()) yRatio = e.attribute('height').toPixels('y') / svg.opts['scaleHeight'];
-					else if (!isNaN(viewBox[3])) yRatio = viewBox[3] / svg.opts['scaleHeight'];
-
-					e.attribute('width', true).value = svg.opts['scaleWidth'];
-					e.attribute('height', true).value = svg.opts['scaleHeight'];
-					e.attribute('viewBox', true).value = '0 0 ' + (cWidth * xRatio) + ' ' + (cHeight * yRatio);
-					e.attribute('preserveAspectRatio', true).value = 'none';
-				}
-
-				// clear and render
-				if (svg.opts['ignoreClear'] != true) {
-					ctx.clearRect(0, 0, cWidth, cHeight);
-				}
-				e.render(ctx);
-				if (isFirstRender) {
-					isFirstRender = false;
-					if (typeof(svg.opts['renderCallback']) == 'function') svg.opts['renderCallback']();
-				}
-			}
-
-			var waitingForImages = true;
-			if (svg.ImagesLoaded()) {
-				waitingForImages = false;
-				draw();
-			}
-			svg.intervalID = setInterval(function() {
-				var needUpdate = false;
-
-				if (waitingForImages && svg.ImagesLoaded()) {
-					waitingForImages = false;
-					needUpdate = true;
-				}
-
-				// need update from mouse events?
-				if (svg.opts['ignoreMouse'] != true) {
-					needUpdate = needUpdate | svg.Mouse.hasEvents();
-				}
-
-				// need update from animations?
-				if (svg.opts['ignoreAnimation'] != true) {
-					for (var i=0; i<svg.Animations.length; i++) {
-						needUpdate = needUpdate | svg.Animations[i].update(1000 / svg.FRAMERATE);
-					}
-				}
-
-				// need update from redraw?
-				if (typeof(svg.opts['forceRedraw']) == 'function') {
-					if (svg.opts['forceRedraw']() == true) needUpdate = true;
-				}
-
-				// render if needed
-				if (needUpdate) {
-					draw();
-					svg.Mouse.runEvents(); // run and clear our events
-				}
-			}, 1000 / svg.FRAMERATE);
-		}
-
-		svg.stop = function() {
-			if (svg.intervalID) {
-				clearInterval(svg.intervalID);
-			}
-		}
-
-		svg.Mouse = new (function() {
-			this.events = [];
-			this.hasEvents = function() { return this.events.length != 0; }
-
-			this.onclick = function(x, y) {
-				this.events.push({ type: 'onclick', x: x, y: y,
-					run: function(e) { if (e.onclick) e.onclick(); }
-				});
-			}
-
-			this.onmousemove = function(x, y) {
-				this.events.push({ type: 'onmousemove', x: x, y: y,
-					run: function(e) { if (e.onmousemove) e.onmousemove(); }
-				});
-			}
-
-			this.eventElements = [];
-
-			this.checkPath = function(element, ctx) {
-				for (var i=0; i<this.events.length; i++) {
-					var e = this.events[i];
-					if (ctx.isPointInPath && ctx.isPointInPath(e.x, e.y)) this.eventElements[i] = element;
-				}
-			}
-
-			this.checkBoundingBox = function(element, bb) {
-				for (var i=0; i<this.events.length; i++) {
-					var e = this.events[i];
-					if (bb.isPointInBox(e.x, e.y)) this.eventElements[i] = element;
-				}
-			}
-
-			this.runEvents = function() {
-				svg.ctx.canvas.style.cursor = '';
-
-				for (var i=0; i<this.events.length; i++) {
-					var e = this.events[i];
-					var element = this.eventElements[i];
-					while (element) {
-						e.run(element);
-						element = element.parent;
-					}
-				}
-
-				// done running, clear
-				this.events = [];
-				this.eventElements = [];
-			}
-		});
-
-		return svg;
-	}
-})();
-
-if (CanvasRenderingContext2D) {
-	CanvasRenderingContext2D.prototype.drawSvg = function(s, dx, dy, dw, dh) {
-		canvg(this.canvas, s, {
-			ignoreMouse: true,
-			ignoreAnimation: true,
-			ignoreDimensions: true,
-			ignoreClear: true,
-			offsetX: dx,
-			offsetY: dy,
-			scaleWidth: dw,
-			scaleHeight: dh
-		});
-	}
-}
-
-},{"./rgbcolor":27}],27:[function(require,module,exports){
-/**
- * A class to parse color values
- * @author Stoyan Stefanov <sstoo@gmail.com>
- * @link   http://www.phpied.com/rgb-color-parser-in-javascript/
- * @license Use it if you like it
- */
-function RGBColor(color_string)
-{
-    this.ok = false;
-
-    // strip any leading #
-    if (color_string.charAt(0) == '#') { // remove # if any
-        color_string = color_string.substr(1,6);
-    }
-
-    color_string = color_string.replace(/ /g,'');
-    color_string = color_string.toLowerCase();
-
-    // before getting into regexps, try simple matches
-    // and overwrite the input
-    var simple_colors = {
-        aliceblue: 'f0f8ff',
-        antiquewhite: 'faebd7',
-        aqua: '00ffff',
-        aquamarine: '7fffd4',
-        azure: 'f0ffff',
-        beige: 'f5f5dc',
-        bisque: 'ffe4c4',
-        black: '000000',
-        blanchedalmond: 'ffebcd',
-        blue: '0000ff',
-        blueviolet: '8a2be2',
-        brown: 'a52a2a',
-        burlywood: 'deb887',
-        cadetblue: '5f9ea0',
-        chartreuse: '7fff00',
-        chocolate: 'd2691e',
-        coral: 'ff7f50',
-        cornflowerblue: '6495ed',
-        cornsilk: 'fff8dc',
-        crimson: 'dc143c',
-        cyan: '00ffff',
-        darkblue: '00008b',
-        darkcyan: '008b8b',
-        darkgoldenrod: 'b8860b',
-        darkgray: 'a9a9a9',
-        darkgreen: '006400',
-        darkkhaki: 'bdb76b',
-        darkmagenta: '8b008b',
-        darkolivegreen: '556b2f',
-        darkorange: 'ff8c00',
-        darkorchid: '9932cc',
-        darkred: '8b0000',
-        darksalmon: 'e9967a',
-        darkseagreen: '8fbc8f',
-        darkslateblue: '483d8b',
-        darkslategray: '2f4f4f',
-        darkturquoise: '00ced1',
-        darkviolet: '9400d3',
-        deeppink: 'ff1493',
-        deepskyblue: '00bfff',
-        dimgray: '696969',
-        dodgerblue: '1e90ff',
-        feldspar: 'd19275',
-        firebrick: 'b22222',
-        floralwhite: 'fffaf0',
-        forestgreen: '228b22',
-        fuchsia: 'ff00ff',
-        gainsboro: 'dcdcdc',
-        ghostwhite: 'f8f8ff',
-        gold: 'ffd700',
-        goldenrod: 'daa520',
-        gray: '808080',
-        green: '008000',
-        greenyellow: 'adff2f',
-        honeydew: 'f0fff0',
-        hotpink: 'ff69b4',
-        indianred : 'cd5c5c',
-        indigo : '4b0082',
-        ivory: 'fffff0',
-        khaki: 'f0e68c',
-        lavender: 'e6e6fa',
-        lavenderblush: 'fff0f5',
-        lawngreen: '7cfc00',
-        lemonchiffon: 'fffacd',
-        lightblue: 'add8e6',
-        lightcoral: 'f08080',
-        lightcyan: 'e0ffff',
-        lightgoldenrodyellow: 'fafad2',
-        lightgrey: 'd3d3d3',
-        lightgreen: '90ee90',
-        lightpink: 'ffb6c1',
-        lightsalmon: 'ffa07a',
-        lightseagreen: '20b2aa',
-        lightskyblue: '87cefa',
-        lightslateblue: '8470ff',
-        lightslategray: '778899',
-        lightsteelblue: 'b0c4de',
-        lightyellow: 'ffffe0',
-        lime: '00ff00',
-        limegreen: '32cd32',
-        linen: 'faf0e6',
-        magenta: 'ff00ff',
-        maroon: '800000',
-        mediumaquamarine: '66cdaa',
-        mediumblue: '0000cd',
-        mediumorchid: 'ba55d3',
-        mediumpurple: '9370d8',
-        mediumseagreen: '3cb371',
-        mediumslateblue: '7b68ee',
-        mediumspringgreen: '00fa9a',
-        mediumturquoise: '48d1cc',
-        mediumvioletred: 'c71585',
-        midnightblue: '191970',
-        mintcream: 'f5fffa',
-        mistyrose: 'ffe4e1',
-        moccasin: 'ffe4b5',
-        navajowhite: 'ffdead',
-        navy: '000080',
-        oldlace: 'fdf5e6',
-        olive: '808000',
-        olivedrab: '6b8e23',
-        orange: 'ffa500',
-        orangered: 'ff4500',
-        orchid: 'da70d6',
-        palegoldenrod: 'eee8aa',
-        palegreen: '98fb98',
-        paleturquoise: 'afeeee',
-        palevioletred: 'd87093',
-        papayawhip: 'ffefd5',
-        peachpuff: 'ffdab9',
-        peru: 'cd853f',
-        pink: 'ffc0cb',
-        plum: 'dda0dd',
-        powderblue: 'b0e0e6',
-        purple: '800080',
-        red: 'ff0000',
-        rosybrown: 'bc8f8f',
-        royalblue: '4169e1',
-        saddlebrown: '8b4513',
-        salmon: 'fa8072',
-        sandybrown: 'f4a460',
-        seagreen: '2e8b57',
-        seashell: 'fff5ee',
-        sienna: 'a0522d',
-        silver: 'c0c0c0',
-        skyblue: '87ceeb',
-        slateblue: '6a5acd',
-        slategray: '708090',
-        snow: 'fffafa',
-        springgreen: '00ff7f',
-        steelblue: '4682b4',
-        tan: 'd2b48c',
-        teal: '008080',
-        thistle: 'd8bfd8',
-        tomato: 'ff6347',
-        turquoise: '40e0d0',
-        violet: 'ee82ee',
-        violetred: 'd02090',
-        wheat: 'f5deb3',
-        white: 'ffffff',
-        whitesmoke: 'f5f5f5',
-        yellow: 'ffff00',
-        yellowgreen: '9acd32'
-    };
-    for (var key in simple_colors) {
-        if (color_string == key) {
-            color_string = simple_colors[key];
-        }
-    }
-    // emd of simple type-in colors
-
-    // array of color definition objects
-    var color_defs = [
-        {
-            re: /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/,
-            example: ['rgb(123, 234, 45)', 'rgb(255,234,245)'],
-            process: function (bits){
-                return [
-                    parseInt(bits[1]),
-                    parseInt(bits[2]),
-                    parseInt(bits[3])
-                ];
-            }
-        },
-        {
-            re: /^(\w{2})(\w{2})(\w{2})$/,
-            example: ['#00ff00', '336699'],
-            process: function (bits){
-                return [
-                    parseInt(bits[1], 16),
-                    parseInt(bits[2], 16),
-                    parseInt(bits[3], 16)
-                ];
-            }
-        },
-        {
-            re: /^(\w{1})(\w{1})(\w{1})$/,
-            example: ['#fb0', 'f0f'],
-            process: function (bits){
-                return [
-                    parseInt(bits[1] + bits[1], 16),
-                    parseInt(bits[2] + bits[2], 16),
-                    parseInt(bits[3] + bits[3], 16)
-                ];
-            }
-        }
-    ];
-
-    // search through the definitions to find a match
-    for (var i = 0; i < color_defs.length; i++) {
-        var re = color_defs[i].re;
-        var processor = color_defs[i].process;
-        var bits = re.exec(color_string);
-        if (bits) {
-            channels = processor(bits);
-            this.r = channels[0];
-            this.g = channels[1];
-            this.b = channels[2];
-            this.ok = true;
-        }
-
-    }
-
-    // validate/cleanup values
-    this.r = (this.r < 0 || isNaN(this.r)) ? 0 : ((this.r > 255) ? 255 : this.r);
-    this.g = (this.g < 0 || isNaN(this.g)) ? 0 : ((this.g > 255) ? 255 : this.g);
-    this.b = (this.b < 0 || isNaN(this.b)) ? 0 : ((this.b > 255) ? 255 : this.b);
-
-    // some getters
-    this.toRGB = function () {
-        return 'rgb(' + this.r + ', ' + this.g + ', ' + this.b + ')';
-    }
-    this.toHex = function () {
-        var r = this.r.toString(16);
-        var g = this.g.toString(16);
-        var b = this.b.toString(16);
-        if (r.length == 1) r = '0' + r;
-        if (g.length == 1) g = '0' + g;
-        if (b.length == 1) b = '0' + b;
-        return '#' + r + g + b;
-    }
-
-    // help
-    this.getHelpXML = function () {
-
-        var examples = new Array();
-        // add regexps
-        for (var i = 0; i < color_defs.length; i++) {
-            var example = color_defs[i].example;
-            for (var j = 0; j < example.length; j++) {
-                examples[examples.length] = example[j];
-            }
-        }
-        // add type-in colors
-        for (var sc in simple_colors) {
-            examples[examples.length] = sc;
-        }
-
-        var xml = document.createElement('ul');
-        xml.setAttribute('id', 'rgbcolor-examples');
-        for (var i = 0; i < examples.length; i++) {
-            try {
-                var list_item = document.createElement('li');
-                var list_color = new RGBColor(examples[i]);
-                var example_div = document.createElement('div');
-                example_div.style.cssText =
-                        'margin: 3px; '
-                        + 'border: 1px solid black; '
-                        + 'background:' + list_color.toHex() + '; '
-                        + 'color:' + list_color.toHex()
-                ;
-                example_div.appendChild(document.createTextNode('test'));
-                var list_item_value = document.createTextNode(
-                    ' ' + examples[i] + ' -> ' + list_color.toRGB() + ' -> ' + list_color.toHex()
-                );
-                list_item.appendChild(example_div);
-                list_item.appendChild(list_item_value);
-                xml.appendChild(list_item);
-
-            } catch(e){}
-        }
-        return xml;
-
-    }
-
-}
-
-module.exports = RGBColor;
-
-},{}],28:[function(require,module,exports){
-LogEvent = function(name, value, time){
-  this.name = name;
-  this.value = value;
-  this.time = time;
-};
-
-LogEvent.CLICKED_TUTORIAL = "Clicked tutorial";
-LogEvent.CHANGED_TUTORIAL = "Changed tutorial";
-LogEvent.BLEW_FUSE = "Blew fuse";
-LogEvent.DMM_MEASUREMENT = "DMM measurement";
-LogEvent.CHANGED_CIRCUIT = "Changed circuit";
-LogEvent.ATTACHED_PROBE = "Attached probe";
-LogEvent.DETACHED_PROBE = "Detached probe";
-LogEvent.MOVED_DMM_DIAL = "Moved DMM dial";
-LogEvent.OSCOPE_MEASUREMENT = "OScope measurement";
-LogEvent.OSCOPE_V1_SCALE_CHANGED = "OScope V1 scale changed";
-LogEvent.OSCOPE_V2_SCALE_CHANGED = "OScope V2 scale changed";
-LogEvent.OSCOPE_T_SCALE_CHANGED = "OScope T scale changed";
-
-module.exports = LogEvent;
-
-},{}],29:[function(require,module,exports){
-/*global sparks $ */
-
-Meter = function() {};
-
-Meter.prototype = {
-  dmm: null,
-  oscope: null,
-
-  setProbeLocation: function (probe, loc) {
-    if (this.oscope) {
-      this.oscope.setProbeLocation(probe, loc);
-    }
-    if (this.dmm) {
-      this.dmm.setProbeLocation(probe, loc);
-    }
-  },
-
-  // moves any and all probes from oldLoc to newLoc
-  // useful for when a lead with connected probes is moved
-  moveProbe: function (oldLoc, newLoc) {
-    if (this.oscope) {
-      this.oscope.moveProbe(oldLoc, newLoc);
-    }
-    if (this.dmm) {
-      this.dmm.moveProbe(oldLoc, newLoc);
-    }
-  },
-
-  update: function () {
-    if (this.oscope) {
-      this.oscope.update();
-    }
-    if (this.dmm) {
-      this.dmm.update();
-    }
-  },
-
-  reset: function() {
-    if (this.oscope && this.oscope.reset) {
-      this.oscope.reset();
-    }
-    if (this.dmm && this.dmm.reset) {
-      this.dmm.reset();
-    }
-  }
-};
-
-module.exports = Meter;
-
-},{}],30:[function(require,module,exports){
-/*global sparks getBreadBoard breadModel */
-/* FILE oscilloscope.js */
-
-var LogEvent      = require('./log'),
-    logController = require('../controllers/log-controller');
-
-Oscilloscope = function (breadboardController) {
-  this.breadboardController = breadboardController;
-  this.probeLocation = [];
-  this.probeLocation[0] = null;     // pink probe
-  this.probeLocation[1] = null;     // yellow probe
-  this.view = null;
-  this.signals = [];
-  var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
-      initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
-  this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
-  this._horizontalScale = initHorizontalScale;
-  this.showAminusB = false;
-  this.showAplusB = false;
-  this.AminusBwasOn = false;  // whether A-B was turned on during current question
-  this.AplusBwasOn = false;
-};
-
-Oscilloscope.prototype = {
-
-  N_CHANNELS:     2,
-  PROBE_CHANNEL:  [1, 2],
-
-  HORIZONTAL_SCALES: [1e-3, 5e-4, 2.5e-4, 1e-4, 5e-5, 2.5e-5, 1e-5, 5e-6, 2.5e-6, 1e-6],  // sec/div
-  VERTICAL_SCALES:   [100,  50,   25,     10,   5,    2.5,    1,    0.5,  0.25,    0.1],  // V/div
-
-  INITIAL_HORIZONTAL_SCALE: 1e-5,
-  INITIAL_VERTICAL_SCALE:   5,
-
-  reset: function() {
-    this.probeLocation[0] = "left_positive21";      // yellow probe
-    this.probeLocation[1] = null;                   // pink probe
-    this.signals = [];
-    var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
-        initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
-    this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
-    this._horizontalScale = initHorizontalScale;
-    this.showAminusB = false;
-    this.showAplusB = false;
-    this.AminusBwasOn = false;  // whether A-B was turned on during current question
-    this.AplusBwasOn = false;
-  },
-
-  setView: function(view) {
-    this.view = view;
-    this.view.setModel(this);
-    this.update();         // we can update view immediately with the source trace
-  },
-
-  // @probe Name of probe being attached. We ignore everything but "red"
-  // @location Hole name, like 'a1' or can be null if probe is lifted
-  setProbeLocation: function(probe, location) {
-    if (probe === "probe_yellow" || probe === "probe_pink") {
-      var probeIndex = probe === "probe_yellow" ? 0 : 1;
-      if (this.probeLocation[probeIndex] !== location) {
-        this.probeLocation[probeIndex] = location;
-        this.update();
-      }
-    }
-  },
-
-  moveProbe: function(oldLoc, newLoc) {
-    for (var i = 0; i < 2; i++) {
-      if (this.probeLocation[i] === oldLoc) {
-        this.probeLocation[i] = newLoc;
-      }
-    }
-    this.update();
-  },
-
-  update: function() {
-    var source     = this.breadboardController.getComponents().source,
-        probeIndex,
-        sourceSignal,
-        probeNode;
-
-    if (!source || !source.frequency || !source.amplitude) {
-      return;                                     // we must have a source with a freq and an amplitude
-    }
-
-    for (probeIndex = 0; probeIndex < 2; probeIndex++) {
-      if (this.probeLocation[probeIndex]) {
-        probeNode = this.breadboardController.getHole(this.probeLocation[probeIndex]).nodeName();
-        if (probeNode === 'gnd') {
-          // short-circuit this operation and just return a flat trace
-          this.setSignal(this.PROBE_CHANNEL[probeIndex], {amplitude: 0, frequency: 0, phase: 0});
-          continue;
-        } else if (~probeNode.indexOf('powerPos')) {
-          // just return the source
-          sourceSignal = {
-            amplitude: source.amplitude * source.amplitudeScaleFactor,
-            frequency: source.frequency,
-            phase: 0
-          };
-          this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
-          continue;
-        }
-        this.breadboardController.query("oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
-      } else {
-        this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
-      }
-    }
-  },
-
-  updateWithData: function(ciso, probeInfo) {
-
-    var source     = this.breadboardController.getComponents().source,
-        probeNode  = probeInfo[0],
-        probeIndex = probeInfo[1],
-        result,
-        probeSignal;
-
-    result = ciso.getVoltageAt(probeInfo[0]);
-
-    if (result) {
-      probeSignal = {
-        amplitude: result.magnitude * source.amplitudeScaleFactor,
-        frequency: source.frequency,
-        phase:     result.angle
-      };
-
-      this.setSignal(this.PROBE_CHANNEL[probeIndex], probeSignal);
-
-      logController.addEvent(LogEvent.OSCOPE_MEASUREMENT, {
-          "probe": probeNode
-        });
-    } else {
-      this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
-    }
-  },
-
-  setSignal: function(channel, signal) {
-    if (!this.view) return;
-    this.signals[channel] = signal;
-    this.view.renderSignal(channel);
-  },
-
-  getSignal: function(channel) {
-    return this.signals[channel];
-  },
-
-  clearSignal: function(channel) {
-    delete this.signals[channel];
-    if (this.view) {
-      this.view.removeTrace(channel);
-    }
-  },
-
-  setHorizontalScale: function(scale) {
-    this._horizontalScale = scale;
-    if (this.view) {
-      this.view.horizontalScaleChanged();
-    }
-
-    logController.addEvent(LogEvent.OSCOPE_T_SCALE_CHANGED, {
-        "scale": scale,
-        "goodnessOfScale": this.getGoodnessOfScale()
-      });
-  },
-
-  getHorizontalScale: function() {
-    if (!this._horizontalScale) {
-      // if you want to randomize the scales, hook something in here
-      this.setHorizontalScale(this.INITIAL_HORIZONTAL_SCALE);
-    }
-    return this._horizontalScale;
-  },
-
-  setVerticalScale: function(channel, scale) {
-    if (this.showAminusB || this.showAplusB){
-      if (channel === 1) {
-        this._verticalScale[2] = scale;
-      } else {
-        return;
-      }
-    }
-
-    this._verticalScale[channel] = scale;
-    if (this.view) {
-      this.view.verticalScaleChanged(1);
-      this.view.verticalScaleChanged(2);
-    }
-
-    var logEvent = channel == 1 ? LogEvent.OSCOPE_V1_SCALE_CHANGED : LogEvent.OSCOPE_V2_SCALE_CHANGED;
-    logController.addEvent(logEvent, {
-      "scale": scale,
-      "goodnessOfScale": this.getGoodnessOfScale()
-    });
-  },
-
-  getVerticalScale: function(channel) {
-    if (!this._verticalScale[channel]) {
-      // if you want to randomize the scales, hook something in here
-      this.setVerticalScale(channel, this.INITIAL_VERTICAL_SCALE);
-    }
-    return this._verticalScale[channel];
-  },
-
-  bumpHorizontalScale: function(direction) {
-    var currentScale = this.getHorizontalScale(),
-        newScale     = this._getNextScaleFromList(currentScale, this.HORIZONTAL_SCALES, direction);
-
-    if (newScale !== currentScale) {
-      this.setHorizontalScale(newScale);
-    }
-  },
-
-  bumpVerticalScale: function(channel, direction) {
-    var currentScale = this.getVerticalScale(channel),
-        newScale     = this._getNextScaleFromList(currentScale, this.VERTICAL_SCALES, direction);
-
-    if (newScale !== currentScale) {
-      this.setVerticalScale(channel, newScale);
-    }
-  },
-
-  toggleShowAminusB: function() {
-    this.showAminusB = !this.showAminusB;
-    if (this.showAminusB) {
-      this.AminusBwasOn = true;
-      this.showAplusB = false;
-      this.setVerticalScale(1, this._verticalScale[1]);
-    }
-  },
-
-  toggleShowAplusB: function() {
-    this.showAplusB = !this.showAplusB;
-    if (this.showAplusB) {
-      this.AplusBwasOn = true;
-      this.showAminusB = false;
-      this.setVerticalScale(1, this._verticalScale[1]);
-    }
-  },
-
-  /**
-    if A-B or A+B is off right now, set AminusBwasOn and/or
-    AplusBwasOn to false now.
-  */
-  resetABforQuestion: function() {
-    if (!this.showAminusB) {
-      this.AminusBwasOn = false;
-    }
-    if (!this.showAplusB) {
-      this.AplusBwasOn = false;
-    }
-  },
-
-  _getNextScaleFromList: function(scale, scales, direction) {
-    var i, len, prevIndex;
-
-    for (i = 0, len = scales.length; i < len; i++) {
-      if (scales[i] < scale) {
-        break;
-      }
-    }
-    prevIndex = (i > 0) ? i - 1 : 0;
-
-    if (direction === 1 && prevIndex - 1 >= 0) {
-      return scales[prevIndex - 1];
-    } else if (direction === -1 && prevIndex + 1 < scales.length) {
-      return scales[prevIndex + 1];
-    } else {
-      return scale;
-    }
-  },
-
-  // returns how "good" the current scale is, from 0-1.
-  // For a single trace, a perfect scale is 1 full wave across the screen and an amplitude
-  // that is exactly the screen's height. This will return a 1.0 if the scale is within 20%
-  // of these parameters, and 0.0 if it's 200% away from the perfect scale (i.e. if it's 3 times
-  // as big or 1/3 as big).
-  // There are two scale factors per trace. The goodness ranking for the entire trace is the average
-  // of the two with the lower value weighted three times as much.
-  // If there are two traces showing, this will return the lower of the two values.
-  //
-  getGoodnessOfScale: function() {
-    var self = this,
-
-        goodnessOfScale = function(channel) {
-          var timeScale  = self.signals[channel].frequency * (self._horizontalScale * 10),            // 0-inf, best is 1
-              ampScale   = (self.signals[channel].amplitude * 2) / (self._verticalScale[channel] * 8),
-              timeGoodness  = timeScale > 1 ? 1/timeScale : timeScale,                                // 0-1, best is 1
-              ampGoodness   = ampScale > 1 ? 1/ampScale : ampScale,
-              timeScore  = (timeGoodness - 0.3) / 0.5,                                                // scaled such that 0.3 = 0 and 0.8 = 1
-              ampScore   = (ampGoodness - 0.3) / 0.5,
-              minScore = Math.max(0,Math.min(timeScore, ampScore, 1)),                                // smallest of the two, no less than 0
-              maxScore = Math.min(1,Math.max(timeScore, ampScore, 0));                                // largest of the two, no greater than 1
-          return ((minScore * 3) + maxScore) / 4;
-        },
-
-        goodnesses = [null, null];
-
-    if (this.signals[1]) {
-      goodnesses[0] = goodnessOfScale([1]);
-    }
-
-    if (this.signals[2]) {
-      goodnesses[1] = goodnessOfScale([2]);
-    }
-    return goodnesses;
-  }
-
-};
-
-module.exports = Oscilloscope;
-
-},{"../controllers/log-controller":17,"./log":28}],31:[function(require,module,exports){
-var Meter         = require('./meter'),
-    WorkbenchView = require('../views/workbench-view');
-
-Workbench = function(props, breadboardController){
-  this.circuit = null;
-  this.meter = new Meter();
-
-  this.show_multimeter          = false;
-  this.show_oscilloscope        = false;
-  this.allow_move_yellow_probe  = false;
-  this.hide_pink_probe          = false;
-  this.showComponentDrawer      = false;
-
-  this.view = new WorkbenchView(this, breadboardController);
-};
-
-Workbench.prototype = {
-
-  toJSON: function () {
-    var json = {};
-    return json;
-  }
-
-};
-
-module.exports = Workbench;
-
-},{"../views/workbench-view":38,"./meter":29}],32:[function(require,module,exports){
-var workbenchController;
-
-embeddableComponents = {
-  resistor: {
-    image: "/common/images/blank-resistor.png",
-    imageWidth: 108,
-    property: "resistance",
-    initialValue: 100
-  },
-  capacitor: {
-    image: "/common/images/capacitor.png",
-    imageWidth: 48,
-    property: "capacitance",
-    initialValue: 1e-6
-  },
-  inductor: {
-    image: "/common/images/inductor.png",
-    imageWidth: 80,
-    property: "inductance",
-    initialValue: 1e-6
-  },
-  wire: {
-    image: "/common/images/wire.png",
-    imageWidth: 80,
-    leadDistance: 5
-  }
-}
-
-AddComponentsView = function(workbenchController, breadboardController){
-  this.breadboardController = breadboardController;
-
-  var self = this,
-      component;
-
-  this.$drawer = $(".component_drawer").empty();
-
-  this.lastHighlightedHole = null;
-
-  // create drawer
-  for (componentName in embeddableComponents) {
-    if (!embeddableComponents.hasOwnProperty(componentName)) continue;
-
-    component = embeddableComponents[componentName];
-
-    this.$drawer.append(
-     $("<img class='add_"+componentName+" add_component'>")
-      .attr("src", component.image)
-      .css("width", component.imageWidth)
-      .data("type", componentName)
-      .draggable({
-        containment: "#breadboard_wrapper",
-        helper: "clone",
-        start: function(evt, ui) {
-          $(ui.helper.context).hide().fadeIn(1200);
-        },
-        drag: function(evt, ui) {
-          if (self.lastHighlightedHole) {
-            self.lastHighlightedHole.attr("xlink:href", "#$:hole_not_connected");
-          }
-          loc = {x: ui.offset.left, y: ui.offset.top+(ui.helper.height()/2)};
-          var nearestHole = $($.nearest(loc, "use[hole]")[0]);
-          nearestHole.attr("xlink:href", "#$:hole_highlighted");
-          self.lastHighlightedHole = nearestHole;
-        }
-      })
-    );
-  }
-
-  // todo: don't add this twice
-  $(".breadboard").droppable({
-    drop: function(evt, ui) {
-      var type = ui.draggable.data("type"),
-          embeddableComponent = embeddableComponents[type],
-          hole = self.lastHighlightedHole.attr("hole"),
-          loc = hole + "," + hole,
-          possibleValues,
-          $propertyEditor = null,
-          propertyName,
-          initialValue, initialValueEng, initialValueText,
-          $editor, props, uid, comp;
-
-      if (embeddableComponent.leadDistance) {
-        var num = /\d*$/.exec(hole)[0] * 1;
-        num = Math.max(num-embeddableComponent.leadDistance, 1);
-        loc = loc.replace(/(\d*)$/, num);
-      }
-
-      // insert component into highlighted hole
-      props = {
-       "type": type,
-       "draggable": true,
-       "connections": loc
-      };
-      props[embeddableComponent.property] = embeddableComponent.initialValue;
-      uid = self.breadboardController.insertComponent(type, props);
-
-      comp = self.breadboardController.getComponents()[uid];
-
-      // move leads to correct width
-      self.breadboardController.checkLocation(comp);
-
-      // update meters
-      workbenchController.workbench.meter.update();
-
-      // show editor
-      workbenchController.workbench.view.showComponentEditor(uid);
-    }
-  })
-};
-
-AddComponentsView.prototype = {
-
-  openPane: function() {
-    $(".component_drawer").animate({left: 0}, 300, function(){
-      $(".add_components").css("overflow", "visible");
-    });
-  }
-
-};
-
-module.exports = AddComponentsView;
-
-},{}],33:[function(require,module,exports){
-/**
- * @author Mobile.Lab (http://mlearner.com)
- **/
-
-require('../libs/base64');
-require('../libs/canvg');
-
-var breadboardComm      = require('./svg_view_comm');
-
-window["breadboardSVGView"] = {
-  "options" : {
-    "rootpath" : "",
-    "magnifier" : {
-      "time": 400,
-      "size": 60,
-      "zoom": 2,
-      "offset": {
-        "x": 80,
-        "y": 80
-      }
-    }
-  },
-  "util" : {}
-};
-
-
-// window["breadboardSVGView"].connectionMade = function(component, location) {
-//   console.log('Received: connect, component|' + component + '|' + location);
-// };
-
-// window["breadboardSVGView"].connectionBroken = function(component, location) {
-//   console.log('Received: disconnect, component|' + component + '|' + location);
-// };
-
-// window["breadboardSVGView"].probeAdded = function(meter, color, location) {
-//   console.log('Received: connect, ' + meter + '|probe|' + color + '|' + location);
-// };
-
-// window["breadboardSVGView"].probeRemoved = function(meter, color) {
-//   console.log('Received: disconnect, ' + meter + '|probe|' + color);
-// };
-
-// window["breadboardSVGView"].dmmDialMoved = function(value) {
-//   console.log('Received: multimeter_dial >> ' + value);
-// };
-
-/**
- * breadboard # util # require
- * >> loading required resources
- **/
-
-(function($, board) {
-
-  board.util.require = function(files, callback) {
-    return new LoadingStack(files, callback).load();
-  };
-
-  var LoadingStack = function(files, callback) {
-    // callback function
-    this.callback = callback;
-    // downloaded resources
-    this.resources = {};
-    // main stack of loading files
-    this.stack = files;
-    // counter of loaded files
-    this.loaded = 0;
-  };
-
-  LoadingStack.prototype.success = function() {
-    if (++this.loaded == this.stack.length) {
-      this.callback(this.resources);
-    }
-  };
-
-  LoadingStack.prototype.attachData = function(file, data) {
-    file = file.substring(file.lastIndexOf('\/') + 1, file.lastIndexOf('.'));
-    this.resources[file] = data;
-  };
-
-  LoadingStack.prototype.load = function() {
-    var f;
-    for (var i = this.stack.length; i--; ) {
-      f = this.stack[i];
-      this["load" + f.toUpperCase().substring( f.lastIndexOf('.') + 1 )](f);
-    }
-  };
-
-  LoadingStack.prototype.loadJS = function(file) {
-    file = board.options.rootpath + file;
-
-    $.getScript(file, function(stack) {
-      return function() {
-        stack.success();
-      };
-    }(this)).fail(function() {
-      console.log("# [error] (while requiring) failed load/compile javascript file: " + file);
-    });
-  };
-
-  LoadingStack.prototype.loadCSS = function(file) {
-    file = board.options.rootpath + file;
-
-    var link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.type = 'text/css';
-    link.href = file;
-    document.head.appendChild(link);
-
-    this.success();
-  };
-
-  LoadingStack.prototype.loadSVG = function(file) {
-    this.loadResource(file);
-  };
-
-  LoadingStack.prototype.loadResource = function(file) {
-    file = board.options.rootpath + file;
-
-    $.ajax({
-      "url" : file,
-      "type" : "GET",
-      "dataType" : "html",
-      "success" : function(stack) {
-        return function(data) {
-          stack.attachData(file, data);
-          stack.success();
-        };
-      }(this),
-      "error" : function() {
-        console.log("# [error] (while requiring) failed load resource file: " + file);
-      }
-    });
-  };
-
-})(jQuery, window["breadboardSVGView"]);
-
-/**
- * breadboardView # board
- * >> create board object with API
- **/
-
-(function($, board) {
-
-  // global link to common SVG-jQuery object
-  var paper = null;
-
-  // global event model
-  var touch = !!('ontouchstart' in document.documentElement);
-
-  var _mousedown = (touch ) ? 'touchstart' : 'mousedown';
-  var _mousemove = (touch ) ? 'touchmove' : 'mousemove';
-  var _mouseup = (touch ) ? 'touchend' : 'mouseup';
-  var _mouseover = (touch ) ? 'xxx' : 'mouseover';
-  var _mouseout = (touch ) ? 'xxx' : 'mouseout';
-
-  // object contains electronic and test equipment
-  var equipment = function() {
-  };
-  // object contains components added to breadboard
-  var component = function() {
-  };
-  // parts of more complex components on breadboard(need only for building)
-  var primitive = function() {
-  };
-  // board constructor
-  var CircuitBoard = function(id) {
-    this.workbenchController = require('../controllers/workbench-controller')
-
-    var self = this;
-    // link to main holder
-    this.holder = $('.' + id).html('').append(
-      SVGStorage.create('board')
-    ).addClass('circuit-board');
-    this.holder.h = this.holder.height();
-    this.holder.w = this.holder.width();
-
-    this.workspace = this.holder.find("[item=components]");
-    this.holes = {
-      'row' : {}
-    };
-    // model of links to components by id and as the array
-    this.component = {};
-    this.itemslist = [];
-
-    // create model of holes
-    var p = SVGStorage.point(), bbox, matrix, elem, name;
-    this.holder.find("[hole]").first().each(function() {
-      bbox = this.getBBox();
-      p.x = bbox.x + bbox.width / 2;
-      p.y = bbox.y + bbox.height / 2;
-    }).end().each(function() {
-      matrix = this.getCTM();
-      elem = $(this), name = elem.attr("hole");
-      elem = new CircuitBoardHole(elem);
-      elem.center = p.matrixTransform(matrix);
-      if (!self.holes.row[elem.y]) {
-        self.holes.row[elem.y] = {};
-      }
-      self.holes.row[elem.y][elem.x] = elem;
-      self.holes[name] = elem;
-    });
-    this.holes.find = findNearestHole;
-
-    // multimeter (DMM)
-    this.multimeter = null;
-    // battery
-    this.battery = null;
-    // probes
-    this.probes = [];
-
-    // init all leads draggable
-    primitive.prototype.initLeadDraggable(this);
-    // init all probes draggable
-    primitive.prototype.initProbeDraggable(this);
-    // init all components draggable
-    primitive.prototype.initComponentDraggable(this);
-  };
-
-  CircuitBoard.prototype.sendEventToModel = function(evName, params) {
-    breadboardComm[evName](this.workbenchController, params[0], params[1], params[2]);
-  };
-
-  CircuitBoard.prototype.addComponent = function(elem) {
-    this.component[elem["UID"]] = new component[ elem["type"] ](elem, this.holes, this);
-    this.component[elem["UID"]]["type"] = elem["type"];
-    this.component[elem["UID"]]["id"] = elem["UID"];
-    this.itemslist.push(this.component[elem["UID"]]);
-    this.workspace.append(this.component[elem["UID"]].view);
-    this.component[elem["UID"]]["image"] = new SVGImage(this, elem["UID"]);
-
-    if (this.rightClickFunction) {
-      var rightClickObj = this.rightClickObj,
-          func = this.rightClickFunction;
-
-      this.component[elem["UID"]].view.bind("contextmenu dblclick", function(evt) {
-        rightClickObj[func]($(this).attr("uid"));
-        evt.preventDefault();
-        return false;
-      });
-    }
-  };
-
-  CircuitBoard.prototype.changeResistorColors = function(id, colors) {
-    this.component[id].changeColors(colors);
-  };
-
-  CircuitBoard.prototype.removeComponent = function(id) {
-    if (!this.component[id]) return;
-    this.component[id].hole[0].disconnected();
-    this.component[id].hole[1].disconnected();
-    this.component[id].view.remove();
-    this.component[id] = null;
-    for (var i = this.itemslist.length; i--; ) {
-      if (this.itemslist[i].id === id) {
-        this.itemslist.splice(i, 1);
-      }
-    }
-  };
-
-  CircuitBoard.prototype.setRightClickFunction = function(obj, func) {
-    this.rightClickObj = obj;
-    this.rightClickFunction = func;
-    for (uid in this.component) {
-      this.component[uid].view.bind("contextmenu dblclick", function(evt) {
-        obj[func]($(this).attr("uid"));
-        evt.preventDefault();
-        return false;
-      });
-    }
-  };
-
-  CircuitBoard.prototype.addDMM = function(params) {
-    if (!this.multimeter) {
-      this.multimeter = new equipment.multimeter(this, params);
-      this.probes.push(this.multimeter.probe['black']);
-      this.probes.push(this.multimeter.probe['red']);
-    }
-    this.multimeter.probe['black'].view.show();
-    this.multimeter.probe['red'].view.show();
-    this.multimeter.mmbox.view.show();
-    this.setDMMText('  0.0 0');
-  };
-
-  CircuitBoard.prototype.setDMMText = function(text) {
-    if (this.multimeter) {
-      for (var i = text.length; i--; ) {
-        var val = '#:dmm-digit-' + text.charAt(i);
-        this.multimeter.mmbox.screen[i].setAttribute('xlink:href', val);
-      }
-    }
-  };
-
-  CircuitBoard.prototype.removeDMM = function() {
-    if (this.multimeter) {
-      this.multimeter.probe['black'].view.hide();
-      this.multimeter.probe['red'].view.hide();
-      this.multimeter.mmbox.view.hide();
-    }
-  };
-
-  CircuitBoard.prototype.addBattery = function(connections) {
-    var type = "battery";
-
-    if (!this.battery) {
-      this.battery = new equipment.battery(this, connections);
-      this.workspace.append(this.battery.view);
-      this.itemslist.push(this.battery);
-
-      this.component[type] = this.battery;
-      this.battery["type"] = type;
-      this.battery["image"] = new SVGImage(this, type);
-    }
-
-    this.battery.btbox.view.show();
-
-    this.battery.pts[0].connected();
-    this.battery.pts[1].connected();
-  };
-
-  CircuitBoard.prototype.removeBattery = function() {
-    if (this.battery) {
-      this.battery.btbox.view.hide();
-      // this.battery.blackWire.hide();
-      // this.battery.redWire.hide();
-
-      this.battery.pts[0].disconnected();
-      this.battery.pts[1].disconnected();
-    }
-  };
-
-  CircuitBoard.prototype.addOScope = function(params) {
-    if (!this.oscope) {
-      this.oscope = new equipment.oscope(this, params);
-      this.probes.push(this.oscope.probe['yellow']);
-      this.probes.push(this.oscope.probe['pink']);
-    }
-    this.oscope.probe['yellow'].view.show();
-    this.oscope.probe['pink'].view.show();
-  };
-
-  CircuitBoard.prototype.removeOScope = function() {
-    if (this.oscope) {
-      this.oscope.probe['yellow'].view.hide();
-      this.oscope.probe['pink'].view.hide();
-    }
-  };
-
-  CircuitBoard.prototype.toFront = function(component) {
-    var self = this, redrawId;
-    // resolve crash in Google Chrome by changing environment
-    setTimeout(function() {
-      var i = component.view.index();
-      if (component.view[0].ownerSVGElement.suspendRedraw) { // IE9 out
-        redrawId = component.view[0].ownerSVGElement.suspendRedraw(50);
-      }
-      // use prepend to avoid crash in iOS
-      self.workspace.prepend(component.view.parent().children(':gt(' + i + ')'));
-      if (component.view[0].ownerSVGElement.unsuspendRedraw) { // IE9 out
-        component.view[0].ownerSVGElement.unsuspendRedraw(redrawId);
-      }
-    }, 50);
-  };
-
-  CircuitBoard.prototype.initMagnifier = function() {
-    var brd = this, x, y, t, hole, show_magnifier = false, time;
-
-    var holder = brd.holder[0], active = false, svghead;
-    var dx, dy, z, r, pi2, wm, hm, wb, hb, sh, pos, old;
-
-    time = board.options.magnifier.time;
-    hole = SVGStorage.hole;
-    svghead = SVGStorage.info.svghead;
-    dx = board.options.magnifier.offset.x;
-    dy = board.options.magnifier.offset.y;
-    z = board.options.magnifier.zoom;
-    r = board.options.magnifier.size;
-    hm = brd.holder.h * z;
-    wm = brd.holder.w * z;
-    sh = 60 * z;
-    hb = hm - sh;
-    wb = wm;
-
-    // not active components buffer
-    var comp = context2d();
-    comp.canvas.height = hm;
-    comp.canvas.width = wm;
-
-    pi2 = Math.PI * 2;
-    z--; // for event;
-
-    var magnifier = $('<canvas class="magnifier">').attr({
-      'height': brd.holder.h + 'px',
-      'width': brd.holder.w + 'px'
-    }).appendTo(brd.holder);
-
-    var ctx = magnifier[0].getContext('2d'), buff, lead, elem;
-
-    // create buff image of background and holes
-    buff = context2d();
-    buff.canvas.height = hm;
-    buff.canvas.width = wm;
-    buff.fillStyle = '#999181';
-    buff.rect(0, 0, wb, sh), buff.fill();
-    buff.drawImage(SVGStorage.defs[':bg-green-board'], 0, sh, wb, hb);
-    buff.drawSvg( SVGStorage.info.svghole, 0, 0, wm, hm );
-    buff.fill();
-    //window.document.body.appendChild(ctx.canvas);
-
-    // set default style for canvas context2d object
-
-    holder.addEventListener( _mousedown, function(evt) {
-      lead = $(evt.target).data('primitive-lead') || null;
-      if (lead) {
-        elem = brd.component[lead.name];
-        comp.update(elem);
-        old = pos = getCoords(evt, brd.holder);
-        magnifier.draw();
-        active = true;
-        show_magnifier = true;
-        setTimeout(function() {
-          if (show_magnifier) {
-            magnifier.show();
-          }
-        }, time);
-      }
-      evt.preventDefault();
-    }, false);
-
-    holder.addEventListener( _mousemove, function(evt) {
-      pos = getCoords(evt, brd.holder);
-      if (active && ((pos.x != old.x) || (pos.y != old.y))) {
-        magnifier.show();
-        magnifier.draw();
-        old = pos;
-      }
-    }, false);
-
-    holder.addEventListener( _mouseup, function(evt) {
-      if (active) {
-        show_magnifier = false;
-        magnifier.hide();
-        active = false;
-        lead = null;
-        elem = null;
-      }
-    }, false);
-
-    ctx.font = "bold 16px Arial";
-
-    magnifier.draw = function() {
-      ctx.save();
-      ctx.clearRect(0, 0, brd.holder.w, brd.holder.h);
-
-      ctx.beginPath();
-      ctx.arc(pos.x-dx, pos.y-dy, r, 0, pi2, false);
-      ctx.closePath();
-      ctx.fill();
-      ctx.clip();
-
-      x = -z*pos.x - dx;
-      y = -z*pos.y - dy;
-
-      ctx.drawImage(buff.canvas, x, y, wm, hm);
-      if (brd.hole_target) {
-        ctx.save();
-        t = brd.hole_target.view[0].getCTM();
-        ctx.translate(x, y);
-        ctx.scale(z + 1, z + 1);
-        ctx.transform(t.a, t.b, t.c, t.d, t.e, t.f);
-        for (var i = 0, l = hole.length; i < l; i++) {
-          ctx.fillStyle = hole[i].c;
-          ctx.beginPath();
-          ctx.arc(hole[i].x, hole[i].y, hole[i].r, 0, pi2, false);
-          ctx.closePath();
-          ctx.fill();
-        }
-        ctx.restore();
-      }
-      ctx.drawImage(comp.canvas, x, y, wm, hm);
-      ctx.drawImage(elem.image.update(), x, y, wm, hm);
-
-      ctx.restore();
-      ctx.save();
-      ctx.strokeStyle = '#3c3c3c';
-      ctx.shadowColor = '#000000';
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
-      ctx.shadowBlur = 8;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(pos.x-dx, pos.y-dy, r, 0, pi2, false);
-      ctx.closePath();
-      ctx.stroke();
-      if (brd.hole_target) {
-        ctx.save();
-        ctx.fillStyle = "#00ff00";
-        ctx.fillText(brd.hole_target.name, pos.x - r - dx, pos.y - r - dy);
-        ctx.restore();
-      }
-      ctx.restore();
-
-    };
-
-    comp.update = function(elem) {
-      this.clearRect(0, 0, wm, hm);
-      for (var i = 0, l = brd.itemslist.length; i < l; i++) {
-        if (brd.itemslist[i] != elem ) {
-          this.drawImage(brd.itemslist[i].image.cnv.canvas, 0, 0, wm, hm);
-        }
-      }
-      for (var p = 0, d = brd.probes.length; p < d; p++ ) {
-        this.drawImage(brd.probes[p].image.cnv.canvas, 0, 0, wm, hm);
-      }
-    };
-
-    // debugging
-    //comp.update();
-    //comp.canvas.style.border = '1p solir red';
-    //document.body.appendChild(comp.canvas);
-  };
-
-  CircuitBoard.prototype.showTooltip = function(uid, $tipPane) {
-    var $comp      = this.component[uid].view,
-        pos        = $comp.position(),
-        rect       = $comp[0].getBoundingClientRect(),
-        compWidth  = rect.width,
-        compHeight = rect.height,
-        tipWidth   = $tipPane.width(),
-        yOffset,
-        left,
-        tipHeight,
-        $tooltip;
-
-    if (compWidth > 300) {    // weird bug
-      compWidth = 120;
-    }
-
-    // wrap pane in bubble pane and then empty pane (for mousout)
-    $tooltip = $("<div>").append(
-      $("<div class='speech-bubble'>").append($tipPane)
-    );
-
-    // FIXME: We need a better cross-browser solution for this
-    if(typeof InstallTrigger !== 'undefined'){    // Firefox
-      yOffset = 180;
-      left = pos.left - (2.5*tipWidth)+ (compWidth*0.4);
-    } else {
-      yOffset = 50;
-      left = pos.left - (tipWidth/2)+ (compWidth*0.4);
-    }
-
-    this.holder.append($tooltip);
-
-    tipHeight = $tipPane.height();
-
-    $tooltip.css({
-      position: "absolute",
-      left:     left,
-      top:      pos.top - tipHeight - yOffset,
-      height:   tipHeight + compHeight + yOffset,
-      zIndex:   1000
-    });
-
-    // delete on mouseout
-    $tooltip.mouseleave(function(){
-      $tooltip.fadeOut( function() { $(this).remove(); });
-    });
-  };
-
-  var SVGImage = function(brd, uid) {
-    this.comp = brd.component[uid];
-    this.brd = brd;
-    // main model
-    this.view = this.comp.element.view;
-    this.cnv = context2d();
-    this.ctx = context2d();
-
-    // calc most used variables
-    this.ozoom = 1 / board.options.magnifier.zoom;
-    this.zoom = board.options.magnifier.zoom;
-    this.w = this.brd.holder.w * this.zoom;
-    this.h = this.brd.holder.h * this.zoom;
-
-    // set dimention (w * h) for canvas
-    this.cnv.canvas.height = this.ctx.canvas.height = this.h;
-    this.cnv.canvas.width = this.ctx.canvas.width = this.w;
-
-    // add pattern image of element
-    SVGImage[this.comp.type].call(this);
-
-    this.update();
-  };
-
-  SVGImage.prototype.update = function() {
-    var ctx = this.cnv, elem = this.comp, path, trns, p, l, i;
-
-  // clear context, common part
-    this.cnv.clearRect(0, 0, this.w, this.h);
-    this.cnv.save();
-  // set zoom transform, common part
-    this.cnv.scale(this.zoom, this.zoom);
-
-  // draw leads, common part
-    for (i = elem.leads.length; i--; ) {
-      path = elem.leads[i].state.path;
-      trns = path[0].getCTM();
-      for (p = 0, l = path.length; p < l; p++) {
-        SVGImage.draw_path.call(this, ctx, path[p], trns);
-      }
-    }
-
-  // draw connector, common part
-    path = elem.connector.view.path;
-    for (p = 0, l = path.length; p < l; p++) {
-      trns =  path[p].getCTM();
-      SVGImage.draw_path.call(this, ctx, path[p], trns);
-    }
-
-  // draw pattern, spetial part
-    this.cnv.save();
-    // set reversed transforms
-    this.cnv.transform(0.05, 0, 0, 0.05, 0, -50);
-    this.cnv.transform(0.8, 0, 0, 0.8, 0, 0);
-    // set real transform
-
-    var t = this.view.attr('transform');
-    // fix bug in IE with transforms
-    t = t.replace(/\) rotate/g,')#rotate')
-      .replace(/ /g,',').replace(/#/, ' ');
-    t = t.split(' ');
-    var t1 = getTransform(t[0]);
-    var t2 = getTransform(t[1]);
-    this.cnv.translate(t1[0], t1[1]);
-    this.cnv.translate(t2[1], t2[2]);
-    this.cnv.rotate(t2[0]*Math.PI/180);
-    this.cnv.translate(-t2[1], -t2[2]);
-    // set reversed spetial transform
-    this.cnv.translate(-5000, -5000);
-    // set other reversed transforms
-    this.cnv.transform(1.25, 0, 0, 1.25, 0, 0);
-    this.cnv.transform(20, 0, 0, 20, 0, 1000);
-    this.cnv.scale(this.ozoom, this.ozoom);
-    // draw pattern element
-    this.cnv.drawImage(this.ctx.canvas, 0, 0, this.w, this.h);
-    // restore context
-    this.cnv.restore();
-
-    // debugging
-    //this.cnv.canvas.style.border = "1px solid blue";
-    //document.body.appendChild(this.cnv.canvas);
-
-    this.cnv.restore();
-    return this.cnv.canvas;
-  };
-
-  SVGImage.wire = function(elem) {
-    // Nothing to do
-  };
-
-  SVGImage.battery = function(elem) {
-    // Nothing to do
-  };
-
-  SVGImage.capacitor = function(elem) {
-    var path = this.comp.element.view.path;
-
-    // set zoom transform
-    this.ctx.scale(this.zoom, this.zoom);
-    // set transform from svg (just copy by hand)
-    this.ctx.transform(0.05, 0, 0, 0.05, 0, -50);
-    this.ctx.transform(0.8, 0, 0, 0.8, 0, 0);
-    // set spetial transform, to make element visible on canvas
-    this.ctx.translate(5000, 5000);
-    // set this element group transform
-    var t = getTransform(this.view.children().first().attr('transform'));
-    this.ctx.transform(t[0], t[1], t[2], t[3], t[4], t[5]);
-
-    path = this.view.path;
-    for (var p = 0, l = path.length; p < l; p++) {
-      SVGImage.draw_path.call(this, this.ctx, path[p]);
-    }
-
-    // debugging
-    //this.ctx.canvas.style.border = "1px solid red";
-    //document.body.appendChild(this.ctx.canvas);
-  };
-
-  SVGImage.inductor = function(elem) {
-    var path = this.comp.element.view.path, g, t;
-
-    // set zoom transform
-    this.ctx.scale(this.zoom, this.zoom);
-    // set transform from svg (just copy by hand)
-    this.ctx.transform(0.05, 0, 0, 0.05, 0, -50);
-    this.ctx.transform(0.8, 0, 0, 0.8, 0, 0);
-    // set spetial transform, to make element visible on canvas
-    this.ctx.translate(5000, 5000);
-    // set this element group transform
-
-    g = this.view.children();
-    t = getTransform(g.attr('transform'));
-    this.ctx.transform(t[0], t[1], t[2], t[3], t[4], t[5]);
-
-    g = this.view.children().children().not('[type="label"]');
-    for (var i = 0, l = g.length; i< l; i++) {
-      t = getTransform(g[i].getAttribute('transform'));
-      this.ctx.save();
-      this.ctx.transform(t[0], t[1], t[2], t[3], t[4], t[5]);
-      path = $(g[i]).children()[0];
-      SVGImage.draw_path.call(this, this.ctx, path);
-      this.ctx.restore();
-    }
-
-    // debugging
-    //this.ctx.canvas.style.border = "1px solid red";
-    //document.body.appendChild(this.ctx.canvas);
-  };
-
-  SVGImage.resistor = function(elem) {
-    var g, u, t, i, l;
-
-    // set zoom transform
-    this.ctx.scale(this.zoom, this.zoom);
-    // set transform from svg (just copy by hand)
-    this.ctx.transform(0.05, 0, 0, 0.05, 0, -50);
-    this.ctx.transform(0.8, 0, 0, 0.8, 0, 0);
-    // set spetial transform, to make element visible on canvas
-    this.ctx.translate(5000, 5000);
-    // set this element group transform
-
-    this.ctx.transform(15, 0, 0, 15, 0, 150);
-    this.ctx.scale(0.6, 0.6);
-
-    g = this.view.children().children().not('[type="label"]');
-
-    u = g.children('use').not('[type="hint"]');
-    this.ctx.save();
-    this.ctx.translate(-94, -32);
-    for (i = 0, l = u.length; i< l; i++) {
-      SVGImage.draw_use.call(this, this.ctx, u[i]);
-    }
-    this.ctx.restore();
-
-    g = g.children('g');
-    for (i = 0, l = g.length; i< l; i++) {
-      this.ctx.save();
-
-      g[i] = $(g[i]);
-
-      t = g[i].attr('transform');
-      // fix bug in IE with transforms
-      t = t.replace(/\) rotate/g,')#rotate')
-        .replace(/ /g,',').replace(/#/, ' ');
-      t = t.split(' ');
-      var t1 = getTransform(t[0]);
-      this.ctx.translate(t1[0], t1[1]);
-      if (t[1]) {
-        var t2 = getTransform(t[1]);
-        this.ctx.scale(t2[0], t2[1]);
-      }
-      u = g[i].children()[0];
-      SVGImage.draw_use.call(this, this.ctx, u);
-      this.ctx.restore();
-    }
-
-    // debugging
-    //this.ctx.canvas.style.border = "1px solid red";
-    //document.body.appendChild(this.ctx.canvas);
-  };
-
-  SVGImage.probe = function(brd, elem) {
-    // main model
-    this.view = elem.view;
-    this.cnv = context2d();
-    this.ctx = context2d();
-
-    // calc most used variables
-    this.ozoom = 1 / board.options.magnifier.zoom;
-    this.zoom = board.options.magnifier.zoom;
-    this.w = brd.holder.w * this.zoom;
-    this.h = brd.holder.h * this.zoom;
-
-    // set dimention (w * h) for canvas
-    this.cnv.canvas.height = this.ctx.canvas.height = this.h;
-    this.cnv.canvas.width = this.ctx.canvas.width = this.w;
-
-    // add pattern image of element
-    SVGImage.probe.template.call(this);
-
-    // update
-    this.update();
-  };
-
-  SVGImage.probe.prototype.update = function() {
-    // clear context, common part
-    this.cnv.clearRect(0, 0, this.w, this.h);
-    this.cnv.save();
-
-    // set real transforms
-    this.cnv.scale(this.zoom, this.zoom);
-    this.cnv.transform(0.05, 0, 0, 0.05, 0, -100);
-    var t = this.view.attr('transform');
-    if (t) {
-      t = getTransform(t);
-      this.cnv.translate(t[0], t[1]);
-    }
-
-    t = this.view.children().attr('transform');
-    if (t) {
-      t = getTransform(t);
-      this.cnv.translate(t[0], t[1]);
-    }
-
-    t = this.view.children().children().attr('transform');
-    t = getTransform(t);
-
-    // set reversed transforms
-    this.cnv.translate(this.rt[0], this.rt[1]);
-    this.cnv.transform(20, 0, 0, 20, 0, 2000);
-    this.cnv.scale(this.ozoom, this.ozoom);
-
-    // draw template image
-    this.cnv.drawImage(this.ctx.canvas, 0, 0, this.w, this.h);
-
-    // debugging
-    //this.cnv.canvas.style.border = "1px solid blue";
-    //document.body.appendChild(this.cnv.canvas);
-
-    this.cnv.restore();
-    return this.cnv.canvas;
-  };
-
-  SVGImage.probe.template = function() {
-    var t = this.view.attr('transform-full-visibility');
-    t = getTransform(t);
-
-    this.ctx.save();
-    // add pattern image of element
-    this.ctx.scale(this.zoom, this.zoom);
-    this.ctx.transform(0.05, 0, 0, 0.05, 0, -100);
-    this.ctx.translate(t[0], t[1]);
-
-    // draw all elements, skip type="initial". used as (0, 0)
-    this.view.children().children().each(
-      SVGImage.probe.template_draw(this.ctx)
-    );
-    this.ctx.restore();
-
-    // save reversed transform, for update
-    this.rt = [-t[0], -t[1]];
-
-    // debugging
-    //this.ctx.canvas.style.border = "1px solid blue";
-    //document.body.appendChild(this.ctx.canvas);
-  };
-
-  SVGImage.probe.template_draw = function(ctx) {
-    return function() {
-      var elem = $(this), name = this.nodeName.toLowerCase();
-      if (name == 'g') {
-        ctx.save();
-        var t = this.getAttribute('transform');
-        if (t) {
-
-          t = getTransform(t);
-          ctx.transform(t[0], t[1], t[2], t[3], t[4], t[5]);
-        }
-        //console.log('g >> ', this.getAttribute('transform'));
-        elem.children().each(
-          SVGImage.probe.template_draw(ctx)
-        );
-        ctx.restore();
-      } else
-      if (name == 'path') {
-        //console.log('path >> ', this.getAttribute('transform'))
-        SVGImage.draw_path(ctx, this);
-      }
-    };
-  };
-
-  SVGImage.draw_use = function(ctx, use, trn) {
-    ctx.save();
-
-    if (trn) {
-      ctx.transform(trn.a, trn.b, trn.c, trn.d, trn.e, trn.f);
-    }
-
-    var xlink = use.getAttribute('xlink:href').replace('#','');
-    var img = SVGStorage.defs[xlink];
-    var x = parseInt(use.getAttribute('x'), 10);
-    var y = parseInt(use.getAttribute('y'), 10);
-    var ox = parseInt(img.ox, 10);
-    var oy = parseInt(img.oy, 10);
-
-    ctx.drawImage(img, x + ox, y + oy, img.width, img.height);
-
-    ctx.restore();
-  };
-
-  SVGImage.draw_path = function(ctx, path, trn) {
-    ctx.save();
-
-    if (trn) {
-      ctx.transform(trn.a, trn.b, trn.c, trn.d, trn.e, trn.f);
-    }
-
-    var str_lj = path.getAttribute('stroke-linejoin') || false;
-    var str_lc = path.getAttribute('stroke-linecap') || false;
-    var str_w = parseInt(path.getAttribute('stroke-width'), 10);
-    var str_c = path.getAttribute('stroke');
-    var fill = path.getAttribute('fill'), f;
-
-    if (str_c) {ctx.strokeStyle = str_c;}
-    if (str_w) {ctx.lineWidth = str_w;}
-    if (str_lj) {ctx.lineJoin = str_lj;}
-    if (str_lc) {ctx.lineCap = str_lc;}
-
-    ctx.beginPath();
-
-    var segs = path.pathSegList;
-    for (var i = 0, len = segs.numberOfItems; i < len; i++) {
-      var seg = segs.getItem(i), c = seg.pathSegTypeAsLetter;
-      if (c == "M") {
-        ctx.moveTo(seg.x, seg.y);
-      } else
-      if (c == "L") {
-        ctx.lineTo(seg.x, seg.y);
-      } else
-      if (c == "Q") {
-        ctx.quadraticCurveTo(seg.x1, seg.y1, seg.x, seg.y);
-      } else
-      if (c == "A") {
-       ctx.arc(seg.x - seg.r1, seg.y, seg.r1, 0, Math.PI * 2, true);
-      } else
-      if (c == "Z") {
-        ctx.closePath();
-      }
-    }
-
-    if (str_c) {ctx.stroke();}
-
-    if (fill && fill != 'none') {
-      if (fill.substring(0,3) == 'url') {
-        fill = fill.replace(/url\(/gm,'');
-        fill = fill.replace(/\)/gm,'');
-        f = this.brd.holder.find(fill);
-        SVGImage["draw_"+ f[0].nodeName.toLowerCase()](ctx, f);
-      } else {
-        ctx.fillStyle = fill;
-        ctx.fill();
-      }
-    }
-
-    ctx.restore();
-  };
-
-  SVGImage.draw_lineargradient = function(ctx, f) {
-    var x1 = parseFloat(f.attr('x1'), 10);
-    var y1 = parseFloat(f.attr('y1'), 10);
-    var x2 = parseFloat(f.attr('x2'), 10);
-    var y2 = parseFloat(f.attr('y2'), 10);
-
-    var trn = (f[0].getAttribute('gradientTransform') || '')
-         .replace(/\)/,'').replace(/matrix\(/,'').split(' ');
-
-    ctx.save();
-
-    if (trn) {
-      ctx.transform(
-        parseFloat(trn[0], 10), parseFloat(trn[1], 10),
-        parseFloat(trn[2], 10), parseFloat(trn[3], 10),
-        parseFloat(trn[4], 10), parseFloat(trn[5], 10)
-      );
-    }
-
-    var grad = ctx.createLinearGradient(x1, y1, x2, y2);
-
-    var s = f.children('stop'), i, l;
-    for (i = 0, l = s.length; i < l; i++) {
-      grad.addColorStop(
-        parseFloat(s[i].getAttribute('offset'), 10) ,
-        s[i].getAttribute('stop-color-rgba')
-      );
-    }
-
-    ctx.fillStyle = grad;
-    ctx.fill();
-    ctx.restore();
-  };
-
-  SVGImage.draw_radialgradient = function(ctx, f) {
-    var fx = parseFloat(f.attr('fx'), 10);
-    var fy = parseFloat(f.attr('fy'), 10);
-    var cx = parseFloat(f.attr('cx'), 10);
-    var cy = parseFloat(f.attr('cy'), 10);
-    var r = parseFloat(f.attr('r'), 10);
-    var trn = (f[0].getAttribute('gradientTransform') || '')
-         .replace(/\)/,'').replace(/matrix\(/,'').split(' ');
-
-    ctx.save();
-
-    if (trn) {
-      ctx.transform(
-        parseFloat(trn[0], 10), parseFloat(trn[1], 10),
-        parseFloat(trn[2], 10), parseFloat(trn[3], 10),
-        parseFloat(trn[4], 10), parseFloat(trn[5], 10)
-      );
-    }
-
-    var grad = ctx.createRadialGradient(fx, fy, 0, cx, cy, r);
-
-    var s = f.children('stop'), i, l;
-    for (i = 0, l = s.length; i < l; i++) {
-      grad.addColorStop(
-        parseFloat(s[i].getAttribute('offset'), 10) ,
-        s[i].getAttribute('stop-color-rgba')
-      );
-    }
-
-    ctx.fillStyle = grad;
-    ctx.fill();
-    ctx.restore();
-  };
-
-  // holes constructor
-
-  var CircuitBoardHole = function(elem) {
-    this.name = elem.attr('hole');
-    this.x = parseInt(elem.attr("transform").match(/(-?\d+\.\d+)|-?\d+/g)[4], 10);
-    this.y = parseInt(elem.attr("transform").match(/(-?\d+\.\d+)|-?\d+/g)[5], 10);
-    this.num = (elem.attr("xlink:href") == "#$:hole_connected") ? 1 : 0;
-    this.view = elem;
-  };
-
-  CircuitBoardHole.prototype.connected = function() {
-    this.num++;
-    this.view.attr("xlink:href", "#$:hole_connected");
-    return this;
-  };
-
-  CircuitBoardHole.prototype.disconnected = function() {
-    if (--this.num === 0) {
-      this.view.attr("xlink:href", "#$:hole_not_connected");
-    }
-    return this;
-  };
-
-  CircuitBoardHole.prototype.highlight = function() {
-    this.view.attr("xlink:href", "#$:hole_highlighted");
-    return this;
-  };
-
-  CircuitBoardHole.prototype.unhighlight = function() {
-    var pref = (this.num) ? '' : '_not';
-    this.view.attr("xlink:href", "#$:hole" + pref + "_connected");
-    return this;
-  };
-
-  /* === #equipments begin === */
-
-  equipment.multimeter = function(board, params) {
-    this.mmbox = new primitive.mmbox(board, params);
-    this.probe = {
-      "black" : new primitive.probe(board, {
-        'connection' : (params['black']) ? params.black.connection : false,
-        'draggable' : (params['black']) ? params.black.draggable : false,
-        'color' : 'black',
-        'name' : 'dmm'
-      }),
-      "red" : new primitive.probe(board, {
-        'connection' : (params['red']) ? params.red.connection : false,
-        'draggable' : (params['red']) ? params.red.draggable : false,
-        'color' : 'red',
-        'name' : 'dmm'
-      })
-    };
-  };
-
-  equipment.oscope = function(board, params) {
-    this.probe = {
-      "yellow" : new primitive.probe(board, {
-        'connection' : (params['yellow']) ? params.yellow.connection : false,
-        'draggable' : (params['yellow']) ? params.yellow.draggable : false,
-        'color' : 'yellow',
-        'name' : 'oscope'
-      }),
-      "pink" : new primitive.probe(board, {
-        'connection' : (params['pink']) ? params.pink.connection : false,
-        'draggable' : (params['pink']) ? params.pink.draggable : false,
-        'color' : 'pink',
-        'name' : 'oscope'
-      })
-    };
-  };
-
-  equipment.battery = function(board, connections) {
-    this.view = SVGStorage.create('group').attr({
-      'component' : 'battery'
-    });
-
-    // main model
-    this.btbox = new primitive.btbox(board);
-
-    var loc = connections.split(',');
-    this.pts = [board.holes[loc[0]], board.holes[loc[1]]];
-
-    // create leads
-
-    this.leads = addLeads(this.pts, [300, 45], loc, 'battery', false, board);
-
-    // create wires
-    this.wires = [
-      new primitive.battery_wire('black', this.pts[0]),
-      new primitive.battery_wire('red', this.pts[1])
-    ];
-
-    this.view.append(this.wires[0].view, this.wires[1].view);
-    this.view.append(this.leads[0].view, this.leads[1].view);
-
-    // model for SVGImage
-    this.connector = {"view": this.wires[0].view};
-    this.element = {"view": this.wires[0].view};
-    this.connector.view.path = this.view.children('g:lt(2)').find('path');
-
-  };
-
-  /* === #equipments end === */
-
-  /* === #components begin === */
-
-  component.prototype.init = function(params, holes, board) {
-    var loc = params["connections"].split(',');
-    this.pts = [holes[loc[0]], holes[loc[1]]];
-    this.angle = getAngleBetwPoints(this.pts);
-    this.leads = addLeads(this.pts, getDegsFromRad(this.angle), loc, params.UID, params.draggable, board);
-    this.view = SVGStorage.create('group').attr({
-      'component' : params.type,
-      'uid' : params.UID
-    });
-    this.hole = [this.pts[0].connected(), this.pts[1].connected()];
-  };
-
-  component.wire = function(params, holes, board) {
-    component.prototype.init.call(this, params, holes, board);
-    var color = params.color || "rgb(173,1,1)";
-    this.element = new primitive.connector(this.pts, this.angle, [color, color]);
-    this.connector = this.element;
-    this.view.append(this.element.view, this.leads[0].view, this.leads[1].view);
-    // add event handler for draggable
-    component.prototype.drag.call(this, params.draggable, params.type);
-  };
-
-  component.inductor = function(params, holes, board) {
-    component.prototype.init.call(this, params, holes, board);
-    this.connector = new primitive.connector(this.pts, this.angle, ['rgb(108,27,13)', 'rgb(185,77,42)']);
-    this.element = new primitive.inductor(this.pts, this.angle, params.label);
-    this.view.append(this.connector.view, this.leads[0].view, this.leads[1].view, this.element.view);
-    // add event handler for draggable
-    component.prototype.drag.call(this, params.draggable);
-  };
-
-  component.resistor = function(params, holes, board) {
-    component.prototype.init.call(this, params, holes, board);
-    this.connector = new primitive.connector(this.pts, this.angle);
-    this.element = new primitive.resistor(this.pts, this.angle, params.label, params.color);
-    this.view.append(this.leads[0].view, this.leads[1].view, this.connector.view, this.element.view);
-    // add event handler for draggable
-    component.prototype.drag.call(this, params.draggable);
-
-    this.changeColors = function(colors) {
-      bands = this.view.find('[type^=band]');
-      bands.each(function(i) {
-        if (i != (colors.length - 1)) {
-          $(this).attr('xlink:href', '#:$:band-s-' + colors[i]);
-        } else {
-          $(this).attr('xlink:href', '#:$:band-b-' + colors[i]);
-        }
-      });
-      tooltips = this.view.find('[tooltip^=band]');
-      tooltips.each(function(i) {
-        $(this).attr('xlink:href', '#:$:resistor-hint-' + colors[i]);
-      });
-    }
-  };
-
-  component.capacitor = function(params, holes, board) {
-    component.prototype.init.call(this, params, holes, board);
-    var color = params.color || "rgb(255,0,0)";
-    this.connector = new primitive.connector(this.pts, this.angle);
-    this.element = new primitive.capacitor(this.pts, this.angle, params.label, color);
-    this.view.append(this.leads[0].view, this.leads[1].view, this.connector.view, this.element.view);
-    // add event handler for draggable
-    component.prototype.drag.call(this, params.draggable);
-  };
-
-  component.prototype.drag = function(draggable, type) {
-    if (draggable) {
-      var self = this;
-      this.x = 0;
-      this.y = 0;
-      if (type == 'wire') {
-        this.view.find('[drag=area]').attr('display', 'inline');
-      }
-      this.element.view[0].addEventListener(_mousedown, function(evt) {
-        self.element.view.data('component', self);
-        evt._target = this;
-      }, false);
-    }
-  };
-
-  /* === #components end === */
-
-  /* === #primitive begin === */
-
-  primitive.prototype.initComponentDraggable = function(board) {
-    var component, s_pos, c_pos, x = 0, y = 0, coeff = 25, dx, dy;
-    var l1, l2, ho1, ho2, hn1, hn2, c, deg, angle;
-    var hi1, hi2;
-    var p1 = {
-      x : 0,
-      y : 0
-    }, p2 = {
-      x : 0,
-      y : 0
-    }, pts = [p2, p1];
-
-    board.holder[0].addEventListener(_mousedown, function(evt) {
-      if (!evt.touches || evt.touches.length == 1) {
-        component = $(evt._target).data('component') || null;
-        if (component) {
-          s_pos = getCoords(evt, board.holder);
-
-          l1 = component.leads[0];
-          l2 = component.leads[1];
-
-          p1.x = l1.x;
-          p1.y = l1.y;
-          p2.x = l2.x;
-          p2.y = l2.y;
-
-          ho1 = component.hole[0].highlight();
-          ho2 = component.hole[1].highlight();
-          hi1 = hn1 = ho1;
-          hi2 = hn2 = ho2;
-
-          board.toFront(component);
-          evt.preventDefault();
-        }
-      }
-    }, false);
-
-    board.holder[0].addEventListener(_mousemove, function(evt) {
-      if (!evt.touches || evt.touches.length == 1) {
-        if (component) {
-          c_pos = getCoords(evt, board.holder);
-          dx = c_pos.x - s_pos.x;
-          dy = c_pos.y - s_pos.y;
-          x = component.x + dx * coeff;
-          y = component.y + dy * coeff;
-          // update view of component
-          component.view.attr('transform', 'translate(' + x + ',' + y + ')');
-          // highlight nearest holes
-          p1.x = l1.x + dx * coeff;
-          p1.y = l1.y + dy * coeff;
-          p2.x = l2.x + dx * coeff;
-          p2.y = l2.y + dy * coeff;
-          hn1 = board.holes.find(p1);
-          hn2 = board.holes.find(p2);
-          if (hi1 || hi2) {
-            hi1.disconnected().highlight();
-            hi2.disconnected().highlight();
-            hi1 = hi2 = null;
-            // sent event to model
-            if (l1.state != l1.view_d) {
-              l1.board.sendEventToModel("connectionBroken", [l1.name, l1.hole]);
-            }
-            if (l2.state != l2.view_d) {
-              l2.board.sendEventToModel("connectionBroken", [l2.name, l2.hole]);
-            }
-          }
-          if (hn1 != ho1) {
-            ho1.unhighlight();
-            ho1 = hn1.highlight();
-          }
-          if (hn2 != ho2) {
-            ho2.unhighlight();
-            ho2 = hn2.highlight();
-          }
-        }
-      }
-    }, false);
-
-    board.holder[0].addEventListener(_mouseup, function(evt) {
-      if (!evt.touches || evt.touches.length === 0) {
-        if (component) {
-          // snap to nearest holes
-          component.hole[0] = hn1;
-          component.hole[1] = hn2;
-          l1.hole = hn1.name;
-          l2.hole = hn2.name;
-          component.x = 0;
-          component.y = 0;
-          // update all primitives
-          p1.x = l1.x = hn1.x;
-          p1.y = l1.y = hn1.y;
-          p2.x = l2.x = hn2.x;
-          p2.y = l2.y = hn2.y;
-          // update view
-          hn1.unhighlight();
-          hn2.unhighlight();
-          if (!hi1) {
-            hn1.connected();
-            l1.connect();
-          }
-          if (!hi2) {
-            hn2.connected();
-            l2.connect();
-          }
-          updateComponentView();
-          // reset temp variables
-          component = null;
-          hn1 = null;
-          hn2 = null;
-        }
-      }
-    }, false);
-
-    var updateComponentView = function() {
-      c = {
-        x : (p1.x + p2.x) / 2,
-        y : (p1.y + p2.y) / 2
-      };
-      angle = getDegsFromRad(getAngleBetwPoints(pts));
-      deg = (angle > 90 || angle < -90) ? (angle + 180) : angle;
-      // update view of primitives
-      component.view.removeAttr('transform');
-      l1.view.attr('transform', 'translate(' + l1.x + ',' + l1.y + ') rotate(' + angle + ',130,130)');
-      l2.view.attr('transform', 'translate(' + l2.x + ',' + l2.y + ') rotate(' + angle + ',130,130)');
-      component.element.view.attr('transform', 'translate(' + c.x + ',' + c.y + ') rotate(' + deg + ',132.5,132.5)');
-      setConnectorView(component.connector.view, pts, angle);
-      component.image.update();
-    };
-
-  };
-
-  primitive.prototype.initLeadDraggable = function(board) {
-    var lead_this, lead_pair, component, coeff = 25;
-    // coeff = 1 / (0.05*0.8)
-    var s_pos, c_pos, dx, dy, pts, angle, c;
-    var p1 = {
-      x : 0,
-      y : 0
-    }, p2 = {
-      x : 0,
-      y : 0
-    }, deg, hi, ho, hn;
-
-    board.holder[0].addEventListener(_mousedown, function(evt) {
-      if (!evt.touches || evt.touches.length == 1) {
-        lead_this = $(evt.target).data('primitive-lead') || null;
-        if (lead_this) {
-          component = board.component[lead_this.name];
-          lead_pair = findLeadPair(component, lead_this);
-          hi = board.holes.find(lead_this).highlight();
-          hn = ho = hi;
-          s_pos = getCoords(evt, board.holder);
-          p2.x = lead_pair.x;
-          p2.y = lead_pair.y;
-          pts = (lead_this.orientation == 1) ? [p1, p2] : [p2, p1];
-          evt.preventDefault();
-        }
-      }
-    }, false);
-
-    board.holder[0].addEventListener(_mousemove, function(evt) {
-      if (!evt.touches || evt.touches.length == 1) {
-        if (lead_this) {
-          // calc move params
-          c_pos = getCoords(evt, board.holder);
-          dx = c_pos.x - s_pos.x;
-          dy = c_pos.y - s_pos.y;
-          p1.x = lead_this.x + dx * coeff;
-          p1.y = lead_this.y + dy * coeff;
-          // update view of component
-          updateComponentView();
-          // update flag for hover events
-          lead_this.isDragged = true;
-          // find the nearest hole
-          hn = board.holes.find(p1);
-          board.hole_target = hn;
-          if (hi) {
-            hi.disconnected().highlight();
-            hi = null;
-            // sent event to model
-            if (lead_this.state != lead_this.view_d) {
-              lead_this.board.sendEventToModel("connectionBroken", [lead_this.name, lead_this.hole]);
-            }
-          }
-          if (hn != ho) {
-            ho.unhighlight();
-            ho = hn.highlight();
-          }
-        }
-      }
-    }, false);
-
-    board.holder[0].addEventListener(_mouseup, function(evt) {
-      if (!evt.touches || evt.touches.length === 0) {
-        if (lead_this) {
-          lead_this.isDragged = false;
-          lead_this.x = p1.x = hn.x;
-          lead_this.y = p1.y = hn.y;
-          lead_this.hole = hn.name;
-          component.hole[0] = board.holes[lead_this.hole];
-          component.hole[1] = board.holes[lead_pair.hole];
-          updateComponentView();
-          hn.unhighlight();
-          if (!hi) {
-            lead_this.connect();
-            hn.connected();
-          }
-          // reset temp links
-          hn = null;
-          ho = null;
-          lead_this = null;
-          lead_pair = null;
-        }
-        if ($(evt.target).data('component-lead')) {
-          var name = $(evt.target).data('component-lead');
-          board.component[name].image.update();
-        }
-      }
-    }, false);
-
-    var updateComponentView = function() {
-      lead_this.arrow.hide();
-      c = {
-        x : (p1.x + p2.x) / 2,
-        y : (p1.y + p2.y) / 2
-      };
-      angle = getDegsFromRad(getAngleBetwPoints(pts));
-      deg = (angle > 90 || angle < -90) ? (angle + 180) : angle;
-      // update view of primitives
-      lead_this.view.attr('transform', 'translate(' + p1.x + ',' + p1.y + ') rotate(' + angle + ',130,130)');
-      lead_pair.view.attr('transform', 'translate(' + p2.x + ',' + p2.y + ') rotate(' + angle + ',130,130)');
-      component.element.view.attr('transform', 'translate(' + c.x + ',' + c.y + ') rotate(' + deg + ',132.5,132.5)');
-      setConnectorView(component.connector.view, pts, angle);
-    };
-
-  };
-
-  primitive.lead = function(type, pos, angle, draggable) {
-    var lead = SVGStorage.create('lead').clone(), self = this;
-    this.view_d = lead.find('[type="disconnected"]').hide();
-    this.view_d.path = this.view_d.find('[type="wire"]>path');
-    this.view_c = lead.find('[type="connected"]').show();
-    this.view_c.path = this.view_c.find('[type="wire"]>path');
-
-    // name of component
-    this.name = pos.name;
-    // name of hole
-    this.hole = pos.hole;
-    // link to change colors
-    this.wire = lead.find('[type="wire"] path');
-    // link to current visible lead
-    this.state = this.view_c;
-    // link to probe;
-    this.probe = false;
-
-    // set the right direction
-    this.orientation = (type == 'left') ? 1 : -1;
-    lead.find('[type="orientation"]').attr({
-      "transform" : 'matrix(' + self.orientation + ' 0 0 1 0 0)'
-    });
-
-    // set the position
-    lead.attr("transform", "matrix(1 0 0 1 " + pos.x + " " + pos.y + ") rotate(" + (180 + angle) + ",130,130)");
-    this.x = pos.x;
-    this.y = pos.y;
-
-    this.arrow = lead.find('.arrow').hide();
-    // bind hover events
-    var action = lead.find("[type=action]");
-    if (!touch) {
-      action.bind('mouseover', function() {
-        self.arrow.show();
-      });
-      action.bind('mouseout', function() {
-        self.arrow.hide();
-      });
-    }
-    if (draggable) {
-      action.data('primitive-lead', this);
-    }
-    action.data('component-lead', this.name);
-
-    // bind onclick events
-    action[0].addEventListener(_mouseup, function(l) {
-      var f = false;
-      return function() {
-        if (!l.isDragged) {
-          l[ (f = !f) ? 'disconnect' : 'connect' ]();
-        }
-      };
-    }(this), false);
-
-    this.view = lead;
-  };
-
-  primitive.lead.prototype.connect = function() {
-    this.state = this.view_c;
-    this.view_d.hide();
-    this.view_c.show();
-    this.snapProbe();
-    this.board.sendEventToModel("connectionMade", [this.name, this.hole]);
-  };
-
-  primitive.lead.prototype.disconnect = function() {
-    this.state = this.view_d;
-    this.view_c.hide();
-    this.view_d.show();
-    this.snapProbe();
-    this.board.sendEventToModel("connectionBroken", [this.name, this.hole]);
-  };
-
-  primitive.lead.prototype.highlight = function(m) {
-    var colors = {// colors for each path
-      '0' : ['51, 51, 51', '160,160,160', '229,229,229'],
-      '1' : [' 51, 51,255', '160,160,255', '229,229,255'],
-      '2' : ['130,110,150', '240,220,160', '255,255,255']
-    };
-
-    for (var i = 3; i--; ) {
-      this.wire[i + 0].setAttribute('stroke', 'rgb(' + colors[m][i] + ')');
-      this.wire[i + 3].setAttribute('stroke', 'rgb(' + colors[m][i] + ')');
-    }
-  };
-
-  primitive.lead.prototype.calcbbox = function() {
-    var matrix = this.state[0].getCTM();
-    var bbox = this.state[0].getBBox();
-    var p = [SVGStorage.point(), SVGStorage.point(), SVGStorage.point(), SVGStorage.point()];
-    // top left point
-    p[0].x = bbox.x;
-    p[0].y = bbox.y;
-    // top right point
-    p[1].x = bbox.x + bbox.width;
-    p[1].y = bbox.y;
-    // bottom right point
-    p[2].x = bbox.x + bbox.width;
-    p[2].y = bbox.y + bbox.height;
-    // bottom left point
-    p[3].x = bbox.x;
-    p[3].y = bbox.y + bbox.height;
-    // apply matrix transform to all points
-    for (var i = p.length; i--; ) {
-      p[i] = p[i].matrixTransform(matrix);
-    }
-    // return result
-    this.state.bbox = p;
-  };
-
-  primitive.lead.prototype.hasPoint = function(p) {
-    var a, b, c, sa, sb, sc;
-    a = this.state.bbox[0];
-    b = this.state.bbox[2];
-    // first triangle
-    c = this.state.bbox[1];
-    sa = (a.x - p.x) * (b.y - a.y) - (b.x - a.x) * (a.y - p.y);
-    sb = (b.x - p.x) * (c.y - b.y) - (c.x - b.x) * (b.y - p.y);
-    sc = (c.x - p.x) * (a.y - c.y) - (a.x - c.x) * (c.y - p.y);
-    if ((sa >= 0 && sb >= 0 && sc >= 0) || (sa <= 0 && sb <= 0 && sc <= 0)) {
-      return true;
-    }
-    //second triangle
-    c = this.state.bbox[3];
-    sa = (a.x - p.x) * (b.y - a.y) - (b.x - a.x) * (a.y - p.y);
-    sb = (b.x - p.x) * (c.y - b.y) - (c.x - b.x) * (b.y - p.y);
-    sc = (c.x - p.x) * (a.y - c.y) - (a.x - c.x) * (c.y - p.y);
-    if ((sa >= 0 && sb >= 0 && sc >= 0) || (sa <= 0 && sb <= 0 && sc <= 0)) {
-      return true;
-    }
-    // return false if no
-    return false;
-  };
-
-  primitive.lead.prototype.snapProbe = function() {
-    if (this.probe) {
-      this.probe.snap();
-    }
-  };
-
-  primitive.connector = function(pts, angle, color) {
-    var connector = SVGStorage.create('connector').clone();
-    connector.path = connector.find('path');
-    angle = getDegsFromRad(angle) + 180;
-
-    setConnectorView(connector, [pts[1], pts[0]], angle);
-
-    if (color !== undefined) {
-      connector.find('[type=line]').eq(1).attr('stroke', color[0]);
-      connector.find('[type=line]').eq(2).attr('stroke', color[1]);
-    }
-    this.view = connector;
-  };
-
-  primitive.inductor = function(pts, angle, labelText, draggable) {
-    var inductor = SVGStorage.create('inductor').clone();
-    angle = getDegsFromRad(angle);
-
-    inductor.path = inductor.find('path').not('[type="label-bg"]');
-
-    if (angle > 90 || angle < -90) {
-      angle += 180;
-    }
-    inductor.attr('transform', 'translate(' + parseInt((pts[0].x + pts[1].x) / 2, 10) + ',' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
-
-    var label = inductor.find('[type=label]');
-    if (!touch && labelText) {
-      inductor.bind('mouseover', function() {
-        label.show();
-      });
-      inductor.bind('mouseout', function() {
-        label.hide();
-      });
-    } else if (labelText) {
-      label.show();
-    }
-    inductor.find('[type=label_text]').append(labelText);
-
-    this.view = inductor;
-  };
-
-  primitive.capacitor = function(pts, angle, labelText, color) {
-    var capacitor = SVGStorage.create('capacitor').clone();
-    var label = capacitor.find('[type=label]');
-    angle = getDegsFromRad(angle);
-
-    capacitor.path = capacitor.find('path');
-
-    if (angle > 90 || angle < -90) {
-      angle += 180;
-    }
-    capacitor.attr('transform', 'translate('+parseInt((pts[0].x + pts[1].x) / 2, 10) + ',' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
-
-    if (!touch && labelText) {
-      capacitor.bind('mouseover', function() {
-        label.show();
-      });
-      capacitor.bind('mouseout', function() {
-        label.hide();
-      });
-    } else if (labelText) {
-      label.show();
-    }
-    capacitor.find('[type=label_text]').append(labelText);
-    if (color !== undefined) {
-      capacitor.find('[type=cap]').eq(0).attr('fill', color);
-    }
-    this.view = capacitor;
-  };
-
-  primitive.resistor = function(pts, angle, labelText, colors) {
-    var resistor = SVGStorage.create('resistor' + colors.length + 'band').clone();
-    var tooltip = {};
-    var label = resistor.find('[type=label]');
-    var band = resistor.find('[type^=band]');
-    angle = getDegsFromRad(angle);
-
-    resistor.path = resistor.find('use')
-               .not('[type="label-bg"]')
-                  .not('[type="hint"]');
-
-    if (angle > 90 || angle < -90) {
-      angle += 180;
-    }
-    resistor.attr('transform', 'translate(' + parseInt((pts[0].x + pts[1].x) / 2, 10) + ',' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
-
-    band.each(function(i) {
-      if (i != (colors.length - 1)) {
-        $(this).attr('xlink:href', '#:$:band-s-' + colors[i]);
-      } else {
-        $(this).attr('xlink:href', '#:$:band-b-' + colors[i]);
-      }
-    });
-    if (!touch) {
-      if (labelText) {
-        resistor.bind('mouseover', function() {
-          label.show();
-        });
-        resistor.bind('mouseout', function() {
-          label.hide();
-        });
-      }
-
-      band.each(function(i) {
-        tooltip[$(this).attr('type')] = resistor.find('[tooltip=' + $(this).attr('type') + ']').attr('xlink:href', '#:$:resistor-hint-' + colors[i]);
-
-        $(this).bind('mouseover', function() {
-          $(this).attr('transform', 'scale(1.6)');
-          tooltip[$(this).attr('type')].show();
-        });
-        $(this).bind('mouseout', function() {
-          $(this).attr('transform', 'scale(1)');
-          tooltip[$(this).attr('type')].hide();
-        });
-      });
-    } else if (labelText) {
-      label.show();
-    }
-
-    resistor.find('[type=label_text]').append(labelText);
-
-    this.view = resistor;
-  };
-
-  primitive.prototype.initProbeDraggable = function(board) {
-    var active, lead_new, lead_old, lead_init, point;
-    var s_pos, c_pos, x, y, dx, dy, coeff = 20;
-
-    board.holder.find('[info=probe]').each(function() {
-      this.addEventListener(_mousedown, function(evt) {
-        if (!evt.touches || evt.touches.length == 1) {
-          active = $(this).data('primitive-probe') || {};
-          if (active.draggable) {
-            active.z.attr('transform', active.z.zoom);
-            s_pos = getCoords(evt, board.holder);
-            calcLeadsBBox.call(board);
-            lead_init = active.lead;
-            evt.stopPropagation();
-            evt.preventDefault();
-            // hack to avoid errors if mousedown+mouseup-mousemove
-            x = active.dx;
-            y = active.dy;
-            dx = dy = 0;
-          } else {
-            active = null;
-          }
-        }
-      }, false);
-    });
-
-    board.holder[0].addEventListener(_mousemove, function(evt) {
-      if (!evt.touches || evt.touches.length == 1) {
-        if (active) {
-          c_pos = getCoords(evt, board.holder);
-          dx = c_pos.x - s_pos.x;
-          dy = c_pos.y - s_pos.y;
-          //coord for view translations
-          x = active.dx + dx * coeff;
-          y = active.dy + dy * coeff;
-          active.view.attr('transform', 'translate(' + x + ',' + y + ')');
-          //coord for real probe coords
-          point = {
-            'x' : (active.x + dx),
-            'y' : (active.y + dy)
-          };
-          lead_new = findLeadUnderProbe(board, point);
-          if (lead_init) {
-            board.sendEventToModel("probeRemoved", [active.name, active.color]);
-            lead_init = null;
-          }
-          if (lead_new) {
-            lead_new.highlight(1);
-            lead_old = lead_new;
-            //active.lead = lead_new;
-          } else {
-            if (lead_old) {
-              lead_old.highlight(0);
-              lead_old = null;
-            }
-          }
-        }
-      }
-    }, false);
-
-    board.holder[0].addEventListener(_mouseup, function(evt) {
-      if (!evt.touches || evt.touches.length === 0) {
-        if (active) {
-          active.z.attr('transform', active.z.init);
-          active.x += dx;
-          active.y += dy;
-          active.dx = x;
-          active.dy = y;
-          if (lead_new) {
-            active.setState(lead_new);
-          } else if (active.lead) {
-            active.lead = null;
-          }
-          active.image.update();
-          active = null;
-        }
-      }
-    }, false);
-  };
-
-  primitive.probe = function(board, params) {
-    // shortcats
-    var self = this;
-    // temp vars
-    var point, coeff = 1.25, lead;
-
-    var elem = board.holder.find('[info=probe][name=' + params.color + ']');
-    var initial = elem.find('[type=initial]');
-
-    if (params.connection) {// move to this position
-      initial.attr('transform', 'translate(' + (board.holes[params.connection].x / coeff) + ',' + (board.holes[params.connection].y / coeff) + ')');
-    }
-
-    this.z = elem.find('[type="zooming"]');
-    this.z.zoom = this.z.attr('transform-zoomed');
-    this.z.init = this.z.attr('transform');
-
-    // make object
-    point = getAttractionPoint(elem);
-    this.draggable = params.draggable;
-    this.color = params.color;
-    this.name = params.name;
-    this.x = point.x;
-    this.y = point.y;
-    this.lead = null;
-    this.dx = 0;
-    this.dy = 0;
-    this.view = elem;
-    this.view.show = self.show;
-    this.view.hide = self.hide;
-    this.view.data('primitive-probe', this);
-    this.image = new SVGImage.probe(board, this);
-
-    if (params.connection) {// snap to lead
-      calcLeadsBBox.call(board);
-      lead = findLeadUnderProbe(board, {
-        'x' : this.x,
-        'y' : this.y
-      });
-      if (lead) {
-        this.setState(lead);
-      }
-    }
-
-  };
-
-  primitive.probe.prototype.setState = function(lead) {
-    this.lead = lead;
-    this.lead.probe = this;
-    this.lead.highlight(2);
-    this.snap();
-    lead.board.sendEventToModel("probeAdded", [this.name, this.color, this.lead.hole]);
-  };
-
-  primitive.probe.prototype.snap = function() {
-    if (this.lead) {
-      var p = getAttractionPoint(this.lead.state);
-      var coeff = 20;
-      var dx = p.x - this.x;
-      var dy = p.y - this.y;
-      var x = this.dx + dx * coeff;
-      var y = this.dy + dy * coeff;
-      this.view.attr('transform', 'translate(' + x + ',' + y + ')');
-      //coord for real probe coords
-      this.x += dx;
-      this.y += dy;
-      this.dx = x;
-      this.dy = y;
-    }
-  };
-
-  primitive.probe.prototype.show = function() {
-    this.css('visibility', 'visible');
-  };
-
-  primitive.probe.prototype.hide = function() {
-    this.css('visibility', 'hidden');
-  };
-
-  primitive.mmbox = function(board, params) {
-    this.view = board.holder.find('[info="multimeter"]');
-    this.bttn = this.view.find('[info="dmm-bttn"]');
-    this.over = this.view.find('[info="dmm-zoom"]');
-    this.item = this.view.find('[info="dmm-box"]');
-    this.help = this.view.find('[info="zoom-in"]');
-    this.board = board;
-    this.zoom = 0;
-    // 0-normal view, not zoomed, 1-zoomed
-    this.state = null;
-
-    this.screen = this.view.find('[type="dmm-screen-digits"]').children('use');
-
-    this.setState(this.model(params.dial || 0));
-
-    var self = this;
-
-    if (!touch) {
-      this.view.bind('mouseenter', function() {
-        if (!self.zoom) {
-          self.help.show();
-        }
-      });
-      this.view.bind('mouseleave', function() {
-        self.help.hide();
-        //self.zoomOut();
-      });
-    }
-
-    // hover helps
-    this.view.find('.help').each(function() {
-      var elem = $(this);
-      var usual = elem.find('.usual').show();
-      var hover = elem.find('.hover').hide();
-      var bttn = elem.find('.event');
-
-      if (!touch) {
-        bttn.bind('mouseenter', function() {
-          usual.hide();
-          hover.show();
-        });
-        bttn.bind('mouseleave', function() {
-          hover.hide();
-          usual.show();
-        });
-      }
-    });
-
-    this.view[0].addEventListener(_mousedown, function(evt) {
-      if (!self.zoom) {
-        self.zoomIn();
-      }
-      evt.stopPropagation();
-      evt.preventDefault();
-    }, false);
-    board.holder[0].addEventListener(_mousedown, function(evt) {
-      if (self.zoom) {
-        self.zoomOut();
-      }
-    }, false);
-
-    // bind events for bttn (tumbler)
-    this.point_center = null;
-    this.point_calibr = null;
-    var tumbler_on = false;
-
-    this.bttn[0].addEventListener(_mousedown, function(evt) {
-      self.point_center = getAttractionPoint(self.view, 'point-center');
-      self.point_calibr = getAttractionPoint(self.view, 'point-calibr');
-      self.rotate(getCoords(evt, board.holder));
-      tumbler_on = true;
-    }, false);
-    this.bttn[0].addEventListener(_mousemove, function(evt) {
-      if (tumbler_on) {
-        self.rotate(getCoords(evt, board.holder));
-      }
-    }, false);
-    board.holder[0].addEventListener(_mouseup, function(evt) {
-      self.point_center = null;
-      self.point_calibr = null;
-      tumbler_on = false;
-    }, false);
-  };
-
-  primitive.mmbox.prototype.model = function(v) {
-    var n = isNaN(parseInt(v, 10)) ? 1 : 0;
-    var k, i, d, md = 360;
-    var stack = [[0, 'acv_750'], [17, 'acv_200'], [35, 'p_9v'], [52, 'dca_200mc'], [70, 'dca_2000mc'], [88, 'dca_20m'], [105, 'dca_200m'], [122, 'c_10a'], [140, 'hfe'], [159, 'diode'], [178, 'r_200'], [196, 'r_2000'], [215, 'r_20k'], [233, 'r_200k'], [252, 'r_2000k'], [270, 'dcv_200m'], [288, 'dcv_2000m'], [306, 'dcv_20'], [324, 'dcv_200'], [342, 'dcv_1000']];
-    if (!n) {
-      v = parseInt(v, 10);
-      for ( i = stack.length; i--; ) {
-        d = Math.abs(stack[i][n] - v);
-        if (d > 180) {
-          d = 360 - d;
-        }
-        if (d < md) {
-          md = d;
-          k = i;
-        }
-      }
-      v = stack[k][n];
-    }
-    for ( i = stack.length; i--; ) {
-      if (stack[i][n] == v) {
-        return stack[i];
-      }
-    }
-  };
-
-  primitive.mmbox.prototype.rotate = function(p) {
-    var p1 = {
-      'x' : (this.point_calibr.x - this.point_center.x),
-      'y' : (this.point_calibr.y - this.point_center.y)
-    };
-    var p2 = {
-      'x' : (p.x - this.point_center.x),
-      'y' : (p.y - this.point_center.y)
-    };
-    var l1 = Math.sqrt(p1.x * p1.x + p1.y * p1.y);
-    var l2 = Math.sqrt(p2.x * p2.x + p2.y * p2.y);
-
-    var angle = getDegsFromRad(Math.acos((p1.x * p2.x + p1.y * p2.y) / (l1 * l2)));
-
-    if (p2.x < 0) {
-      angle = 360 - angle;
-    }
-
-    var model = this.model(angle);
-
-    if (this.state != model[1]) {
-      this.setState(model);
-    }
-  };
-
-  primitive.mmbox.prototype.setState = function(state) {
-    this.bttn.attr('transform', 'rotate(' + state[0] + ')');
-    this.state = state[1];
-    this.board.sendEventToModel("dmmDialMoved", [this.state]);
-  };
-
-  primitive.mmbox.prototype.zoomOut = function() {
-    this.item.attr('transform', 'scale(0.50)');
-    this.over.show();
-    this.zoom = 0;
-  };
-
-  primitive.mmbox.prototype.zoomIn = function() {
-    this.item.attr('transform', 'scale(1.00)');
-    this.help.hide();
-    this.over.hide();
-    this.zoom = 1;
-  };
-
-  primitive.btbox = function(board) {
-    var self = this;
-
-    this.view = board.holder.find('[info="battery"]');
-
-    this.view[0].addEventListener(_mouseup, function() {
-      self.view.attr('transform', 'scale(1.5)');
-      if (touch) {
-        setTimeout(function() {
-          self.view.attr('transform', 'scale(1)');
-        }, 3000);
-      }
-    });
-    this.view[0].addEventListener(_mouseout, function() {
-      self.view.attr('transform', 'scale(1)');
-    });
-  };
-
-  primitive.battery_wire = function(name, point) {
-    this.view = SVGStorage.create('battery_wire_' + name).clone();
-    this.view.attr('transform', 'translate('+ point.x +','+ point.y +') rotate(0,0,0)');
-  };
-
-  /* === #primitive end === */
-
-  /* === #utils start === */
-
-  var context2d = function() {
-    return document.createElement('canvas').getContext('2d');
-  };
-  var addLeads = function(pts, angle, loc, name, drag, board) {
-    var leads = ["right", "left"], angles = [];
-    angles = ($.isArray(angle)) ? [angle[0], angle[1]] : [angle, angle];
-
-    for (var i = 0; i < leads.length; i++) {
-      leads[i] = new primitive.lead(leads[i], {
-        x : pts[i].x,
-        y : pts[i].y,
-        hole : loc[i],
-        name : name
-      }, angles[i], drag);
-      leads[i].board = board;
-      leads[i].connect();
-    }
-    return leads;
-  };
-  var setConnectorView = function(elem, pts, deg) {
-    // calc transforms
-    var trn = 'translate(' + parseInt(pts[0].x, 10) + ',' + parseInt(pts[0].y, 10) + ') rotate(' + deg + ',130,130)';
-    // calc path
-    var leadLenght = 560, coeff = 0.6;
-    var dx = pts[0].x - pts[1].x, dy = pts[0].y - pts[1].y;
-    var l = Math.sqrt(dx * dx + dy * dy) - leadLenght * 2;
-    var path = 'M 0 0 L ' + l / coeff + ' 0';
-    if (l > 0) {
-      elem.find('[drag=area]').attr('width', l / coeff);
-    }
-    // set view
-    elem.attr('transform', trn);
-    elem.find('[type=line]').each(function() {
-      this.setAttribute('d', path);
-    });
-  };
-  var calcLeadsBBox = function() {
-    for (var i = this.itemslist.length; i--; ) {
-      for (var j = this.itemslist[i].leads.length; j--; ) {
-        this.itemslist[i].leads[j].calcbbox();
-      }
-    }
-  };
-  var findLeadUnderProbe = function(self, point) {
-    for (var i = self.itemslist.length; i--; ) {
-      for (var j = self.itemslist[i].leads.length; j--; ) {
-        var lead = self.itemslist[i].leads[j];
-        if (lead.hasPoint(point)) {
-          return lead;
-        }
-      }
-    }
-    return false;
-  };
-  var findLeadPair = function(elem, lead) {
-    return (elem.leads[0] === lead) ? elem.leads[1] : elem.leads[0];
-  };
-  var findNearestHole = function(p) {
-    p.y = Math.round(p.y / 50) * 50;
-    p.x = Math.round(p.x / 50) * 50;
-    var yd, yu, xd, xu, x, y;
-    yd = yu = p.y, xd = xu = p.x;
-    // first, find neares row
-    while (true) {
-      if (this.row[yd]) {
-        y = yd;
-        break;
-      }
-      if (this.row[yu]) {
-        y = yu;
-        break;
-      }
-      yd += 50, yu -= 50;
-    }
-    // second, find nearest cell
-    while (true) {
-      if (this.row[y][xd]) {
-        x = xd;
-        break;
-      }
-      if (this.row[y][xu]) {
-        x = xu;
-        break;
-      }
-      xd += 50, xu -= 50;
-    }
-    // return result
-    return this.row[y][x];
-  };
-  var getAttractionPoint = function(elem, name) {
-    name = name || 'attraction';
-    var point = elem.find('[type="'+name+'"]')[0];
-    var matrix = point.getCTM();
-    var bbox = point.getBBox();
-    var p = SVGStorage.point();
-    p.x = bbox.x + bbox.width / 2;
-    p.y = bbox.y + bbox.height / 2;
-    return p.matrixTransform(matrix);
-  };
-  var getAngleBetwPoints = function(pts) {
-    return Math.atan2((pts[1].y - pts[0].y), (pts[1].x - pts[0].x));
-  };
-  var getDegsFromRad = function(rad) {
-    return (180 / Math.PI) * rad;
-  };
-  var getCoords = function(evt, area) {
-    evt = evt || window.event;
-    var offset = area.offset();
-
-    var posx = 0, posy = 0;
-
-    if (evt.pageX || evt.pageY) {
-      posx = evt.pageX;
-      posy = evt.pageY;
-    } else if (evt.clientX || evt.clientY) {
-      posx = evt.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
-      posy = evt.clientY + document.body.scrollTop + document.documentElement.scrollTop;
-    }
-    if (evt.changedTouches) {
-      posx = evt.changedTouches[0].pageX;
-      posy = evt.changedTouches[0].pageY;
-    }
-
-    return {
-      x : (parseInt(posx, 10) - offset.left),
-      y : (parseInt(posy, 10) - offset.top)
-    };
-  };
-  var getTransform = function(trns) {
-    trns = trns.replace(/,/g, ' ');
-    var name = trns.match(/^[^\(]*/)[0];
-    trns = trns.match(/\([^\)]*\)/)[0];
-    trns = trns.replace(/\(|\)/g, '');
-    trns = trns.split(' ');
-    for (var i = trns.length; i--; ) {
-      trns[i] = parseFloat(trns[i], 10);
-    }
-    trns.name = name;
-    return trns;
-  };
-  /* === #utils stop === */
-
-  var SVGStorage = function(data) {
-    var h = "data:image/svg+xml;base64,";
-    var self = this, svg, a, b;
-
-    // create all image data resources
-    this.info = {
-      'svghead': data.match(/<svg[^>]*>/)[0] ,
-      'boardhl': new Image(),
-      'svghole': ''
-    };
-    // board with holes
-    a = data.search('<!-- breadboard start -->');
-    b = data.search('<!-- breadboard end -->');
-    svg += data.substring( (a + 25), b);
-    a = data.search('<!-- breadboard defs holes start -->');
-    b = data.search('<!-- breadboard defs holes end -->');
-    svg += data.substring( (a + 36), b);
-    svg = this.info.svghead + svg + '</svg>';
-    this.info.boardhl.src = h + btoa(svg);
-    this.info.svghole = svg;
-
-    // create all jQuery DOM resources
-    data = $(data);
-    this.defs = {};
-    this.view = {'board': data};
-    data.find('[primitive]').each(function() {
-      var elem = $(this), name = elem.attr('primitive');
-      elem.removeAttr('primitive');
-      self.view[name] = elem.remove();
-    });
-    // add info about holes
-    this.hole = [];
-    data.find('[id="$:hole_highlighted"]').each(function(){
-      var c = $(this).children('circle');
-      for (var i = 0, l = c.length; i < l; i++) {
-        self.hole.push({
-          'x': parseInt(c[i].getAttribute('cx'), 10),
-          'y': parseInt(c[i].getAttribute('cy'), 10),
-          'r': parseInt(c[i].getAttribute('r'), 10),
-          'c': c[i].getAttribute('fill')
-        });
-      }
-    });
-    // set paper value
-    paper = this.view.board;
-  };
-
-  SVGStorage.prototype.create = function(name) {
-    return this.view[name].clone();
-  };
-
-  SVGStorage.prototype.point = function() {
-    return this.view.board[0].createSVGPoint();
-  };
-
-  /* board object */
-
-  var $ready = false;
-  // flag, all critical objects built
-  var $stack = [];
-  // stack of callback functions
-
-  // hack-ish to get sparks.js directory, and assume that common is at ../common from it
-  var scripts = document.getElementsByTagName('script');
-  var path = scripts[scripts.length-1].src.split('?')[0];      // remove any ?query
-  var packageRoot = path.split('/').slice(0, -2).join('/')+'/';  // remove last folder and filename part of path
-
-  board.util.require([packageRoot+"/common/images/sparks.breadboard.svg"], function(data) {
-    // create base element
-    SVGStorage = new SVGStorage(data["sparks.breadboard"]);
-    // pre-cache all needed images
-    var stack = SVGStorage.view.board.find('image[pre-cache]'), all = stack.length;
-    // console.log('try cache '+all+' images');
-    var cache = function(image) {
-      var img = new Image();
-      img.onload = function() {
-        var opt = {
-          'id': image.getAttribute('id'),
-          'x': image.getAttribute('x'),
-          'y': image.getAttribute('y')
-        };
-        check(img, opt);
-      };
-      img.src = image.getAttribute('xlink:href');
-    };
-    for (var i = 0; i < all; i++) {
-      cache(stack[i]);
-    }
-    var check = function(img, opt) {
-      var ctx = document.createElement('canvas').getContext('2d');
-      ctx.canvas.height = img.height;
-      ctx.canvas.width = img.width;
-      ctx.drawImage(img, 0, 0, img.width, img.height);
-
-      SVGStorage.defs[opt.id] = ctx.canvas;
-      SVGStorage.defs[opt.id].ox = opt.x;
-      SVGStorage.defs[opt.id].oy = opt.y;
-      if (!--all) {start_activity();}
-    };
-
-    // run callbacks, if have been signed
-    var start_activity = function() {
-      $ready = true;
-      for (var i = 0, l = $stack.length; i < l; i++) {
-        $stack[i]();
-      }
-    };
-
-  });
-
-  board.create = function(id) {
-    return new CircuitBoard(id);
-  };
-
-  board.ready = function(callback) {
-    if ($ready) {
-      callback();
-    } else {
-      $stack.push(callback);
-    }
-  };
-
-  board.clear = function(circuitBoard) {
-    for (c in circuitBoard.component) {
-      if (c == "battery") continue;
-      circuitBoard.removeComponent(c);
-    }
-    circuitBoard.removeBattery();
-    circuitBoard.removeDMM();
-    circuitBoard.removeOScope();
-  };
-
-})(jQuery, window["breadboardSVGView"]);
-
-},{"../controllers/workbench-controller":18,"../libs/base64":25,"../libs/canvg":26,"./svg_view_comm":37}],34:[function(require,module,exports){
-var unit        = require('../helpers/unit');
-
-EditComponentsView = function(workbenchController, breadboardController){
-  this.workbenchController = workbenchController;
-  this.breadboardController = breadboardController;
-
-  if (workbenchController.breadboardView) {
-    workbenchController.breadboardView.setRightClickFunction(this, "showEditor");
-  } else {  // queue it up
-    workbenchController.workbench.view.setRightClickFunction(this, "showEditor");
-  }
-};
-
-EditComponentsView.prototype = {
-
-  showEditor: function(uid) {
-    var comp = this.breadboardController.getComponents()[uid],
-        section = this.workbenchController.workbench,
-        $propertyEditor = null,
-        self = this;
-    // create editor tooltip
-    possibleValues = comp.getEditablePropertyValues();
-
-    componentValueChanged = function (evt, ui) {
-      var val = possibleValues[ui.value],
-          eng = unit.toEngineering(val, comp.editableProperty.units);
-      $(".prop_value_"+uid).text(eng.value + eng.units);
-      comp.changeEditableValue(val);
-      section.meter.update();
-    }
-
-    if (comp.isEditable) {
-      propertyName = comp.editableProperty.name.charAt(0).toUpperCase() + comp.editableProperty.name.slice(1);
-      initialValue = comp[comp.editableProperty.name];
-      initialValueEng = unit.toEngineering(initialValue, comp.editableProperty.units);
-      initialValueText = initialValueEng.value + initialValueEng.units;
-      $propertyEditor = $("<div>").append(
-        $("<div>").slider({
-          max: possibleValues.length-1,
-          slide: componentValueChanged,
-          value: possibleValues.indexOf(initialValue)
-        })
-      ).append(
-        $("<div>").html(
-          propertyName + ": <span class='prop_value_"+uid+"'>"+initialValueText+"</span>"
-          )
-      );
-    }
-
-    $editor = $("<div class='editor'>").append(
-      $("<h3>").text("Edit "+comp.componentTypeName)
-    ).append(
-      $propertyEditor
-    ).append(
-      $("<button>").text("Remove").on('click', function() {
-        self.breadboardController.removeComponent(comp);
-        section.meter.update();
-        $(".speech-bubble").trigger('mouseleave');
-      })
-    ).css( { width: 130, textAlign: "right" } );
-
-    this.workbenchController.breadboardView.showTooltip(uid, $editor);
-  }
-
-};
-
-module.exports = EditComponentsView;
-
-},{"../helpers/unit":22}],35:[function(require,module,exports){
-/*globals sparks Raphael*/
-
-var mathParser  = require('../helpers/math-parser'),
-    unit        = require('../helpers/unit'),
-    util        = require('../helpers/util');
-
-FunctionGeneratorView = function (functionGenerator) {
-  this.$view          = null;
-  this.model          = functionGenerator;
-  this.frequencies    = [];
-  this.currentFreqString = "";
-  this.freqValueViews = [];
-  this.popup = null;
-};
-
-FunctionGeneratorView.prototype = {
-
-  width:    200,
-  height:   100,
-  nMinorTicks:      5,
-
-  faceplateColor:   '#EEEEEE',
-
-  getView: function () {
-    this.$view = $('<div>');
-
-    $("#fg_value").remove();
-    $freq_value = $("<span class='fg_value'></span").appendTo(this.$view);
-    this.freqValueViews.push($freq_value);
-
-    this.frequencies = this.model.getPossibleFrequencies();
-    this.setFrequency(this.model.frequency);
-
-    $overlayDiv = $('<div class="fg_mini_overlay"></div>').appendTo(this.$view);
-    var self = this;
-    $overlayDiv.click(function(){
-      self.openPopup();
-    })
-
-    return this.$view;
-  },
-
-  openPopup: function () {
-    if (!this.popup) {
-      $view = this.getLargeView();
-      this.popup = $view.dialog({
-        width: this.width + 10,
-        height: this.height+49,
-        dialogClass: 'tools-dialog fg_popup',
-        title: "Function Generator",
-        closeOnEscape: false,
-        resizable: false,
-        autoOpen: false
-      });
-    }
-
-    var self = this;
-    this.popup.bind('remove', function() {
-      self.popup = null;
-    });
-
-    var scrollPosition = [
-      self.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
-      self.pageYOffset || document.documentElement.scrollTop  || document.body.scrollTop
-    ];
-
-    this.popup.dialog('open').dialog("widget").position({
-       my: 'left top',
-       at: 'left top',
-       offset: '5, 5',
-       of: $(".breadboard")
-    });
-
-    window.scrollTo(scrollPosition[0], scrollPosition[1]);
-  },
-
-  getLargeView: function () {
-    var $canvasHolder,
-        self = this;
-
-    this.$view = $('<div>');
-    this.$view.css({
-      position: 'relative',
-      width: this.width,
-      height: this.height
-    });
-
-    // 'faceplate'
-    this.$faceplate = $('<div class="function_generator">').css({
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      height: this.height
-    }).appendTo(this.$view);
-
-    $freq_value = $('<p class="freq_value">'+this.currentFreqString+'</p>').css({
-      position:  'absolute',
-      top:       15,
-      left:      15,
-      height:    20,
-      textAlign: 'center'
-    }).appendTo(this.$faceplate);
-
-    this.freqValueViews.push($freq_value);
-
-    this.$controls = $('<div class="controls">').css({
-      position: 'absolute',
-      top:      28,
-      left:     0,
-      height:   70
-    }).appendTo(this.$faceplate);
-
-    this.$frequency = $('<div>').css({
-      position:  'absolute',
-      top:       12,
-      left:      10,
-      width:     150,
-      height:    55
-    }).appendTo(this.$controls);
-
-    var freqs = this.frequencies;
-    var initialStep = util.getClosestIndex(freqs, this.model.frequency, false);
-    this._addSliderControl(this.$frequency, freqs.length, initialStep, function (evt, ui) {
-      var i = ui.value;
-      if (i < 0) i = 0;
-      if (i > freqs.length-1) i = freqs.length-1;
-      var freq = freqs[i];
-      self.model.setFrequency(freq);
-      self.setFrequency(freq);
-    });
-
-    $('<span>Frequency</span>').css({
-      position:  'absolute',
-      top:       43,
-      left:      45,
-      width:     100,
-      height:    15
-    }).appendTo(this.$controls);
-
-    if (this.model.maxAmplitude){
-      this.$amplitude = $('<div>').css({
-        position: 'absolute',
-        top:      35,
-        left:     10,
-        width:    150,
-        height:   55
-      }).appendTo(this.$controls);
-
-      var minAmp = this.model.minAmplitude,
-          maxAmp = this.model.maxAmplitude,
-          amplitude = this.model.amplitude,
-          range = maxAmp - minAmp,
-          steps = 30,
-          value = ((amplitude - minAmp) / range) * steps;
-      this._addSliderControl(this.$amplitude, steps, value, function (evt, ui) {
-        var i = ui.value;
-        if (i < 0) i = 0;
-        if (i > steps) i = steps;
-        var amp = ((i / steps) * range) + minAmp;
-        self.model.setAmplitude(amp);
-      });
-
-      $('<span>Amplitude</span>').css({
-        position: 'absolute',
-        top:    66,
-        left:   45,
-        right:  100,
-        height: 15,
-        textAlign: 'center'
-      }).appendTo(this.$controls);
-    }
-
-    return this.$view;
-  },
-
-  setFrequency: function (freq) {
-    currentFreqString = this.currentFreqString = mathParser.standardizeUnits(unit.convertMeasurement(freq + " Hz"));
-    this.freqValueViews.forEach(function($view){$view.text(currentFreqString);});
-    return this.currentFreqString;
-  },
-
-  _addSliderControl: function ($el, steps, value, callback) {
-    $slider = $("<div class='fg_slider'>").css({
-      position: 'absolute',
-      top:   25,
-      left:  10,
-      right: 10
-    }).slider({ max: steps, slide: callback, value: value }).appendTo($el);
-  }
-};
-
-module.exports = FunctionGeneratorView;
-
-},{"../helpers/math-parser":19,"../helpers/unit":22,"../helpers/util":23}],36:[function(require,module,exports){
-require('../../bower_components/raphael/raphael-min');
-var sparksMath = require('../helpers/sparks-math');
-
-OscilloscopeView = function () {
-  this.$view         = null;
-  this.miniRaphaelCanvas = null;
-  this.raphaelCanvas = null;
-  this.miniTraces    = [];
-  this.traces        = [];
-  this.model         = null;
-  this.popup         = null;
-};
-
-OscilloscopeView.prototype = {
-
-  // Note that sizing and placement of the various elements of the view are handled ad-hoc in the getView() method;
-  // however, this.width and this.height indicate the dimensions of the gridded area where traces are drawn.
-  miniViewConfig: {
-    width: 132,
-    height: 100,
-    tickSize: 2
-  },
-
-  largeViewConfig: {
-    width:    400,
-    height:   320,
-    tickSize: 3
-  },
-
-  // These define the grid aka 'graticule'. This is pretty standard for scopes.
-  nVerticalMarks:   8,
-  nHorizontalMarks: 10,
-  nMinorTicks:      5,
-
-  faceplateColor:   '#EEEEEE',
-  displayAreaColor: '#324569',
-  traceBgColor:     '#324569',
-  tickColor:        '#9EBDDE',
-  textColor:        '#D8E1EB',
-  traceOuterColors: ['#FFFF4A', '#FF5C4A', '#33FF33'],
-  traceInnerColors: ['#FFFFFF', '#FFD3CF', '#EEFFEE'],
-  traceLabelColors: ['#FFFF99', '#FC8F85', '#99FC7B'],
-  // The famed "MV" pattern...
-  setModel: function (model) {
-    this.model = model;
-  },
-
-  getView: function () {
-    var $canvasHolder,
-        self = this,
-        conf = this.miniViewConfig;
-
-    this.$view = $('<div>');
-    this.$view.css({
-      position: 'relative',
-      width: conf.width+160,
-      height: conf.height+40
-    });
-
-
-    // display area (could split this out into separate method, though not a separate view
-    this.$displayArea = $('<div class="display-area">').css({
-      position: 'absolute',
-      top: 14,
-      left: 19,
-      width:    conf.width,
-      height:   conf.height,
-      backgroundColor: this.displayAreaColor
-    }).appendTo(this.$view);
-
-    $canvasHolder = $('<div class="raphael-holder">').css({
-      position: 'absolute',
-      top:  0,
-      left: 0,
-      backgroundColor: this.traceBgColor
-    }).appendTo(this.$displayArea);
-
-    this.miniRaphaelCanvas = Raphael($canvasHolder[0], conf.width, conf.height);
-
-    this.drawGrid(this.miniRaphaelCanvas, conf);
-
-    $overlayDiv = $('<div class="oscope_mini_overlay"></div>').appendTo(this.$view);
-
-    $overlayDiv.click(function(){
-      self.openPopup();
-    });
-    return this.$view;
-  },
-
-  openPopup: function () {
-    if (!this.popup) {
-      $view = this.getLargeView();
-      this.renderSignal(1, true);
-      this.renderSignal(2, true);
-      this.popup = $view.dialog({
-        width: this.largeViewConfig.width + 149,
-        height: this.largeViewConfig.height + 97,
-        dialogClass: 'tools-dialog oscope_popup',
-        title: "Oscilloscope",
-        closeOnEscape: false,
-        resizable: false,
-        autoOpen: false
-      });
-    }
-
-    var self = this;
-
-    var scrollPosition = [
-      self.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
-      self.pageYOffset || document.documentElement.scrollTop  || document.body.scrollTop
-    ];
-
-    this.popup.dialog('open').dialog("widget").position({
-       my: 'left top',
-       at: 'center top',
-       of: $(".breadboard")
-    });
-
-    window.scrollTo(scrollPosition[0], scrollPosition[1]);
-
-    $('.ui-dialog').bind('remove', function() {
-      self.popup = null;
-    });
-  },
-
-  /**
-    @returns $view A jQuery object containing a Raphael canvas displaying the oscilloscope traces.
-
-    Sets this.$view to be the returned jQuery object.
-  */
-  getLargeView: function () {
-    var $canvasHolder,
-        self = this,
-        conf = this.largeViewConfig;
-
-    this.$view = $('<div>');
-    this.$view.css({
-      position: 'relative',
-      width: conf.width,
-      height: conf.height
-    });
-
-
-    // display area (could split this out into separate method, though not a separate view
-    this.$displayArea = $('<div class="display-area">').css({
-      position: 'absolute',
-      top: 25,
-      left: 18,
-      width:    conf.width + 6,
-      height:   conf.height + 30,
-      backgroundColor: this.displayAreaColor
-    }).appendTo(this.$view);
-
-    $canvasHolder = $('<div class="raphael-holder">').css({
-      position: 'absolute',
-      top:  5,
-      left: 7,
-      width:    conf.width,
-      height:   conf.height,
-      backgroundColor: this.traceBgColor
-    }).appendTo(this.$displayArea);
-
-    // add drag handler to canvasHolder
-    $canvasHolder
-      .drag(function( ev, dd ){
-        var viewWidth   = this.getBoundingClientRect().width,
-            perc        = dd.deltaX / viewWidth,
-            phaseOffset = (-2*Math.PI) * perc;
-
-        self.renderSignal(1, false, phaseOffset);
-        self.renderSignal(2, false, phaseOffset);
-      })
-      .drag("dragend", function (ev, dd) {
-        var viewWidth   = this.getBoundingClientRect().width,
-            perc        = dd.deltaX / viewWidth,
-            phaseOffset = (-2*Math.PI) * perc;
-
-        self.previousPhaseOffset += phaseOffset;
-      });
-
-    this.raphaelCanvas = Raphael($canvasHolder[0], conf.width, conf.height);
-
-    this.drawGrid(this.raphaelCanvas, conf);
-
-    $('<p id="cha"><span class="chname">CHA</span> <span class="vscale channel1"></span>V</p>').css({
-      position: 'absolute',
-      top:   10 + conf.height,
-      left:  5,
-      color: this.traceLabelColors[0]
-    }).appendTo(this.$displayArea);
-
-    $('<p id="chb"><span class="chname">CHB</span> <span class="vscale channel2"></span>V</p>').css({
-      position: 'absolute',
-      top:   10 + conf.height,
-      left:  5 + conf.width / 4,
-      color: this.traceLabelColors[1]
-    }).appendTo(this.$displayArea);
-
-    $('<p>M <span class="hscale"></span>s</p>').css({
-      position: 'absolute',
-      top:   10 + conf.height,
-      left:  5 + (conf.width*3)/4,
-      color: this.textColor
-    }).appendTo(this.$displayArea);
-
-
-    // 'faceplate'
-    this.$faceplate = $('<div class="faceplate">').css({
-      position: 'absolute',
-      left:   conf.width + 27,
-      top: 15,
-      backgroundColor: 'none',
-      width: 122,
-      height: 364,
-      overflow: 'hidden'
-    }).appendTo(this.$view);
-
-    this.$controls = $('<div>').css({
-      position: 'absolute',
-      top:      30,
-      left:     0,
-      right:    0,
-      height:   200
-    }).appendTo(this.$faceplate);
-
-    $('<p class="oscope-label">volts/div</p>').css({
-      top:       -33,
-      left:      14,
-      right:     0,
-      height:    20,
-      position: 'absolute'
-    }).appendTo(this.$controls);
-
-    this.$channel1 = $('<div class="channelA">').css({
-      position:  'absolute',
-      top:       19,
-      left:      11,
-      width:     122,
-      height:    100
-    }).appendTo(this.$controls);
-
-    $('<p>CH A</p>').css({
-      top:       -2,
-      left:      -2,
-      right:     0,
-      height:    20,
-      textAlign: 'center',
-      position:  'absolute'
-    }).appendTo(this.$channel1);
-
-    this._addScaleControl(this.$channel1, function () {
-      self.model.bumpVerticalScale(1, -1);
-    }, function () {
-      self.model.bumpVerticalScale(1, 1);
-    });
-
-    this.$channel2 = $('<div>').css({
-      position: 'absolute',
-      top:      121,
-      left:     11,
-      width:    122,
-      height:   100
-    }).appendTo(this.$controls);
-
-    $('<p>CH B</p>').css({
-      top:    -2,
-      left:   -2,
-      right:  0,
-      height: 20,
-      textAlign: 'center',
-  position: 'absolute'
-    }).appendTo(this.$channel2);
-
-    this._addScaleControl(this.$channel2, function () {
-      self.model.bumpVerticalScale(2, -1);
-    }, function () {
-      self.model.bumpVerticalScale(2, 1);
-    });
-
-    $('<p class="oscope-label">time/div</p>').css({
-      top:       179,
-      left:      16,
-      right:     0,
-      height:    20,
-      position:  'absolute'
-    }).appendTo(this.$controls);
-
-    this.$horizontal = $('<div>').css({
-      position:  'absolute',
-      top:       229,
-      left:      11,
-      width:     122,
-      height:    100
-    }).appendTo(this.$controls);
-
-    this._addScaleControl(this.$horizontal, function () {
-      self.model.bumpHorizontalScale(-1);
-    }, function () {
-      self.model.bumpHorizontalScale(1);
-    });
-
-    this.horizontalScaleChanged();
-    for (i = 1; i <= this.model.N_CHANNELS; i++) {
-      this.verticalScaleChanged(i);
-    }
-
-    $('<button id="AminusB" class="comboButton">A-B</button>').css({
-      top:       298,
-      left:      33,
-      height:    23,
-      width:     36,
-      fontSize:  12,
-      position:  'absolute'
-    }).click(function(){
-      self._toggleComboButton(true);
-    }).appendTo(this.$controls);
-
-    $('<button id="AplusB" class="comboButton">A+B</button>').css({
-      top:       298,
-      left:      74,
-      height:    23,
-      width:     36,
-      fontSize:  12,
-      position:  'absolute'
-    }).click(function(){
-      self._toggleComboButton(false);
-    }).appendTo(this.$controls);
-
-
-
-    // for testing the goodnessOfScale measurement
-    $('<p class="goodnessOfScale"></p>').css({
-      top:       229,
-      left:      55,
-      right:     0,
-      height:    20,
-      position:  'absolute'
-    }).appendTo(this.$controls);
-
-    return this.$view;
-  },
-
-_toggleComboButton: function (isAminusB) {
-  if (isAminusB) {
-      this.model.toggleShowAminusB();
-  } else {
-      this.model.toggleShowAplusB();
-  }
-
-  // force-render both signals to make them dim/brighten. Rendering these will
-  // automatically call the rendering of the combo trace if applicable
-  this.renderSignal(1, true, this.previousPhaseOffset);
-  this.renderSignal(2, true, this.previousPhaseOffset);
-
-
-  $('.comboButton').removeClass('active');
-
-  $('.channelA button').addClass('active')
-
-  if (this.model.showAminusB) {
-    $('#AminusB').addClass('active');
-  } else if (this.model.showAplusB) {
-    $('#AplusB').addClass('active');
-  } else {
-    $('.channelA button').removeClass('active');
-  }
-},
-
-  _addScaleControl: function ($el, minusCallback, plusCallback) {
-    $('<button>+</button>').css({
-      position: 'absolute',
-      top:   25,
-      left:  25,
-      width: 30
-    }).click(plusCallback).appendTo($el);
-
-    $('<button>&mdash;</button>').css({
-      position: 'absolute',
-      top:   25,
-      right: 25,
-      width: 30
-    }).click(minusCallback).appendTo($el);
-  },
-
-  previousPhaseOffset: 0,
-
-  renderSignal: function (channel, forced, _phaseOffset) {
-    var s = this.model.getSignal(channel),
-        t = this.traces[channel],
-        horizontalScale,
-        verticalScale,
-        phaseOffset = (_phaseOffset || 0) + this.previousPhaseOffset,
-        isComboActive = (this.model.showAminusB || this.model.showAplusB);
-
-    if (s) {
-      horizontalScale = this.model.getHorizontalScale();
-      verticalScale   = isComboActive? this.model.getVerticalScale(1) : this.model.getVerticalScale(channel);
-
-      // don't render the signal if we've already drawn it at the same scale
-      if (!t || forced || (t.amplitude !== s.amplitude || t.frequency !== s.frequency || t.phase !== (s.phase + phaseOffset) ||
-                 t.horizontalScale !== horizontalScale || t.verticalScale !== verticalScale)) {
-        this.removeTrace(channel);
-        this.traces[channel] = {
-          amplitude:          s.amplitude,
-          frequency:          s.frequency,
-          phase:              (s.phase + phaseOffset),
-          horizontalScale:    horizontalScale,
-          verticalScale:      verticalScale,
-          raphaelObjectMini:  this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset, isComboActive),
-          raphaelObject:      this.drawTrace(this.raphaelCanvas, this.largeViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset, isComboActive)
-        };
-      }
-
-      // Make sure channel 2 is always in front
-      if (channel === 1 && this.traces[2]) {
-        if (!!this.traces[2].raphaelObjectMini) this.traces[2].raphaelObjectMini.toFront();
-        if (!!this.traces[2].raphaelObject) this.traces[2].raphaelObject.toFront();
-      }
-
-      // testing goodness of scale
-      if (sparks.testOscopeScaleQuality) {
-        var g = this.model.getGoodnessOfScale();
-        console.log(g)
-        var g0 = sparksMath.roundToSigDigits(g[0] ? g[0] : -1,4),
-            g1 = sparksMath.roundToSigDigits(g[1] ? g[1] : -1,4)
-        $(".goodnessOfScale").html("["+g0+","+g1+"]");
-      }
-    }
-    else {
-      this.removeTrace(channel);
-    }
-    this.renderComboTrace(phaseOffset);
-  },
-
-  renderComboTrace: function (phaseOffset) {
-    this.removeTrace(3);
-    if ((this.model.showAminusB || this.model.showAplusB) && this.model.getSignal(1) && this.model.getSignal(2)) {
-      var a  = this.model.getSignal(1),
-          b  = this.model.getSignal(2),
-          bPhase = this.model.showAplusB ? b.phase : (b.phase + Math.PI),     // offset b's phase by Pi if we're subtracting
-          rA = a.amplitude * Math.sin(a.phase),
-          iA = a.amplitude * Math.cos(a.phase),
-          rB = b.amplitude * Math.sin(bPhase),
-          iB = b.amplitude * Math.cos(bPhase),
-          combo = {
-              amplitude: Math.sqrt(Math.pow(rA+rB, 2) + Math.pow(iA+iB, 2)),
-              phase: Math.atan((rA+rB) / (iA+iB)) + phaseOffset + ((iA+iB) < 0 ? Math.PI : 0),
-              frequency: a.frequency
-          };
-      this.traces[3] = {
-          raphaelObjectMini: this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, combo, 3, this.model.getHorizontalScale(), this.model.getVerticalScale(1), 0),
-          raphaelObject: this.drawTrace(this.raphaelCanvas, this.largeViewConfig, combo, 3, this.model.getHorizontalScale(), this.model.getVerticalScale(1), 0)
-      };
-      $('#cha .chname').html(this.model.showAminusB? "A-B" : "A+B");
-      $('#cha').css({color: this.traceLabelColors[2]});
-    } else {
-      $('#cha .chname').html("CHA");
-      $('#cha').css({color: this.traceLabelColors[0]});
-    }
-  },
-
-  removeTrace: function (channel) {
-    if (this.traces[channel]) {
-      if (this.traces[channel].raphaelObjectMini) this.traces[channel].raphaelObjectMini.remove();
-      if (this.traces[channel].raphaelObject) this.traces[channel].raphaelObject.remove();
-      delete this.traces[channel];
-    }
-    if (channel !== 3) {
-      this.renderComboTrace(this.previousPhaseOffset);
-    }
-  },
-
-  // Not moved to sparksMath because it's somewhat specialized for scope display
-  humanizeUnits: function (val) {
-    var prefixes  = ['M', 'k', '', 'm', 'μ', 'n', 'p'],
-        order     = Math.floor(Math.log10(val) + 0.01),    // accounts for: Math.log10(1e-6) = -5.999999999999999
-        rank      = Math.ceil(-1 * order / 3),
-        prefix    = prefixes[rank+2],
-        scaledVal = val * Math.pow(10, rank * 3),
-
-        // Make sure the result has sensible digits ... values in range 1.00 .. 5.00 of whatever unit
-        // (e.g, s, ms, μs, or ns) get 2 digits after the decimal point; values in range 10.0 .. 50.0 get 1 digit
-
-        decimalPlaces = order % 3 >= 0 ? 2 - (order % 3) : -1 * ((order + 1) % 3);
-
-    return scaledVal.toFixed(decimalPlaces) + prefix;
-  },
-
-  horizontalScaleChanged: function () {
-    var scale = this.model.getHorizontalScale(),
-        channel;
-
-    // TODO make the units a little more sophisticated.
-    this.$view.find('.hscale').html(this.humanizeUnits(scale));
-
-    for (channel = 1; channel <= this.model.N_CHANNELS; channel++) {
-      if (this.traces[channel]) this.renderSignal(channel);
-    }
-  },
-
-  verticalScaleChanged: function (channel) {
-    var scale = this.model.getVerticalScale(channel);
-
-    this.$view.find('.vscale.channel'+channel).html(this.humanizeUnits(scale));
-    if (this.traces[channel]) this.renderSignal(channel);
-  },
-
-  drawGrid: function (r, conf) {
-    var path = [],
-        x, dx, y, dy;
-
-    for (x = dx = conf.width / this.nHorizontalMarks; x <= conf.width - dx; x += dx) {
-      path.push('M');
-      path.push(x);
-      path.push(0);
-
-      path.push('L');
-      path.push(x);
-      path.push(conf.height);
-    }
-
-    for (y = dy = conf.height / this.nVerticalMarks; y <= conf.height - dy; y += dy) {
-      path.push('M');
-      path.push(0);
-      path.push(y);
-
-      path.push('L');
-      path.push(conf.width);
-      path.push(y);
-    }
-
-    y = conf.height / 2;
-
-    for (x = dx = conf.width / (this.nHorizontalMarks * this.nMinorTicks); x <= conf.width - dx; x += dx) {
-      path.push('M');
-      path.push(x);
-      path.push(y-conf.tickSize);
-
-      path.push('L');
-      path.push(x);
-      path.push(y+conf.tickSize);
-    }
-
-    x = conf.width / 2;
-
-    for (y = dy = conf.height / (this.nVerticalMarks * this.nMinorTicks); y <= conf.height - dy; y += dy) {
-      path.push('M');
-      path.push(x-conf.tickSize);
-      path.push(y);
-
-      path.push('L');
-      path.push(x+conf.tickSize);
-      path.push(y);
-    }
-
-    return r.path(path.join(' ')).attr({stroke: this.tickColor, opacity: 0.5});
-  },
-
-  drawTrace: function (r, conf, signal, channel, horizontalScale, verticalScale, phaseOffset, _isFaint) {
-    if (!r) return;
-    var path         = [],
-        height       = conf.height,
-        h            = height / 2,
-
-        overscan     = 5,                       // how many pixels to overscan on either side (see below)
-        triggerStart = conf.width / 2,          // horizontal position at which the rising edge of a 0-phase signal should cross zero
-
-        // (radians/sec * sec/div) / pixels/div  => radians / pixel
-        radiansPerPixel = (2 * Math.PI * signal.frequency * horizontalScale) / (conf.width / this.nHorizontalMarks),
-
-        // pixels/div / volts/div => pixels/volt
-        pixelsPerVolt = (conf.height / this.nVerticalMarks) / verticalScale,
-
-        isFaint = _isFaint || false,
-        opacity = isFaint ? 0.3 : 1,
-
-        x,
-        raphaelObject,
-        paths,
-        i;
-
-    // if we try and display too many waves on the screen (high radiansPerPixel) we end up with strange effects,
-    // like beats or flat lines. Cap radiansPerPixel to Pi/2, which displays a solid block.
-    if (radiansPerPixel > Math.PI / 2) radiansPerPixel = Math.PI / 2;
-
-    function clip(y) {
-      return y < 0 ? 0 : y > height ? height : y;
-    }
-
-    for (x = 0; x < conf.width + overscan * 2; x++) {
-      path.push(x ===  0 ? 'M' : 'L');
-      path.push(x);
-
-      // Avoid worrying about the odd appearance of the left and right edges of the trace by "overscanning" the trace
-      // a few pixels to either side of the scope window; we will translate the path the same # of pixels to the
-      // left later. (Done this way we don't have negative, i.e., invalid, x-coords in the path string.)
-      path.push(clip(h - signal.amplitude * pixelsPerVolt * Math.sin((x - overscan - triggerStart) * radiansPerPixel + (signal.phase + phaseOffset))));
-    }
-    path = path.join(' ');
-
-    // slight 3d effect (inspired by CRT scopes) by overlaying a thin, oversaturated line over a fatter colored line
-    paths = [];
-    paths.push(r.path(path).attr({stroke: this.traceOuterColors[channel-1], 'stroke-width': 4.5, opacity: opacity}));
-    paths.push(r.path(path).attr({stroke: this.traceInnerColors[channel-1], 'stroke-width': 2, opacity: opacity}));
-
-    raphaelObject = r.set.apply(r, paths);
-
-    // translate the path to the left to accomodate the overscan
-    raphaelObject.translate(-1 * overscan, 0);
-
-    return raphaelObject;
-  }
-
-};
-
-module.exports = OscilloscopeView;
-
-
-},{"../../bower_components/raphael/raphael-min":42,"../helpers/sparks-math":21}],37:[function(require,module,exports){
-/*globals console sparks $ document window alert navigator*/
-var LogEvent            = require('../models/log'),
-    util                = require('../helpers/util'),
-    sound               = require('../helpers/sound'),
-    logController       = require('../controllers/log-controller');
-
-breadboardComm = {};
-
-breadboardComm.openConnections = {};
-
-breadboardComm.connectionMade = function(workbenchController, component, hole) {
-  var workbench = workbenchController.workbench,
-      breadboardController = workbenchController.breadboardController,
-      comp, openConnections, openConnectionsArr, connectionReturning, connection;
-
-  if (!!hole){
-    openConnections = breadboardComm.openConnections[component];
-    if (!openConnections) return; // shouldn't happen
-
-    if (openConnections[hole]) {        // if we're just replacing a lead
-      breadboardController.unmapHole(hole);
-      delete openConnections[hole];
-    } else {                            // if we're putting lead in new hole
-      comp = breadboardController.getComponents()[component];
-      // transform to array
-      openConnectionsArr = util.getKeys(openConnections);
-      // pick first open lead
-      connectionReturning = openConnectionsArr[0];
-      breadboardController.unmapHole(connectionReturning);
-      //swap
-      for (var i = 0; i < comp.connections.length; i++) {
-        connection = comp.connections[i].getName();
-        if (connection === connectionReturning) {
-          comp.connections[i] = breadboardController.getHole(hole);
-          delete openConnections[connection];
-          workbench.meter.moveProbe(connection, hole);
-          break;
-        }
-      }
-
-      // check that we don't have two leads to close together
-      breadboardController.checkLocation(comp);
-    }
-
-  }
-  logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
-    "type": "connect lead",
-    "location": hole
-  });
-  workbench.meter.update();
-};
-
-breadboardComm.connectionBroken = function(workbenchController, component, hole) {
-  var workbench = workbenchController.workbench,
-      breadboardController = workbenchController.breadboardController;
-  if (!breadboardComm.openConnections[component]) {
-    breadboardComm.openConnections[component] = {}
-  }
-  breadboardComm.openConnections[component][hole] = true;
-
-  var newHole = breadboardController.getGhostHole(hole+"ghost");
-
-  breadboardController.mapHole(hole, newHole.nodeName());
-  logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
-    "type": "disconnect lead",
-    "location": hole});
-  workbench.meter.update();
-};
-
-breadboardComm.probeAdded = function(workbenchController, meter, color, location) {
-  workbenchController.workbench.meter.setProbeLocation("probe_"+color, location);
-  sound.play(sound.click)
-  logController.addEvent(LogEvent.ATTACHED_PROBE, {
-    "color": color,
-    "location": location
-  });
-};
-
-breadboardComm.probeRemoved = function(workbenchController, meter, color) {
-  workbenchController.workbench.meter.setProbeLocation("probe_"+color, null);
-  logController.addEvent(LogEvent.DETACHED_PROBE, {
-    "color": color,
-    "location": location
-  });
-};
-
-breadboardComm.dmmDialMoved = function(workbenchController, value) {
-  workbenchController.workbench.meter.dmm.dialPosition = value;
-  workbenchController.workbench.meter.update();
-  logController.addEvent(LogEvent.MOVED_DMM_DIAL, {
-    "valie": value
-  });
-};
-
-module.exports = breadboardComm;
-
-},{"../controllers/log-controller":17,"../helpers/sound":20,"../helpers/util":23,"../models/log":28}],38:[function(require,module,exports){
-require('./breadboard-svg-view');
-
-var AddComponentsView     = require('./add-components-view'),
-    EditComponentsView    = require('./edit-components-view'),
-    FunctionGeneratorView = require('./function-generator-view'),
-    OscilloscopeView      = require('./oscilloscope-view'),
-    sound                 = require('../helpers/sound'),
-    workbenchController;
-
-WorkbenchView = function(workbench, breadboardController){
-  workbenchController   = require('../controllers/workbench-controller');     // grrr
-  this.breadboardController = breadboardController;
-  this.workbench = workbench;
-};
-
-WorkbenchView.prototype = {
-  layout: function(elId) {
-    this.container = document.getElementById(elId);
-
-    if (!this.container) {
-      throw new Error("No DOM element found with the id "+elId);
-    }
-
-    if (this.container.classList)
-      this.container.classList.add("breadboard_container");
-    else
-      this.container.className += ' ' + "breadboard_container";
-
-    this.divs = {
-      breadboard:       this.getOrCreateDiv('breadboard'),
-      scope:            this.getOrCreateDiv('oscope_mini'),
-      fg:               this.getOrCreateDiv('fg_mini', true),
-      addCompsWrapper:  this.getOrCreateDiv('add_components')
-    };
-
-    var self = this;
-    breadboardSVGView.ready(function() {
-      if (workbenchController.breadboardView) {
-        breadboardSVGView.clear(workbenchController.breadboardView);
-      } else {
-        self.divs.breadboard.html('');
-        workbenchController.breadboardView = breadboardSVGView.create("breadboard");
-      }
-
-      // pass queued-up component right-click function to breadboard view
-      if (self.rightClickFunction) {
-        workbenchController.breadboardView.setRightClickFunction(self.rightClickObj, self.rightClickFunction);
-      }
-
-      self.breadboardController.updateView();
-
-      sound.mute = true;
-
-      self.showDMM(self.workbench.show_multimeter);
-      self.showOScope(self.workbench.show_oscilloscope);
-      // self.allowMoveYellowProbe(self.workbench.allow_move_yellow_probe);
-      // self.hidePinkProbe(self.workbench.hide_pink_probe);
-
-      sound.mute = false;
-
-      self.workbench.meter.update();
-    });
-
-    var source = this.breadboardController.getComponents().source;
-    if (source && source.frequency && !source.hidden) {
-      var fgView = new FunctionGeneratorView(source);
-      var $fg = fgView.getView();
-      this.divs.fg.append($fg);
-      this.divs.fg.show();
-    }
-    this.workbench.meter.reset();
-
-    if (this.workbench.showComponentDrawer || this.workbench.showComponentEditor) {
-      this.editComponentsView = new EditComponentsView(workbenchController, this.breadboardController);
-    }
-
-    if (this.workbench.showComponentDrawer) {
-      var drawer = $('<div class="component_drawer retracted"></div>'),
-          button = $('<button class="add_components_btn">Add a new Component</button>');
-
-      this.divs.addCompsWrapper.append(drawer);
-      this.divs.addCompsWrapper.append(button);
-
-      var addComponentsView = new AddComponentsView(workbenchController, this.breadboardController);
-
-      if (this.workbench.showComponentDrawer) {
-        this.divs.addCompsWrapper.show();
-        button.off();
-        button.on('click', addComponentsView.openPane);
-      }
-    }
-  },
-
-  showOScope: function(visible) {
-    this.divs.scope.html('');
-
-    if (visible) {
-     var scopeView = new OscilloscopeView();
-     var $scope = scopeView.getView();
-     this.divs.scope.append($scope);
-     this.divs.scope.show();
-     this.workbench.meter.oscope.setView(scopeView);
-
-     workbenchController.breadboardView.addOScope({
-          "yellow":{
-          "connection": "left_positive21",
-          "draggable": true
-        },"pink": {
-          "connection": "f22",
-          "draggable": true
-        }
-      });
-    }
-  },
-
-  showDMM: function(visible) {
-    if (visible) {
-      workbenchController.breadboardView.addDMM({
-          "dial": "dcv_20",
-          "black":{
-          "connection": "g12",
-          "draggable": true
-        },"red": {
-          "connection": "f3",
-          "draggable": true
-        }
-      });
-    }
-  },
-
-  allowMoveYellowProbe: function() {
-  },
-
-  hidePinkProbe: function() {
-  },
-
-  setRightClickFunction: function(obj, func) {
-    this.rightClickObj = obj;
-    this.rightClickFunction = func;
-  },
-
-  getOrCreateDiv: function(clazz, hide) {
-    $el = $(this.container).find('.'+clazz);
-    if (!$el.length)
-      $el = $('<div class="'+clazz+'"></div>').appendTo(this.container);
-    if (hide) $el.hide();
-    return $el;
-  },
-
-  showComponentEditor: function(id) {
-    this.editComponentsView.showEditor(id);
-  }
-}
-
-module.exports = WorkbenchView;
-
-},{"../controllers/workbench-controller":18,"../helpers/sound":20,"./add-components-view":32,"./breadboard-svg-view":33,"./edit-components-view":34,"./function-generator-view":35,"./oscilloscope-view":36}],39:[function(require,module,exports){
 (function(){var d=function(){this.components=[];this.nodeMap={};this.nodes=[];this.voltageSources=[];this.AMatrix=[];this.ZMatrix=[];this.referenceNode=null;this.referenceNodeIndex=null};d.prototype.getLinkedComponents=function(e){return this.nodeMap[e]};d.prototype.getDiagonalMatrixElement=function(h,k){var l=this.nodeMap[h],e=$Comp(0,0),g,f;for(f=l.length-1;f>=0;f--){g=l[f].getImpedance(k);e=e.add(g.inverse())}return e};d.prototype.getNodeIndexes=function(f){var e=[];e[0]=this.getNodeIndex(f.nodes[0]);e[1]=this.getNodeIndex(f.nodes[1]);return e};d.prototype.getNodeIndex=function(f){var e=this.nodes.indexOf(f);if(e===this.referenceNodeIndex){return -1}if(e>this.referenceNodeIndex){return e-1}return e};var b=function(h,f,g,e){this.id=h;this.type=f;this.value=g;this.nodes=e};var c=2*Math.PI;b.prototype.getImpedance=function(f){var e=$Comp(0,0);if(this.type==="Resistor"){e.real=this.value;e.imag=0}else{if(this.type=="Capacitor"){e.real=0;e.imag=-1/(c*f*this.value)}else{if(this.type=="Inductor"){e.real=0;e.imag=c*f*this.value}}}return e};b.prototype.getOffDiagonalMatrixElement=function(e){return this.getImpedance(e).inverse().negative()};var a=function(i,h,f,e,g){this.id=i;this.voltage=h;this.positiveNode=f;this.negativeNode=e;this.frequency=g||0};d.prototype.addComponent=function(n,h,m,l){var e=new b(n,h,m,l),f,g,k;this.components.push(e);for(f=0,g=l.length;f<g;f++){k=l[f];if(!this.nodeMap[k]){this.nodeMap[k]=[];this.nodes.push(k)}this.nodeMap[k].push(e)}};d.prototype.addVoltageSource=function(k,i,f,e,h){var g=new a(k,i,f,e,h);this.voltageSources.push(g);if(!this.nodeMap[f]){this.nodeMap[f]=[];this.nodes.push(f)}if(!this.nodeMap[e]){this.nodeMap[e]=[];this.nodes.push(e)}if(!this.referenceNode){this.setReferenceNode(e)}};d.prototype.setReferenceNode=function(e){this.referenceNode=e;this.referenceNodeIndex=this.nodes.indexOf(e)};d.prototype.createAMatrix=function(){this.createEmptyAMatrix();this.addGMatrix();this.addBCMatrix()};d.prototype.createEmptyAMatrix=function(){var g=$Comp(0,0),k=this.nodes.length,e=this.voltageSources.length,l=k-1+e,h,f;this.AMatrix=[];for(h=0;h<l;h++){this.AMatrix[h]=[];for(f=0;f<l;f++){this.AMatrix[h][f]=g.copy()}}};d.prototype.addGMatrix=function(){var l,m,h,g,k,f,n,e;if(this.voltageSources.length>0){l=this.voltageSources[0];m=l.frequency}for(h=0;h<this.nodes.length;h++){k=this.nodes[h];if(k===this.referenceNode){continue}f=this.getNodeIndex(k);this.AMatrix[f][f]=this.getDiagonalMatrixElement(k,m)}for(h=0;h<this.components.length;h++){n=this.getNodeIndexes(this.components[h])[0];e=this.getNodeIndexes(this.components[h])[1];if(n===-1||e===-1){continue}this.AMatrix[n][e]=this.AMatrix[e][n]=this.AMatrix[n][e].add(this.components[h].getOffDiagonalMatrixElement(m))}};d.prototype.addBCMatrix=function(){if(this.voltageSources.length===0){return}var g=$Comp(1,0),n=g.negative(),e=this.voltageSources,k,l,h,m,f;for(f=0;f<e.length;f++){k=e[f];l=k.positiveNode;if(l!==this.referenceNode){m=this.getNodeIndex(l);this.AMatrix[this.nodes.length-1+f][m]=g.copy();this.AMatrix[m][this.nodes.length-1+f]=g.copy()}h=k.negativeNode;if(h!==this.referenceNode){m=this.getNodeIndex(h);this.AMatrix[this.nodes.length-1+f][m]=n.copy();this.AMatrix[m][this.nodes.length-1+f]=n.copy()}}};d.prototype.createZMatrix=function(){var g=$Comp(0,0),k=this.nodes.length,e=this.voltageSources.length,l=k-1+e,f=this.voltageSources,h;this.ZMatrix=[[]];for(h=0;h<l;h++){this.ZMatrix[0][h]=g.copy()}for(h=0;h<f.length;h++){this.ZMatrix[0][k-1+h].real=f[h].voltage}};d.prototype.cleanCircuit=function(){var f=this.nodes,q=this.nodeMap,m=this.components,r,o=this.referenceNode,s=[],e,g,h,t;function p(u){var w=[];for(var v in u){w[v]=u[v]}return w}q=p(q);function k(u){var x=[];for(var v=0,w=u.length;v<w;v++){if(u[v]!==null){x.push(u[v])}}return x}function n(v,B){var x=B[v],C,w,D=[],u,z,E,y,A;if(v===o){return true}if(~s.indexOf(v)){return true}if(!x||x.length===0){return false}delete B[v];for(z=0,E=x.length;z<E;z++){C=x[z];w=p(C.nodes);w.splice(w.indexOf(v),1);D=D.concat(w)}for(y=0,A=D.length;y<A;y++){if(n(D[y],B)){s.push(v);return true}}return false}for(h=0,t=f.length;h<t;h++){g=f[h];if(g){if(!n(g,q)){f[h]=null}}}this.nodes=k(f);q=this.nodeMap;function l(u,y){var x=p(q[y]),v,w;q[y]=[];for(v=0,w=x.length;v<w;v++){if(x[v].id!==u.id){q[y].push(x[v])}}}for(h=0,t=m.length;h<t;h++){r=m[h];if(!(~f.indexOf(r.nodes[0])&&~f.indexOf(r.nodes[1]))){l(r,r.nodes[0]);l(r,r.nodes[1]);m[h]=null}}this.components=k(m);for(h=0,t=this.voltageSources.length;h<t;h++){e=this.voltageSources[h];if(!(~f.indexOf(e.positiveNode)&&~f.indexOf(e.negativeNode))){this.voltageSources[h]=null}}this.voltageSources=k(this.voltageSources);this.referenceNodeIndex=this.nodes.indexOf(o)};d.prototype.solve=function(){this.cleanCircuit();this.createAMatrix();this.createZMatrix();aM=$M(this.AMatrix);zM=$M(this.ZMatrix);invAM=aM.inv();res=zM.x(invAM);return res};d.prototype.getVoltageAt=function(g){if(g===this.referenceNode){return $Comp(0)}try{var f=this.solve();return f.elements[0][this.getNodeIndex(g)]}catch(h){return $Comp(0)}};d.prototype.getVoltageBetween=function(f,e){return this.getVoltageAt(f).subtract(this.getVoltageAt(e))};d.prototype.getCurrent=function(n){var k,g,f=null,h,l;try{k=this.solve()}catch(m){return $Comp(0)}g=this.voltageSources;for(h=0,l=g.length;h<l;h++){if(g[h].id==n){f=h;break}}if(f===null){try{throw Error("No voltage source "+n)}catch(m){return $Comp(0)}}try{return k.elements[0][this.nodes.length-1+f]}catch(m){return $Comp(0)}};window.CiSo=d})();var Complex=function(b,a){if(!(this instanceof Complex)){return new Complex(b,a)}if(typeof b==="string"&&a===null){return Complex.parse(b)}this.real=b||0;this.imag=a||0;this.magnitude=Math.sqrt(this.real*this.real+this.imag*this.imag);this.angle=Math.atan2(this.imag,this.real)};Complex.prototype={copy:function(){return new Complex(this.real,this.imag)},add:function(a){var c,b;if(a instanceof Complex){c=a.real;b=a.imag}else{c=a;b=0}return new Complex(this.real+c,this.imag+b)},subtract:function(a){var c,b;if(a instanceof Complex){c=a.real;b=a.imag}else{c=a;b=0}return new Complex(this.real-c,this.imag-b)},multiply:function(a){var e,d,c,b;if(a instanceof Complex){e=a.real;d=a.imag}else{e=a;d=0}c=this.real*e-this.imag*d;b=this.real*d+this.imag*e;return new Complex(c,b)},divide:function(a){var f,e,b,d,c;if(a instanceof Complex){f=a.real;e=a.imag}else{f=a;e=0}b=f*f+e*e;d=(this.real*f+this.imag*e)/b;c=(this.imag*f-this.real*e)/b;return new Complex(d,c)},inverse:function(){var a=new Complex(1,0);return a.divide(this)},negative:function(){var a=new Complex(0,0);return a.subtract(this)},equals:function(a){if(a instanceof Complex){return this.real===a.real&&this.imag===a.imag}else{if(typeof a==="number"){return this.real===a&&this.imag===0}}return false},toString:function(){return this.real+"i"+this.imag}};Complex.parse=function(c){if(!c){return null}var b=/(.*)([+,\-].*i)/.exec(c),d,a;if(b&&b.length===3){d=parseFloat(b[1]);a=parseFloat(b[2].replace("i",""))}else{d=parseFloat(c);a=0}if(isNaN(d)||isNaN(a)){throw new Error("Invalid input to Complex.parse, expecting a + bi format, instead was: "+c)}return new Complex(d,a)};$Comp=function(){if(typeof arguments[0]==="string"){return Complex.parse(arguments[0])}return new Complex(arguments[0],arguments[1])};var Sylvester={version:"0.1.3-cc",precision:0.000001};function Matrix(){}Matrix.prototype={dup:function(){return Matrix.create(this.elements)},canMultiplyFromLeft:function(a){var b=a.elements||a;if(typeof(b[0][0])=="undefined"){b=Matrix.create(b).elements}return(this.elements[0].length==b.length)},multiply:function(q){if(!q.elements){return this.map(function(c){return c.multiply(q)})}var h=q.modulus?true:false;var n=q.elements||q;if(typeof(n[0][0])=="undefined"){n=Matrix.create(n).elements}if(!this.canMultiplyFromLeft(n)){return null}var e=this.elements.length,f=e,l,b,d=n[0].length,g;var p=this.elements[0].length,a=[],m,k,o;do{l=f-e;a[l]=[];b=d;do{g=d-b;m=$Comp(0,0);k=p;do{o=p-k;m=m.add(this.elements[l][o].multiply(n[o][g]))}while(--k);a[l][g]=m}while(--b)}while(--e);var n=Matrix.create(a);return h?n.col(1):n},x:function(a){return this.multiply(a)},isSquare:function(){return(this.elements.length==this.elements[0].length)},toRightTriangular:function(){var f=this.dup(),d;var b=this.elements.length,c=b,e,g,h=this.elements[0].length,a;do{e=c-b;if(f.elements[e][e].equals(0)){for(j=e+1;j<c;j++){if(!f.elements[j][e].equals(0)){d=[];g=h;do{a=h-g;d.push(f.elements[e][a].add(f.elements[j][a]))}while(--g);f.elements[e]=d;break}}}if(!f.elements[e][e].equals(0)){for(j=e+1;j<c;j++){var l=f.elements[j][e].divide(f.elements[e][e]);d=[];g=h;do{a=h-g;d.push(a<=e?$Comp(0):f.elements[j][a].subtract(f.elements[e][a].multiply(l)))}while(--g);f.elements[j]=d}}}while(--b);return f},toUpperTriangular:function(){return this.toRightTriangular()},determinant:function(){if(!this.isSquare()){return null}var e=this.toRightTriangular();var c=e.elements[0][0],d=e.elements.length-1,a=d,b;do{b=a-d+1;c=c.multiply(e.elements[b][b])}while(--d);return c},det:function(){return this.determinant()},isSingular:function(){return(this.isSquare()&&this.determinant().equals(0))},augment:function(l){var h=l.elements||l;if(typeof(h[0][0])=="undefined"){h=Matrix.create(h).elements}var e=this.dup(),k=e.elements[0].length;var c=e.elements.length,d=c,g,a,b=h[0].length,f;if(c!=h.length){return null}do{g=d-c;a=b;do{f=b-a;e.elements[g][k+f]=h[g][f]}while(--a)}while(--c);return e},inverse:function(){if(!this.isSquare()||this.isSingular()){return null}var c=this.elements.length,d=c,h,g;var k=this.augment(Matrix.I(c)).toRightTriangular();var l,m=k.elements[0].length,a,f,b;var n=[],e;do{h=c-1;f=[];l=m;n[h]=[];b=k.elements[h][h];do{a=m-l;e=k.elements[h][a].divide(b);f.push(e);if(a>=d){n[h].push(e)}}while(--l);k.elements[h]=f;for(g=0;g<h;g++){f=[];l=m;do{a=m-l;f.push(k.elements[g][a].subtract(k.elements[h][a].multiply(k.elements[g][h])))}while(--l);k.elements[g]=f}}while(--c);return Matrix.create(n)},inv:function(){return this.inverse()},setElements:function(h){var m,a=h.elements||h;if(typeof(a[0][0])!="undefined"){var d=a.length,f=d,b,c,l;this.elements=[];do{m=f-d;b=a[m].length;c=b;this.elements[m]=[];do{l=c-b;this.elements[m][l]=a[m][l]}while(--b)}while(--d);return this}var e=a.length,g=e;this.elements=[];do{m=g-e;this.elements.push([a[m]])}while(--e);return this}};Matrix.create=function(a){var b=new Matrix();return b.setElements(a)};Matrix.I=function(f){var e=[],a=f,d,c,b;do{d=a-f;e[d]=[];c=a;do{b=a-c;e[d][b]=(d==b)?$Comp(1,0):$Comp(0)}while(--c)}while(--f);return Matrix.create(e)};var $M=Matrix.create;
-},{}],40:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 /*!
  * jQuery Nearest plugin v1.3.0
  *
@@ -10524,7 +13,7 @@ module.exports = WorkbenchView;
  */
 !function(t,e){function n(e,n,h){e||(e="div");var a,i,o,s=t(n.container),c=s.offset()||{left:0,top:0},f=[s.width()||0,s.height()||0],u={x:[c.left,c.left+f[0]],y:[c.top,c.top+f[1]],w:[0,f[0]],h:[0,f[1]]};for(a in u)u.hasOwnProperty(a)&&(o=r.exec(n[a]),o&&(i=u[a],n[a]=(i[1]-i[0])*o[1]/100+i[0]));n.sameX===!1&&n.checkHoriz===!1&&(n.sameX=!n.checkHoriz),n.sameY===!1&&n.checkVert===!1&&(n.sameY=!n.checkVert);var l=s.find(e),d=[],p=!!n.furthest,m=!n.sameX,y=!n.sameY,v=!!n.onlyX,x=!!n.onlyY,g=p?0:1/0,k=parseFloat(n.x)||0,w=parseFloat(n.y)||0,X=parseFloat(k+n.w)||k,Y=parseFloat(w+n.h)||w,F=parseFloat(n.tolerance)||0,S=!!t.fn.each2,H=Math.min,M=Math.max;!n.includeSelf&&h&&(l=l.not(h)),0>F&&(F=0),l[S?"each2":"each"](function(e,n){var r,h,a,i,o=S?n:t(this),s=o.offset(),c=s.left,f=s.top,u=o.outerWidth(),l=o.outerHeight(),j=c+u,z=f+l,O=M(c,k),P=H(j,X),V=M(f,w),W=H(z,Y),b=P>=O,q=W>=V;(m&&y||!m&&!y&&b&&q||m&&q||y&&b||m&&v||y&&x)&&(r=b?0:O-P,h=q?0:V-W,a=v||x?v?r:h:b||q?M(r,h):Math.sqrt(r*r+h*h),i=p?a>=g-F:g+F>=a,i&&(g=p?M(g,a):H(g,a),d.push({node:this,dist:a})))});var j,z,O,P,V=d.length,W=[];if(V)for(p?(j=g-F,z=g):(j=g,z=g+F),O=0;V>O;O++)P=d[O],P.dist>=j&&P.dist<=z&&W.push(P.node);return W}var r=/^([\d.]+)%$/;t.each(["nearest","furthest","touching"],function(r,h){var a={x:0,y:0,w:0,h:0,tolerance:1,container:document,furthest:"furthest"==h,includeSelf:!1,sameX:"touching"===h,sameY:"touching"===h,onlyX:!1,onlyY:!1};t[h]=function(r,h,i){if(!r||r.x===e||r.y===e)return t([]);var o=t.extend({},a,r,i||{});return t(n(h,o))},t.fn[h]=function(e,r){if(!this.length)return this.pushStack([]);var h;if(e&&t.isPlainObject(e))return h=t.extend({},a,e,r||{}),this.pushStack(n(this,h));var i=this.offset(),o={x:i.left,y:i.top,w:this.outerWidth(),h:this.outerHeight()};return h=t.extend({},a,o,r||{}),this.pushStack(n(e,h,this))}})}(jQuery);
 
-},{}],41:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 /*!
  * jQuery JavaScript Library v1.8.1
  * http://jquery.com/
@@ -19827,7 +9316,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
 
 })( window );
 
-},{}],42:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 /*
  * Raphael 1.4.7 - JavaScript Vector Library
  *
@@ -19945,7 +9434,7 @@ c.d[I](/[mlcxtrv]/g,function(g){return{l:"L",c:"C",x:"z",t:"m",r:"l",v:"c"}[g]||
 b&&(g.face["font-style"]==c||!g.face["font-style"])&&g.face["font-stretch"]==d)break}}return g}};H[p].print=function(a,b,c,d,f,e){e=e||"middle";var g=this.set(),h=D(c)[G](A),i=0;l.is(d,c)&&(d=this.getFont(d));if(d){c=(f||16)/d.face["units-per-em"];var j=d.face.bbox.split(V);f=+j[0];e=+j[1]+(e=="baseline"?j[3]-j[1]+ +d.face.descent:(j[3]-j[1])/2);j=0;for(var m=h[o];j<m;j++){var n=j&&d.glyphs[h[j-1]]||{},r=d.glyphs[h[j]];i+=j?(n.w||d.w)+(n.k&&n.k[h[j]]||0):0;r&&r.d&&g[F](this.path(r.d).attr({fill:"#000",
 stroke:"none",translation:[i,0]}))}g.scale(c,c,f,e).translate(a-f,b-e)}return g};var Ob=/\{(\d+)\}/g;l.format=function(a,b){var c=l.is(b,U)?[0][M](b):arguments;a&&l.is(a,ga)&&c[o]-1&&(a=a[I](Ob,function(d,f){return c[++f]==null?A:c[f]}));return a||A};l.ninja=function(){Qa.was?(Raphael=Qa.is):delete Raphael;return l};l.el=s[p];return l}();
 
-},{}],43:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /**
  * apMessageBox - apMessageBox is a JavaScript object designed to create quick,
  * easy popup messages in your JavaScript applications.
@@ -20154,7 +9643,7 @@ var apMessageBox = apMessageBox || {};
 
 })(jQuery);
 
-},{}],44:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /*! jQuery UI - v1.8.24 - 2012-09-28
 * https://github.com/jquery/jquery-ui
 * Includes: jquery.ui.core.js
@@ -20200,12 +9689,10523 @@ var apMessageBox = apMessageBox || {};
 * Includes: jquery.ui.slider.js
 * Copyright (c) 2012 AUTHORS.txt; Licensed MIT, GPL */
 (function(a,b){var c=5;a.widget("ui.slider",a.ui.mouse,{widgetEventPrefix:"slide",options:{animate:!1,distance:0,max:100,min:0,orientation:"horizontal",range:!1,step:1,value:0,values:null},_create:function(){var b=this,d=this.options,e=this.element.find(".ui-slider-handle").addClass("ui-state-default ui-corner-all"),f="<a class='ui-slider-handle ui-state-default ui-corner-all' href='#'></a>",g=d.values&&d.values.length||1,h=[];this._keySliding=!1,this._mouseSliding=!1,this._animateOff=!0,this._handleIndex=null,this._detectOrientation(),this._mouseInit(),this.element.addClass("ui-slider ui-slider-"+this.orientation+" ui-widget"+" ui-widget-content"+" ui-corner-all"+(d.disabled?" ui-slider-disabled ui-disabled":"")),this.range=a([]),d.range&&(d.range===!0&&(d.values||(d.values=[this._valueMin(),this._valueMin()]),d.values.length&&d.values.length!==2&&(d.values=[d.values[0],d.values[0]])),this.range=a("<div></div>").appendTo(this.element).addClass("ui-slider-range ui-widget-header"+(d.range==="min"||d.range==="max"?" ui-slider-range-"+d.range:"")));for(var i=e.length;i<g;i+=1)h.push(f);this.handles=e.add(a(h.join("")).appendTo(b.element)),this.handle=this.handles.eq(0),this.handles.add(this.range).filter("a").click(function(a){a.preventDefault()}).hover(function(){d.disabled||a(this).addClass("ui-state-hover")},function(){a(this).removeClass("ui-state-hover")}).focus(function(){d.disabled?a(this).blur():(a(".ui-slider .ui-state-focus").removeClass("ui-state-focus"),a(this).addClass("ui-state-focus"))}).blur(function(){a(this).removeClass("ui-state-focus")}),this.handles.each(function(b){a(this).data("index.ui-slider-handle",b)}),this.handles.keydown(function(d){var e=a(this).data("index.ui-slider-handle"),f,g,h,i;if(b.options.disabled)return;switch(d.keyCode){case a.ui.keyCode.HOME:case a.ui.keyCode.END:case a.ui.keyCode.PAGE_UP:case a.ui.keyCode.PAGE_DOWN:case a.ui.keyCode.UP:case a.ui.keyCode.RIGHT:case a.ui.keyCode.DOWN:case a.ui.keyCode.LEFT:d.preventDefault();if(!b._keySliding){b._keySliding=!0,a(this).addClass("ui-state-active"),f=b._start(d,e);if(f===!1)return}}i=b.options.step,b.options.values&&b.options.values.length?g=h=b.values(e):g=h=b.value();switch(d.keyCode){case a.ui.keyCode.HOME:h=b._valueMin();break;case a.ui.keyCode.END:h=b._valueMax();break;case a.ui.keyCode.PAGE_UP:h=b._trimAlignValue(g+(b._valueMax()-b._valueMin())/c);break;case a.ui.keyCode.PAGE_DOWN:h=b._trimAlignValue(g-(b._valueMax()-b._valueMin())/c);break;case a.ui.keyCode.UP:case a.ui.keyCode.RIGHT:if(g===b._valueMax())return;h=b._trimAlignValue(g+i);break;case a.ui.keyCode.DOWN:case a.ui.keyCode.LEFT:if(g===b._valueMin())return;h=b._trimAlignValue(g-i)}b._slide(d,e,h)}).keyup(function(c){var d=a(this).data("index.ui-slider-handle");b._keySliding&&(b._keySliding=!1,b._stop(c,d),b._change(c,d),a(this).removeClass("ui-state-active"))}),this._refreshValue(),this._animateOff=!1},destroy:function(){return this.handles.remove(),this.range.remove(),this.element.removeClass("ui-slider ui-slider-horizontal ui-slider-vertical ui-slider-disabled ui-widget ui-widget-content ui-corner-all").removeData("slider").unbind(".slider"),this._mouseDestroy(),this},_mouseCapture:function(b){var c=this.options,d,e,f,g,h,i,j,k,l;return c.disabled?!1:(this.elementSize={width:this.element.outerWidth(),height:this.element.outerHeight()},this.elementOffset=this.element.offset(),d={x:b.pageX,y:b.pageY},e=this._normValueFromMouse(d),f=this._valueMax()-this._valueMin()+1,h=this,this.handles.each(function(b){var c=Math.abs(e-h.values(b));f>c&&(f=c,g=a(this),i=b)}),c.range===!0&&this.values(1)===c.min&&(i+=1,g=a(this.handles[i])),j=this._start(b,i),j===!1?!1:(this._mouseSliding=!0,h._handleIndex=i,g.addClass("ui-state-active").focus(),k=g.offset(),l=!a(b.target).parents().andSelf().is(".ui-slider-handle"),this._clickOffset=l?{left:0,top:0}:{left:b.pageX-k.left-g.width()/2,top:b.pageY-k.top-g.height()/2-(parseInt(g.css("borderTopWidth"),10)||0)-(parseInt(g.css("borderBottomWidth"),10)||0)+(parseInt(g.css("marginTop"),10)||0)},this.handles.hasClass("ui-state-hover")||this._slide(b,i,e),this._animateOff=!0,!0))},_mouseStart:function(a){return!0},_mouseDrag:function(a){var b={x:a.pageX,y:a.pageY},c=this._normValueFromMouse(b);return this._slide(a,this._handleIndex,c),!1},_mouseStop:function(a){return this.handles.removeClass("ui-state-active"),this._mouseSliding=!1,this._stop(a,this._handleIndex),this._change(a,this._handleIndex),this._handleIndex=null,this._clickOffset=null,this._animateOff=!1,!1},_detectOrientation:function(){this.orientation=this.options.orientation==="vertical"?"vertical":"horizontal"},_normValueFromMouse:function(a){var b,c,d,e,f;return this.orientation==="horizontal"?(b=this.elementSize.width,c=a.x-this.elementOffset.left-(this._clickOffset?this._clickOffset.left:0)):(b=this.elementSize.height,c=a.y-this.elementOffset.top-(this._clickOffset?this._clickOffset.top:0)),d=c/b,d>1&&(d=1),d<0&&(d=0),this.orientation==="vertical"&&(d=1-d),e=this._valueMax()-this._valueMin(),f=this._valueMin()+d*e,this._trimAlignValue(f)},_start:function(a,b){var c={handle:this.handles[b],value:this.value()};return this.options.values&&this.options.values.length&&(c.value=this.values(b),c.values=this.values()),this._trigger("start",a,c)},_slide:function(a,b,c){var d,e,f;this.options.values&&this.options.values.length?(d=this.values(b?0:1),this.options.values.length===2&&this.options.range===!0&&(b===0&&c>d||b===1&&c<d)&&(c=d),c!==this.values(b)&&(e=this.values(),e[b]=c,f=this._trigger("slide",a,{handle:this.handles[b],value:c,values:e}),d=this.values(b?0:1),f!==!1&&this.values(b,c,!0))):c!==this.value()&&(f=this._trigger("slide",a,{handle:this.handles[b],value:c}),f!==!1&&this.value(c))},_stop:function(a,b){var c={handle:this.handles[b],value:this.value()};this.options.values&&this.options.values.length&&(c.value=this.values(b),c.values=this.values()),this._trigger("stop",a,c)},_change:function(a,b){if(!this._keySliding&&!this._mouseSliding){var c={handle:this.handles[b],value:this.value()};this.options.values&&this.options.values.length&&(c.value=this.values(b),c.values=this.values()),this._trigger("change",a,c)}},value:function(a){if(arguments.length){this.options.value=this._trimAlignValue(a),this._refreshValue(),this._change(null,0);return}return this._value()},values:function(b,c){var d,e,f;if(arguments.length>1){this.options.values[b]=this._trimAlignValue(c),this._refreshValue(),this._change(null,b);return}if(!arguments.length)return this._values();if(!a.isArray(arguments[0]))return this.options.values&&this.options.values.length?this._values(b):this.value();d=this.options.values,e=arguments[0];for(f=0;f<d.length;f+=1)d[f]=this._trimAlignValue(e[f]),this._change(null,f);this._refreshValue()},_setOption:function(b,c){var d,e=0;a.isArray(this.options.values)&&(e=this.options.values.length),a.Widget.prototype._setOption.apply(this,arguments);switch(b){case"disabled":c?(this.handles.filter(".ui-state-focus").blur(),this.handles.removeClass("ui-state-hover"),this.handles.propAttr("disabled",!0),this.element.addClass("ui-disabled")):(this.handles.propAttr("disabled",!1),this.element.removeClass("ui-disabled"));break;case"orientation":this._detectOrientation(),this.element.removeClass("ui-slider-horizontal ui-slider-vertical").addClass("ui-slider-"+this.orientation),this._refreshValue();break;case"value":this._animateOff=!0,this._refreshValue(),this._change(null,0),this._animateOff=!1;break;case"values":this._animateOff=!0,this._refreshValue();for(d=0;d<e;d+=1)this._change(null,d);this._animateOff=!1}},_value:function(){var a=this.options.value;return a=this._trimAlignValue(a),a},_values:function(a){var b,c,d;if(arguments.length)return b=this.options.values[a],b=this._trimAlignValue(b),b;c=this.options.values.slice();for(d=0;d<c.length;d+=1)c[d]=this._trimAlignValue(c[d]);return c},_trimAlignValue:function(a){if(a<=this._valueMin())return this._valueMin();if(a>=this._valueMax())return this._valueMax();var b=this.options.step>0?this.options.step:1,c=(a-this._valueMin())%b,d=a-c;return Math.abs(c)*2>=b&&(d+=c>0?b:-b),parseFloat(d.toFixed(5))},_valueMin:function(){return this.options.min},_valueMax:function(){return this.options.max},_refreshValue:function(){var b=this.options.range,c=this.options,d=this,e=this._animateOff?!1:c.animate,f,g={},h,i,j,k;this.options.values&&this.options.values.length?this.handles.each(function(b,i){f=(d.values(b)-d._valueMin())/(d._valueMax()-d._valueMin())*100,g[d.orientation==="horizontal"?"left":"bottom"]=f+"%",a(this).stop(1,1)[e?"animate":"css"](g,c.animate),d.options.range===!0&&(d.orientation==="horizontal"?(b===0&&d.range.stop(1,1)[e?"animate":"css"]({left:f+"%"},c.animate),b===1&&d.range[e?"animate":"css"]({width:f-h+"%"},{queue:!1,duration:c.animate})):(b===0&&d.range.stop(1,1)[e?"animate":"css"]({bottom:f+"%"},c.animate),b===1&&d.range[e?"animate":"css"]({height:f-h+"%"},{queue:!1,duration:c.animate}))),h=f}):(i=this.value(),j=this._valueMin(),k=this._valueMax(),f=k!==j?(i-j)/(k-j)*100:0,g[d.orientation==="horizontal"?"left":"bottom"]=f+"%",this.handle.stop(1,1)[e?"animate":"css"](g,c.animate),b==="min"&&this.orientation==="horizontal"&&this.range.stop(1,1)[e?"animate":"css"]({width:f+"%"},c.animate),b==="max"&&this.orientation==="horizontal"&&this.range[e?"animate":"css"]({width:100-f+"%"},{queue:!1,duration:c.animate}),b==="min"&&this.orientation==="vertical"&&this.range.stop(1,1)[e?"animate":"css"]({height:f+"%"},c.animate),b==="max"&&this.orientation==="vertical"&&this.range[e?"animate":"css"]({height:100-f+"%"},{queue:!1,duration:c.animate}))}}),a.extend(a.ui.slider,{version:"1.8.24"})})(jQuery);;
-},{}],45:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /*! 
  * jquery.event.drag - v 2.0.0 
  * Copyright (c) 2010 Three Dub Media - http://threedubmedia.com
  * Open Source MIT License - http://threedubmedia.com/code/license
  */
 ;(function(f){f.fn.drag=function(b,a,d){var e=typeof b=="string"?b:"",k=f.isFunction(b)?b:f.isFunction(a)?a:null;if(e.indexOf("drag")!==0)e="drag"+e;d=(b==k?a:d)||{};return k?this.bind(e,d,k):this.trigger(e)};var i=f.event,h=i.special,c=h.drag={defaults:{which:1,distance:0,not:":input",handle:null,relative:false,drop:true,click:false},datakey:"dragdata",livekey:"livedrag",add:function(b){var a=f.data(this,c.datakey),d=b.data||{};a.related+=1;if(!a.live&&b.selector){a.live=true;i.add(this,"draginit."+ c.livekey,c.delegate)}f.each(c.defaults,function(e){if(d[e]!==undefined)a[e]=d[e]})},remove:function(){f.data(this,c.datakey).related-=1},setup:function(){if(!f.data(this,c.datakey)){var b=f.extend({related:0},c.defaults);f.data(this,c.datakey,b);i.add(this,"mousedown",c.init,b);this.attachEvent&&this.attachEvent("ondragstart",c.dontstart)}},teardown:function(){if(!f.data(this,c.datakey).related){f.removeData(this,c.datakey);i.remove(this,"mousedown",c.init);i.remove(this,"draginit",c.delegate);c.textselect(true); this.detachEvent&&this.detachEvent("ondragstart",c.dontstart)}},init:function(b){var a=b.data,d;if(!(a.which>0&&b.which!=a.which))if(!f(b.target).is(a.not))if(!(a.handle&&!f(b.target).closest(a.handle,b.currentTarget).length)){a.propagates=1;a.interactions=[c.interaction(this,a)];a.target=b.target;a.pageX=b.pageX;a.pageY=b.pageY;a.dragging=null;d=c.hijack(b,"draginit",a);if(a.propagates){if((d=c.flatten(d))&&d.length){a.interactions=[];f.each(d,function(){a.interactions.push(c.interaction(this,a))})}a.propagates= a.interactions.length;a.drop!==false&&h.drop&&h.drop.handler(b,a);c.textselect(false);i.add(document,"mousemove mouseup",c.handler,a);return false}}},interaction:function(b,a){return{drag:b,callback:new c.callback,droppable:[],offset:f(b)[a.relative?"position":"offset"]()||{top:0,left:0}}},handler:function(b){var a=b.data;switch(b.type){case !a.dragging&&"mousemove":if(Math.pow(b.pageX-a.pageX,2)+Math.pow(b.pageY-a.pageY,2)<Math.pow(a.distance,2))break;b.target=a.target;c.hijack(b,"dragstart",a); if(a.propagates)a.dragging=true;case "mousemove":if(a.dragging){c.hijack(b,"drag",a);if(a.propagates){a.drop!==false&&h.drop&&h.drop.handler(b,a);break}b.type="mouseup"}case "mouseup":i.remove(document,"mousemove mouseup",c.handler);if(a.dragging){a.drop!==false&&h.drop&&h.drop.handler(b,a);c.hijack(b,"dragend",a)}c.textselect(true);if(a.click===false&&a.dragging){jQuery.event.triggered=true;setTimeout(function(){jQuery.event.triggered=false},20);a.dragging=false}break}},delegate:function(b){var a= [],d,e=f.data(this,"events")||{};f.each(e.live||[],function(k,j){if(j.preType.indexOf("drag")===0)if(d=f(b.target).closest(j.selector,b.currentTarget)[0]){i.add(d,j.origType+"."+c.livekey,j.origHandler,j.data);f.inArray(d,a)<0&&a.push(d)}});if(!a.length)return false;return f(a).bind("dragend."+c.livekey,function(){i.remove(this,"."+c.livekey)})},hijack:function(b,a,d,e,k){if(d){var j={event:b.originalEvent,type:b.type},n=a.indexOf("drop")?"drag":"drop",l,o=e||0,g,m;e=!isNaN(e)?e:d.interactions.length; b.type=a;b.originalEvent=null;d.results=[];do if(g=d.interactions[o])if(!(a!=="dragend"&&g.cancelled)){m=c.properties(b,d,g);g.results=[];f(k||g[n]||d.droppable).each(function(q,p){l=(m.target=p)?i.handle.call(p,b,m):null;if(l===false){if(n=="drag"){g.cancelled=true;d.propagates-=1}if(a=="drop")g[n][q]=null}else if(a=="dropinit")g.droppable.push(c.element(l)||p);if(a=="dragstart")g.proxy=f(c.element(l)||g.drag)[0];g.results.push(l);delete b.result;if(a!=="dropinit")return l});d.results[o]=c.flatten(g.results); if(a=="dropinit")g.droppable=c.flatten(g.droppable);a=="dragstart"&&!g.cancelled&&m.update()}while(++o<e);b.type=j.type;b.originalEvent=j.event;return c.flatten(d.results)}},properties:function(b,a,d){var e=d.callback;e.drag=d.drag;e.proxy=d.proxy||d.drag;e.startX=a.pageX;e.startY=a.pageY;e.deltaX=b.pageX-a.pageX;e.deltaY=b.pageY-a.pageY;e.originalX=d.offset.left;e.originalY=d.offset.top;e.offsetX=b.pageX-(a.pageX-e.originalX);e.offsetY=b.pageY-(a.pageY-e.originalY);e.drop=c.flatten((d.drop||[]).slice()); e.available=c.flatten((d.droppable||[]).slice());return e},element:function(b){if(b&&(b.jquery||b.nodeType==1))return b},flatten:function(b){return f.map(b,function(a){return a&&a.jquery?f.makeArray(a):a&&a.length?c.flatten(a):a})},textselect:function(b){f(document)[b?"unbind":"bind"]("selectstart",c.dontstart).attr("unselectable",b?"off":"on").css("MozUserSelect",b?"":"none")},dontstart:function(){return false},callback:function(){}};c.callback.prototype={update:function(){h.drop&&this.available.length&& f.each(this.available,function(b){h.drop.locate(this,b)})}};h.draginit=h.dragstart=h.dragend=c})(jQuery);
-},{}]},{},[24])(24)
+},{}],8:[function(require,module,exports){
+var extend    = require('../helpers/util').extend,
+    Component = require('./component');
+
+Battery = function (props, breadboardController) {
+  var range;
+
+  Battery.parentConstructor.call(this, props, breadboardController);
+
+  // if voltages are specified as an array, then if it has only value, set the
+  // voltage to that value, otherwise set it to a random voltage between the first
+  // and second values
+  if (this.voltage && this.voltage.length) {
+    if (this.voltage.length === 1) {
+      this.voltage = this.voltage[0];
+    } else {
+      range = this.voltage[1] - this.voltage[0];
+      this.voltage = this.voltage[0] + (Math.random() * range);
+    }
+  }
+};
+
+extend(Battery, Component, {
+  addCiSoComponent: function (ciso) {
+    var voltage = this.voltage || 0,
+        nodes      = this.getNodes();
+
+    ciso.addVoltageSource(this.UID, voltage, nodes[0], nodes[1]);
+  }
+});
+
+module.exports = Battery;
+
+},{"../helpers/util":30,"./component":11}],9:[function(require,module,exports){
+//= require circuit/resistor
+//= require circuit/variable-resistor
+//= require circuit/component
+
+/* FILE breadboard.js */
+
+/*global sparks CiSo $ breadBoard window console*/
+
+var util                  = require('../helpers/util'),
+    Battery               = require('./battery'),
+    Capacitor             = require('./capacitor'),
+    FunctionGenerator     = require('./function-generator'),
+    Inductor              = require('./inductor'),
+    PowerLead             = require('./power-lead'),
+    Resistor4band         = require('./resistor-4band'),
+    Resistor              = require('./resistor'),
+    VariableResistor      = require('./variable-resistor'),
+    Component             = require('./component'),
+    Wire                  = require('./wire'),
+    workbenchController,
+
+
+    defs = {
+      rows            : 31,
+      powerRailHoles  : 25
+    },
+
+    Hole,
+    GhostHole,
+    Strip,
+    Breadboard;
+
+////////////////////////////////////////////////////////////////////////////////
+//// B R E A D - B O A R D - M O D E L /////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+//// BREADBOARD Prototype Model //////////////////////////////////////////////
+
+Hole = function Hole( strip, name ){
+  this.type ='hole';
+  this.strip = strip;
+  this.name = name;
+  this.connections = [];
+  return this;
+};
+
+Hole.prototype.nodeName = function() {
+  return this.strip && this.strip.name;
+};
+
+Hole.prototype.getName = function() {
+  return this.name;
+};
+
+GhostHole = function GhostHole(name) {
+  this.name = name;
+  return this;
+};
+
+GhostHole.prototype.nodeName = function() {
+  return this.name;
+};
+
+GhostHole.prototype.getName = function() {
+  return this.name;
+};
+
+Strip = function Strip( holes, name ){
+  this.type ='strip';
+  this.holes={};
+  this.name = name;
+  if (holes) {
+    for (var i=0, l=holes; i < l; i++) {
+      this.holes[''+i] = new Hole();
+      this.holes[''+i].strip = this;
+    }
+  }
+  return this;
+};
+
+Breadboard = function Breadboard(){
+  var i, h, l, ll, a,
+      side, sign,
+      newStripL, newStripR,
+      mapCode;
+
+  this.type ='Breadboard';
+
+  this.strips = [];
+  this.components = {};
+  this.holes = {};
+  this.holeMap = {};
+  this.faultyComponents = [];
+
+  // Create power-rails
+  this.powerRail = {
+    left:{
+      positive: new Strip( null, "powerPosL"),
+      negative: new Strip( null, "gnd")
+    },
+    right:{
+      positive: new Strip( null, "powerPosR" ),
+      negative: new Strip( null, "gnd" )
+    }
+  };
+
+  for (i=0, l=defs.powerRailHoles; i < l; i++) {
+    for (side in this.powerRail) {
+      if (!this.powerRail.hasOwnProperty(side)) continue;
+      for (sign in this.powerRail[side]) {
+        if (!this.powerRail[side].hasOwnProperty(sign)) continue;
+        h = side + '_' + sign + i;
+        this.powerRail[side][sign][h] = this.holes[h] = new Hole(this.powerRail[side][sign], h);
+      }
+    }
+  }
+
+  // Create board
+  for (i=0, l=defs.rows; i < l; i++) {
+    newStripL = this.makeStrip("L" + i);
+    newStripR = this.makeStrip("R" + i);
+    for (a=0, ll=5; a < ll; a++ ) {
+      mapCode = String.fromCharCode(a+97)+i;
+      newStripL.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripL, mapCode );
+      mapCode = String.fromCharCode(a+102)+i;
+      newStripR.holes[mapCode] = this.holes[ mapCode ] = new Hole( newStripR, mapCode );
+    }
+  }
+};
+
+Breadboard.prototype = {
+  makeStrip: function (name) {
+    var stripLen = this.strips.length;
+    this.strips[ stripLen ] = new Strip(null, name);
+    return this.strips[ stripLen ];
+  },
+
+  createGhostHole: function(hole) {
+    return new GhostHole(hole);
+  }
+}
+
+module.exports = Breadboard;
+
+},{"../helpers/util":30,"./battery":8,"./capacitor":10,"./component":11,"./function-generator":12,"./inductor":13,"./power-lead":16,"./resistor":20,"./resistor-4band":19,"./variable-resistor":21,"./wire":22}],10:[function(require,module,exports){
+var extend            = require('../helpers/util').extend,
+    ReactiveComponent = require('./reactive-component');
+
+Capacitor = function (props, breadboardController) {
+  Capacitor.parentConstructor.call(this, props, breadboardController);
+};
+
+extend(Capacitor, ReactiveComponent, {
+
+  getCapacitance: function () {
+    return this.getComponentParameter('capacitance', this.capacitanceFromImpedance);
+  },
+
+  capacitanceFromImpedance: function (impedance, frequency) {
+    return 1 / (impedance * 2 * Math.PI * frequency);
+  },
+
+  addCiSoComponent: function (ciso) {
+    var capacitance = this.getCapacitance() || 0,
+        nodes       = this.getNodes();
+    ciso.addComponent(this.UID, "Capacitor", capacitance, nodes);
+  },
+
+  componentTypeName: "Capacitor",
+
+  isEditable: true,
+
+  editableProperty: {name: "capacitance", units: "F"},
+
+  changeEditableValue: function(val) {
+    this.capacitance = val;
+  }
+});
+
+module.exports = Capacitor;
+
+},{"../helpers/util":30,"./reactive-component":18}],11:[function(require,module,exports){
+Component = function (props, breadboardController) {
+
+  for (var i in props) {
+    this[i]=props[i];
+  }
+
+  this.breadboardController = breadboardController;
+
+  if (!this.label){
+    this.label = !!this.UID.split("/")[1] ? this.UID.split("/")[1] : "";
+  }
+
+  if (typeof this.connections === "string") {
+    this.connections = this.connections.replace(/ /g,'').split(",");
+  }
+
+  for (i in this.connections) {
+    this.connections[i] = this.breadboardController.getHole(this.connections[i]);
+
+    if (!!this.breadboardController.getHoles[this.connections[i]]) {
+      this.breadboardController.getHoles[this.connections[i]].connections[this.breadboardController.getHoles[this.connections[i]].connections.length] = this;
+    }
+  }
+  this._ensureFloat("resistance");
+  this._ensureFloat("nominalResistance");
+  this._ensureFloat("voltage");
+  this._ensureFloat("capacitance");
+  this._ensureFloat("inductance");
+  this._ensureFloat("impedance");
+  this.draggable = !!this.draggable;
+
+  this.viewArguments = {
+    type: this.type,
+    UID: this.UID,
+    connections: this.getLocation(),
+    draggable: this.draggable
+  };
+
+  if (this.label) {
+    this.viewArguments.label = this.label;
+  }
+};
+
+Component.prototype = {
+  setViewArguments: function (args) {
+    for (var arg in args) {
+      if (!args.hasOwnProperty(arg)) continue;
+      this.viewArguments[arg] = args[arg];
+    }
+  },
+
+  getViewArguments: function () {
+    this.viewArguments.connections = this.getLocation(); // update location
+    return this.viewArguments;
+  },
+
+  move: function (connections) {
+    var i, j;
+    for (i in this.connections) {
+      for (j in this.connections[i].connections) {
+        if (this.connections[i].connections[j] === this) {
+          this.connections[i].connections = [];
+        }
+      }
+      this.connections[i] = [];
+    }
+    this.connections = [];
+    for (i in connections){
+      this.connections[i] = this.breadboardController.getHoles[connections[i]];
+      this.breadboardController.getHoles[connections[i]].connections[this.breadboardController.getHoles[connections[i]].connections.length] = this;
+    }
+
+    this.setViewArguments({connections: this.getLocation()});
+  },
+
+  destroy: function (){
+    var i, j;
+    for(i in this.connections){
+      for(j in this.connections[i].connections ){
+        if( this.connections[i].connections[j] === this ){
+          this.connections[i].connections = [];
+        }
+      }
+      this.connections[i] = [];
+    }
+    this.connections = [];
+    this.breadboardController.deleteComponentFromMap(this.UID);
+  },
+
+  _ensureFloat: function (val) {
+    if (this[val] && typeof this[val] === "string") {
+      this[val] = parseFloat(this[val], 10);
+    }
+  },
+
+  getNodes: function () {
+    return $.map(this.connections, function (connection) {
+      return connection.nodeName();
+    });
+  },
+
+  // converts connections to string, for flash arguments
+  getLocation: function () {
+    return this.connections[0].getName() + "," + this.connections[1].getName();
+  },
+
+  canInsertIntoNetlist: function () {
+    return true;
+  },
+
+  /**
+    hasValidConnections: check that this component has connections that are valid for generating a QUCS netlist.
+
+    The only check performed right now is that there be 2 connections, but this validity check could be enhanced
+    to check, for example, that the two connections map to different nodes, etc.
+  */
+  hasValidConnections: function () {
+    return this.connections.length === 2 || (this.type === "powerLead" && this.connections.length === 1);
+  },
+
+  getRequestedImpedance: function (spec, steps) {
+    var min, max, factor, step, choosableSteps, i, len;
+
+    if (typeof spec === 'string' || typeof spec === 'number') {
+      return spec;
+    }
+
+    if (spec[0] !== 'uniform') {
+      throw new Error("Only uniformly-distributed random impedances/resistances are supported right now; received " + spec);
+    }
+    if (spec.length < 3) throw new Error("Random impedance/resistance spec does not specify an upper and lower bound");
+    if (typeof spec[1] !== 'number' || typeof spec[2] !== 'number') throw new Error("Random impedance/resistance spec lower and upper bound were not both numeric");
+
+    min = Math.min(spec[1], spec[2]);
+    max = Math.max(spec[1], spec[2]);
+
+    // if steps array exists, it specifies allowable values, up to the order of magnitude
+    if (steps) {
+      // copy 'steps' array before sorting it so we don't modify the passed-in array
+      steps = steps.slice().sort();
+
+      factor = Math.pow(10, Math.orderOfMagnitude(min) - Math.orderOfMagnitude(steps[0]));
+      choosableSteps = [];
+      i = 0;
+      len = steps.length;
+      do {
+        step = steps[i++] * factor;
+        if (min <= step && step <= max) choosableSteps.push(step);
+
+        if (i >= len) {
+          factor *= 10;
+          i = 0;
+        }
+      } while (step < max);
+
+      if (choosableSteps.length > 0) {
+        return choosableSteps[ Math.floor(Math.random() * choosableSteps.length) ];
+      }
+    }
+
+    // if no steps were specified, or none were available between the requested min and max
+    return min + Math.random() * (max - min);
+  },
+
+  addThisToFaults: function() {
+    this.breadboardController.addFaultyComponent(this);
+  },
+
+  // used by the component edit view
+  componentTypeName: "Component",
+
+  // used by the component edit view
+  isEditable: false,
+
+  // used by the component edit view. Right now we assume any editable component
+  // has only one single editable property. If we change this assumption, we may
+  // want to set an array of properties
+  //
+  // Returns an array of the possible values this property can take
+  getEditablePropertyValues: function() { return [0]; },
+  // The name and base units of the editable property
+  editableProperty: {name: "", units: ""},
+
+  // used by the component edit view. Right now we assume any editable component
+  // has only one single editable property. However, even if we have components with
+  // multiple editable properties, we can keep this API and pass in an array
+  changeEditableValue: function(val) { },
+
+  serialize: function() {
+    var jsonComp = {
+      type: this.type,
+      UID:  this.UID
+    };
+
+    if (this.label)             jsonComp.label = this.label;
+    if (this.connections)       jsonComp.connections = this.getLocation();
+    if (this.resistance)        jsonComp.resistance = this.resistance;
+    if (this.nominalResistance) jsonComp.nominalResistance = this.nominalResistance;
+    if (this.voltage)           jsonComp.voltage = this.voltage;
+    if (this.amplitude)         jsonComp.amplitude = this.amplitude;
+    if (this.frequencies)       jsonComp.frequencies = this.frequencies;
+    if (this.initialFrequency)  jsonComp.initialFrequency = this.initialFrequency;
+    if (this.capacitance)       jsonComp.capacitance = this.capacitance;
+    if (this.inductance)        jsonComp.inductance = this.inductance;
+    if (this.impedance)         jsonComp.impedance = this.impedance;
+    if (this.draggable)         jsonComp.draggable = this.draggable;
+    if (this.hidden)            jsonComp.hidden = this.hidden;
+
+    return jsonComp;
+  }
+
+};
+
+module.exports = Component;
+
+
+},{}],12:[function(require,module,exports){
+var extend              = require('../helpers/util').extend,
+    Component           = require('./component');
+
+FunctionGenerator = function (props, breadboardController, workbenchController) {
+  FunctionGenerator.parentConstructor.call(this, props, breadboardController);
+
+  this.workbenchController = workbenchController;
+
+  this.amplitudeScaleFactor = 1;
+
+  // NOTE on validation of initialFrequency.
+  //
+  // If the initial frequency is not in the frequencies we request QUCS to simulate, we only find out after we call
+  // QUCS and get the simulation result back. It sounds like we're thereby missing an opportunity to validate
+  // initialFrequency "up front" at object-creation time, but, really, we're not. From the perspective of an author
+  // who creates a JSON circuit spec with such an invalid initialFrequency, the validation failure only occurs when
+  // the student (or author) actually runs the activity, whether the validation is done when the FunctionGenerator
+  // is created, or whether it is done when QUCS returns. Doing validation at object creation time (below) would
+  // require pre-calculating the frequency list which QUCS generates from a sweep spec.
+  this.frequency = props.initialFrequency;
+
+  // get an initial frequency from the frequency-range specification, if one exists
+  if ( ('undefined' === typeof this.frequency || this.frequency === null) && props.frequencies ) {
+    if ('number' === typeof props.frequencies[0]) {
+      this.frequency = props.frequencies[0];
+    }
+    else if (props.frequencies[0] === 'linear' || props.frequencies[0] === 'logarithmic') {
+      this.frequency = props.frequencies[1];
+    }
+  }
+
+  // store (and generate, if nec.) the set of possible frequencies, so that the view can slide through these
+  if (props.frequencies) {
+    if ('number' === typeof props.frequencies[0]) {
+      this.possibleFrequencies = props.frequencies;
+    }
+    else if (props.frequencies[0] === 'linear' || props.frequencies[0] === 'logarithmic') {
+      this.possibleFrequencies = this._calcPossibleFrequencies(props);
+    }
+  }
+
+  // set a base frequency, so that we don't have to change NetList representation after changing frequency
+  this.baseFrequency = this.frequency;
+
+  if ('undefined' === typeof this.frequency || this.frequency === null) {
+    throw new Error("FunctionGenerator: initialFrequency is undefined and an initial frequency could not be inferred from frequency range specification.");
+  }
+
+  var amplitude = props.amplitude;
+  if ('number' === typeof amplitude){
+    this.amplitude = amplitude;
+  } else if (amplitude.length && amplitude.length >= 2) {
+    this.minAmplitude = amplitude[0];
+    this.maxAmplitude = amplitude[1];
+    if (amplitude[2]) {
+      this.amplitude = amplitude[2];
+    } else {
+      this.amplitude = (this.minAmplitude + this.maxAmplitude) / 2;
+    }
+  }
+};
+
+extend(FunctionGenerator, Component, {
+
+  // for now, no validation on frequency. So we might set something QUCS isn't expecting from the given sim type
+  setFrequency: function(frequency) {
+    this.frequency = frequency;
+    if (this.workbenchController.workbench.meter) {
+      this.workbenchController.workbench.meter.update();
+    }
+  },
+
+  // instead of modifying the base amplitude, which would cause us to re-ask QUCS for new values,
+  // we simply modify a scale factor, which is read by all meters. This works so long as we have
+  // linear circuits -- we'll need to revisit this for nonlinear circuits.
+  setAmplitude: function(newAmplitude) {
+    this.amplitudeScaleFactor = newAmplitude / this.amplitude;
+    if (this.workbenchController.workbench.meter) {
+      this.workbenchController.workbench.meter.update();
+    }
+  },
+
+  getFrequency: function() {
+    return this.frequency;
+  },
+
+  getAmplitude: function() {
+    return this.amplitude * this.amplitudeScaleFactor;
+  },
+
+  getPossibleFrequencies: function() {
+    return this.possibleFrequencies;
+  },
+
+  addCiSoComponent: function (ciso) {
+    var amplitude   = this.amplitude || 0,
+        nodes       = this.getNodes();
+
+    ciso.addVoltageSource(this.UID,amplitude,nodes[0],nodes[1],this.frequency);
+  },
+
+  defaultFrequencySteps: 100,
+
+  _calcPossibleFrequencies: function(props) {
+    var startF   = props.frequencies[1],
+        endF     = props.frequencies[2],
+        steps    = props.frequencies[3],
+        type     = props.frequencies[0],
+        diff     = endF - startF,
+        multiple = endF / startF,
+        stepSize,
+        i;
+
+    var frequencies = [];
+    if (type === 'linear') {
+      stepSize = diff / (steps - 1);
+      for (i = 0; i < steps; i++){
+        frequencies.push(startF + (stepSize * i));
+      }
+    } else if (type === 'logarithmic') {
+      for (i = 0; i < steps; i++){
+        frequencies.push(startF * (Math.pow(multiple, ((i/(steps-1))))));
+      }
+    }
+    return frequencies;
+  },
+
+  getViewArguments: null
+
+});
+
+module.exports = FunctionGenerator;
+
+},{"../helpers/util":30,"./component":11}],13:[function(require,module,exports){
+var extend            = require('../helpers/util').extend,
+    ReactiveComponent = require('./reactive-component');
+
+Inductor = function (props, breadboardController) {
+  Inductor.parentConstructor.call(this, props, breadboardController);
+};
+
+extend(Inductor, ReactiveComponent, {
+
+  getInductance: function () {
+    return this.getComponentParameter('inductance', this.inductanceFromImpedance);
+  },
+
+  inductanceFromImpedance: function (impedance, frequency) {
+    return impedance / (2 * Math.PI * frequency);
+  },
+
+  addCiSoComponent: function (ciso) {
+    var inductance = this.getInductance() || 0,
+        nodes       = this.getNodes();
+    ciso.addComponent(this.UID, "Inductor", inductance, nodes);
+  },
+
+  componentTypeName: "Inductor",
+
+  isEditable: true,
+
+  editableProperty: {name: "inductance", units: "H"},
+
+  changeEditableValue: function(val) {
+    this.inductance = val;
+  }
+});
+
+module.exports = Inductor;
+
+},{"../helpers/util":30,"./reactive-component":18}],14:[function(require,module,exports){
+var workbenchController;
+
+/*
+ * Digital Multimeter
+ * Base for the Centech DMM
+ */
+MultimeterBase = function () {
+};
+
+MultimeterBase.prototype = {
+
+    modes : { ohmmeter : 0, voltmeter : 1, ammeter : 2 },
+
+    init: function () {
+        workbenchController   = require('../controllers/workbench-controller');
+
+        this.mode = this.modes.ohmmeter;
+
+        this.absoluteValue = 0;   //current meter value
+
+        this.displayText = '       ';
+
+        this.redProbeConnection = null;
+        this.blackProbeConnection = null;
+        this.redPlugConnection = null;
+        this.blackPlugConnecton = null;
+        this.dialPosition = 'acv_750';
+        this.powerOn = false;
+        this.disabledPositions = [];
+    },
+
+    // @probe Either "red" or "black"
+    // @location hole name (e.g. 'a1') or null
+    setProbeLocation: function (probe, location) {
+      if (probe === "probe_red") {
+        this.redProbeConnection = location;
+      } else if (probe === "probe_black") {
+        this.blackProbeConnection = location;
+      }
+      this.update();
+    },
+
+    moveProbe: function(oldLoc, newLoc) {
+      if (this.redProbeConnection === oldLoc) {
+        this.redProbeConnection = newLoc;
+      }
+      if (this.blackProbeConnection === oldLoc) {
+        this.blackProbeConnection = newLoc;
+      }
+      this.update();
+    },
+
+    update : function () {
+    },
+
+    updateDisplay : function () {
+        var text = '',
+            vm, imc, im;
+
+        if (!this.powerOn) {
+            this.displayText = '       ';
+            return;
+        }
+
+        if (this.allConnected()) {
+            if (this.dialPosition === 'dcv_20') {
+                if (this.absoluteValue < 19.995) {
+                    text = (Math.round(this.absoluteValue * 100) * 0.01).toString();
+                    text = this.toDisplayString(text, 2);
+                }
+                else {
+                    text = ' 1 .   ';
+                }
+                this.currentUnits = "V";
+
+            } else if (this.dialPosition === 'dcv_200') {
+                if (this.absoluteValue < 199.95) {
+                    text = (Math.round(this.absoluteValue * 10) * 0.1).toString();
+                    text = this.toDisplayString(text, 1);
+                }
+                else {
+                    text = ' 1 .   ';
+                }
+                this.currentUnits = "V";
+
+            } else if (this.dialPosition === 'dcv_1000') {
+                 if (this.absoluteValue < 999.95) {
+                    text = Math.round(this.absoluteValue).toString();
+                    text = this.toDisplayString(text, 0);
+                    text = "h" + text.substring(1);
+                }
+                else {
+                    text = 'h1 .   ';
+                }
+                this.currentUnits = "V";
+
+            } else if (this.dialPosition === 'dcv_2000m') {
+                vm = this.absoluteValue * 1000;
+                if (vm < 1999.5) {
+                    text = Math.round(vm).toString();
+                    text = this.toDisplayString(text, 0);
+                }
+                else {
+                    text = ' 1 .   ';
+                }
+                this.currentUnits = "mV";
+
+            } else if (this.dialPosition === 'dcv_200m') {
+                vm = this.absoluteValue * 1000;
+                if (vm < 195){
+                  text = (Math.round(vm * 100) * 0.01).toString();
+                  text = this.toDisplayString(text, 1);
+                }
+                else {
+                    text = ' 1 .   ';
+                }
+                this.currentUnits = "mV";
+
+            } else if (this.dialPosition === 'acv_200') {
+                if (this.absoluteValue < 199.95) {
+                    text = (Math.round(this.absoluteValue * 10) * 0.1).toString();
+                    text = this.toDisplayString(text, 1);
+                }
+                else {
+                    text = ' 1 .   ';
+                }
+                this.currentUnits = "V";
+
+            } else if (this.dialPosition === 'acv_750') {
+                if (this.absoluteValue < 699.5) {
+                    text = (Math.round(this.absoluteValue)).toString();
+                    text = this.toDisplayString(text, 0);
+                    text = "h"+text.substring(1);
+                }
+                else {
+                    text = 'h1 .   ';
+                }
+                this.currentUnits = "V";
+
+            } else if (this.dialPosition === 'r_200') {
+                if (this.absoluteValue < 199.95) {
+                    text = (Math.round(this.absoluteValue * 10) * 0.1).toString();
+                    text = this.toDisplayString(text, 1);
+                }
+                else {
+                    text = ' 1   . ';
+                }
+                this.currentUnits = "Ohms";
+            } else if (this.dialPosition === 'r_2000') {
+                if (this.absoluteValue < 1999.5) {
+                    text = Math.round(this.absoluteValue).toString();
+                    text = this.toDisplayString(text, 0);
+                }
+                else {
+                    text = ' 1     ';
+                }
+                this.currentUnits = "Ohms";
+            }
+            else if (this.dialPosition === 'r_20k') {
+                if (this.absoluteValue < 19995) {
+                    text = (Math.round(this.absoluteValue * 0.1) * 0.01).toString();
+                    text = this.toDisplayString(text, 2);
+                }
+                else {
+                    text = ' 1 .   ';
+                }
+                this.currentUnits = "kOhms";
+            }
+            else if (this.dialPosition === 'r_200k') {
+                if (this.absoluteValue < 199950) {
+                    text = (Math.round(this.absoluteValue * 0.01) * 0.1).toString();
+                    text = this.toDisplayString(text, 1);
+                }
+                else {
+                    text = ' 1   . ';
+                }
+                this.currentUnits = "kOhms";
+            }
+            else if (this.dialPosition === 'r_2000k') {
+                if (this.absoluteValue < 1999500) {
+                    text = Math.round(this.absoluteValue * 0.001).toString();
+                    text = this.toDisplayString(text, 0);
+                }
+                else {
+                    text = ' 1     ';
+                }
+                this.currentUnits = "kOhms";
+            }
+            else if (this.dialPosition === 'dca_200mc') {
+              imc = this.absoluteValue * 1000000;
+              if (imc < 195){
+                text = (Math.round(imc * 100) * 0.01).toString();
+                text = this.toDisplayString(text, 1);
+              }
+              else {
+                  text = ' 1     ';
+              }
+              this.currentUnits = "μA";
+            }
+            else if (this.dialPosition === 'dca_2000mc') {
+              imc = this.absoluteValue * 1000000;
+              if (imc < 1950){
+                text = (Math.round(imc * 10) * 0.1).toString();
+                text = this.toDisplayString(text, 0);
+              }
+              else {
+                  text = ' 1     ';
+              }
+              this.currentUnits = "μA";
+            }
+            else if (this.dialPosition === 'dca_20m') {
+              im = this.absoluteValue * 1000;
+              if (im < 19.5){
+                text = (Math.round(im * 100) * 0.01).toString();
+                text = this.toDisplayString(text, 2);
+              }
+              else {
+                  text = ' 1     ';
+              }
+              this.currentUnits = "mA";
+            }
+            else if (this.dialPosition === 'dca_200m') {
+              im = this.absoluteValue * 1000;
+              if (im < 195){
+                text = (Math.round(im * 10) * 0.1).toString();
+                text = this.toDisplayString(text, 1);
+              }
+              else {
+                  text = ' 1     ';
+              }
+              this.currentUnits = "mA";
+            }
+            else if (this.dialPosition === 'dcv_200m' || this.dialPosition === 'dcv_200' ||
+                    this.dialPosition === 'acv_200' || this.dialPosition === 'p_9v' ||
+                    this.dialPosition === 'dca_200mc' || this.dialPosition === 'dca_200m') {
+                text = '  0 0.0';
+            }
+            else if (this.dialPosition === 'dcv_2000m' || this.dialPosition === 'dca_2000mc' ||
+                    this.dialPosition === 'hfe') {
+                text = '  0 0 0';
+            }
+            else if (this.dialPosition === 'dcv_20' || this.dialPosition === 'dca_20m' ||
+                    this.dialPosition === 'c_10a') {
+                text = '  0.0 0';
+            }
+            else if (this.dialPosition === 'dcv_1000' || this.dialPosition === 'acv_750') {
+                text = 'h 0 0 0';
+            }
+            else if (this.dialPosition === 'diode') {
+              text = ' 1     ';
+            }
+            else {
+                text = '       ';
+            }
+        }
+        else {    // if not connected
+            if (this.dialPosition === 'dcv_20') {
+                text = '  0.0 0';
+            }
+            else if (this.dialPosition === 'r_200') {
+                text = ' 1   . ';
+            }
+            else if (this.dialPosition === 'r_2000' || this.dialPosition === 'diode') {
+                text = ' 1     ';
+            }
+            else if (this.dialPosition === 'r_20k') {
+                text = ' 1 .   ';
+            }
+            else if (this.dialPosition === 'r_200k') {
+                text = ' 1   . ';
+            }
+            else if (this.dialPosition === 'r_2000k') {
+                text = ' 1     ';
+            }
+            else if (this.dialPosition === 'dcv_200m' || this.dialPosition === 'dcv_200' ||
+                    this.dialPosition === 'acv_200' || this.dialPosition === 'p_9v' ||
+                    this.dialPosition === 'dca_200mc' || this.dialPosition === 'dca_200m') {
+                text = '  0 0.0';
+            }
+            else if (this.dialPosition === 'dcv_2000m' || this.dialPosition === 'dca_2000mc' ||
+                    this.dialPosition === 'hfe') {
+                text = '  0 0 0';
+            }
+            else if (this.dialPosition === 'dcv_20' || this.dialPosition === 'dca_20m' ||
+                    this.dialPosition === 'c_10a') {
+                text = '  0.0 0';
+            }
+            else if (this.dialPosition === 'dcv_1000' || this.dialPosition === 'acv_750') {
+                text = 'h 0 0 0';
+            }
+            else {
+                text = '       ';
+            }
+        }
+        text = this.disable_multimeter_position(text);
+        if (text !== this.displayText) {
+          if (workbenchController.breadboardView) {
+            workbenchController.breadboardView.setDMMText(text);
+          }
+          this.displayText = text;
+          this.currentValue = parseFloat(text.replace(/[^\d\.]/g, ""));
+        }
+    },
+
+
+set_disable_multimeter_position: function (disabled) {
+  this.disabledPositions = disabled.split(',');
+  for(var i=0;i<this.disabledPositions.length;i++){
+  }
+},
+
+
+    disable_multimeter_position : function (displayText) {
+      var i;
+      // how do I pass a variable from the "series" file into here?
+      // something like: sparks.jsonSection.disable_multimeter_position  ??
+
+      // right now this is hard wired to disable R dial positions
+      switch (this.dialPosition)
+      {
+  case 'dcv_20':
+  case 'dcv_200':
+  case 'dcv_1000':
+  case 'dcv_2000m':
+  case 'dcv_200m':
+    for(i=0;i<this.disabledPositions.length;i++){
+      if(this.disabledPositions[i] == 'dcv'){
+        displayText = '-------';
+        break;
+      }
+    }
+    break;
+  case 'r_200':
+  case 'r_2000':
+  case 'r_20k':
+  case 'r_200k':
+  case 'r_2000k':
+    for(i=0;i<this.disabledPositions.length;i++){
+      if(this.disabledPositions[i] == 'r'){
+        displayText = '-------';
+        break;
+      }
+    }
+    break;
+  case 'dca_200mc':
+  case 'dca_2000mc':
+  case 'dca_20m':
+  case 'dca_200m':
+    for(i=0;i<this.disabledPositions.length;i++){
+      if(this.disabledPositions[i] == 'dca'){
+        displayText = '-------';
+        break;
+      }
+    }
+    break;
+  case 'acv_750':
+  case 'acv_200':
+    for(i=0;i<this.disabledPositions.length;i++){
+      if(this.disabledPositions[i] == 'acv'){
+        displayText = '-------';
+        break;
+      }
+    }
+    break;
+  case 'diode':
+  case 'hfe':
+  case 'c_10a':
+  case 'p_9v':
+  default:
+      }
+      return displayText;
+    },
+
+    toDisplayString : function (s, dec) {
+        //console.log('s1=' + s + ' dec=' + dec);
+        var i;
+        var sign = s.charAt(0) === '-' ? s.charAt(0) : ' ';
+        s = s.replace('-', '');
+
+        //console.log('s2=' + s);
+        var pointLoc = s.indexOf('.');
+        var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
+        if (decLen === 0) {
+            s = s.concat('.');
+        }
+        //console.log('s3=' + s);
+        if (dec < decLen) {
+            s = s.substring(0, pointLoc + dec + 1);
+        }
+        else {
+            for (i = 0; i < dec - decLen; ++i) {
+                s = s.concat('0');
+            }
+        }
+        //console.log('s4=' + s);
+        s = s.replace('.', '');
+        //console.log('s5=' + s);
+        var len = s.length;
+        if (len < 4) {
+            for (i = 0; i < 3 - len; ++i) {
+                s = '0' + s;
+            }
+            s = ' ' + s;
+        }
+        //console.log('s6=' + s);
+
+        var dot1;
+        var dot2;
+
+        switch (dec) {
+        case 0:
+            dot1 = ' ';
+            dot2 = ' ';
+            break;
+        case 1:
+            dot1 = ' ';
+            dot2 = '.';
+            break;
+        case 2:
+            dot1 = '.';
+            dot2 = ' ';
+            break;
+        default:
+            console.log('ERROR: invalid dec ' + dec);
+        }
+
+        s = sign + s.substring(0, 2) + dot1 + s.charAt(2) + dot2 + s.charAt(3);
+        //console.log('s7=' + s);
+        return s;
+
+    },
+
+    // Pad 0's to the number text
+    // sig: number of significant digits
+    // dec: number of digits after decimal points
+    formatDecimalString : function (s, dec) {
+        //console.log('s=' + s + ' dec=' + dec);
+        var pointLoc = s.indexOf('.');
+        //console.log('pointLoc=' + pointLoc);
+        var decLen = pointLoc == -1 ? 0 : s.substring(pointLoc+1).length;
+        //console.log('decLen=' + decLen);
+        if (decLen === 0) {
+            s = s.concat('.');
+        }
+        if (dec < decLen) {
+            s = s.substring(0, pointLoc + dec + 1);
+        }
+        else {
+            for (var i = 0; i < dec - decLen; ++i) {
+                s = s.concat('0');
+            }
+        }
+        //console.log('formatDecimalString: formatted=' + s);
+        return s;
+    },
+
+    getDisplayText : function () {
+        return this.displayText;
+    },
+
+    /*
+     * Return value to be shown under optimal setting.
+     * This value is to be compared with the student answer for grading.
+     *
+     * Take three significant digits, four if the first digit is 1.
+     */
+    makeDisplayText : function (value) {
+        var text;
+        if (value < 199.95) {
+            text = (Math.round(value * 10) * 0.1).toString();
+            text = this.formatDecimalString(text, 1);
+        }
+        else if (value < 1999.5) {
+            text = Math.round(value).toString();
+            text = this.formatDecimalString(text, 0);
+        }
+        else if (value < 19995) {
+            text = (Math.round(value * 0.1) * 10).toString();
+        }
+        else if (value < 199950) {
+            text = (Math.round(value * 0.01) * 100).toString();
+        }
+        else if (value < 1999500) {
+            text = (Math.round(value * 0.001) * 1000).toString();
+        }
+        else {
+            text = 'NaN';
+        }
+        return parseFloat(text);
+    },
+
+    allConnected : function () {
+        return this.redProbeConnection !== null &&
+            this.blackProbeConnection !== null &&
+            this.redProbeConnection !== this.blackProbeConnection &&
+            (this.redPlugConnection === 'voma_port' &&
+             this.blackPlugConnection === 'common_port' ||
+             this.redPlugConnection === 'common_port' &&
+             this.blackPlugConnection === 'voma_port') &&
+            this.powerOn;
+    }
+};
+
+module.exports = MultimeterBase;
+
+},{"../controllers/workbench-controller":25}],15:[function(require,module,exports){
+require('../../lib/apMessageBox');
+
+var LogEvent        = require('../models/log'),
+    util            = require('../helpers/util'),
+    logController   = require('../controllers/log-controller'),
+    extend          = require('../helpers/util').extend,
+    MultimeterBase  = require('./multimeter-base');
+
+/*
+ * Digital Multimeter for breadboard activities
+ *
+ */
+Multimeter = function (breadboardController) {
+  Multimeter.uber.init.apply(this);
+  this.breadboardController = breadboardController;
+  this.reset();
+};
+
+extend(Multimeter, MultimeterBase, {
+
+  reset: function() {
+    this.dialPosition = 'dcv_20';
+    this.powerOn = true;
+    this.redProbeConnection = null;
+    this.blackProbeConnection = null;
+    this.displayText = "";
+    this.update();
+  },
+
+  currentMeasurement: null,
+
+  update: function () {
+    if (this.redProbeConnection && this.blackProbeConnection) {
+      if (this.dialPosition.indexOf('dcv_') > -1){
+        this.currentMeasurement = "voltage";
+      } else if (this.dialPosition.indexOf('dca_') > -1){
+        this.currentMeasurement = "current";
+      } else if (this.dialPosition.indexOf('r_') > -1){
+        this.currentMeasurement = "resistance";
+      } else if (this.dialPosition.indexOf('acv_') > -1){
+        this.currentMeasurement = "ac_voltage";
+      } else {
+        this.currentMeasurement = null;
+      }
+
+      if (!!this.currentMeasurement){
+        this.breadboardController.query(this.currentMeasurement, this.redProbeConnection + ',' + this.blackProbeConnection, this.updateWithData, this);
+      }
+    } else {
+      this.updateWithData();
+    }
+  },
+
+  // this is called after update() is called and ciso returns
+  updateWithData: function (ciso) {
+    var measurement = this.currentMeasurement,
+        source, b, p1, p2, v1, v2, current, drop,
+        result;
+
+    if (ciso) {
+      source = ciso.voltageSources[0],
+      b  = this.breadboardController;
+      p1 = b.getHole(this.redProbeConnection).nodeName();
+      p2 = b.getHole(this.blackProbeConnection).nodeName();
+      if (measurement === "resistance") {
+        if (p1 === p2) {
+          result = 0;
+        } else {
+          current = ciso.getCurrent('ohmmeterBattery');
+          result = 1/current.magnitude;
+        }
+      } else if (measurement === "voltage" || measurement === "ac_voltage" || measurement === "current") {
+          v1 = ciso.getVoltageAt(p1);   // complex
+          v2 = ciso.getVoltageAt(p2);
+
+        // exit quickly if ciso was not able to solve circuit
+        if (!v1 || !v2) {
+          this.absoluteValue = 0;
+          this.updateDisplay();
+          return;
+        }
+
+        drop = v1.subtract(v2).magnitude;
+
+        if (measurement === "current") {
+          result = drop / 1e-6;
+        } else {
+          result = drop;
+        }
+      }
+
+      if (result){
+        // if in wrong voltage mode for AC/DC voltage, show zero
+        source = this.breadboardController.getComponents().source;
+        if (!!source &&
+           ((measurement === 'voltage' && source.frequency) ||
+            (measurement === 'ac_voltage' && source.frequency === 0))) {
+          result = 0;
+        } else if (measurement === "ac_voltage" ||
+                    (measurement === 'current' && source && source.frequency)){
+          // the following applies to both RMS voltage and RMS current
+          // first, if we are dealing with a function generator, scale by the appropriate scale factor
+          if (!!source.amplitudeScaleFactor || source.amplitudeScaleFactor === 0){
+            result = result * source.amplitudeScaleFactor;
+          }
+          result = result / Math.sqrt(2);         // RMS voltage or RMS current
+        }
+        result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
+
+        this.absoluteValue = Math.abs(result);
+
+        if (measurement === "current" && this.absoluteValue > 0.44){
+          this.blowFuse();
+        }
+      } else {
+        this.absoluteValue = 0;
+      }
+    } else {
+      this.absoluteValue = 0;
+    }
+
+    this.updateDisplay();
+
+    if (this.redProbeConnection && this.blackProbeConnection) {
+      logController.addEvent(LogEvent.DMM_MEASUREMENT, {
+        "measurement": measurement,
+        "dial_position": this.dialPosition,
+        "red_probe": this.redProbeConnection,
+        "black_probe": this.blackProbeConnection,
+        "result": this.displayText
+      });
+    }
+  },
+
+  blowFuse: function() {
+    apMessageBox.error({
+      title: "POW!",
+      message: "<b>You just blew the fuse in your multimeter!</b><br><br> Remember not to pass too much current through it."+
+      " We've replaced your fuse for you, but you lost some time.",
+      errorImage: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAG10lEQVRYw71Xb2ib5Rb/nTQxTdokq123Ot2WNHVztTSSMoejZYQisusQZhdXLhQs84IfLniloOiQsQ+CA8XrFwfDD7IvBXuxH9ReQV1L6wqmNC7jdhdv2zVYR7tu3ZK8b5O+Sc577oe3b9osSe3uvdwHDs/h/T1/zvM7z3Pec4iZsZ2WX1523R8a+oMyMhLKxGIBbX6+SXI5NwCQzZay+3w3HYFAzBUKjdSdPDls3bVL2dbCzAxd1wv9Zp2ZoUQizTPd3ZciVmsqCugzgH7L7eaV1lY98dxznDh6lFdaWvRbHg/PAHoU0CNWa2qmu/uSEok0/976VIkBTiYdC/3951Y+//wvtSK23X4/POEw6NgxYP9+IJ8HstkN0TQgHodMTCB55QpuLyxAJcrVv/rqX/d+9NH5Ko8nU24fYmYQEUQERAQAWJ2a8s+Fw39DPN62b+9eeN55h/D880L5PCGbhWSzQtksSTYryGZh6pTLGbimCaamKPnll/Lr8jLg9V73Dw6eqmlvnwNQ2EtESg1QfvwxMHvixN9rU6lG3+nTUnX2LMhqJXPTsgbkcuXxdFp4eBjzk5Okut1LzV9/fdzV0RErMcBs6WjU/6+urvEdirLb+/bbQG9vMc0PSi63NW7Kzz8jPjaGhMt1+8APP3Q6g8G5EhfkEwnHjWBwwhGPB5rffFOot7eU4myWkMtVdsFWDE1Py+zUFGW83lhLNHrUumNHRkRgMX2y0N9/DvF4m++FFwSvvAJRFIGiAIpi6KoKUVUxv5fg631BV1WBqgKqauCNjfA98YQgHm9b6O8/JyIbDKSnppr/eeTIP5rr6myey5eBRx4ppZkZOHQIuH4dSCTKU+12A0eOAENDwOpqKb62huS1a5jN5XKHfvqp1dnePmsBgKULF96qFbF5enuJRAiqClJVgqoCigJKpwnt7aBgkKiri6DrIEUhKAoKY6urQWfOEB0/Tjh9GqRpZDJkjqV0mjz19VQrYlu6cOEtACBtcdEV27v3lt/trtnx6aeASLHVug50dgJPPw1YLMbNmZkBPvwQWFkxvu3ZA7zxBuDzmdENGB42xqhq8WXVNCSWlzFnsawGFhYer/qz339y9auv/ri/qwuWAweIMhlCJgOzxzPPgA4fJlgsoPWGRx8F1dYSPv4YuHsX9P77hJaWDZwI1NxsMPjNN6BkkpBMgpJJolSK7CK4o+t2m99/3aqMjIRcAKilBVCU4tNPTwOffWZIZ2dxCAuFgIEBwOMBgsHSEBeLAZ98Aty9Wxr9ALgAKCMjoao/5fNnPcnk47UvvmiE00zGkCtXgG+/Be7dM/pnnwX27SteyecDHnusdPNoFAiHgXi84j9IA5DK59mizc83VdfVGbSrKpGqEr7/HnT1KhUsXloi9PSAxseJjAOAzLi9SSeAKBolhMOgeJw2nXgDX9erAdLm55ssksu5qxwOMd+rRKOCSAQCiLmAAIKlJUhPj8j4uKzHjg18XZdoVCQcFsTjpfPXe1OvAkRyObe1wImiGLd6bKzyv7u6GqipqYwnk8b7f4hmIZstxWtrxjsdGyPK52kzbQXd6wUNDhIFg5VdEAoRDQwQGhpK5z/gAgaIbLaUxe7z3VxTVcEvv0Du3JHNdBUo9HoFg4OQYHADL+cCQCQUEgwMQBoatnTBGiB2n++mxREIxNKZDGF6usjCwgnWT45gcOOdm3g0CoyPY/PFJCJCKASTiUoMpAFyBAIxiysUGlFEIJpW3kl9fUBbW+Wn1tMDjI+X4p2dwJkzZZcUAAoAVyg0Am1x0RWxWlMrRgAtFbud+eJFZk3jQpucZPZ6N8Y0NjKPjm7gmmbMsduL13I6mQMBXgE4YrWmtMVFF5gZM93dl24Yg3Qd0Blgs2eAdbtd54sXWdc0XZ+c1NnrLcYBnRsbWR8d1XVNM8ba7cV4QwPrp07pfPiwfgPgme7uS2yYZWS+EaK1e5VYMJk4f7745A9KYyPzu++WnvzJJ5lfe4359df5ntPJEaI1M2MGM4OZMdfX98E1gLNbGfGwQsTc0cHc38/83nucbW3lawDP9fV9YO5bPiUDhAAyn4ypmzdYtoPX1JC89JLg4EGQ00kyOiqzw8MlKVn5pDSV2u3Ff9EOHgRefhnYuRNwOIDvvkN8aAgJt7tyUlo2LQek6mEYqKsjnDgBaW8XcjpJdF348mXMT0xsnZZvWZgA8BgbVzagoYHk2DGhjg6CywWxWgUTE5T84gv59f793y9MtlWaAfAQgZxOoL7eoHfPHuCpp4CmJmPSb79BYjEkr17F7URiW6XZf1acArxSXa0ndu7kxK5dvOJy6beI/rfF6f+rPP83fLrQt4Oy8N0AAAAASUVORK5CYII=",
+      width: 400,
+      height: 300
+    });
+    logController.addEvent(LogEvent.BLEW_FUSE);
+  },
+
+  allConnected: function () {
+      return this.redProbeConnection !== null &&
+          this.blackProbeConnection !== null &&
+          this.powerOn;
+  },
+
+  _getResultsIndex: function (results) {
+    var i = 0,
+        source = this.breadboardController.getComponents().source;
+    if (source && source.setFrequency && results.acfrequency){
+      i = util.getClosestIndex(results.acfrequency, source.frequency, true);
+    }
+    return i;
+  }
+});
+
+module.exports = Multimeter;
+
+},{"../../lib/apMessageBox":5,"../controllers/log-controller":24,"../helpers/util":30,"../models/log":35,"./multimeter-base":14}],16:[function(require,module,exports){
+var extend    = require('../helpers/util').extend,
+    Component = require('./component');
+
+PowerLead = function (props, breadboardController) {
+  PowerLead.parentConstructor.call(this, props, breadboardController);
+};
+
+extend(PowerLead, Component, {
+
+  getColor: function () {
+    var location = this.getLocation();
+    if (location.indexOf("positive") > -1) {
+      return "redPowerWire";
+    } else {
+      return "blackPowerWire";
+    }
+  },
+
+  getLocation: function () {
+    return this.connections[0].getName() + ",a1";       // Flash coding issue means we need to give this a second argument...
+  },
+
+  addCiSoComponent: function () { },
+
+  getViewArguments: null
+});
+
+module.exports = PowerLead;
+
+},{"../helpers/util":30,"./component":11}],17:[function(require,module,exports){
+
+// Allowable resistance values
+
+r_values = {};
+
+// For 1% tolerance (5-band)
+r_values.r_values5band1pct = [
+    1.00, 1.02, 1.05, 1.07, 1.10, 1.13, 1.15, 1.18, 1.21, 1.24, 1.27,
+    1.30, 1.33, 1.37, 1.40, 1.43, 1.47, 1.50, 1.54, 1.58, 1.62, 1.65, 1.69,
+    1.74, 1.78, 1.82, 1.87, 1.91, 1.96,
+    2.00, 2.05, 2.10, 2.15, 2.21, 2.26, 2.32, 2.37, 2.43, 2.49, 2.55, 2.61,
+    2.67, 2.74, 2.80, 2.87, 2.94,
+    3.01, 3.09, 3.16, 3.24, 3.32, 3.40, 3.48, 3.57, 3.65, 3.74, 3.83, 3.92,
+    4.02, 4.12, 4.22, 4.32, 4.42, 4.53, 4.64, 4.75, 4.87, 4.99,
+    5.11, 5.23, 5.36, 5.49, 5.62, 5.76, 5.90, 6.04, 6.19, 6.34, 6.49, 6.65,
+    6.81, 6.98, 7.15, 7.32, 7.50, 7.68, 7.87, 8.06, 8.25, 8.45, 8.66, 8.87,
+    9.09, 9.31, 9.53, 9.76, 10.0, 10.2, 10.5, 10.7, 11.0, 11.3, 11.5, 11.8,
+    12.1, 12.4, 12.7, 13.0, 13.3, 13.7, 14.0, 14.3, 14.7,
+    15.0, 15.4, 15.8, 16.2, 16.5, 16.9, 17.4, 17.8, 18.2, 18.7, 19.1, 19.6,
+    20.0, 20.5, 21.0, 21.5, 22.1, 22.6, 23.2, 23.7, 24.3, 24.9, 25.5, 26.1,
+    26.7, 27.4, 28.0, 28.7, 29.4, 30.1, 30.9, 31.6, 32.4, 33.2, 34.0, 34.8,
+    35.7, 36.5, 37.4, 38.3, 39.2, 40.2, 41.2, 42.2, 43.2, 44.2, 45.3, 46.4,
+    47.5, 48.7, 49.9, 51.1, 52.3, 53.6, 54.9, 56.2, 57.6, 59.0,
+    60.4, 61.9, 63.4, 64.9, 66.5, 68.1, 69.8, 71.5, 73.2, 75.0, 76.8, 78.7,
+    80.6, 82.5, 84.5, 86.6, 88.7, 90.9, 93.1, 95.3, 97.6,
+    100, 102, 105, 107, 110, 113, 115, 118, 121, 124,
+    127, 130, 133, 137, 140, 143, 147, 150, 154, 158, 162, 165, 169,
+    174, 178, 182, 187, 191, 196,
+    200, 205, 210, 215, 221, 226, 232, 237, 243, 249, 255, 261, 267, 274,
+    280, 287, 294, 301, 309, 316, 324, 332, 340, 348, 357, 365, 374, 383,
+    392, 402, 412, 422, 432, 442, 453, 464, 475, 487, 499,
+    511, 523, 536, 549, 562,
+    576, 590, 604, 619, 634, 649, 665, 681, 698, 715, 732, 750, 768, 787,
+    806, 825, 845, 866, 887, 909, 931, 953, 976,
+    1000, 1020, 1050, 1070, 1100, 1130, 1150, 1180, 1210, 1240, 1270,
+    1300, 1330, 1370, 1400, 1430, 1470, 1500, 1540, 1580, 1620, 1650, 1690,
+    1740, 1780, 1820, 1870, 1910, 1960, 2000, 2050, 2100, 2150, 2210, 2260,
+    2320, 2370, 2430, 2490, 2550, 2610, 2670, 2740, 2800, 2870, 2940,
+    3010, 3090, 3160, 3240, 3320, 3400, 3480, 3570, 3650, 3740, 3830, 3920,
+    4020, 4120, 4220, 4320, 4420, 4530, 4640, 4750, 4870, 4990,
+    5110, 5230, 5360, 5490, 5620, 5760, 5900,
+    6040, 6190, 6340, 6490, 6650, 6810, 6980, 7150, 7320, 7500, 7680, 7870,
+    8060, 8250, 8450, 8660, 8870, 9090, 9310, 9530, 9760,
+    10000, 10200, 10500, 10700, 11000, 11300, 11500, 11800, 12100, 12400,
+    12700, 13000, 13300, 13700, 14000, 14300, 14700, 15000, 15400, 15800,
+    16200, 16500, 16900, 17400, 17800, 18200, 18700, 19100, 19600,
+    20000, 20500, 21000, 21500, 22100, 22600, 23200, 23700, 24300, 24900,
+    25500, 26100, 26700, 27400, 28000, 28700, 29400, 30100, 30900, 31600,
+    32400, 33200, 34000, 34800, 35700, 36500, 37400, 38300, 39200,
+    40200, 41200, 42200, 43200, 44200, 45300, 46400, 47500, 48700, 49900,
+    51100, 52300, 53600, 54900, 56200, 57600, 59000, 60400, 61900, 63400,
+    64900, 66500, 68100, 69800, 71500, 73200, 75000, 76800, 78700,
+    80600, 82500, 84500, 86600, 88700, 90900, 93100, 95300, 97600,
+    100e3, 102e3, 105e3, 107e3, 110e3, 113e3, 115e3, 118e3, 121e3, 124e3,
+    127e3, 130e3, 133e3, 137e3, 140e3, 143e3, 147e3, 150e3, 154e3, 158e3,
+    162e3, 165e3, 169e3, 174e3, 178e3, 182e3, 187e3, 191e3, 196e3,
+    200e3, 205e3, 210e3, 215e3, 221e3, 226e3, 232e3, 237e3, 243e3, 249e3,
+    255e3, 261e3, 267e3, 274e3, 280e3, 287e3, 294e3,
+    301e3, 309e3, 316e3, 324e3, 332e3, 340e3, 348e3, 357e3, 365e3, 374e3,
+    383e3, 392e3,
+    402e3, 412e3, 422e3, 432e3, 442e3, 453e3, 464e3, 475e3, 487e3, 499e3,
+    511e3, 523e3, 536e3, 549e3, 562e3,
+    576e3, 590e3, 604e3, 619e3, 634e3, 649e3, 665e3, 681e3, 698e3,
+    715e3, 732e3, 750e3, 768e3, 787e3, 806e3, 825e3, 845e3, 866e3, 887e3,
+    909e3, 931e3, 953e3, 976e3,
+    1.00e6, 1.02e6, 1.05e6, 1.07e6, 1.10e6, 1.13e6, 1.15e6, 1.18e6,
+    1.21e6, 1.24e6, 1.27e6, 1.30e6, 1.33e6, 1.37e6, 1.40e6, 1.43e6, 1.47e6,
+    1.50e6, 1.54e6, 1.58e6, 1.62e6, 1.65e6, 1.69e6, 1.74e6, 1.78e6,
+    1.82e6, 1.87e6, 1.91e6, 1.96e6,
+    2.00e6, 2.05e6, 2.10e6, 2.15e6, 2.21e6, 2.26e6, 2.32e6, 2.37e6,
+    2.43e6, 2.49e6, 2.55e6, 2.61e6, 2.67e6, 2.74e6, 2.80e6, 2.87e6, 2.94e6,
+    3.01e6, 3.09e6, 3.16e6, 3.24e6, 3.32e6, 3.40e6, 3.48e6, 3.57e6, 3.65e6,
+    3.74e6, 3.83e6, 3.92e6,
+    4.02e6, 4.12e6, 4.22e6, 4.32e6, 4.42e6, 4.53e6, 4.64e6, 4.75e6, 4.87e6,
+    4.99e6, 5.11e6, 5.23e6, 5.36e6, 5.49e6, 5.62e6, 5.76e6, 5.90e6,
+    6.04e6, 6.19e6, 6.34e6, 6.49e6, 6.65e6, 6.81e6, 6.98e6,
+    7.15e6, 7.32e6, 7.50e6, 7.68e6, 7.87e6, 8.06e6, 8.25e6, 8.45e6, 8.66e6,
+    8.87e6, 9.09e6, 9.31e6, 9.53e6, 9.76e6,
+    10.0e6, 10.2e6, 10.5e6, 10.7e6, 11.0e6, 11.3e6, 11.5e6, 11.8e6,
+    12.1e6, 12.4e6, 12.7e6, 13.0e6, 13.3e6, 13.7e6, 14.0e6, 14.3e6, 14.7e6,
+    15.0e6, 15.4e6, 15.8e6, 16.2e6, 16.5e6, 16.9e6, 17.4e6, 17.8e6,
+    18.2e6, 18.7e6, 19.1e6, 19.6e6, 20.0e6, 20.5e6, 21.0e6, 21.5e6,
+    22.1e6, 22.6e6, 23.2e6, 23.7e6, 24.3e6, 24.9e6, 25.5e6, 26.1e6, 26.7e6,
+    27.4e6, 28.0e6, 28.7e6, 29.4e6, 30.1e6, 30.9e6, 31.6e6, 32.4e6, 33.2e6,
+    34.0e6, 34.8e6, 35.7e6, 36.5e6, 37.4e6, 38.3e6, 39.2e6,
+    40.2e6, 41.2e6, 42.2e6, 43.2e6, 44.2e6, 45.3e6, 46.4e6, 47.5e6, 48.7e6,
+    49.9e6, 51.1e6, 52.3e6, 53.6e6, 54.9e6, 56.2e6, 57.6e6, 59.0e6,
+    60.4e6, 61.9e6, 63.4e6, 64.9e6, 66.5e6, 68.1e6, 69.8e6, 71.5e6, 73.2e6,
+    75.0e6, 76.8e6, 78.7e6, 80.6e6, 82.5e6, 84.5e6, 86.6e6, 88.7e6,
+    90.9e6, 93.1e6, 95.3e6, 97.6e6,
+    100e6, 102e6, 105e6, 107e6, 110e6, 113e6, 115e6, 118e6, 121e6, 124e6,
+    127e6, 130e6, 133e6, 137e6, 140e6, 143e6, 147e6, 150e6, 154e6, 158e6,
+    162e6, 165e6, 169e6, 174e6, 178e6, 182e6, 187e6, 191e6, 196e6, 200e6
+];
+
+// For 2% tolerance (5-band)
+r_values.r_values5band2pct = [
+    1.00, 1.05, 1.10, 1.15, 1.21, 1.27, 1.33, 1.40,
+    1.47, 1.54, 1.62, 1.69, 1.78, 1.87, 1.96,
+    2.05, 2.15, 2.26, 2.37, 2.49, 2.61, 2.74, 2.87,
+    3.01, 3.16, 3.32, 3.48, 3.65, 3.83, 4.02, 4.22, 4.42, 4.64, 4.87,
+    5.11, 5.36, 5.62, 5.90, 6.19, 6.49, 6.81, 7.15, 7.50, 7.87,
+    8.25, 8.66, 9.09, 9.53, 10.0, 10.5, 11.0, 11.5, 12.1, 12.7, 13.3,
+    14.0, 14.7, 15.4, 16.2, 16.9, 17.8, 18.7, 19.6,
+    20.5, 21.5, 22.6, 23.7, 24.9, 26.1, 27.4,
+    28.7, 30.1, 31.6, 33.2, 34.8, 36.5, 38.3, 40.2, 42.2, 44.2, 46.4, 48.7,
+    51.1, 53.6, 56.2, 59.0, 61.9, 64.9, 68.1, 71.5, 75.0, 78.7, 82.5, 86.6,
+    90.9, 95.3, 100, 105, 110, 115, 121, 127, 133, 140, 147, 154, 162, 169,
+    178, 187, 196, 205, 215, 226, 237, 249, 261, 274, 287,
+    301, 316, 332, 348, 365, 383, 402, 422, 442, 464, 487,
+    511, 536, 562, 590, 619, 649, 681, 715, 750, 787, 825, 866, 909, 953,
+    1000, 1050, 1100, 1150, 1210, 1270, 1330, 1400, 1470, 1540, 1620, 1690,
+    1780, 1870, 1960, 2050, 2150, 2260, 2370, 2490, 2610, 2740, 2870,
+    3010, 3160, 3320, 3480, 3650, 3830,
+    4020, 4220, 4420, 4640, 4870, 5110, 5360, 5620, 5900, 6190, 6490, 6810,
+    7150, 7500, 7870, 8250, 8660, 9090, 9530,
+    10000, 10500, 11000, 11500, 12100, 12700, 13300, 14000, 14700, 15400,
+    16200, 16900, 17800, 18700, 19600,
+    20500, 21500, 22600, 23700, 24900, 26100, 27400, 28700,
+    30100, 31600, 33200, 34800, 36500, 38300,
+    40200, 42200, 44200, 46400, 48700,
+    51100, 53600, 56200, 59000, 61900, 64900, 68100, 71500, 75000, 78700,
+    82500, 86600, 90900, 95300, 100e3, 105e3, 110e3, 115e3, 121e3, 127e3,
+    133e3, 140e3, 147e3, 154e3, 162e3, 169e3, 178e3, 187e3, 196e3,
+    205e3, 215e3, 226e3, 237e3, 249e3, 261e3, 274e3, 287e3,
+    301e3, 316e3, 332e3, 348e3, 365e3, 383e3, 402e3, 422e3, 442e3, 464e3,
+    487e3, 511e3, 536e3, 562e3, 590e3, 619e3, 649e3, 681e3,
+    715e3, 750e3, 787e3,
+    825e3, 866e3, 909e3, 953e3, 1e6, 1.05e6, 1.1e6, 1.15e6, 1.21e6, 1.27e6,
+    1.33e6, 1.40e6, 1.47e6, 1.54e6, 1.62e6, 1.69e6, 1.78e6, 1.87e6, 1.96e6,
+    2.05e6, 2.15e6, 2.26e6, 2.37e6, 2.49e6, 2.61e6, 2.74e6, 2.87e6,
+    3.01e6, 3.16e6, 3.32e6, 3.48e6, 3.65e6, 3.83e6,
+    4.02e6, 4.22e6, 4.42e6, 4.64e6, 4.87e6, 5.11e6, 5.36e6, 5.62e6, 5.90e6,
+    6.19e6, 6.49e6, 6.81e6, 7.15e6, 7.50e6, 7.87e6, 8.25e6, 8.66e6,
+    9.09e6, 9.53e6, 10.0e6, 10.5e6, 11.0e6, 11.5e6, 12.1e6, 12.7e6, 13.3e6,
+    14.0e6, 14.7e6, 15.4e6, 16.2e6, 16.9e6, 17.8e6, 18.7e6, 19.6e6,
+    20.5e6, 21.5e6, 22.6e6, 23.7e6, 24.9e6, 26.1e6, 27.4e6, 28.7e6,
+    30.1e6, 31.6e6, 33.2e6, 34.8e6, 36.5e6, 38.3e6,
+    40.2e6, 42.2e6, 44.2e6, 46.4e6, 48.7e6, 51.1e6, 53.6e6, 56.2e6, 59.0e6,
+    61.9e6, 64.9e6, 68.1e6, 71.5e6, 75e6, 78.7e6, 82.5e6, 86.6e6,
+    90.9e6, 95.3e6,
+    100e6, 105e6, 110e6, 115e6, 121e6, 127e6, 133e6, 140e6, 147e6, 154e6,
+    162e6, 169e6, 178e6, 187e6, 196e6
+];
+
+// For 5% tolerance (4-band)
+r_values.r_values4band5pct = [
+    10, 11, 12, 13, 15, 16, 18, 20, 22, 24, 27, 30, 33, 36, 39,
+    43, 47, 51, 56, 62, 68, 75, 82, 91
+];
+
+// For 10% tolerance (4-band)
+r_values.r_values4band10pct = [
+    10, 12, 15, 18, 22, 27, 33, 39, 47, 56, 68, 82
+];
+
+module.exports = r_values;
+
+},{}],18:[function(require,module,exports){
+var extend    = require('../helpers/util').extend,
+    Component = require('./component'),
+    sparksMath = require('../helpers/sparks-math');
+
+ReactiveComponent = function (props, breadboardController) {
+  if (typeof props.impedance !== 'undefined') {
+    props.impedance = this.getRequestedImpedance( props.impedance );
+  }
+
+  ReactiveComponent.parentConstructor.call(this, props, breadboardController);
+
+  this.applyFaults();
+};
+
+extend(ReactiveComponent, Component, {
+
+  // return named component parameter ('inductance' or 'capacitance') if it is set directly on the component;
+  // otherwise, calculate the component parameter value from the impedance + referenceFrequency of this component.
+  getComponentParameter: function (componentParameterName, componentParameterFromImpedance) {
+    // use a directly specified component parameter if it exists
+    if (typeof this[componentParameterName] !== 'undefined') {
+      return this[componentParameterName];
+    }
+
+    // otherwise, if no cached value, calculate one
+    if (typeof this._componentParameter === 'undefined') {
+      if (typeof this.impedance === 'undefined' || typeof this.referenceFrequency === 'undefined') {
+        throw new Error("An impedance/referenceFrequency pair is needed, but not defined.");
+      }
+
+      this._componentParameter = sparksMath.roundToSigDigits(componentParameterFromImpedance(this.impedance, this.referenceFrequency), 3);
+    }
+
+    return this._componentParameter;
+  },
+
+  applyFaults: function () {
+    // if we're 'open' or 'shorted', we become a broken resistor
+    if (!!this.open){
+      this.resistance = 1e20;
+      this.addThisToFaults();
+    } else if (!!this.shorted) {
+      this.resistance = 1e-6;
+      this.addThisToFaults();
+    } else {
+      this.open = false;
+      this.shorted = false;
+    }
+
+    if (this.resistance > 0) {
+      var self = this;
+    }
+  },
+
+  getEditablePropertyValues: function() {
+    values = [];
+    // standard cap values
+    baseValues = [10, 11, 12, 13, 15, 16, 18,
+                  20, 22, 24, 27, 30, 33, 36, 39,
+                  43, 47, 51, 56, 62, 68, 75, 82, 91];
+
+    for (i = -13; i < -1; i++) {
+      for (j = 0; j < baseValues.length; j++) {
+        values.push(baseValues[j] * Math.pow(10, i));
+      }
+    }
+
+    return values;
+  }
+
+});
+
+module.exports = ReactiveComponent;
+
+},{"../helpers/sparks-math":28,"../helpers/util":30,"./component":11}],19:[function(require,module,exports){
+var extend    = require('../helpers/util').extend,
+    Resistor  = require('./resistor'),
+    r_values  = require('./r-values');
+
+Resistor4band = function (id, breadboardController) {
+  var superclass = Resistor4band.uber;
+  superclass.init.apply(this, [id]);
+  this.numBands = 4;
+  this.breadboardController = breadboardController;
+
+  if (breadboardController.getResOrderOfMagnitude() < 0){
+    var om = this.randInt(0, 3);
+    breadboardController.setResOrderOfMagnitude(om);
+  }
+
+  this.r_values5pct = this.filter(r_values.r_values4band5pct);
+  this.r_values10pct = this.filter(r_values.r_values4band10pct);
+};
+
+extend(Resistor4band, Resistor, {
+
+  toleranceValues: [0.05, 0.1],
+
+  randomize: function (options) {
+
+      var value = 0;
+      do {
+        var ix = this.randInt(0, 1);
+        var values;
+
+        this.tolerance = this.toleranceValues[ix];
+
+        if (options && options.rvalues) {
+            values = options.rvalues;
+        }
+        else if (this.tolerance == 0.05) {
+            values = this.r_values5pct;
+        }
+        else {
+            values = this.r_values10pct;
+        }
+
+        var om = this.breadboardController.getResOrderOfMagnitude();
+        var extra = this.randInt(0, 1);
+        om = om + extra;
+
+        value = values[this.randInt(0, values.length-1)];
+
+        value = value * Math.pow(10,om);
+      } while (!this._resistanceIsUnique(value));
+
+      this.nominalValue = value;
+
+      if (options && options.realEqualsNominal) {
+          this.realValue = this.nominalValue;
+      }
+      else {
+          this.realValue = this.calcRealValue(this.nominalValue, this.tolerance);
+      }
+
+      this.colors = this.getColors(this.nominalValue, this.tolerance);
+  },
+
+  _resistanceIsUnique: function (value) {
+    var components = this.breadboardController.getComponents();
+
+    for (var i in components){
+      var resistor  = components[i];
+      var resistance = resistor.nominalResistance;
+      if (resistance == value){
+        return false;
+      }
+    }
+    return true;
+  },
+
+  // rvalue: resistance value
+  getColors: function (ohms, tolerance) {
+      var s = ohms.toString();
+      var decIx = s.indexOf('.'); // real location of the dot in the string
+      // virtual location of dot
+      // e.g., for "324", decLoc is 3, and for "102000", 6
+      var decLoc = decIx > -1 ? decIx : s.length;
+
+      s = s.replace('.', '');
+      var len = s.length;
+
+      // Make sure there are at least three significant digits
+      for (var i = 0; i < 2 - len; ++i) {
+          s += '0';
+      }
+
+      var mult = decLoc > 1 ? decLoc - 2 : 10;
+
+      return [ this.colorMap[s.charAt(0)],
+               this.colorMap[s.charAt(1)],
+               this.colorMap[decLoc - 2],
+               this.toleranceColorMap[tolerance]
+             ];
+  }
+
+});
+
+module.exports = Resistor4band;
+
+},{"../helpers/util":30,"./r-values":17,"./resistor":20}],20:[function(require,module,exports){
+var extend                = require('../helpers/util').extend,
+    Component             = require('./component'),
+    r_values              = require('./r-values'),
+    Resistor4band         = require('./resistor-4band'),
+    workbenchController;
+
+Resistor = function (props, breadboardController) {
+  workbenchController   = require('../controllers/workbench-controller');
+
+  var tolerance, steps;
+
+  // translate the requested resistance (which may be of the form ["uniform", 10, 100] into a real number
+  if (typeof props.resistance !== 'undefined') {
+    tolerance = props.tolerance || 0.05;
+    steps = (tolerance === 0.05) ? r_values.r_values4band5pct : r_values.r_values4band10pct;
+    props.resistance = this.getRequestedImpedance( props.resistance, steps );
+  }
+
+  Resistor.parentConstructor.call(this, props, breadboardController);
+
+  // if we have colors defined and not resistance
+  if ((this.resistance === undefined) && this.colors){
+    this.resistance = this.getResistance( this.colors );
+  }
+
+  // if we have neither colors nor resistance
+  if ((this.resistance === undefined) && !this.colors) {
+    var resistor = new Resistor4band(this.UID, breadboardController);
+    resistor.randomize(null);
+    this.resistance = resistor.getRealValue();
+    this.tolerance = resistor.tolerance;
+    this.colors = resistor.colors;
+  }
+
+  // if we have resistance and no colors
+  if (!this.colors){
+    this.colors = this.getColors4Band( this.resistance, (!!this.tolerance ? this.tolerance : 0.05));
+  }
+
+  // at this point, we must have both real resiatance and colors
+  // calculate nominal resistance, unless nominalResistance is defined
+  if (!this.nominalResistance){
+    this.nominalResistance =  this.getResistance( this.colors );
+  }
+
+  // now that everything has been set, if we have a fault set it now
+  this.applyFaults();
+
+  if (this.resistance > 0) {
+    this.setViewArguments({color: this.colors});
+  } else {
+    this.setViewArguments({type: "wire", color: "green"});      // represent as wire if resistance is zero
+  }
+};
+
+extend(Resistor, Component,
+{
+  nominalValueMagnitude: -1,
+
+    colorMap: { '-1': 'gold', '-2': 'silver',
+        0 : 'black', 1 : 'brown', 2 : 'red', 3 : 'orange',
+        4 : 'yellow', 5 : 'green', 6 : 'blue', 7 : 'violet', 8 : 'grey',
+        9 : 'white' },
+
+    toleranceColorMap: { 0.01 : 'brown', 0.02 : 'red', 5e-3 : 'green',
+        2.5e-3 : 'blue', 1e-3 : 'violet', 5e-4 : 'gray', 5e-2 : 'gold',
+        0.1 : 'silver', 0.2 : 'none' },
+
+    toleranceValues: [ 0.01, 0.02 ],
+
+    init: function (id) {
+          this.id = id;
+          this.nominalValue = 0.0; //resistance value specified by band colors;
+          this.realValue = 0.0; //real resistance value in Ohms
+          this.tolerance = 0.0; //tolerance value
+          this.colors = []; //colors for each resistor band
+    },
+
+    getNumBands: function () {
+        return this.numBands;
+    },
+
+    getNominalValue: function () {
+        return this.nominalValue;
+    },
+
+    setNominalValue: function (value) {
+        this.nominalValue = value;
+    },
+
+    getTolerance: function () {
+        return this.tolerance;
+    },
+
+    setTolerance: function(value) {
+        this.tolerance = value;
+    },
+
+    getRealValue: function () {
+        return this.realValue;
+    },
+
+    setRealValue: function (value) {
+        this.realValue = value;
+    },
+
+    setResistance: function (value) {
+      this.resistance = value;
+      this.updateColors();
+    },
+
+    updateColors: function (resistance, tolerance) {
+        this.colors = this.getColors4Band( this.resistance, (!!this.tolerance ? this.tolerance : 0.05));
+        this.setViewArguments({color: this.colors});
+    },
+
+    show : function() {
+    },
+
+    calcRealValue: function (nominalValue, tolerance) {
+        var chance = Math.random();
+        if (chance > 0.8) {
+            var chance2 = Math.random();
+            if (chance2 < 0.5) {
+                return nominalValue + nominalValue * (tolerance + Math.random() * tolerance);
+            }
+            else {
+                return nominalValue - nominalValue * (tolerance + Math.random() * tolerance);
+            }
+        }
+
+        // Multiply 0.9 just to be comfortably within tolerance
+        var realTolerance = tolerance * 0.9;
+        return nominalValue * this.randFloat(1 - realTolerance, 1 + realTolerance);
+    },
+
+    randInt: function (min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    },
+
+    randFloat: function (min, max) {
+        return this.randPseudoGaussian(3) * (max - min) + min;
+    },
+
+    randPseudoGaussian: function (n) {
+        var r = 0.0;
+        for (var i = 0; i < n; ++i) {
+            r += Math.random();
+        }
+        return r / n;
+    },
+
+    // Filter resistance values according to the requirements of this resistor
+    filter: function (in_values) {
+        var values = [];
+        for (var i = 0; i < in_values.length; ++i) {
+            if (in_values[i] >= 10.0 && in_values[i] < 2e6) {
+                values.push(in_values[i]);
+            }
+        }
+        return values;
+    },
+
+    getColors4Band: function (ohms, tolerance) {
+        var s = ohms.toString(),
+            decIx = s.indexOf('.'),
+            decLoc = decIx > -1 ? decIx : s.length,
+            len, i;
+        s = s.replace('.', '');
+        len = s.length;
+        for (i = 0; i < 2 - len; ++i){ s += '0'; }
+        return [ this.colorMap[s.charAt(0)],
+                 this.colorMap[s.charAt(1)],
+                 this.colorMap[decLoc - 2],
+                 this.toleranceColorMap[tolerance]
+               ];
+    },
+
+    getColors5Band: function (ohms, tolerance) {
+        var s = ohms.toString(),
+            decIx = s.indexOf('.'),
+            decLoc = decIx > -1 ? decIx : s.length,
+            len, i;
+        s = s.replace('.', '');
+        len = s.length;
+        for (i = 0; i < 3 - len; ++i) { s += '0'; }
+        return [ this.colorMap[s.charAt(0)],
+                 this.colorMap[s.charAt(1)],
+                 this.colorMap[s.charAt(2)],
+                 this.colorMap[decLoc - 3],
+                 this.toleranceColorMap[tolerance]
+               ];
+    },
+
+    colorToNumber: function (color) {
+      for (var n in this.colorMap) {
+        if (this.colorMap[n] == color) { return parseInt(n,10); }
+      }
+      // alternate spelling...
+      if (color == "gray") {
+        return 8;
+      }
+      return null;
+    },
+
+    getResistance: function(colors){
+      if (typeof(colors)==="string"){
+        colors = colors.split(",");
+      }
+      var resistance = this.colorToNumber(colors[0]);
+      for (var i = 1; i < colors.length - 2; i++) {
+        resistance = resistance * 10;
+        resistance += this.colorToNumber(colors[i]);
+      }
+      return resistance * Math.pow(10, this.colorToNumber(colors[i]));
+    },
+
+    addCiSoComponent: function (ciso) {
+      var resistance  = this.resistance || 0,
+          nodes       = this.getNodes();
+      ciso.addComponent(this.UID, "Resistor", resistance, nodes);
+    },
+
+    applyFaults: function() {
+      if (!!this.open){
+        this.resistance = 1e20;
+        this.addThisToFaults();
+      } else if (!!this.shorted) {
+        this.resistance = 1e-6;
+        this.addThisToFaults();
+      } else {
+        this.open = false;
+        this.shorted = false;
+      }
+    },
+
+    componentTypeName: "Resistor",
+
+    isEditable: true,
+
+    editableProperty: {name: "resistance", units: "\u2126"},
+
+    getEditablePropertyValues: function() {
+      resValues = [];
+      baseValues = r_values.r_values4band10pct;
+
+      for (i = 0; i < 6; i++) {
+        for (j = 0; j < baseValues.length; j++) {
+          resValues.push(baseValues[j] * Math.pow(10, i));
+        }
+      }
+
+      return resValues;
+    },
+
+    changeEditableValue: function(val) {
+      this.setResistance(val);
+      workbenchController.breadboardView.changeResistorColors(this.UID, this.getViewArguments().color);
+    }
+});
+
+module.exports = Resistor;
+
+},{"../controllers/workbench-controller":25,"../helpers/util":30,"./component":11,"./r-values":17,"./resistor-4band":19}],21:[function(require,module,exports){
+var extend    = require('../helpers/util').extend,
+    Resistor  = require('./resistor');
+
+VariableResistor = function (props, breadboardController) {
+  Resistor.parentConstructor.call(this, props, breadboardController);
+  var superclass = VariableResistor.uber;
+  superclass.init.apply(this, [props.UID]);
+  this.resistance = this.minimumResistance;
+};
+
+extend(VariableResistor, Resistor, {
+
+  getMinResistance: function() {
+    return this.minimumResistance;
+  },
+
+  getMaxResistance: function() {
+    return this.maximumResistance;
+  },
+
+  scaleResistance: function(value) {
+    var perc = value / 10,       // values are 0-10
+        range = this.maximumResistance - this.minimumResistance,
+        newValue = this.minimumResistance + (range * perc);
+    this.resistance = newValue;
+  }
+
+});
+
+module.exports = VariableResistor;
+
+},{"../helpers/util":30,"./resistor":20}],22:[function(require,module,exports){
+var extend    = require('../helpers/util').extend,
+    Component = require('./component');
+
+Wire = function (props, breadboardController) {
+  Wire.parentConstructor.call(this, props, breadboardController);
+  this.setViewArguments({color: this.getColor()});
+};
+
+extend(Wire, Component, {
+
+  getColor: function () {
+    var location = this.getLocation();
+    if (location.indexOf("positive") > -1) {
+      return "red";
+    } else if (location.indexOf("negative") > -1) {
+      return "black";
+    } else {
+      if (Math.random() < 0.5){
+        return "green";
+      } else {
+        return "blue";
+      }
+    }
+  },
+
+  addCiSoComponent: function (ciso) {
+    var resistance  = 1e-6,
+        nodes       = this.getNodes();
+    ciso.addComponent(this.UID, "Resistor", resistance, nodes);
+  }
+});
+
+module.exports = Wire;
+
+},{"../helpers/util":30,"./component":11}],23:[function(require,module,exports){
+var util                  = require('../helpers/util'),
+    Breadboard            = require('../circuit/breadboard'),
+    Battery               = require('../circuit/battery'),
+    Capacitor             = require('../circuit/capacitor'),
+    FunctionGenerator     = require('../circuit/function-generator'),
+    Inductor              = require('../circuit/inductor'),
+    PowerLead             = require('../circuit/power-lead'),
+    Resistor4band         = require('../circuit/resistor-4band'),
+    Resistor              = require('../circuit/resistor'),
+    VariableResistor      = require('../circuit/variable-resistor'),
+    Component             = require('../circuit/component'),
+    Wire                  = require('../circuit/wire'),
+    componentTypes = {
+      "resistor": Resistor,
+      "variable resistor": VariableResistor,
+      "inductor": Inductor,
+      "capacitor": Capacitor,
+      "battery": Battery,
+      "function generator": FunctionGenerator,
+      "wire": Wire,
+      "powerLead": PowerLead
+    },
+    breadboard,
+    workbenchController,
+    BreadboardController,
+    breadboardController;
+
+
+
+BreadboardController = function() {
+  breadboard = new Breadboard();
+}
+
+BreadboardController.prototype = {
+
+  init: function (_workbenchController) {
+    workbenchController = _workbenchController;
+  },
+
+  component: function (props) {
+    if(typeof props=='string'){
+      return breadboard.components[props];
+    } else {
+      var component;
+
+      if (componentTypes[props.kind]){
+        component = new componentTypes[props.kind](props, this, workbenchController);
+      } else {
+        component = new Component(props, this);
+      }
+      breadboard.components[props.UID] = component;
+      return component;
+    }
+  },
+
+  clear: function () {
+    var destroyed = 0,
+        k;
+
+    this.resOrderOfMagnitude = -1;
+    for( k in breadboard.components ){
+      if (!breadboard.components.hasOwnProperty(k)) continue;
+      this.removeComponent(breadboard.components[k]);
+    }
+    breadboard.components = {};
+    breadboard.faultyComponents = [];
+
+    this.clearHoleMap();
+  },
+
+  // can pass either a hole or a string
+  getHole: function(hole) {
+    if (!hole) return;
+
+    if (hole.name){
+      if (!!breadboard.holeMap[hole.name]){
+        return this.getHole(breadboard.holeMap[hole.getName()]);
+      }
+      return hole;
+    }
+
+    // should be a string
+
+    // replace with mapped name
+    if (!!breadboard.holeMap[hole]){
+      hole = breadboard.holeMap[hole];
+    }
+
+    // return hole if it is in breadboard
+    if (!!breadboard.holes[hole]){
+      return breadboard.holes[hole];
+    }
+
+    // otherwise, make a new ghosthole
+    return breadboard.createGhostHole(hole);
+  },
+
+  getHoles: function() {
+    return breadboard.holes;
+  },
+
+  // Resets all connections, used when holeMap changes
+  resetConnections: function(oldHoleName, newHoleName) {
+    var i, j;
+
+    for( i in breadboard.components ){
+      if (!breadboard.components.hasOwnProperty(i)) continue;
+      var comp = this.component(i);
+      for (j in comp.connections){
+        if (!comp.connections.hasOwnProperty(j)) continue;
+        if (!!comp.connections[j] && comp.connections[j].getName() === oldHoleName) {
+          comp.connections[j] = this.getHole(newHoleName);
+        }
+      }
+    }
+  },
+
+  // Adds a fault to an existing circuit. A fault may affect one or
+  // more components. If fault.component is set, it will be applied to
+  // that component. Otherwise, if fault.count or fault.max are set, it
+  // will be applied to a number of random components.
+  addFault: function(fault) {
+    if (!!fault.component){
+      this.addFaultToComponent(fault, breadboard.components[fault.component]);
+    } else {
+      // find out how many components we should be applying this to
+      var count;
+      if (!!fault.count) {
+        count = fault.count;
+      } else if (!!fault.max) {
+        count = Math.floor(Math.random() * fault.max) + 1;    // between 1 and max faults
+      }
+
+
+      // apply fault to valid components 'count' times, with no repitition. No checking is
+      // done to see if there are sufficient valid components for this to be possible, so
+      // application will hang if authored badly.
+      var componentKeys = util.getKeys(breadboard.components);
+      for (var i = 0; i < count; i++){
+        var randomComponent = null;
+        while (randomComponent === null) {
+          var rand = Math.floor(Math.random() * componentKeys.length);
+          var component = breadboard.components[componentKeys[rand]];
+          if (!!component.applyFaults && (util.contains(breadboard.faultyComponents, component) === -1)){
+            randomComponent = component;
+          }
+        }
+        this.addFaultToComponent(fault, randomComponent);
+      }
+    }
+  },
+
+  // adds a fault to a specific component. If fault.type is an array, a random
+  // type will be picked
+  addFaultToComponent: function(fault, component) {
+    var type;
+    if (fault.type instanceof Array){
+      type = fault.type[Math.floor(Math.random() * fault.type.length)];
+    } else {
+      type = fault.type;
+    }
+
+    if (type === "open") {
+      component.open = true;
+      component.shorted = false;
+    } else if (type === "shorted") {
+      component.shorted = true;
+      component.open = false;
+    }
+    if (component.applyFaults) {
+      component.applyFaults();
+    }
+
+    breadboard.faultyComponents.push(component);
+  },
+
+  addFaultyComponent: function(comp) {
+    if (!~breadboard.faultyComponents.indexOf(this)) {
+      brebreadboardadBoard.faultyComponents.push(this);
+    }
+  },
+
+  getFaults: function() {
+    return breadboard.faultyComponents;
+  },
+
+  getFault: function() {
+    if (breadboard.faultyComponents.length > 0){
+      return breadboard.faultyComponents[0];
+    }
+    return null;
+  },
+
+
+
+  // "Public" functions. These used to be the old "interfaces" object
+  insertComponent: function(kind, properties){
+    // copy props into a new obj, so we don't modify original
+    var props = {};
+    $.each(properties, function(key, property){
+      props[key] = property;
+    });
+
+    props.kind = kind;
+
+    // ensure no dupes, using either passed UID or type
+    props.UID = this.getUID(!!props.UID ? props.UID : props.kind);
+
+    // if uid is source, and no conections are specified, assume we are connecting to rails
+    if (props.UID === "source" && !props.connections){
+      props.connections = "left_positive21,left_negative21";
+    }
+
+    var newComponent = this.component(props);
+
+    // update view
+    if (workbenchController.breadboardView) {
+      if (newComponent.getViewArguments && newComponent.hasValidConnections() && newComponent.kind !== "battery" && !newComponent.hidden) {
+        workbenchController.breadboardView.addComponent(newComponent.getViewArguments());
+      }
+      if ((newComponent.kind == "battery" || newComponent.kind == "function generator") && !newComponent.hidden){ // FIXME
+        workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
+      }
+    }
+
+    return newComponent.UID;
+  },
+
+  createCircuit: function(jsonCircuit) {
+    var circuitHasReferenceFrequency = typeof jsonCircuit.referenceFrequency === 'number';
+    var self = this;
+    $.each(jsonCircuit, function(i, spec) {
+      // allow each component spec to override the circuit-wide reference frequency, if author desires.
+      if (circuitHasReferenceFrequency && typeof spec.referenceFrequency === 'undefined') {
+        spec.referenceFrequency = jsonCircuit.referenceFrequency;
+      }
+      self.insertComponent(spec.type, spec);
+    });
+
+    this.insertComponent("powerLead", {
+      UID: "blackPowerLead",
+      type: "powerLead",
+      connections: "left_negative21"
+    });
+  },
+
+  addFaults: function(jsonFaults){
+    var self = this;
+    $.each(jsonFaults, function(i, fault){
+      self.addFault(fault);
+    });
+  },
+
+  getResOrderOfMagnitude: function(){
+    return breadboard.resOrderOfMagnitude;
+  },
+
+  setResOrderOfMagnitude: function(om){
+    breadboard.resOrderOfMagnitude = om;
+  },
+
+  checkLocation: function(comp){     // ensure that a component's leads aren't too close
+    var minDistance = {
+          resistor: 6,
+          inductor: 5,
+          capacitor: 3,
+          wire: 3
+        },
+        yValue = {
+          left_positive: 1,
+          left_negative: 2,
+          a: 4, b: 5, c: 6, d: 7, e: 8,
+          f: 10, g: 11, h: 12, i: 13, j: 14,
+          right_positive: 16,
+          right_negative: 17
+        },
+        getCoordinate = function(hole) {      // returns [20, 4] for "a20"
+          var name  = hole.name,
+              split = /(\D*)(.*)/.exec(name),
+              row   = yValue[split[1]];
+          return [split[2]*1, row];
+        },
+        leadsAreTooClose = function() {
+          var dx, dy, leadDistance;
+
+          comp.coord = [];
+          comp.coord[0] = getCoordinate(comp.connections[0]);
+          comp.coord[1] = getCoordinate(comp.connections[1]);
+          dx = comp.coord[1][0] - comp.coord[0][0];
+          dy = comp.coord[1][1] - comp.coord[0][1];
+          leadDistance = Math.sqrt(dx*dx + dy*dy);
+
+          return (leadDistance < minDistance[comp.type]);
+        },
+        leadsWereTooClose = false;
+
+    while (leadsAreTooClose()) {
+      leadsWereTooClose = true;
+      var rightLead = comp.coord[0][0] < comp.coord[1][0] ? 0 : 1,
+          leftLead = (rightLead - 1) * -1,
+          newX, newName;
+
+      if (comp.coord[rightLead][0] > 1) {
+        // move right lead one to the right
+        newX = comp.coord[rightLead][0] - 1;
+        newName = comp.connections[rightLead].name.replace(/\d*$/, newX);
+        comp.connections[rightLead] = this.getHole(newName);
+      } else {
+        // move left lead one to the left
+        newX = comp.coord[leftLead][0] + 1;
+        newName = comp.connections[leftLead].name.replace(/\d*$/, newX);
+        comp.connections[leftLead] = this.getHole(newName);
+      }
+    }
+
+    // update view
+    if (leadsWereTooClose && workbenchController.breadboardView) {
+      workbenchController.breadboardView.removeComponent(comp.UID);
+      workbenchController.breadboardView.addComponent(comp.getViewArguments());
+    }
+
+  },
+
+  getUID: function(_name){
+    var name = _name.replace(/ /g, "_");      // no spaces in qucs
+
+    if (!breadboard.components[name]){
+      return name;
+    }
+
+    var i = 0;
+    while (!!breadboard.components[""+name+i]){
+      i++;
+    }
+    return ""+name+i;
+  },
+
+  // clean up these three overlapping functions
+  remove: function(type, connections){
+    var comp = this.findComponent(type, connections);
+    if (!!comp){
+      comp.destroy();
+    }
+    workbenchController.breadboardView.removeComponent(uid);
+  },
+
+  removeComponent: function(comp){
+    var uid = comp.UID;
+    comp.destroy();
+    if (uid) {
+      workbenchController.breadboardView.removeComponent(uid);
+    }
+  },
+
+  deleteComponentFromMap: function(id) {
+    delete breadboard.components[id];
+  },
+
+  findComponent: function(type, connections){
+    var i, component;
+
+    if (!!type && !!connections && connections.split(",").length === 2){
+      connections = connections.split(",");
+      for (i in breadboard.components){
+        if (!breadboard.components.hasOwnProperty(i)) continue;
+        component = breadboard.components[i];
+        if (component.kind === type && !!component.connections[0] &&
+          ((component.connections[0].getName() === connections[0] &&
+            component.connections[1].getName() === connections[1]) ||
+          (component.connections[0].getName() === connections[1] &&
+            component.connections[1].getName() === connections[0]))){
+            return component;
+          }
+      }
+    }
+    return null;
+  },
+
+  destroy: function(component){
+    this.component(component).destroy();
+  },
+
+  move: function(component, connections){
+    this.component(component).move(connections.split(','));
+  },
+
+  getGhostHole: function(name){
+    return breadboard.createGhostHole(name);
+  },
+
+  mapHole: function(oldHoleName, newHoleName){
+    breadboard.holeMap[oldHoleName] = newHoleName;
+    this.resetConnections(oldHoleName, newHoleName);
+  },
+
+  unmapHole: function(oldHoleName){
+    var newHoleName = breadboard.holeMap[oldHoleName];
+    breadboard.holeMap[oldHoleName] = undefined;
+    this.resetConnections(newHoleName, oldHoleName);
+  },
+
+  clearHoleMap: function(){
+    breadboard.holeMap = {};
+  },
+
+  addRandomResistor: function(name, location, options){
+    console.log("WARNING: addRandomResistor is deprecated");
+    var resistor = new Resistor4band(name);
+    resistor.randomize((options | null));
+    this.insert('resistor', location, resistor.getRealValue(), name, resistor.colors);
+    return resistor;
+  },
+
+  getComponents: function() {
+    return breadboard.components;
+  },
+
+  // this method will modify the breadboard as necessary to create additional temporary components
+  // that correspond to the measurement-type's circuit changes (e.g. large resistor for a voltmeter),
+  // and then simply call qucsator.qucsate, and return the resulting results object.
+  // NB: This function used to return the final value required by the DMM. It no longer does so, as
+  // it does not assume a DMM is doing the requesting, and instead returns the entire results object.
+  query: function(type, connections, callback, context, callbackArgs){
+    var tempComponents = [],
+        ghost, ohmmeterBattery,
+        voltmeterResistor,
+        ammeterResistor,
+        oscopeResistor,
+        ciso,
+        node;
+
+    // add DMM components as necessary
+    if (type === 'resistance') {
+      connections = connections.split(',');
+      ghost = breadboard.createGhostHole();
+      ohmmeterBattery = this.component({
+        UID: 'ohmmeterBattery',
+        kind: 'battery',
+        voltage: 1,
+        connections: [connections[0], connections[1]]});
+      // var currentProbe = this.component({
+      //   UID: 'meter',
+      //   kind: 'iprobe',
+      //   connections: [connections[1], ghost]});
+      tempComponents.push(ohmmeterBattery);
+    } else if (type === 'voltage'){
+      voltmeterResistor = this.component({
+        UID: 'voltmeterResistor',
+        kind: 'resistor',
+        resistance: 1e12,
+        connections: connections.split(',')});
+      tempComponents.push(voltmeterResistor);
+    } else if (type === 'current'){
+      ammeterResistor = this.component({
+        UID: 'ammeterResistor',
+        kind: 'resistor',
+        resistance: 1e-6,
+        connections: connections.split(',')});
+      tempComponents.push(ammeterResistor);
+    } else if (type === 'oscope') {
+      oscopeResistor = this.component({
+        UID: 'oscopeResistor',
+        kind: 'resistor',
+        resistance: 1e12,
+        connections: [connections, "gnd"]});
+      tempComponents.push(oscopeResistor);
+    }
+
+    ciso = new CiSo();
+
+    $.each(breadboard.components, function(i, component) {
+      component.addCiSoComponent(ciso);
+    });
+
+    // if ohmmeter, set reference node
+    if (type === 'resistance') {
+      node = this.getHole(connections[1]).nodeName();
+      ciso.setReferenceNode(node);
+    }
+    // destroy the temporary DMM components
+    $.each(tempComponents, function(i, component){
+      component.destroy();
+    });
+
+    callback.call(context, ciso, callbackArgs);
+  },
+
+  updateView: function() {
+    $.each(breadboard.components, function(i, component) {
+      if (component.getViewArguments && component.hasValidConnections() && component.kind !== "battery" && !component.hidden) {
+        workbenchController.breadboardView.addComponent(component.getViewArguments());
+      }
+      if ((component.kind == "battery" || component.kind == "function generator") && !component.hidden) { // FIXME
+        workbenchController.breadboardView.addBattery("left_negative21,left_positive21");
+      }
+    });
+  },
+
+  // returns an array of serialized components
+  serialize: function() {
+    var circuit = [];
+
+    $.each(breadboard.components, function(i, component) {
+      circuit.push(component.serialize());
+    });
+
+    return circuit;
+  }
+
+}
+
+//// BreadBoard Instance & Interface /////////////////////////////////////////
+breadboardController = new BreadboardController();
+
+module.exports = breadboardController;
+
+},{"../circuit/battery":8,"../circuit/breadboard":9,"../circuit/capacitor":10,"../circuit/component":11,"../circuit/function-generator":12,"../circuit/inductor":13,"../circuit/power-lead":16,"../circuit/resistor":20,"../circuit/resistor-4band":19,"../circuit/variable-resistor":21,"../circuit/wire":22,"../helpers/util":30}],24:[function(require,module,exports){
+
+var LogEvent  = require('../models/log'),
+    util      = require('../helpers/util');
+
+Log = function(startTime){
+  this.events = [];
+  this.startTime = startTime;
+  this.endTime = -1;
+};
+
+LogController = function(){
+  this.currentLog = null;
+  this.listeners = [];
+};
+
+LogController.prototype = {
+
+  startNewSession: function() {
+    this.currentLog = new Log(new Date().valueOf());
+  },
+
+  endSession: function() {
+    this.currentLog.endTime = new Date().valueOf();
+  },
+
+  addEvent: function (name, value) {
+    var evt = new LogEvent(name, value, new Date().valueOf());
+    this.currentLog.events.push(evt);
+    for (i in this.listeners) {
+      if (typeof this.listeners[i] == "function") {
+        this.listeners[i](evt);
+      }
+    }
+  },
+
+  numEvents: function(log, name) {
+    var count = 0;
+    $.each(log.events, function(i, evt){
+      if (evt.name == name){
+        count ++;
+      }
+    });
+    return count;
+  },
+
+  numUniqueMeasurements: function(log, type) {
+    var count = 0;
+    var positions = [];
+    $.each(log.events, function(i, evt){
+      if (evt.name == LogEvent.DMM_MEASUREMENT){
+        if (evt.value.measurement == type) {
+          var position = evt.value.red_probe + "" + evt.value.black_probe;
+          if (util.contains(positions, position) === -1) {
+            count++;
+            positions.push(position);
+          }
+        }
+      }
+    });
+    return count;
+  },
+
+  numConnectionChanges: function(log, type) {
+    var count = 0;
+    $.each(log.events, function(i, evt){
+      if (evt.name == LogEvent.CHANGED_CIRCUIT && evt.value.type == type){
+        count ++;
+      }
+    });
+    return count;
+  },
+
+  addListener: function(func) {
+    this.listeners.push(func);
+  }
+
+};
+
+logController = new LogController();
+
+module.exports = logController;
+
+},{"../helpers/util":30,"../models/log":35}],25:[function(require,module,exports){
+var Oscilloscope          = require('../models/oscilloscope'),
+    Workbench             = require('../models/workbench'),
+    Multimeter            = require('../circuit/multimeter'),
+    logController         = require('./log-controller'),
+    breadboardController  = require('./breadboard-controller');
+
+
+WorkbenchController = function(){
+  //this.workbenchMap = {}
+  this.workbench = null;    // for now
+  this.breadboardController = breadboardController;
+  this.breadboardController.init(this);
+  this.logController = logController;
+};
+
+WorkbenchController.prototype = {
+
+  createWorkbench: function(props, elId) {
+    var workbench = new Workbench(null, this.breadboardController);
+    this.workbench = workbench;
+
+    this.initialProperties = props;
+
+    workbench.circuit = props.circuit;
+    if (workbench.circuit) workbench.circuit.referenceFrequency = props.referenceFrequency;
+
+    workbench.faults = props.faults;
+
+    workbench.show_multimeter = !(!(props.show_multimeter) || props.show_multimeter === "false");     // may be a string
+    workbench.show_oscilloscope = !(!(props.show_oscilloscope) || props.show_oscilloscope === "false");
+    workbench.allow_move_yellow_probe = !(!(props.allow_move_yellow_probe) || props.allow_move_yellow_probe === "false");
+    workbench.hide_pink_probe = !(!(props.hide_pink_probe) || props.hide_pink_probe === "false");
+    workbench.disable_multimeter_position = props.disable_multimeter_position;
+
+    workbench.showComponentDrawer = !(!(props.showComponentDrawer) || props.showComponentDrawer === "false");
+    workbench.showComponentEditor = !(!(props.showComponentEditor) || props.showComponentEditor === "false");
+
+    if (workbench.show_multimeter) {
+      workbench.meter.dmm = new Multimeter(breadboardController);
+      if(workbench.disable_multimeter_position){
+        workbench.meter.dmm.set_disable_multimeter_position(workbench.disable_multimeter_position);
+      }
+    } else {
+      workbench.meter.dmm = null;
+    }
+
+    if (workbench.show_oscilloscope) {
+      workbench.meter.oscope = new Oscilloscope(breadboardController);
+    } else {
+      workbench.meter.oscope = null;
+    }
+
+    // this shouldn't be here
+    logController.startNewSession();
+
+    this.loadBreadboard();
+
+    workbench.view.layout(elId);
+
+    return workbench;
+  },
+
+  loadBreadboard: function() {
+    var workbench = this.workbench;
+
+    breadboardController.clear();
+
+    if (!!workbench.circuit){
+      breadboardController.createCircuit(workbench.circuit);
+    }
+
+    if (!!workbench.faults){
+      breadboardController.addFaults(workbench.faults);
+    }
+  },
+
+  setDMMVisibility: function(visible) {
+    var workbench = this.workbench;
+    if (visible) {
+      workbench.meter.dmm = new Multimeter(breadboardController);
+      if(workbench.disable_multimeter_position){
+        workbench.meter.dmm.set_disable_multimeter_position(workbench.disable_multimeter_position);
+      }
+    } else {
+      workbench.meter.dmm = null;
+    }
+    sparks.activity.view.showDMM(visible);
+  },
+
+  setOScopeVisibility: function(visible) {
+    var workbench = this.workbench;
+    if (visible) {
+      workbench.meter.oscope = new Oscilloscope(breadboardController);
+    } else {
+      workbench.meter.oscope = null;
+    }
+    sparks.activity.view.showOScope(visible);
+  },
+
+  serialize: function() {
+    var json = this.initialProperties;
+    json.circuit = this.breadboardController.serialize();
+    return JSON.stringify(json, null, '\t');
+  }
+
+};
+
+//var workbenchController = new WorkbenchController();
+
+module.exports = new WorkbenchController();
+
+},{"../circuit/multimeter":15,"../models/oscilloscope":37,"../models/workbench":38,"./breadboard-controller":23,"./log-controller":24}],26:[function(require,module,exports){
+var unit                  = require('./unit');
+
+mathParser = {};
+
+var p = mathParser;
+
+p.standardizeUnits = function(string) {
+  string = string.replace(/ohms/gi,"&#x2126;");
+  string = string.replace("micro","&#x00b5;");
+  string = string.replace("milli","m");
+  string = string.replace("kilo","k");
+  string = string.replace("mega","M");
+  return string;
+};
+
+module.exports = mathParser;
+
+},{"./unit":29}],27:[function(require,module,exports){
+sound = {};
+
+sound.mute = false;
+
+sound.play = function (sound) {
+  if (!!window.Audio && !sound.mute) {
+    sound.play();
+  }
+}
+
+module.exports = sound;
+
+},{}],28:[function(require,module,exports){
+//= require helpers/string
+
+/*globals console sparks */
+
+/* FILE math.js */
+
+str = {};
+
+str.strip = function (s) {
+    s = s.replace(/\s*([^\s]*)\s*/, '$1');
+    return s;
+};
+
+// Remove a dot in the string, and then remove 0's on both sides
+// e.g. '20100' => '201', '0.0020440' => '2044'
+str.stripZerosAndDots = function (s) {
+    s = s.replace('.', '');
+    s = s.replace(/0*([^0].*)/, '$1');
+    s = s.replace(/(.*[^0])0*/, '$1');
+    return s;
+};
+
+str.stripZeros = function (s) {
+    s = s.replace(/0*([^0].*)/, '$1');
+    s = s.replace(/(.*[^0])0*/, '$1');
+    return s;
+};
+
+math = {};
+
+// Return true if number x is 10^z times y where z is an int
+math.equalExceptPowerOfTen = function(x, y) {
+    var sx = str.stripZerosAndDots(x.toString());
+    var sy = str.stripZerosAndDots(y.toString());
+
+    return sx === sy;
+};
+
+ // Get 10's power of the most significant digit.
+ // e.g. For 4: 0, for 77: 1, for 3753: 3, for 0.02.
+ // NOTE: The most significant digit is assumed to be the first non-zero digit,
+ // which may be unacceptable for certain applications.
+ // NOTE: x is a non-negative number.
+ math.leftMostPos = function (x) {
+     x = Number(x);
+     if (isNaN(x) || x < 0) {
+         console.log('ERROR: math.leftMostPos: Invalid input ' + x);
+         return 0;
+     }
+     if (x === 0) {
+         return 0;
+     }
+     var n = 0;
+     var y = x;
+     if (x < 1) {
+         while (y < 1) {
+             y *= 10;
+             n -= 1;
+         }
+     }
+     else {
+         while (y >= 10) {
+             y /= 10;
+             n += 1;
+         }
+     }
+     return n;
+ };
+
+ // Round x to n significant digits
+ // e.g. Returns 12700 for 12678 when n = 3.
+math.roundToSigDigits = function(x, n) {
+  if (x === 0) {
+    return 0;
+  }
+  var order = Math.ceil(Math.log10(x)),
+      factor;
+
+  // Divide into 2 cases to get numerically sane results (i.e., no .xxx999999s)
+  if (n - order > 0) {
+    // Ex. order of x = 1e-4, n = 3 sig digs: so multiply by 1e7, round, then divide by 1e7
+    factor = Math.pow(10, n - order);
+    return Math.round(x * factor) / factor;
+  } else {
+    // Ex. order of x = 1e6, n = 2 sig digs: so divide by 1e4, round, then multiply by 1e4
+    factor = Math.pow(10, order - n);
+    return Math.round(x / factor) * factor;
+  }
+};
+
+ // Similar to roundToSigDigits but returns number composed only of the n
+ // significant digits; e.g., returns 127 for 12678 when n = 3.
+ math.getRoundedSigDigits = function (x, n) {
+     return Math.round(x * Math.pow(10, n - math.leftMostPos(x) - 1));
+ };
+
+
+ // *** extend the Math object with useful methods ***
+
+ Math.log10 = function(x){
+   return Math.log(x)/Math.LN10;
+ };
+
+ Math.orderOfMagnitude = function(x) {
+   if (x === 0) return 0;
+   return Math.floor( Math.log(Math.abs(x))/Math.LN10 );
+ };
+
+ Math.powNdigits = function(x,n){
+   return Math.pow(10,Math.floor(Math.log(x)/Math.LN10-n+1));
+ };
+
+ // Rounds to n sig figs (including adding on trailing zeros if necessary),
+ // and returns a string representation of the number.
+ Math.toSigFigs = function(num, sigFigs) {
+   num = num.toPrecision(sigFigs);
+   return sigFigs > Math.log(num) * Math.LOG10E ? num : ""+parseFloat(num);
+ };
+
+ Math.close = function(num, expected, perc) {
+   var perc = perc || 5,
+        dif = expected * (perc/100);
+   return (num >= (expected-dif) && num <= (expected+dif));
+ };
+
+ // *** extend the Array object with useful methods ***
+
+ Array.max = function( array ){
+     return Math.max.apply( Math, array );
+ };
+ Array.min = function( array ){
+     return Math.min.apply( Math, array );
+ };
+
+ module.exports = math;
+
+
+},{}],29:[function(require,module,exports){
+unit = {};
+
+var u = unit;
+
+u.labels = { ohms : '\u2126', kilo_ohms : 'k\u2126', mega_ohms : 'M\u2126' };
+
+u.toEngineering = function (value, units){
+  value = Number(value);
+  var isShort = (units.length === 1 || units === "Hz"),
+      prefix  = "";
+
+  if (value >= 1000000){
+    prefix = isShort ? "M" : "mega";
+    value = u.round(value/1000000,2);
+  } else if (value >= 1000){
+    prefix = isShort ? "k" : "kilo";
+    value = u.round(value/1000,2);
+  } else if (value === 0 ) {
+    value = 0;
+  } else if (value < 0.000000001){
+    prefix = isShort ? "p" : "pico";
+    value = u.round(value * 1000000000000,2);
+  } else if (value < 0.000001){
+    prefix = isShort ? "n" : "nano";
+    value = u.round(value * 1000000000,2);
+  } else if (value < 0.001){
+    prefix = isShort ? "μ" : "micro";
+    value = u.round(value * 1000000,2);
+  } else if (value < 1) {
+    prefix = isShort ? "m" : "milli";
+    value = u.round(value * 1000,2);
+  } else {
+    value = u.round(value,2);
+  }
+  units = prefix + units;
+
+  return {"value": value, "units": units};
+};
+
+u.round = function(num, dec) {
+	var result = Math.round( Math.round( num * Math.pow( 10, dec + 2 ) ) / Math.pow( 10, 2 ) ) / Math.pow(10,dec);
+	return result;
+};
+
+u.sigFigs = function(n, sig) {
+    var mult = Math.pow(10,
+        sig - Math.floor(Math.log(n) / Math.LN10) - 1);
+    return Math.round(n * mult) / mult;
+};
+
+// returns true if string is of form "50 ohms" or "0.1V"
+u.isMeasurement = function(string) {
+  var isMeasurementPattern = /^\s?\d+.?\d*\s?\D+\s?$/
+  var matched = string.match(isMeasurementPattern);
+  return !!matched;
+};
+
+/**
+* assumes this will be in the form ddd uu
+* i.e. a pure number and a unit, separated by an optional space
+* '50 ohms' and '50V' are both valid
+*/
+u.convertMeasurement = function(measurement) {
+  if (!this.isMeasurement(measurement)){
+    return measurement
+  }
+
+  var numPattern = /\d+\.?\d*/g
+  var nmatched = measurement.match(numPattern);
+  if (!nmatched){
+    return measurement;
+  }
+  var value = nmatched[0];
+
+  var unitPattern =  /(?=\d*.?\d*)[^\d\.\s]+/g
+  var umatched = measurement.match(unitPattern);
+  if (!umatched){
+    return measurement;
+  }
+  var unit = umatched[0];
+
+  var eng = u.toEngineering(value, unit)
+  return eng.value + " " + eng.units;
+};
+
+u.normalizeToOhms = function (value, unit) {
+    switch (unit) {
+    case u.labels.ohms:
+        return value;
+    case u.labels.kilo_ohms:
+        return value * 1000;
+    case u.labels.mega_ohms:
+        return value * 1e6;
+    }
+    return null;
+};
+
+u.ohmCompatible = function (unit) {
+    if (unit == u.labels.ohms || unit == u.labels.kilo_ohms ||
+        unit == u.labels.mega_ohms)
+    {
+        return true;
+    }
+    return false;
+};
+
+// Return a string with a unit representing the resistance value.
+// value: resistance value in ohms
+u.res_str = function (value) {
+    var vstr, unit, val;
+
+    if (typeof value !== 'number' || isNaN(Number(value))) {
+        return 'Invalid Value ' + String(value);
+    }
+
+    if (value < 1000) {
+        val = value;
+        unit = u.labels.ohms;
+    }
+    else if (value < 1e6) {
+        val = value / 1000;
+        unit = u.labels.kilo_ohms;
+    }
+    else {
+        val = value / 1e6;
+        unit = u.labels.mega_ohms;
+    }
+
+    if (val.toFixed) {
+        val = val.toFixed(6);
+    }
+
+    vstr = String(val).replace(/(\.[0-9]*[1-9])0*/, '$1');
+    vstr = vstr.replace(/([0-9])\.0+$/, '$1');
+    return vstr + ' ' + unit;
+};
+
+u.res_unit_str = function (value, mult) {
+    var vstr;
+    var unit = u.labels.ohms;
+
+    if (mult === 'k') {
+        vstr = String(value / 1000.0);
+        unit = u.labels.kilo_ohms;
+    }
+    else if (mult === 'M') {
+        vstr = String(value / 1000000.0);
+        unit = u.labels.mega_ohms;
+    }
+    else {
+        vstr = String(value);
+        unit = u.labels.ohms;
+    }
+    return vstr + ' ' + unit;
+};
+
+u.pct_str = function (value) {
+    return (value * 100) + ' %';
+};
+
+u.unitEquivalents = {
+  "V": ["v", "volts", "volt", "vol", "vs"],
+  "A": ["a", "amps", "amp", "amper", "ampers", "as"],
+  "Ohms": ["ohms", "oms", "o", "Ω", "os"],
+  "deg": ["deg", "degs", "degree", "degrees", "º"],
+  "F": ["f", "farads", "farad", "fared", "fareds", "fered", "fereds", "feret", "ferets", "ferret", "ferrets", "fs"],
+  "H": ["h", "henries", "henry", "henrys", "hs"],
+  "Hz": ["hz", "herz", "hertz"],
+  "%": ["%", "perc", "percent"]
+}
+
+u.prefixEquivalents = {
+  "femto": ["femto", "fempto", "f"],
+  "pico": ["pico", "picco", "p"],
+  "nano": ["nano", "nanno", "n"],
+  "micro": ["micro", "micron", "μ"],
+  "milli": ["mili", "milli", "millli"],
+  "kilo": ["kilo", "killo", "killlo", "k"],
+  "mega": ["mega", "meg"],
+  "giga": ["giga", "gigga", "g"]
+};
+
+u.prefixValues = {
+  "femto": 1E-15,
+  "pico": 1E-12,
+  "nano": 1E-9,
+  "micro": 1E-6,
+  "milli": 1E-3,
+  "kilo": 1E3,
+  "mega": 1E6,
+  "giga": 1E9
+};
+
+u.parse = function(string) {
+  var value, units, prefix, currPrefix, unit, equivalents, equiv, regex;
+
+  string = string.replace(/ /g, '');                    // rm all whitespace
+  string = string.replace(/['";:,\/?\\]/g, '');         // rm all non-period, non-dash puncutation
+  string = string.replace(/[^\d\.-]*(\d.*)/, '$1');      // if there are numbers, if there are letters before them remove them
+  value =  string.match(/^-?[\d\.]+/);                  // find all numbers before the first letter, parse them to a number, store it
+  if (value) {
+    value = parseFloat(value[0]);
+  }
+  string = string.replace(/^-?[\d\.]*/, '');             // everything after the first value is the units
+  string = string.replace(/['";:,\.\/?\\-]/g, '');       // rm all puncutation
+
+  for (unit in this.unitEquivalents) {                // if the unit can be found in the equivalents table, replace
+    equivalents = this.unitEquivalents[unit];
+    if (equivalents.length > 0) {
+      for (var i = 0, ii = equivalents.length; i<ii; i++) {
+        equiv = equivalents[i];
+        regex = new RegExp('.*('+equiv+')$', 'i');
+        hasUnits =string.match(regex)
+        if (hasUnits && hasUnits.length > 1){
+          units = unit;
+          string = string.replace(hasUnits[1], '');
+          break;
+        }
+      }
+    }
+    if (units) {
+      break;
+    }
+  }
+
+  if (!units) {
+    units = string;
+  }
+
+  for (currPrefix in this.prefixEquivalents) {                 // if we can find a prefix at the start of the string, store it and delete it
+    equivalents = this.prefixEquivalents[currPrefix];
+    if (equivalents.length > 0) {
+      for (var i = 0, ii = equivalents.length; i<ii; i++) {
+        equiv = equivalents[i];
+        regex = new RegExp('^('+equiv+').*', 'i');
+        prefixes = string.match(regex);
+        if (prefixes && prefixes.length > 1){
+          prefix = currPrefix;
+          units = units.replace(prefixes[1], '');
+          break;
+        }
+      }
+    }
+    if (prefix) {
+      break;
+    }
+  }
+
+  if (!prefix) {                                      // if we haven't found a prefix yet, check for case-sensitive m or M at start
+    if (string.match(/^m/)) {
+      prefix = "milli";
+      units = units.replace(/^m/, "");
+    } else if (string.match(/^M/)){
+      prefix = "mega";
+      units = units.replace(/^M/, "");
+    }
+  }
+
+  if (prefix) {
+    value = value * this.prefixValues[prefix];        // if we have a prefix, multiply by that;
+  }
+
+  if (!value) {
+    value = NaN;
+  }
+
+  return {val: value, units: units}
+};
+
+module.exports = unit;
+
+
+},{}],30:[function(require,module,exports){
+var util = {};
+
+/**
+ * Naive deep-cloning of an object.
+ * Doesn't check against infinite recursion.
+ */
+util.cloneSimpleObject = function (obj) {
+    var ret, key;
+    if (obj instanceof Array) {
+        ret = [];
+        for (key in obj) {
+            ret.push(util.cloneSimpleObject(obj[key]));
+        }
+        return ret;
+    }
+    else if (typeof obj === 'object') {
+        ret = {};
+        for (key in obj) {
+            ret[key] = util.cloneSimpleObject(obj[key]);
+        }
+        return ret;
+    }
+    else {
+        return obj;
+    }
+};
+
+// The "next" function returns a different value each time
+// alternating between the two input values x, y.
+util.Alternator = function (x, y)
+{
+    this.x = x;
+    this.y = y;
+    this.cnt = 0;
+};
+util.Alternator.prototype =
+{
+    next : function () {
+        ++this.cnt;
+        return this.cnt % 2 == 1 ? this.x : this.y;
+    }
+};
+
+// Return a string representation of time lapsed between start and end
+util.timeLapseStr = function (start, end) {
+    var seconds = Math.floor((end - start) / 1000);
+    var minutes = Math.floor(seconds / 60);
+    seconds = seconds % 60;
+    var str = seconds + (seconds == 1 ? ' second' : ' seconds');
+    if (minutes > 0) {
+        str = minutes + (minutes == 1 ? ' minute ' : ' minutes ') + str;
+    }
+    return str;
+};
+
+/**
+The initial version of this was copied from the serializeArray method of jQuery
+this version returns a result object and uses the names of the input elements
+as the actual keys in the result object.  This requires more careful naming but it
+makes using the returned object easier.  It could be improved to handle dates and
+numbers perhaps using style classes to tag them as such.
+*/
+util.serializeForm = function (form) {
+    var result = {};
+    form.map(function () {
+        return this.elements ? jQuery.makeArray(this.elements) : this;
+    }).filter(function () {
+        return this.name &&
+        (this.checked || (/select|textarea/i).test(this.nodeName) ||
+        (/text|hidden|password|search/i).test(this.type));
+    }).each(function (i) {
+        var val = jQuery(this).val();
+        if(val === null){
+            return;
+        }
+
+        if (jQuery.isArray(val)) {
+            result[this.name] = jQuery.makeArray(val);
+        }
+        else {
+            result[this.name] = val;
+        }
+    });
+    return result;
+};
+
+// Returns a string representation of the input date
+// date: either a Date or a number in milliseconds
+util.formatDate = function (date) {
+    function fillZero(val) {
+        return val < 10 ? '0' + val : String(val);
+    }
+    if (typeof date === 'number') {
+        date = new Date(date);
+    }
+    var s = fillZero(date.getMonth() + 1) + '/';
+
+    s += fillZero(date.getDate()) + '/';
+    s += String(date.getFullYear()) + ' ';
+    s += fillZero(date.getHours()) + ':';
+    s += fillZero(date.getMinutes()) + ':';
+    s += fillZero(date.getSeconds()) + ' ';
+    return s;
+};
+
+util.todaysDate = function() {
+  var monthNames = ["January","February","March","April","May","June","July",
+                    "August","September","October","November","December"];
+
+  var now = new Date();
+  return monthNames[now.getMonth()] + " " +  now.getDate() + ", " + now.getFullYear();
+}
+
+// Pretty print an object. Mainly intended for debugging JSON objects
+util.prettyPrint = function (obj, indent) {
+    var t = '';
+    if (typeof obj === 'object') {
+        for (var key in obj) {
+            if (typeof obj[key] !== 'function') {
+                for (var i = 0; i < indent; ++i) {
+                    t += ' ';
+                }
+                t += key + ': ';
+                if (typeof obj[key] === 'object') {
+                    t += '\n';
+                }
+                t += util.prettyPrint(obj[key], indent + 4);
+            }
+        }
+        return t;
+    }
+    else {
+        return obj + '\n';
+    }
+};
+
+util.shuffle = function (o) {
+  for(var j, x, i = o.length; i; j = parseInt(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x);
+  return o;
+};
+
+util.contains = function (array, obj) {
+  var i = array.length;
+    while (i--) {
+       if (array[i] === obj) {
+           return i;
+       }
+    }
+    return -1;
+};
+
+util.getKeys = function (json) {
+  var keys = [];
+  $.each(json, function(key){
+    keys.push(key);
+  })
+  return keys;
+};
+
+// When we define, say, a logaritmic sweep of frequencies, we calculate them on our end
+// for the function generator, and QUCS generates them on its end after being given a
+// simulation type. These two series may not be exactly the same after accounting for
+// different precisions, so we want to pick the QUCS value that's closest to what we
+// think we're generating. So, if we think we're generating 1002.2 Hz, and QUCS comes back
+// with [1000, 1002.22222, 1003.33333], we want to return the index '1'
+//
+// @array an array of numbers, complex or real
+// @actual the number we want
+// @isComplex whether the numbers in the array are complex or real
+util.getClosestIndex = function(array, actual, isComplex) {
+  var minDiff = Infinity,
+      index;
+  // this could be shortened as a CS exercise, but it takes 0 ms over an array of
+  // 10,000 so it's not really worth it...
+  for (var i = 0, ii = array.length; i < ii; i++){
+    var diff = isComplex ? Math.abs(array[i].real - actual) : Math.abs(array[i] - actual);
+    if (diff < minDiff){
+      minDiff = diff;
+      index = i;
+    }
+  }
+  return index;
+};
+
+// YUI-style inheritance
+util.extend = function(Child, Parent, properties) {
+  var F = function() {};
+  F.prototype = Parent.prototype;
+  Child.prototype = new F();
+  if (properties) {
+      for (var k in properties) {
+          Child.prototype[k] = properties[k];
+      }
+  }
+  Child.prototype.constructor = Child;
+  Child.parentConstructor = Parent;
+  Child.uber = Parent.prototype;
+};
+
+module.exports = util;
+
+
+// Shim to add ECMA262-5 Array methods if not supported natively
+if ( !Array.prototype.indexOf ) {
+  Array.prototype.indexOf= function(find, i /*opt*/) {
+      if (i===undefined) i= 0;
+      if (i<0) i+= this.length;
+      if (i<0) i= 0;
+      for (var n= this.length; i<n; i++)
+          if (i in this && this[i]===find)
+              return i;
+      return -1;
+  };
+}
+if ( !Array.prototype.forEach ) {
+  Array.prototype.forEach = function(fn, scope) {
+    for(var i = 0, len = this.length; i < len; ++i) {
+      fn.call(scope, this[i], i, this);
+    }
+  }
+}
+
+},{}],31:[function(require,module,exports){
+require('../bower_components/jquery/jquery');
+require('../lib/jquery/jquery-ui-1.8.24.custom.min');
+require('../lib/jquery/plugins/jquery.event.drag-2.0.min');
+require('../bower_components/jquery-nearest/src/jquery.nearest.min');
+require('../bower_components/circuit-solver/dist/circuitSolver.min');
+
+var workbenchController = require('./controllers/workbench-controller'),
+    sound               = require('./helpers/sound'),
+
+    scripts             = document.getElementsByTagName('script'),
+    path                = scripts[scripts.length-1].src.split('?')[0],      // remove any ?query
+    packageRoot         = path.split('/').slice(0, -2).join('/')+'/',
+
+    soundFiles          = {click: packageRoot + "/common/sounds/click.ogg"};
+
+loadSounds = function () {
+  var soundName, audio;
+
+  for (soundName in soundFiles) {
+    if (!!window.Audio) {
+      audio = new Audio();
+      audio.src = soundFiles[soundName];
+      sound[soundName] = audio;
+    }
+  }
+};
+
+$(document).ready(function () {
+    loadSounds();
+});
+
+var sparks = {};
+
+sparks.createWorkbench = function(props, elId) {
+  workbenchController.createWorkbench(props, elId);
+}
+
+sparks.removeComponent = function(uid) {
+  workbenchController.breadboardView.removeComponent(uid);
+}
+
+// this is probably too much access for an API, but doing it now for simplicity
+sparks.workbenchController = workbenchController;
+sparks.logController = workbenchController.logController;
+
+sparks.packageRoot = packageRoot;
+
+
+module.exports = sparks;
+
+},{"../bower_components/circuit-solver/dist/circuitSolver.min":1,"../bower_components/jquery-nearest/src/jquery.nearest.min":2,"../bower_components/jquery/jquery":3,"../lib/jquery/jquery-ui-1.8.24.custom.min":6,"../lib/jquery/plugins/jquery.event.drag-2.0.min":7,"./controllers/workbench-controller":25,"./helpers/sound":27}],32:[function(require,module,exports){
+/* Copyright (C) 1999 Masanao Izumo <iz@onicos.co.jp>
+ * Version: 1.0
+ * LastModified: Dec 25 1999
+ * This library is free.  You can redistribute it and/or modify it.
+ */
+
+/*
+ * Interfaces:
+ * b64 = base64encode(data);
+ * data = base64decode(b64);
+ */
+
+(function() {
+
+var base64EncodeChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+var base64DecodeChars = new Array(
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63,
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1,
+    -1,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14,
+    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1,
+    -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1);
+
+function base64encode(str) {
+    var out, i, len;
+    var c1, c2, c3;
+
+    len = str.length;
+    i = 0;
+    out = "";
+    while(i < len) {
+  c1 = str.charCodeAt(i++) & 0xff;
+  if(i == len)
+  {
+      out += base64EncodeChars.charAt(c1 >> 2);
+      out += base64EncodeChars.charAt((c1 & 0x3) << 4);
+      out += "==";
+      break;
+  }
+  c2 = str.charCodeAt(i++);
+  if(i == len)
+  {
+      out += base64EncodeChars.charAt(c1 >> 2);
+      out += base64EncodeChars.charAt(((c1 & 0x3)<< 4) | ((c2 & 0xF0) >> 4));
+      out += base64EncodeChars.charAt((c2 & 0xF) << 2);
+      out += "=";
+      break;
+  }
+  c3 = str.charCodeAt(i++);
+  out += base64EncodeChars.charAt(c1 >> 2);
+  out += base64EncodeChars.charAt(((c1 & 0x3)<< 4) | ((c2 & 0xF0) >> 4));
+  out += base64EncodeChars.charAt(((c2 & 0xF) << 2) | ((c3 & 0xC0) >>6));
+  out += base64EncodeChars.charAt(c3 & 0x3F);
+    }
+    return out;
+}
+
+function base64decode(str) {
+    var c1, c2, c3, c4;
+    var i, len, out;
+
+    len = str.length;
+    i = 0;
+    out = "";
+    while(i < len) {
+  /* c1 */
+  do {
+      c1 = base64DecodeChars[str.charCodeAt(i++) & 0xff];
+  } while(i < len && c1 == -1);
+  if(c1 == -1)
+      break;
+
+  /* c2 */
+  do {
+      c2 = base64DecodeChars[str.charCodeAt(i++) & 0xff];
+  } while(i < len && c2 == -1);
+  if(c2 == -1)
+      break;
+
+  out += String.fromCharCode((c1 << 2) | ((c2 & 0x30) >> 4));
+
+  /* c3 */
+  do {
+      c3 = str.charCodeAt(i++) & 0xff;
+      if(c3 == 61)
+    return out;
+      c3 = base64DecodeChars[c3];
+  } while(i < len && c3 == -1);
+  if(c3 == -1)
+      break;
+
+  out += String.fromCharCode(((c2 & 0XF) << 4) | ((c3 & 0x3C) >> 2));
+
+  /* c4 */
+  do {
+      c4 = str.charCodeAt(i++) & 0xff;
+      if(c4 == 61)
+    return out;
+      c4 = base64DecodeChars[c4];
+  } while(i < len && c4 == -1);
+  if(c4 == -1)
+      break;
+  out += String.fromCharCode(((c3 & 0x03) << 6) | c4);
+    }
+    return out;
+}
+
+if (!window.btoa) window.btoa = base64encode;
+if (!window.atob) window.atob = base64decode;
+
+})();
+},{}],33:[function(require,module,exports){
+/*
+ * canvg.js - Javascript SVG parser and renderer on Canvas
+ * MIT Licensed
+ * Gabe Lerner (gabelerner@gmail.com)
+ * http://code.google.com/p/canvg/
+ *
+ */
+(function(){
+
+	var RGBColor = require('./rgbcolor');
+
+	// canvg(target, s)
+	// empty parameters: replace all 'svg' elements on page with 'canvas' elements
+	// target: canvas element or the id of a canvas element
+	// s: svg string, url to svg file, or xml document
+	// opts: optional hash of options
+	//		 ignoreMouse: true => ignore mouse events
+	//		 ignoreAnimation: true => ignore animations
+	//		 ignoreDimensions: true => does not try to resize canvas
+	//		 ignoreClear: true => does not clear canvas
+	//		 offsetX: int => draws at a x offset
+	//		 offsetY: int => draws at a y offset
+	//		 scaleWidth: int => scales horizontally to width
+	//		 scaleHeight: int => scales vertically to height
+	//		 renderCallback: function => will call the function after the first render is completed
+	//		 forceRedraw: function => will call the function on every frame, if it returns true, will redraw
+	this.canvg = function (target, s, opts) {
+		// no parameters
+		if (target == null && s == null && opts == null) {
+			var svgTags = document.getElementsByTagName('svg');
+			for (var i=0; i<svgTags.length; i++) {
+				var svgTag = svgTags[i];
+				var c = document.createElement('canvas');
+				c.width = svgTag.clientWidth;
+				c.height = svgTag.clientHeight;
+				svgTag.parentNode.insertBefore(c, svgTag);
+				svgTag.parentNode.removeChild(svgTag);
+				var div = document.createElement('div');
+				div.appendChild(svgTag);
+				canvg(c, div.innerHTML);
+			}
+			return;
+		}
+		opts = opts || {};
+
+		if (typeof target == 'string') {
+			target = document.getElementById(target);
+		}
+
+		// store class on canvas
+		if (target.svg != null) target.svg.stop();
+		target.svg = svg = build();
+		svg.opts = opts;
+
+		var ctx = target.getContext('2d');
+		if (typeof(s.documentElement) != 'undefined') {
+			// load from xml doc
+			svg.loadXmlDoc(ctx, s);
+		}
+		else if (s.substr(0,1) == '<') {
+			// load from xml string
+			svg.loadXml(ctx, s);
+		}
+		else {
+			// load from url
+			svg.load(ctx, s);
+		}
+	}
+
+	function build() {
+		var svg = { };
+
+		svg.FRAMERATE = 30;
+		svg.MAX_VIRTUAL_PIXELS = 30000;
+
+		// globals
+		svg.init = function(ctx) {
+			svg.Definitions = {};
+			svg.Styles = {};
+			svg.Animations = [];
+			svg.Images = [];
+			svg.ctx = ctx;
+			svg.ViewPort = new (function () {
+				this.viewPorts = [];
+				this.Clear = function() { this.viewPorts = []; }
+				this.SetCurrent = function(width, height) { this.viewPorts.push({ width: width, height: height }); }
+				this.RemoveCurrent = function() { this.viewPorts.pop(); }
+				this.Current = function() { return this.viewPorts[this.viewPorts.length - 1]; }
+				this.width = function() { return this.Current().width; }
+				this.height = function() { return this.Current().height; }
+				this.ComputeSize = function(d) {
+					if (d != null && typeof(d) == 'number') return d;
+					if (d == 'x') return this.width();
+					if (d == 'y') return this.height();
+					return Math.sqrt(Math.pow(this.width(), 2) + Math.pow(this.height(), 2)) / Math.sqrt(2);
+				}
+			});
+		}
+		svg.init();
+
+		// images loaded
+		svg.ImagesLoaded = function() {
+			for (var i=0; i<svg.Images.length; i++) {
+				if (!svg.Images[i].loaded) return false;
+			}
+			return true;
+		}
+
+		// trim
+		svg.trim = function(s) { return s.replace(/^\s+|\s+$/g, ''); }
+
+		// compress spaces
+		svg.compressSpaces = function(s) { return s.replace(/[\s\r\t\n]+/gm,' '); }
+
+		// ajax
+		svg.ajax = function(url) {
+			var AJAX;
+			if(window.XMLHttpRequest){AJAX=new XMLHttpRequest();}
+			else{AJAX=new ActiveXObject('Microsoft.XMLHTTP');}
+			if(AJAX){
+			   AJAX.open('GET',url,false);
+			   AJAX.send(null);
+			   return AJAX.responseText;
+			}
+			return null;
+		}
+
+		// parse xml
+		svg.parseXml = function(xml) {
+			if (window.DOMParser)
+			{
+				var parser = new DOMParser();
+				return parser.parseFromString(xml, 'text/xml');
+			}
+			else
+			{
+				xml = xml.replace(/<!DOCTYPE svg[^>]*>/, '');
+				var xmlDoc = new ActiveXObject('Microsoft.XMLDOM');
+				xmlDoc.async = 'false';
+				xmlDoc.loadXML(xml);
+				return xmlDoc;
+			}
+		}
+
+		svg.Property = function(name, value) {
+			this.name = name;
+			this.value = value;
+		}
+			svg.Property.prototype.getValue = function() {
+				return this.value;
+			}
+
+			svg.Property.prototype.hasValue = function() {
+				return (this.value != null && this.value !== '');
+			}
+
+			// return the numerical value of the property
+			svg.Property.prototype.numValue = function() {
+				if (!this.hasValue()) return 0;
+
+				var n = parseFloat(this.value);
+				if ((this.value + '').match(/%$/)) {
+					n = n / 100.0;
+				}
+				return n;
+			}
+
+			svg.Property.prototype.valueOrDefault = function(def) {
+				if (this.hasValue()) return this.value;
+				return def;
+			}
+
+			svg.Property.prototype.numValueOrDefault = function(def) {
+				if (this.hasValue()) return this.numValue();
+				return def;
+			}
+
+			// color extensions
+				// augment the current color value with the opacity
+				svg.Property.prototype.addOpacity = function(opacity) {
+					var newValue = this.value;
+					if (opacity != null && opacity != '' && typeof(this.value)=='string') { // can only add opacity to colors, not patterns
+						var color = new RGBColor(this.value);
+						if (color.ok) {
+							newValue = 'rgba(' + color.r + ', ' + color.g + ', ' + color.b + ', ' + opacity + ')';
+						}
+					}
+					return new svg.Property(this.name, newValue);
+				}
+
+			// definition extensions
+				// get the definition from the definitions table
+				svg.Property.prototype.getDefinition = function() {
+					var name = this.value.replace(/^(url\()?#([^\)]+)\)?$/, '$2');
+					return svg.Definitions[name];
+				}
+
+				svg.Property.prototype.isUrlDefinition = function() {
+					return this.value.indexOf('url(') == 0
+				}
+
+				svg.Property.prototype.getFillStyleDefinition = function(e) {
+					var def = this.getDefinition();
+
+					// gradient
+					if (def != null && def.createGradient) {
+						return def.createGradient(svg.ctx, e);
+					}
+
+					// pattern
+					if (def != null && def.createPattern) {
+						return def.createPattern(svg.ctx, e);
+					}
+
+					return null;
+				}
+
+			// length extensions
+				svg.Property.prototype.getDPI = function(viewPort) {
+					return 96.0; // TODO: compute?
+				}
+
+				svg.Property.prototype.getEM = function(viewPort) {
+					var em = 12;
+
+					var fontSize = new svg.Property('fontSize', svg.Font.Parse(svg.ctx.font).fontSize);
+					if (fontSize.hasValue()) em = fontSize.toPixels(viewPort);
+
+					return em;
+				}
+
+				svg.Property.prototype.getUnits = function() {
+					var s = this.value+'';
+					return s.replace(/[0-9\.\-]/g,'');
+				}
+
+				// get the length as pixels
+				svg.Property.prototype.toPixels = function(viewPort) {
+					if (!this.hasValue()) return 0;
+					var s = this.value+'';
+					if (s.match(/em$/)) return this.numValue() * this.getEM(viewPort);
+					if (s.match(/ex$/)) return this.numValue() * this.getEM(viewPort) / 2.0;
+					if (s.match(/px$/)) return this.numValue();
+					if (s.match(/pt$/)) return this.numValue() * this.getDPI(viewPort) * (1.0 / 72.0);
+					if (s.match(/pc$/)) return this.numValue() * 15;
+					if (s.match(/cm$/)) return this.numValue() * this.getDPI(viewPort) / 2.54;
+					if (s.match(/mm$/)) return this.numValue() * this.getDPI(viewPort) / 25.4;
+					if (s.match(/in$/)) return this.numValue() * this.getDPI(viewPort);
+					if (s.match(/%$/)) return this.numValue() * svg.ViewPort.ComputeSize(viewPort);
+					return this.numValue();
+				}
+
+			// time extensions
+				// get the time as milliseconds
+				svg.Property.prototype.toMilliseconds = function() {
+					if (!this.hasValue()) return 0;
+					var s = this.value+'';
+					if (s.match(/s$/)) return this.numValue() * 1000;
+					if (s.match(/ms$/)) return this.numValue();
+					return this.numValue();
+				}
+
+			// angle extensions
+				// get the angle as radians
+				svg.Property.prototype.toRadians = function() {
+					if (!this.hasValue()) return 0;
+					var s = this.value+'';
+					if (s.match(/deg$/)) return this.numValue() * (Math.PI / 180.0);
+					if (s.match(/grad$/)) return this.numValue() * (Math.PI / 200.0);
+					if (s.match(/rad$/)) return this.numValue();
+					return this.numValue() * (Math.PI / 180.0);
+				}
+
+		// fonts
+		svg.Font = new (function() {
+			this.Styles = 'normal|italic|oblique|inherit';
+			this.Variants = 'normal|small-caps|inherit';
+			this.Weights = 'normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900|inherit';
+
+			this.CreateFont = function(fontStyle, fontVariant, fontWeight, fontSize, fontFamily, inherit) {
+				var f = inherit != null ? this.Parse(inherit) : this.CreateFont('', '', '', '', '', svg.ctx.font);
+				return {
+					fontFamily: fontFamily || f.fontFamily,
+					fontSize: fontSize || f.fontSize,
+					fontStyle: fontStyle || f.fontStyle,
+					fontWeight: fontWeight || f.fontWeight,
+					fontVariant: fontVariant || f.fontVariant,
+					toString: function () { return [this.fontStyle, this.fontVariant, this.fontWeight, this.fontSize, this.fontFamily].join(' ') }
+				}
+			}
+
+			var that = this;
+			this.Parse = function(s) {
+				var f = {};
+				var d = svg.trim(svg.compressSpaces(s || '')).split(' ');
+				var set = { fontSize: false, fontStyle: false, fontWeight: false, fontVariant: false }
+				var ff = '';
+				for (var i=0; i<d.length; i++) {
+					if (!set.fontStyle && that.Styles.indexOf(d[i]) != -1) { if (d[i] != 'inherit') f.fontStyle = d[i]; set.fontStyle = true; }
+					else if (!set.fontVariant && that.Variants.indexOf(d[i]) != -1) { if (d[i] != 'inherit') f.fontVariant = d[i]; set.fontStyle = set.fontVariant = true;	}
+					else if (!set.fontWeight && that.Weights.indexOf(d[i]) != -1) {	if (d[i] != 'inherit') f.fontWeight = d[i]; set.fontStyle = set.fontVariant = set.fontWeight = true; }
+					else if (!set.fontSize) { if (d[i] != 'inherit') f.fontSize = d[i].split('/')[0]; set.fontStyle = set.fontVariant = set.fontWeight = set.fontSize = true; }
+					else { if (d[i] != 'inherit') ff += d[i]; }
+				} if (ff != '') f.fontFamily = ff;
+				return f;
+			}
+		});
+
+		// points and paths
+		svg.ToNumberArray = function(s) {
+			var a = svg.trim(svg.compressSpaces((s || '').replace(/,/g, ' '))).split(' ');
+			for (var i=0; i<a.length; i++) {
+				a[i] = parseFloat(a[i]);
+			}
+			return a;
+		}
+		svg.Point = function(x, y) {
+			this.x = x;
+			this.y = y;
+		}
+			svg.Point.prototype.angleTo = function(p) {
+				return Math.atan2(p.y - this.y, p.x - this.x);
+			}
+
+			svg.Point.prototype.applyTransform = function(v) {
+				var xp = this.x * v[0] + this.y * v[2] + v[4];
+				var yp = this.x * v[1] + this.y * v[3] + v[5];
+				this.x = xp;
+				this.y = yp;
+			}
+
+		svg.CreatePoint = function(s) {
+			var a = svg.ToNumberArray(s);
+			return new svg.Point(a[0], a[1]);
+		}
+		svg.CreatePath = function(s) {
+			var a = svg.ToNumberArray(s);
+			var path = [];
+			for (var i=0; i<a.length; i+=2) {
+				path.push(new svg.Point(a[i], a[i+1]));
+			}
+			return path;
+		}
+
+		// bounding box
+		svg.BoundingBox = function(x1, y1, x2, y2) { // pass in initial points if you want
+			this.x1 = Number.NaN;
+			this.y1 = Number.NaN;
+			this.x2 = Number.NaN;
+			this.y2 = Number.NaN;
+
+			this.x = function() { return this.x1; }
+			this.y = function() { return this.y1; }
+			this.width = function() { return this.x2 - this.x1; }
+			this.height = function() { return this.y2 - this.y1; }
+
+			this.addPoint = function(x, y) {
+				if (x != null) {
+					if (isNaN(this.x1) || isNaN(this.x2)) {
+						this.x1 = x;
+						this.x2 = x;
+					}
+					if (x < this.x1) this.x1 = x;
+					if (x > this.x2) this.x2 = x;
+				}
+
+				if (y != null) {
+					if (isNaN(this.y1) || isNaN(this.y2)) {
+						this.y1 = y;
+						this.y2 = y;
+					}
+					if (y < this.y1) this.y1 = y;
+					if (y > this.y2) this.y2 = y;
+				}
+			}
+			this.addX = function(x) { this.addPoint(x, null); }
+			this.addY = function(y) { this.addPoint(null, y); }
+
+			this.addBoundingBox = function(bb) {
+				this.addPoint(bb.x1, bb.y1);
+				this.addPoint(bb.x2, bb.y2);
+			}
+
+			this.addQuadraticCurve = function(p0x, p0y, p1x, p1y, p2x, p2y) {
+				var cp1x = p0x + 2/3 * (p1x - p0x); // CP1 = QP0 + 2/3 *(QP1-QP0)
+				var cp1y = p0y + 2/3 * (p1y - p0y); // CP1 = QP0 + 2/3 *(QP1-QP0)
+				var cp2x = cp1x + 1/3 * (p2x - p0x); // CP2 = CP1 + 1/3 *(QP2-QP0)
+				var cp2y = cp1y + 1/3 * (p2y - p0y); // CP2 = CP1 + 1/3 *(QP2-QP0)
+				this.addBezierCurve(p0x, p0y, cp1x, cp2x, cp1y,	cp2y, p2x, p2y);
+			}
+
+			this.addBezierCurve = function(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y) {
+				// from http://blog.hackers-cafe.net/2009/06/how-to-calculate-bezier-curves-bounding.html
+				var p0 = [p0x, p0y], p1 = [p1x, p1y], p2 = [p2x, p2y], p3 = [p3x, p3y];
+				this.addPoint(p0[0], p0[1]);
+				this.addPoint(p3[0], p3[1]);
+
+				for (i=0; i<=1; i++) {
+					var f = function(t) {
+						return Math.pow(1-t, 3) * p0[i]
+						+ 3 * Math.pow(1-t, 2) * t * p1[i]
+						+ 3 * (1-t) * Math.pow(t, 2) * p2[i]
+						+ Math.pow(t, 3) * p3[i];
+					}
+
+					var b = 6 * p0[i] - 12 * p1[i] + 6 * p2[i];
+					var a = -3 * p0[i] + 9 * p1[i] - 9 * p2[i] + 3 * p3[i];
+					var c = 3 * p1[i] - 3 * p0[i];
+
+					if (a == 0) {
+						if (b == 0) continue;
+						var t = -c / b;
+						if (0 < t && t < 1) {
+							if (i == 0) this.addX(f(t));
+							if (i == 1) this.addY(f(t));
+						}
+						continue;
+					}
+
+					var b2ac = Math.pow(b, 2) - 4 * c * a;
+					if (b2ac < 0) continue;
+					var t1 = (-b + Math.sqrt(b2ac)) / (2 * a);
+					if (0 < t1 && t1 < 1) {
+						if (i == 0) this.addX(f(t1));
+						if (i == 1) this.addY(f(t1));
+					}
+					var t2 = (-b - Math.sqrt(b2ac)) / (2 * a);
+					if (0 < t2 && t2 < 1) {
+						if (i == 0) this.addX(f(t2));
+						if (i == 1) this.addY(f(t2));
+					}
+				}
+			}
+
+			this.isPointInBox = function(x, y) {
+				return (this.x1 <= x && x <= this.x2 && this.y1 <= y && y <= this.y2);
+			}
+
+			this.addPoint(x1, y1);
+			this.addPoint(x2, y2);
+		}
+
+		// transforms
+		svg.Transform = function(v) {
+			var that = this;
+			this.Type = {}
+
+			// translate
+			this.Type.translate = function(s) {
+				this.p = svg.CreatePoint(s);
+				this.apply = function(ctx) {
+					ctx.translate(this.p.x || 0.0, this.p.y || 0.0);
+				}
+				this.applyToPoint = function(p) {
+					p.applyTransform([1, 0, 0, 1, this.p.x || 0.0, this.p.y || 0.0]);
+				}
+			}
+
+			// rotate
+			this.Type.rotate = function(s) {
+				var a = svg.ToNumberArray(s);
+				this.angle = new svg.Property('angle', a[0]);
+				this.cx = a[1] || 0;
+				this.cy = a[2] || 0;
+				this.apply = function(ctx) {
+					ctx.translate(this.cx, this.cy);
+					ctx.rotate(this.angle.toRadians());
+					ctx.translate(-this.cx, -this.cy);
+				}
+				this.applyToPoint = function(p) {
+					var a = this.angle.toRadians();
+					p.applyTransform([1, 0, 0, 1, this.p.x || 0.0, this.p.y || 0.0]);
+					p.applyTransform([Math.cos(a), Math.sin(a), -Math.sin(a), Math.cos(a), 0, 0]);
+					p.applyTransform([1, 0, 0, 1, -this.p.x || 0.0, -this.p.y || 0.0]);
+				}
+			}
+
+			this.Type.scale = function(s) {
+				this.p = svg.CreatePoint(s);
+				this.apply = function(ctx) {
+					ctx.scale(this.p.x || 1.0, this.p.y || this.p.x || 1.0);
+				}
+				this.applyToPoint = function(p) {
+					p.applyTransform([this.p.x || 0.0, 0, 0, this.p.y || 0.0, 0, 0]);
+				}
+			}
+
+			this.Type.matrix = function(s) {
+				this.m = svg.ToNumberArray(s);
+				this.apply = function(ctx) {
+					ctx.transform(this.m[0], this.m[1], this.m[2], this.m[3], this.m[4], this.m[5]);
+				}
+				this.applyToPoint = function(p) {
+					p.applyTransform(this.m);
+				}
+			}
+
+			this.Type.SkewBase = function(s) {
+				this.base = that.Type.matrix;
+				this.base(s);
+				this.angle = new svg.Property('angle', s);
+			}
+			this.Type.SkewBase.prototype = new this.Type.matrix;
+
+			this.Type.skewX = function(s) {
+				this.base = that.Type.SkewBase;
+				this.base(s);
+				this.m = [1, 0, Math.tan(this.angle.toRadians()), 1, 0, 0];
+			}
+			this.Type.skewX.prototype = new this.Type.SkewBase;
+
+			this.Type.skewY = function(s) {
+				this.base = that.Type.SkewBase;
+				this.base(s);
+				this.m = [1, Math.tan(this.angle.toRadians()), 0, 1, 0, 0];
+			}
+			this.Type.skewY.prototype = new this.Type.SkewBase;
+
+			this.transforms = [];
+
+			this.apply = function(ctx) {
+				for (var i=0; i<this.transforms.length; i++) {
+					this.transforms[i].apply(ctx);
+				}
+			}
+
+			this.applyToPoint = function(p) {
+				for (var i=0; i<this.transforms.length; i++) {
+					this.transforms[i].applyToPoint(p);
+				}
+			}
+
+			var data = svg.trim(svg.compressSpaces(v)).split(/\s(?=[a-z])/);
+			for (var i=0; i<data.length; i++) {
+				var type = data[i].split('(')[0];
+				var s = data[i].split('(')[1].replace(')','');
+				var transform = new this.Type[type](s);
+				this.transforms.push(transform);
+			}
+		}
+
+		// aspect ratio
+		svg.AspectRatio = function(ctx, aspectRatio, width, desiredWidth, height, desiredHeight, minX, minY, refX, refY) {
+			// aspect ratio - http://www.w3.org/TR/SVG/coords.html#PreserveAspectRatioAttribute
+			aspectRatio = svg.compressSpaces(aspectRatio);
+			aspectRatio = aspectRatio.replace(/^defer\s/,''); // ignore defer
+			var align = aspectRatio.split(' ')[0] || 'xMidYMid';
+			var meetOrSlice = aspectRatio.split(' ')[1] || 'meet';
+
+			// calculate scale
+			var scaleX = width / desiredWidth;
+			var scaleY = height / desiredHeight;
+			var scaleMin = Math.min(scaleX, scaleY);
+			var scaleMax = Math.max(scaleX, scaleY);
+			if (meetOrSlice == 'meet') { desiredWidth *= scaleMin; desiredHeight *= scaleMin; }
+			if (meetOrSlice == 'slice') { desiredWidth *= scaleMax; desiredHeight *= scaleMax; }
+
+			refX = new svg.Property('refX', refX);
+			refY = new svg.Property('refY', refY);
+			if (refX.hasValue() && refY.hasValue()) {
+				ctx.translate(-scaleMin * refX.toPixels('x'), -scaleMin * refY.toPixels('y'));
+			}
+			else {
+				// align
+				if (align.match(/^xMid/) && ((meetOrSlice == 'meet' && scaleMin == scaleY) || (meetOrSlice == 'slice' && scaleMax == scaleY))) ctx.translate(width / 2.0 - desiredWidth / 2.0, 0);
+				if (align.match(/YMid$/) && ((meetOrSlice == 'meet' && scaleMin == scaleX) || (meetOrSlice == 'slice' && scaleMax == scaleX))) ctx.translate(0, height / 2.0 - desiredHeight / 2.0);
+				if (align.match(/^xMax/) && ((meetOrSlice == 'meet' && scaleMin == scaleY) || (meetOrSlice == 'slice' && scaleMax == scaleY))) ctx.translate(width - desiredWidth, 0);
+				if (align.match(/YMax$/) && ((meetOrSlice == 'meet' && scaleMin == scaleX) || (meetOrSlice == 'slice' && scaleMax == scaleX))) ctx.translate(0, height - desiredHeight);
+			}
+
+			// scale
+			if (align == 'none') ctx.scale(scaleX, scaleY);
+			else if (meetOrSlice == 'meet') ctx.scale(scaleMin, scaleMin);
+			else if (meetOrSlice == 'slice') ctx.scale(scaleMax, scaleMax);
+
+			// translate
+			ctx.translate(minX == null ? 0 : -minX, minY == null ? 0 : -minY);
+		}
+
+		// elements
+		svg.Element = {}
+
+		svg.EmptyProperty = new svg.Property('EMPTY', '');
+
+		svg.Element.ElementBase = function(node) {
+			this.attributes = {};
+			this.styles = {};
+			this.children = [];
+
+			// get or create attribute
+			this.attribute = function(name, createIfNotExists) {
+				var a = this.attributes[name];
+				if (a != null) return a;
+
+				if (createIfNotExists == true) { a = new svg.Property(name, ''); this.attributes[name] = a; }
+				return a || svg.EmptyProperty;
+			}
+
+			// get or create style, crawls up node tree
+			this.style = function(name, createIfNotExists) {
+				var s = this.styles[name];
+				if (s != null) return s;
+
+				var a = this.attribute(name);
+				if (a != null && a.hasValue()) {
+					this.styles[name] = a; // move up to me to cache
+					return a;
+				}
+
+				var p = this.parent;
+				if (p != null) {
+					var ps = p.style(name);
+					if (ps != null && ps.hasValue()) {
+						return ps;
+					}
+				}
+
+				if (createIfNotExists == true) { s = new svg.Property(name, ''); this.styles[name] = s; }
+				return s || svg.EmptyProperty;
+			}
+
+			// base render
+			this.render = function(ctx) {
+				// don't render display=none
+				if (this.style('display').value == 'none') return;
+
+				// don't render visibility=hidden
+				if (this.attribute('visibility').value == 'hidden') return;
+
+				ctx.save();
+					this.setContext(ctx);
+						// mask
+						if (this.attribute('mask').hasValue()) {
+							var mask = this.attribute('mask').getDefinition();
+							if (mask != null) mask.apply(ctx, this);
+						}
+						else if (this.style('filter').hasValue()) {
+							var filter = this.style('filter').getDefinition();
+							if (filter != null) filter.apply(ctx, this);
+						}
+						else this.renderChildren(ctx);
+					this.clearContext(ctx);
+				ctx.restore();
+			}
+
+			// base set context
+			this.setContext = function(ctx) {
+				// OVERRIDE ME!
+			}
+
+			// base clear context
+			this.clearContext = function(ctx) {
+				// OVERRIDE ME!
+			}
+
+			// base render children
+			this.renderChildren = function(ctx) {
+				for (var i=0; i<this.children.length; i++) {
+					this.children[i].render(ctx);
+				}
+			}
+
+			this.addChild = function(childNode, create) {
+				var child = childNode;
+				if (create) child = svg.CreateElement(childNode);
+				child.parent = this;
+				this.children.push(child);
+			}
+
+			if (node != null && node.nodeType == 1) { //ELEMENT_NODE
+				// add children
+				for (var i=0; i<node.childNodes.length; i++) {
+					var childNode = node.childNodes[i];
+					if (childNode.nodeType == 1) this.addChild(childNode, true); //ELEMENT_NODE
+				}
+
+				// add attributes
+				for (var i=0; i<node.attributes.length; i++) {
+					var attribute = node.attributes[i];
+					this.attributes[attribute.nodeName] = new svg.Property(attribute.nodeName, attribute.nodeValue);
+				}
+
+				// add tag styles
+				var styles = svg.Styles[node.nodeName];
+				if (styles != null) {
+					for (var name in styles) {
+						this.styles[name] = styles[name];
+					}
+				}
+
+				// add class styles
+				if (this.attribute('class').hasValue()) {
+					var classes = svg.compressSpaces(this.attribute('class').value).split(' ');
+					for (var j=0; j<classes.length; j++) {
+						styles = svg.Styles['.'+classes[j]];
+						if (styles != null) {
+							for (var name in styles) {
+								this.styles[name] = styles[name];
+							}
+						}
+						styles = svg.Styles[node.nodeName+'.'+classes[j]];
+						if (styles != null) {
+							for (var name in styles) {
+								this.styles[name] = styles[name];
+							}
+						}
+					}
+				}
+
+				// add id styles
+				if (this.attribute('id').hasValue()) {
+					var styles = svg.Styles['#' + this.attribute('id').value];
+					if (styles != null) {
+						for (var name in styles) {
+							this.styles[name] = styles[name];
+						}
+					}
+				}
+
+				// add inline styles
+				if (this.attribute('style').hasValue()) {
+					var styles = this.attribute('style').value.split(';');
+					for (var i=0; i<styles.length; i++) {
+						if (svg.trim(styles[i]) != '') {
+							var style = styles[i].split(':');
+							var name = svg.trim(style[0]);
+							var value = svg.trim(style[1]);
+							this.styles[name] = new svg.Property(name, value);
+						}
+					}
+				}
+
+				// add id
+				if (this.attribute('id').hasValue()) {
+					if (svg.Definitions[this.attribute('id').value] == null) {
+						svg.Definitions[this.attribute('id').value] = this;
+					}
+				}
+			}
+		}
+
+		svg.Element.RenderedElementBase = function(node) {
+			this.base = svg.Element.ElementBase;
+			this.base(node);
+
+			this.setContext = function(ctx) {
+				// fill
+				if (this.style('fill').isUrlDefinition()) {
+					var fs = this.style('fill').getFillStyleDefinition(this);
+					if (fs != null) ctx.fillStyle = fs;
+				}
+				else if (this.style('fill').hasValue()) {
+					var fillStyle = this.style('fill');
+					if (fillStyle.value == 'currentColor') fillStyle.value = this.style('color').value;
+					ctx.fillStyle = (fillStyle.value == 'none' ? 'rgba(0,0,0,0)' : fillStyle.value);
+				}
+				if (this.style('fill-opacity').hasValue()) {
+					var fillStyle = new svg.Property('fill', ctx.fillStyle);
+					fillStyle = fillStyle.addOpacity(this.style('fill-opacity').value);
+					ctx.fillStyle = fillStyle.value;
+				}
+
+				// stroke
+				if (this.style('stroke').isUrlDefinition()) {
+					var fs = this.style('stroke').getFillStyleDefinition(this);
+					if (fs != null) ctx.strokeStyle = fs;
+				}
+				else if (this.style('stroke').hasValue()) {
+					var strokeStyle = this.style('stroke');
+					if (strokeStyle.value == 'currentColor') strokeStyle.value = this.style('color').value;
+					ctx.strokeStyle = (strokeStyle.value == 'none' ? 'rgba(0,0,0,0)' : strokeStyle.value);
+				}
+				if (this.style('stroke-opacity').hasValue()) {
+					var strokeStyle = new svg.Property('stroke', ctx.strokeStyle);
+					strokeStyle = strokeStyle.addOpacity(this.style('stroke-opacity').value);
+					ctx.strokeStyle = strokeStyle.value;
+				}
+				if (this.style('stroke-width').hasValue()) ctx.lineWidth = this.style('stroke-width').toPixels();
+				if (this.style('stroke-linecap').hasValue()) ctx.lineCap = this.style('stroke-linecap').value;
+				if (this.style('stroke-linejoin').hasValue()) ctx.lineJoin = this.style('stroke-linejoin').value;
+				if (this.style('stroke-miterlimit').hasValue()) ctx.miterLimit = this.style('stroke-miterlimit').value;
+
+				// font
+				if (typeof(ctx.font) != 'undefined') {
+					ctx.font = svg.Font.CreateFont(
+						this.style('font-style').value,
+						this.style('font-variant').value,
+						this.style('font-weight').value,
+						this.style('font-size').hasValue() ? this.style('font-size').toPixels() + 'px' : '',
+						this.style('font-family').value).toString();
+				}
+
+				// transform
+				if (this.attribute('transform').hasValue()) {
+					var transform = new svg.Transform(this.attribute('transform').value);
+					transform.apply(ctx);
+				}
+
+				// clip
+				if (this.attribute('clip-path').hasValue()) {
+					var clip = this.attribute('clip-path').getDefinition();
+					if (clip != null) clip.apply(ctx);
+				}
+
+				// opacity
+				if (this.style('opacity').hasValue()) {
+					ctx.globalAlpha = this.style('opacity').numValue();
+				}
+			}
+		}
+		svg.Element.RenderedElementBase.prototype = new svg.Element.ElementBase;
+
+		svg.Element.PathElementBase = function(node) {
+			this.base = svg.Element.RenderedElementBase;
+			this.base(node);
+
+			this.path = function(ctx) {
+				if (ctx != null) ctx.beginPath();
+				return new svg.BoundingBox();
+			}
+
+			this.renderChildren = function(ctx) {
+				this.path(ctx);
+				svg.Mouse.checkPath(this, ctx);
+				if (ctx.fillStyle != '') ctx.fill();
+				if (ctx.strokeStyle != '') ctx.stroke();
+
+				var markers = this.getMarkers();
+				if (markers != null) {
+					if (this.style('marker-start').isUrlDefinition()) {
+						var marker = this.style('marker-start').getDefinition();
+						marker.render(ctx, markers[0][0], markers[0][1]);
+					}
+					if (this.style('marker-mid').isUrlDefinition()) {
+						var marker = this.style('marker-mid').getDefinition();
+						for (var i=1;i<markers.length-1;i++) {
+							marker.render(ctx, markers[i][0], markers[i][1]);
+						}
+					}
+					if (this.style('marker-end').isUrlDefinition()) {
+						var marker = this.style('marker-end').getDefinition();
+						marker.render(ctx, markers[markers.length-1][0], markers[markers.length-1][1]);
+					}
+				}
+			}
+
+			this.getBoundingBox = function() {
+				return this.path();
+			}
+
+			this.getMarkers = function() {
+				return null;
+			}
+		}
+		svg.Element.PathElementBase.prototype = new svg.Element.RenderedElementBase;
+
+		// svg element
+		svg.Element.svg = function(node) {
+			this.base = svg.Element.RenderedElementBase;
+			this.base(node);
+
+			this.baseClearContext = this.clearContext;
+			this.clearContext = function(ctx) {
+				this.baseClearContext(ctx);
+				svg.ViewPort.RemoveCurrent();
+			}
+
+			this.baseSetContext = this.setContext;
+			this.setContext = function(ctx) {
+				// initial values
+				ctx.strokeStyle = 'rgba(0,0,0,0)';
+				ctx.lineCap = 'butt';
+				ctx.lineJoin = 'miter';
+				ctx.miterLimit = 4;
+
+				this.baseSetContext(ctx);
+
+				// create new view port
+				if (!this.attribute('x').hasValue()) this.attribute('x', true).value = 0;
+				if (!this.attribute('y').hasValue()) this.attribute('y', true).value = 0;
+				ctx.translate(this.attribute('x').toPixels('x'), this.attribute('y').toPixels('y'));
+
+				var width = svg.ViewPort.width();
+				var height = svg.ViewPort.height();
+
+				if (!this.attribute('width').hasValue()) this.attribute('width', true).value = '100%';
+				if (!this.attribute('height').hasValue()) this.attribute('height', true).value = '100%';
+				if (typeof(this.root) == 'undefined') {
+					width = this.attribute('width').toPixels('x');
+					height = this.attribute('height').toPixels('y');
+
+					var x = 0;
+					var y = 0;
+					if (this.attribute('refX').hasValue() && this.attribute('refY').hasValue()) {
+						x = -this.attribute('refX').toPixels('x');
+						y = -this.attribute('refY').toPixels('y');
+					}
+
+					ctx.beginPath();
+					ctx.moveTo(x, y);
+					ctx.lineTo(width, y);
+					ctx.lineTo(width, height);
+					ctx.lineTo(x, height);
+					ctx.closePath();
+					ctx.clip();
+				}
+				svg.ViewPort.SetCurrent(width, height);
+
+				// viewbox
+				if (this.attribute('viewBox').hasValue()) {
+					var viewBox = svg.ToNumberArray(this.attribute('viewBox').value);
+					var minX = viewBox[0];
+					var minY = viewBox[1];
+					width = viewBox[2];
+					height = viewBox[3];
+
+					svg.AspectRatio(ctx,
+									this.attribute('preserveAspectRatio').value,
+									svg.ViewPort.width(),
+									width,
+									svg.ViewPort.height(),
+									height,
+									minX,
+									minY,
+									this.attribute('refX').value,
+									this.attribute('refY').value);
+
+					svg.ViewPort.RemoveCurrent();
+					svg.ViewPort.SetCurrent(viewBox[2], viewBox[3]);
+				}
+			}
+		}
+		svg.Element.svg.prototype = new svg.Element.RenderedElementBase;
+
+		// rect element
+		svg.Element.rect = function(node) {
+			this.base = svg.Element.PathElementBase;
+			this.base(node);
+
+			this.path = function(ctx) {
+				var x = this.attribute('x').toPixels('x');
+				var y = this.attribute('y').toPixels('y');
+				var width = this.attribute('width').toPixels('x');
+				var height = this.attribute('height').toPixels('y');
+				var rx = this.attribute('rx').toPixels('x');
+				var ry = this.attribute('ry').toPixels('y');
+				if (this.attribute('rx').hasValue() && !this.attribute('ry').hasValue()) ry = rx;
+				if (this.attribute('ry').hasValue() && !this.attribute('rx').hasValue()) rx = ry;
+
+				if (ctx != null) {
+					ctx.beginPath();
+					ctx.moveTo(x + rx, y);
+					ctx.lineTo(x + width - rx, y);
+					ctx.quadraticCurveTo(x + width, y, x + width, y + ry)
+					ctx.lineTo(x + width, y + height - ry);
+					ctx.quadraticCurveTo(x + width, y + height, x + width - rx, y + height)
+					ctx.lineTo(x + rx, y + height);
+					ctx.quadraticCurveTo(x, y + height, x, y + height - ry)
+					ctx.lineTo(x, y + ry);
+					ctx.quadraticCurveTo(x, y, x + rx, y)
+					ctx.closePath();
+				}
+
+				return new svg.BoundingBox(x, y, x + width, y + height);
+			}
+		}
+		svg.Element.rect.prototype = new svg.Element.PathElementBase;
+
+		// circle element
+		svg.Element.circle = function(node) {
+			this.base = svg.Element.PathElementBase;
+			this.base(node);
+
+			this.path = function(ctx) {
+				var cx = this.attribute('cx').toPixels('x');
+				var cy = this.attribute('cy').toPixels('y');
+				var r = this.attribute('r').toPixels();
+
+				if (ctx != null) {
+					ctx.beginPath();
+					ctx.arc(cx, cy, r, 0, Math.PI * 2, true);
+					ctx.closePath();
+				}
+
+				return new svg.BoundingBox(cx - r, cy - r, cx + r, cy + r);
+			}
+		}
+		svg.Element.circle.prototype = new svg.Element.PathElementBase;
+
+		// ellipse element
+		svg.Element.ellipse = function(node) {
+			this.base = svg.Element.PathElementBase;
+			this.base(node);
+
+			this.path = function(ctx) {
+				var KAPPA = 4 * ((Math.sqrt(2) - 1) / 3);
+				var rx = this.attribute('rx').toPixels('x');
+				var ry = this.attribute('ry').toPixels('y');
+				var cx = this.attribute('cx').toPixels('x');
+				var cy = this.attribute('cy').toPixels('y');
+
+				if (ctx != null) {
+					ctx.beginPath();
+					ctx.moveTo(cx, cy - ry);
+					ctx.bezierCurveTo(cx + (KAPPA * rx), cy - ry,  cx + rx, cy - (KAPPA * ry), cx + rx, cy);
+					ctx.bezierCurveTo(cx + rx, cy + (KAPPA * ry), cx + (KAPPA * rx), cy + ry, cx, cy + ry);
+					ctx.bezierCurveTo(cx - (KAPPA * rx), cy + ry, cx - rx, cy + (KAPPA * ry), cx - rx, cy);
+					ctx.bezierCurveTo(cx - rx, cy - (KAPPA * ry), cx - (KAPPA * rx), cy - ry, cx, cy - ry);
+					ctx.closePath();
+				}
+
+				return new svg.BoundingBox(cx - rx, cy - ry, cx + rx, cy + ry);
+			}
+		}
+		svg.Element.ellipse.prototype = new svg.Element.PathElementBase;
+
+		// line element
+		svg.Element.line = function(node) {
+			this.base = svg.Element.PathElementBase;
+			this.base(node);
+
+			this.getPoints = function() {
+				return [
+					new svg.Point(this.attribute('x1').toPixels('x'), this.attribute('y1').toPixels('y')),
+					new svg.Point(this.attribute('x2').toPixels('x'), this.attribute('y2').toPixels('y'))];
+			}
+
+			this.path = function(ctx) {
+				var points = this.getPoints();
+
+				if (ctx != null) {
+					ctx.beginPath();
+					ctx.moveTo(points[0].x, points[0].y);
+					ctx.lineTo(points[1].x, points[1].y);
+				}
+
+				return new svg.BoundingBox(points[0].x, points[0].y, points[1].x, points[1].y);
+			}
+
+			this.getMarkers = function() {
+				var points = this.getPoints();
+				var a = points[0].angleTo(points[1]);
+				return [[points[0], a], [points[1], a]];
+			}
+		}
+		svg.Element.line.prototype = new svg.Element.PathElementBase;
+
+		// polyline element
+		svg.Element.polyline = function(node) {
+			this.base = svg.Element.PathElementBase;
+			this.base(node);
+
+			this.points = svg.CreatePath(this.attribute('points').value);
+			this.path = function(ctx) {
+				var bb = new svg.BoundingBox(this.points[0].x, this.points[0].y);
+				if (ctx != null) {
+					ctx.beginPath();
+					ctx.moveTo(this.points[0].x, this.points[0].y);
+				}
+				for (var i=1; i<this.points.length; i++) {
+					bb.addPoint(this.points[i].x, this.points[i].y);
+					if (ctx != null) ctx.lineTo(this.points[i].x, this.points[i].y);
+				}
+				return bb;
+			}
+
+			this.getMarkers = function() {
+				var markers = [];
+				for (var i=0; i<this.points.length - 1; i++) {
+					markers.push([this.points[i], this.points[i].angleTo(this.points[i+1])]);
+				}
+				markers.push([this.points[this.points.length-1], markers[markers.length-1][1]]);
+				return markers;
+			}
+		}
+		svg.Element.polyline.prototype = new svg.Element.PathElementBase;
+
+		// polygon element
+		svg.Element.polygon = function(node) {
+			this.base = svg.Element.polyline;
+			this.base(node);
+
+			this.basePath = this.path;
+			this.path = function(ctx) {
+				var bb = this.basePath(ctx);
+				if (ctx != null) {
+					ctx.lineTo(this.points[0].x, this.points[0].y);
+					ctx.closePath();
+				}
+				return bb;
+			}
+		}
+		svg.Element.polygon.prototype = new svg.Element.polyline;
+
+		// path element
+		svg.Element.path = function(node) {
+			this.base = svg.Element.PathElementBase;
+			this.base(node);
+
+			var d = this.attribute('d').value;
+			// TODO: convert to real lexer based on http://www.w3.org/TR/SVG11/paths.html#PathDataBNF
+			d = d.replace(/,/gm,' '); // get rid of all commas
+			d = d.replace(/([MmZzLlHhVvCcSsQqTtAa])([MmZzLlHhVvCcSsQqTtAa])/gm,'$1 $2'); // separate commands from commands
+			d = d.replace(/([MmZzLlHhVvCcSsQqTtAa])([MmZzLlHhVvCcSsQqTtAa])/gm,'$1 $2'); // separate commands from commands
+			d = d.replace(/([MmZzLlHhVvCcSsQqTtAa])([^\s])/gm,'$1 $2'); // separate commands from points
+			d = d.replace(/([^\s])([MmZzLlHhVvCcSsQqTtAa])/gm,'$1 $2'); // separate commands from points
+			d = d.replace(/([0-9])([+\-])/gm,'$1 $2'); // separate digits when no comma
+			d = d.replace(/(\.[0-9]*)(\.)/gm,'$1 $2'); // separate digits when no comma
+			d = d.replace(/([Aa](\s+[0-9]+){3})\s+([01])\s*([01])/gm,'$1 $3 $4 '); // shorthand elliptical arc path syntax
+			d = svg.compressSpaces(d); // compress multiple spaces
+			d = svg.trim(d);
+			this.PathParser = new (function(d) {
+				this.tokens = d.split(' ');
+
+				this.reset = function() {
+					this.i = -1;
+					this.command = '';
+					this.previousCommand = '';
+					this.start = new svg.Point(0, 0);
+					this.control = new svg.Point(0, 0);
+					this.current = new svg.Point(0, 0);
+					this.points = [];
+					this.angles = [];
+				}
+
+				this.isEnd = function() {
+					return this.i >= this.tokens.length - 1;
+				}
+
+				this.isCommandOrEnd = function() {
+					if (this.isEnd()) return true;
+					return this.tokens[this.i + 1].match(/^[A-Za-z]$/) != null;
+				}
+
+				this.isRelativeCommand = function() {
+					switch(this.command)
+					{
+						case 'm':
+						case 'l':
+						case 'h':
+						case 'v':
+						case 'c':
+						case 's':
+						case 'q':
+						case 't':
+						case 'a':
+						case 'z':
+							return true;
+							break;
+					}
+					return false;
+				}
+
+				this.getToken = function() {
+					this.i++;
+					return this.tokens[this.i];
+				}
+
+				this.getScalar = function() {
+					return parseFloat(this.getToken());
+				}
+
+				this.nextCommand = function() {
+					this.previousCommand = this.command;
+					this.command = this.getToken();
+				}
+
+				this.getPoint = function() {
+					var p = new svg.Point(this.getScalar(), this.getScalar());
+					return this.makeAbsolute(p);
+				}
+
+				this.getAsControlPoint = function() {
+					var p = this.getPoint();
+					this.control = p;
+					return p;
+				}
+
+				this.getAsCurrentPoint = function() {
+					var p = this.getPoint();
+					this.current = p;
+					return p;
+				}
+
+				this.getReflectedControlPoint = function() {
+					if (this.previousCommand.toLowerCase() != 'c' && this.previousCommand.toLowerCase() != 's') {
+						return this.current;
+					}
+
+					// reflect point
+					var p = new svg.Point(2 * this.current.x - this.control.x, 2 * this.current.y - this.control.y);
+					return p;
+				}
+
+				this.makeAbsolute = function(p) {
+					if (this.isRelativeCommand()) {
+						p.x += this.current.x;
+						p.y += this.current.y;
+					}
+					return p;
+				}
+
+				this.addMarker = function(p, from, priorTo) {
+					// if the last angle isn't filled in because we didn't have this point yet ...
+					if (priorTo != null && this.angles.length > 0 && this.angles[this.angles.length-1] == null) {
+						this.angles[this.angles.length-1] = this.points[this.points.length-1].angleTo(priorTo);
+					}
+					this.addMarkerAngle(p, from == null ? null : from.angleTo(p));
+				}
+
+				this.addMarkerAngle = function(p, a) {
+					this.points.push(p);
+					this.angles.push(a);
+				}
+
+				this.getMarkerPoints = function() { return this.points; }
+				this.getMarkerAngles = function() {
+					for (var i=0; i<this.angles.length; i++) {
+						if (this.angles[i] == null) {
+							for (var j=i+1; j<this.angles.length; j++) {
+								if (this.angles[j] != null) {
+									this.angles[i] = this.angles[j];
+									break;
+								}
+							}
+						}
+					}
+					return this.angles;
+				}
+			})(d);
+
+			this.path = function(ctx) {
+				var pp = this.PathParser;
+				pp.reset();
+
+				var bb = new svg.BoundingBox();
+				if (ctx != null) ctx.beginPath();
+				while (!pp.isEnd()) {
+					pp.nextCommand();
+					switch (pp.command) {
+					case 'M':
+					case 'm':
+						var p = pp.getAsCurrentPoint();
+						pp.addMarker(p);
+						bb.addPoint(p.x, p.y);
+						if (ctx != null) ctx.moveTo(p.x, p.y);
+						pp.start = pp.current;
+						while (!pp.isCommandOrEnd()) {
+							var p = pp.getAsCurrentPoint();
+							pp.addMarker(p, pp.start);
+							bb.addPoint(p.x, p.y);
+							if (ctx != null) ctx.lineTo(p.x, p.y);
+						}
+						break;
+					case 'L':
+					case 'l':
+						while (!pp.isCommandOrEnd()) {
+							var c = pp.current;
+							var p = pp.getAsCurrentPoint();
+							pp.addMarker(p, c);
+							bb.addPoint(p.x, p.y);
+							if (ctx != null) ctx.lineTo(p.x, p.y);
+						}
+						break;
+					case 'H':
+					case 'h':
+						while (!pp.isCommandOrEnd()) {
+							var newP = new svg.Point((pp.isRelativeCommand() ? pp.current.x : 0) + pp.getScalar(), pp.current.y);
+							pp.addMarker(newP, pp.current);
+							pp.current = newP;
+							bb.addPoint(pp.current.x, pp.current.y);
+							if (ctx != null) ctx.lineTo(pp.current.x, pp.current.y);
+						}
+						break;
+					case 'V':
+					case 'v':
+						while (!pp.isCommandOrEnd()) {
+							var newP = new svg.Point(pp.current.x, (pp.isRelativeCommand() ? pp.current.y : 0) + pp.getScalar());
+							pp.addMarker(newP, pp.current);
+							pp.current = newP;
+							bb.addPoint(pp.current.x, pp.current.y);
+							if (ctx != null) ctx.lineTo(pp.current.x, pp.current.y);
+						}
+						break;
+					case 'C':
+					case 'c':
+						while (!pp.isCommandOrEnd()) {
+							var curr = pp.current;
+							var p1 = pp.getPoint();
+							var cntrl = pp.getAsControlPoint();
+							var cp = pp.getAsCurrentPoint();
+							pp.addMarker(cp, cntrl, p1);
+							bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+							if (ctx != null) ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+						}
+						break;
+					case 'S':
+					case 's':
+						while (!pp.isCommandOrEnd()) {
+							var curr = pp.current;
+							var p1 = pp.getReflectedControlPoint();
+							var cntrl = pp.getAsControlPoint();
+							var cp = pp.getAsCurrentPoint();
+							pp.addMarker(cp, cntrl, p1);
+							bb.addBezierCurve(curr.x, curr.y, p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+							if (ctx != null) ctx.bezierCurveTo(p1.x, p1.y, cntrl.x, cntrl.y, cp.x, cp.y);
+						}
+						break;
+					case 'Q':
+					case 'q':
+						while (!pp.isCommandOrEnd()) {
+							var curr = pp.current;
+							var cntrl = pp.getAsControlPoint();
+							var cp = pp.getAsCurrentPoint();
+							pp.addMarker(cp, cntrl, cntrl);
+							bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
+							if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
+						}
+						break;
+					case 'T':
+					case 't':
+						while (!pp.isCommandOrEnd()) {
+							var curr = pp.current;
+							var cntrl = pp.getReflectedControlPoint();
+							pp.control = cntrl;
+							var cp = pp.getAsCurrentPoint();
+							pp.addMarker(cp, cntrl, cntrl);
+							bb.addQuadraticCurve(curr.x, curr.y, cntrl.x, cntrl.y, cp.x, cp.y);
+							if (ctx != null) ctx.quadraticCurveTo(cntrl.x, cntrl.y, cp.x, cp.y);
+						}
+						break;
+					case 'A':
+					case 'a':
+						while (!pp.isCommandOrEnd()) {
+						    var curr = pp.current;
+							var rx = pp.getScalar();
+							var ry = pp.getScalar();
+							var xAxisRotation = pp.getScalar() * (Math.PI / 180.0);
+							var largeArcFlag = pp.getScalar();
+							var sweepFlag = pp.getScalar();
+							var cp = pp.getAsCurrentPoint();
+
+							// Conversion from endpoint to center parameterization
+							// http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
+							// x1', y1'
+							var currp = new svg.Point(
+								Math.cos(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.sin(xAxisRotation) * (curr.y - cp.y) / 2.0,
+								-Math.sin(xAxisRotation) * (curr.x - cp.x) / 2.0 + Math.cos(xAxisRotation) * (curr.y - cp.y) / 2.0
+							);
+							// adjust radii
+							var l = Math.pow(currp.x,2)/Math.pow(rx,2)+Math.pow(currp.y,2)/Math.pow(ry,2);
+							if (l > 1) {
+								rx *= Math.sqrt(l);
+								ry *= Math.sqrt(l);
+							}
+							// cx', cy'
+							var s = (largeArcFlag == sweepFlag ? -1 : 1) * Math.sqrt(
+								((Math.pow(rx,2)*Math.pow(ry,2))-(Math.pow(rx,2)*Math.pow(currp.y,2))-(Math.pow(ry,2)*Math.pow(currp.x,2))) /
+								(Math.pow(rx,2)*Math.pow(currp.y,2)+Math.pow(ry,2)*Math.pow(currp.x,2))
+							);
+							if (isNaN(s)) s = 0;
+							var cpp = new svg.Point(s * rx * currp.y / ry, s * -ry * currp.x / rx);
+							// cx, cy
+							var centp = new svg.Point(
+								(curr.x + cp.x) / 2.0 + Math.cos(xAxisRotation) * cpp.x - Math.sin(xAxisRotation) * cpp.y,
+								(curr.y + cp.y) / 2.0 + Math.sin(xAxisRotation) * cpp.x + Math.cos(xAxisRotation) * cpp.y
+							);
+							// vector magnitude
+							var m = function(v) { return Math.sqrt(Math.pow(v[0],2) + Math.pow(v[1],2)); }
+							// ratio between two vectors
+							var r = function(u, v) { return (u[0]*v[0]+u[1]*v[1]) / (m(u)*m(v)) }
+							// angle between two vectors
+							var a = function(u, v) { return (u[0]*v[1] < u[1]*v[0] ? -1 : 1) * Math.acos(r(u,v)); }
+							// initial angle
+							var a1 = a([1,0], [(currp.x-cpp.x)/rx,(currp.y-cpp.y)/ry]);
+							// angle delta
+							var u = [(currp.x-cpp.x)/rx,(currp.y-cpp.y)/ry];
+							var v = [(-currp.x-cpp.x)/rx,(-currp.y-cpp.y)/ry];
+							var ad = a(u, v);
+							if (r(u,v) <= -1) ad = Math.PI;
+							if (r(u,v) >= 1) ad = 0;
+
+							if (sweepFlag == 0 && ad > 0) ad = ad - 2 * Math.PI;
+							if (sweepFlag == 1 && ad < 0) ad = ad + 2 * Math.PI;
+
+							// for markers
+							var halfWay = new svg.Point(
+								centp.x + rx * Math.cos((a1 + (a1 + ad)) / 2),
+								centp.y + ry * Math.sin((a1 + (a1 + ad)) / 2)
+							);
+							pp.addMarkerAngle(halfWay, (a1 + (a1 + ad)) / 2 + (sweepFlag == 0 ? -1 : 1) * Math.PI / 2);
+							pp.addMarkerAngle(cp, (a1 + ad) + (sweepFlag == 0 ? -1 : 1) * Math.PI / 2);
+
+							bb.addPoint(cp.x, cp.y); // TODO: this is too naive, make it better
+							if (ctx != null) {
+								var r = rx > ry ? rx : ry;
+								var sx = rx > ry ? 1 : rx / ry;
+								var sy = rx > ry ? ry / rx : 1;
+
+								ctx.translate(centp.x, centp.y);
+								ctx.rotate(xAxisRotation);
+								ctx.scale(sx, sy);
+								ctx.arc(0, 0, r, a1, a1 + ad, 1 - sweepFlag);
+								ctx.scale(1/sx, 1/sy);
+								ctx.rotate(-xAxisRotation);
+								ctx.translate(-centp.x, -centp.y);
+							}
+						}
+						break;
+					case 'Z':
+					case 'z':
+						if (ctx != null) ctx.closePath();
+						pp.current = pp.start;
+					}
+				}
+
+				return bb;
+			}
+
+			this.getMarkers = function() {
+				var points = this.PathParser.getMarkerPoints();
+				var angles = this.PathParser.getMarkerAngles();
+
+				var markers = [];
+				for (var i=0; i<points.length; i++) {
+					markers.push([points[i], angles[i]]);
+				}
+				return markers;
+			}
+		}
+		svg.Element.path.prototype = new svg.Element.PathElementBase;
+
+		// pattern element
+		svg.Element.pattern = function(node) {
+			this.base = svg.Element.ElementBase;
+			this.base(node);
+
+			this.createPattern = function(ctx, element) {
+				// render me using a temporary svg element
+				var tempSvg = new svg.Element.svg();
+				tempSvg.attributes['viewBox'] = new svg.Property('viewBox', this.attribute('viewBox').value);
+				tempSvg.attributes['x'] = new svg.Property('x', this.attribute('x').value);
+				tempSvg.attributes['y'] = new svg.Property('y', this.attribute('y').value);
+				tempSvg.attributes['width'] = new svg.Property('width', this.attribute('width').value);
+				tempSvg.attributes['height'] = new svg.Property('height', this.attribute('height').value);
+				tempSvg.children = this.children;
+
+				var c = document.createElement('canvas');
+				document.body.appendChild(c);
+				c.width = this.attribute('width').toPixels('x') + this.attribute('x').toPixels('x');
+				c.height = this.attribute('height').toPixels('y')  + this.attribute('y').toPixels('y');
+				tempSvg.render(c.getContext('2d'));
+				return ctx.createPattern(c, 'repeat');
+			}
+		}
+		svg.Element.pattern.prototype = new svg.Element.ElementBase;
+
+		// marker element
+		svg.Element.marker = function(node) {
+			this.base = svg.Element.ElementBase;
+			this.base(node);
+
+			this.baseRender = this.render;
+			this.render = function(ctx, point, angle) {
+				ctx.translate(point.x, point.y);
+				if (this.attribute('orient').valueOrDefault('auto') == 'auto') ctx.rotate(angle);
+				if (this.attribute('markerUnits').valueOrDefault('strokeWidth') == 'strokeWidth') ctx.scale(ctx.lineWidth, ctx.lineWidth);
+				ctx.save();
+
+				// render me using a temporary svg element
+				var tempSvg = new svg.Element.svg();
+				tempSvg.attributes['viewBox'] = new svg.Property('viewBox', this.attribute('viewBox').value);
+				tempSvg.attributes['refX'] = new svg.Property('refX', this.attribute('refX').value);
+				tempSvg.attributes['refY'] = new svg.Property('refY', this.attribute('refY').value);
+				tempSvg.attributes['width'] = new svg.Property('width', this.attribute('markerWidth').value);
+				tempSvg.attributes['height'] = new svg.Property('height', this.attribute('markerHeight').value);
+				tempSvg.attributes['fill'] = new svg.Property('fill', this.attribute('fill').valueOrDefault('black'));
+				tempSvg.attributes['stroke'] = new svg.Property('stroke', this.attribute('stroke').valueOrDefault('none'));
+				tempSvg.children = this.children;
+				tempSvg.render(ctx);
+
+				ctx.restore();
+				if (this.attribute('markerUnits').valueOrDefault('strokeWidth') == 'strokeWidth') ctx.scale(1/ctx.lineWidth, 1/ctx.lineWidth);
+				if (this.attribute('orient').valueOrDefault('auto') == 'auto') ctx.rotate(-angle);
+				ctx.translate(-point.x, -point.y);
+			}
+		}
+		svg.Element.marker.prototype = new svg.Element.ElementBase;
+
+		// definitions element
+		svg.Element.defs = function(node) {
+			this.base = svg.Element.ElementBase;
+			this.base(node);
+
+			this.render = function(ctx) {
+				// NOOP
+			}
+		}
+		svg.Element.defs.prototype = new svg.Element.ElementBase;
+
+		// base for gradients
+		svg.Element.GradientBase = function(node) {
+			this.base = svg.Element.ElementBase;
+			this.base(node);
+
+			this.gradientUnits = this.attribute('gradientUnits').valueOrDefault('objectBoundingBox');
+
+			this.stops = [];
+			for (var i=0; i<this.children.length; i++) {
+				var child = this.children[i];
+				this.stops.push(child);
+			}
+
+			this.getGradient = function() {
+				// OVERRIDE ME!
+			}
+
+			this.createGradient = function(ctx, element) {
+				var stopsContainer = this;
+				if (this.attribute('xlink:href').hasValue()) {
+					stopsContainer = this.attribute('xlink:href').getDefinition();
+				}
+
+				var g = this.getGradient(ctx, element);
+				if (g == null) return stopsContainer.stops[stopsContainer.stops.length - 1].color;
+				for (var i=0; i<stopsContainer.stops.length; i++) {
+					g.addColorStop(stopsContainer.stops[i].offset, stopsContainer.stops[i].color);
+				}
+
+				if (this.attribute('gradientTransform').hasValue()) {
+					// render as transformed pattern on temporary canvas
+					var rootView = svg.ViewPort.viewPorts[0];
+
+					var rect = new svg.Element.rect();
+					rect.attributes['x'] = new svg.Property('x', -svg.MAX_VIRTUAL_PIXELS/3.0);
+					rect.attributes['y'] = new svg.Property('y', -svg.MAX_VIRTUAL_PIXELS/3.0);
+					rect.attributes['width'] = new svg.Property('width', svg.MAX_VIRTUAL_PIXELS);
+					rect.attributes['height'] = new svg.Property('height', svg.MAX_VIRTUAL_PIXELS);
+
+					var group = new svg.Element.g();
+					group.attributes['transform'] = new svg.Property('transform', this.attribute('gradientTransform').value);
+					group.children = [ rect ];
+
+					var tempSvg = new svg.Element.svg();
+					tempSvg.attributes['x'] = new svg.Property('x', 0);
+					tempSvg.attributes['y'] = new svg.Property('y', 0);
+					tempSvg.attributes['width'] = new svg.Property('width', rootView.width);
+					tempSvg.attributes['height'] = new svg.Property('height', rootView.height);
+					tempSvg.children = [ group ];
+
+					var c = document.createElement('canvas');
+					c.width = rootView.width;
+					c.height = rootView.height;
+					var tempCtx = c.getContext('2d');
+					tempCtx.fillStyle = g;
+					tempSvg.render(tempCtx);
+					return tempCtx.createPattern(c, 'no-repeat');
+				}
+
+				return g;
+			}
+		}
+		svg.Element.GradientBase.prototype = new svg.Element.ElementBase;
+
+		// linear gradient element
+		svg.Element.linearGradient = function(node) {
+			this.base = svg.Element.GradientBase;
+			this.base(node);
+
+			this.getGradient = function(ctx, element) {
+				var bb = element.getBoundingBox();
+
+				var x1 = (this.gradientUnits == 'objectBoundingBox'
+					? bb.x() + bb.width() * this.attribute('x1').numValue()
+					: this.attribute('x1').toPixels('x'));
+				var y1 = (this.gradientUnits == 'objectBoundingBox'
+					? bb.y() + bb.height() * this.attribute('y1').numValue()
+					: this.attribute('y1').toPixels('y'));
+				var x2 = (this.gradientUnits == 'objectBoundingBox'
+					? bb.x() + bb.width() * this.attribute('x2').numValue()
+					: this.attribute('x2').toPixels('x'));
+				var y2 = (this.gradientUnits == 'objectBoundingBox'
+					? bb.y() + bb.height() * this.attribute('y2').numValue()
+					: this.attribute('y2').toPixels('y'));
+
+				if (x1 == x2 && y1 == y2) return null;
+				return ctx.createLinearGradient(x1, y1, x2, y2);
+			}
+		}
+		svg.Element.linearGradient.prototype = new svg.Element.GradientBase;
+
+		// radial gradient element
+		svg.Element.radialGradient = function(node) {
+			this.base = svg.Element.GradientBase;
+			this.base(node);
+
+			this.getGradient = function(ctx, element) {
+				var bb = element.getBoundingBox();
+
+				if (!this.attribute('cx').hasValue()) this.attribute('cx', true).value = '50%';
+				if (!this.attribute('cy').hasValue()) this.attribute('cy', true).value = '50%';
+				if (!this.attribute('r').hasValue()) this.attribute('r', true).value = '50%';
+
+				var cx = (this.gradientUnits == 'objectBoundingBox'
+					? bb.x() + bb.width() * this.attribute('cx').numValue()
+					: this.attribute('cx').toPixels('x'));
+				var cy = (this.gradientUnits == 'objectBoundingBox'
+					? bb.y() + bb.height() * this.attribute('cy').numValue()
+					: this.attribute('cy').toPixels('y'));
+
+				var fx = cx;
+				var fy = cy;
+				if (this.attribute('fx').hasValue()) {
+					fx = (this.gradientUnits == 'objectBoundingBox'
+					? bb.x() + bb.width() * this.attribute('fx').numValue()
+					: this.attribute('fx').toPixels('x'));
+				}
+				if (this.attribute('fy').hasValue()) {
+					fy = (this.gradientUnits == 'objectBoundingBox'
+					? bb.y() + bb.height() * this.attribute('fy').numValue()
+					: this.attribute('fy').toPixels('y'));
+				}
+
+				var r = (this.gradientUnits == 'objectBoundingBox'
+					? (bb.width() + bb.height()) / 2.0 * this.attribute('r').numValue()
+					: this.attribute('r').toPixels());
+
+				return ctx.createRadialGradient(fx, fy, 0, cx, cy, r);
+			}
+		}
+		svg.Element.radialGradient.prototype = new svg.Element.GradientBase;
+
+		// gradient stop element
+		svg.Element.stop = function(node) {
+			this.base = svg.Element.ElementBase;
+			this.base(node);
+
+			this.offset = this.attribute('offset').numValue();
+
+			var stopColor = this.style('stop-color');
+			if (this.style('stop-opacity').hasValue()) stopColor = stopColor.addOpacity(this.style('stop-opacity').value);
+			this.color = stopColor.value;
+		}
+		svg.Element.stop.prototype = new svg.Element.ElementBase;
+
+		// animation base element
+		svg.Element.AnimateBase = function(node) {
+			this.base = svg.Element.ElementBase;
+			this.base(node);
+
+			svg.Animations.push(this);
+
+			this.duration = 0.0;
+			this.begin = this.attribute('begin').toMilliseconds();
+			this.maxDuration = this.begin + this.attribute('dur').toMilliseconds();
+
+			this.getProperty = function() {
+				var attributeType = this.attribute('attributeType').value;
+				var attributeName = this.attribute('attributeName').value;
+
+				if (attributeType == 'CSS') {
+					return this.parent.style(attributeName, true);
+				}
+				return this.parent.attribute(attributeName, true);
+			};
+
+			this.initialValue = null;
+			this.initialUnits = '';
+			this.removed = false;
+
+			this.calcValue = function() {
+				// OVERRIDE ME!
+				return '';
+			}
+
+			this.update = function(delta) {
+				// set initial value
+				if (this.initialValue == null) {
+					this.initialValue = this.getProperty().value;
+					this.initialUnits = this.getProperty().getUnits();
+				}
+
+				// if we're past the end time
+				if (this.duration > this.maxDuration) {
+					// loop for indefinitely repeating animations
+					if (this.attribute('repeatCount').value == 'indefinite') {
+						this.duration = 0.0
+					}
+					else if (this.attribute('fill').valueOrDefault('remove') == 'remove' && !this.removed) {
+						this.removed = true;
+						this.getProperty().value = this.initialValue;
+						return true;
+					}
+					else {
+						return false; // no updates made
+					}
+				}
+				this.duration = this.duration + delta;
+
+				// if we're past the begin time
+				var updated = false;
+				if (this.begin < this.duration) {
+					var newValue = this.calcValue(); // tween
+
+					if (this.attribute('type').hasValue()) {
+						// for transform, etc.
+						var type = this.attribute('type').value;
+						newValue = type + '(' + newValue + ')';
+					}
+
+					this.getProperty().value = newValue;
+					updated = true;
+				}
+
+				return updated;
+			}
+
+			this.from = this.attribute('from');
+			this.to = this.attribute('to');
+			this.values = this.attribute('values');
+			if (this.values.hasValue()) this.values.value = this.values.value.split(';');
+
+			// fraction of duration we've covered
+			this.progress = function() {
+				var ret = { progress: (this.duration - this.begin) / (this.maxDuration - this.begin) };
+				if (this.values.hasValue()) {
+					var p = ret.progress * (this.values.value.length - 1);
+					var lb = Math.floor(p), ub = Math.ceil(p);
+					ret.from = new svg.Property('from', parseFloat(this.values.value[lb]));
+					ret.to = new svg.Property('to', parseFloat(this.values.value[ub]));
+					ret.progress = (p - lb) / (ub - lb);
+				}
+				else {
+					ret.from = this.from;
+					ret.to = this.to;
+				}
+				return ret;
+			}
+		}
+		svg.Element.AnimateBase.prototype = new svg.Element.ElementBase;
+
+		// animate element
+		svg.Element.animate = function(node) {
+			this.base = svg.Element.AnimateBase;
+			this.base(node);
+
+			this.calcValue = function() {
+				var p = this.progress();
+
+				// tween value linearly
+				var newValue = p.from.numValue() + (p.to.numValue() - p.from.numValue()) * p.progress;
+				return newValue + this.initialUnits;
+			};
+		}
+		svg.Element.animate.prototype = new svg.Element.AnimateBase;
+
+		// animate color element
+		svg.Element.animateColor = function(node) {
+			this.base = svg.Element.AnimateBase;
+			this.base(node);
+
+			this.calcValue = function() {
+				var p = this.progress();
+				var from = new RGBColor(p.from.value);
+				var to = new RGBColor(p.to.value);
+
+				if (from.ok && to.ok) {
+					// tween color linearly
+					var r = from.r + (to.r - from.r) * p.progress;
+					var g = from.g + (to.g - from.g) * p.progress;
+					var b = from.b + (to.b - from.b) * p.progress;
+					return 'rgb('+parseInt(r,10)+','+parseInt(g,10)+','+parseInt(b,10)+')';
+				}
+				return this.attribute('from').value;
+			};
+		}
+		svg.Element.animateColor.prototype = new svg.Element.AnimateBase;
+
+		// animate transform element
+		svg.Element.animateTransform = function(node) {
+			this.base = svg.Element.animate;
+			this.base(node);
+		}
+		svg.Element.animateTransform.prototype = new svg.Element.animate;
+
+		// font element
+		svg.Element.font = function(node) {
+			this.base = svg.Element.ElementBase;
+			this.base(node);
+
+			this.horizAdvX = this.attribute('horiz-adv-x').numValue();
+
+			this.isRTL = false;
+			this.isArabic = false;
+			this.fontFace = null;
+			this.missingGlyph = null;
+			this.glyphs = [];
+			for (var i=0; i<this.children.length; i++) {
+				var child = this.children[i];
+				if (child.type == 'font-face') {
+					this.fontFace = child;
+					if (child.style('font-family').hasValue()) {
+						svg.Definitions[child.style('font-family').value] = this;
+					}
+				}
+				else if (child.type == 'missing-glyph') this.missingGlyph = child;
+				else if (child.type == 'glyph') {
+					if (child.arabicForm != '') {
+						this.isRTL = true;
+						this.isArabic = true;
+						if (typeof(this.glyphs[child.unicode]) == 'undefined') this.glyphs[child.unicode] = [];
+						this.glyphs[child.unicode][child.arabicForm] = child;
+					}
+					else {
+						this.glyphs[child.unicode] = child;
+					}
+				}
+			}
+		}
+		svg.Element.font.prototype = new svg.Element.ElementBase;
+
+		// font-face element
+		svg.Element.fontface = function(node) {
+			this.base = svg.Element.ElementBase;
+			this.base(node);
+
+			this.ascent = this.attribute('ascent').value;
+			this.descent = this.attribute('descent').value;
+			this.unitsPerEm = this.attribute('units-per-em').numValue();
+		}
+		svg.Element.fontface.prototype = new svg.Element.ElementBase;
+
+		// missing-glyph element
+		svg.Element.missingglyph = function(node) {
+			this.base = svg.Element.path;
+			this.base(node);
+
+			this.horizAdvX = 0;
+		}
+		svg.Element.missingglyph.prototype = new svg.Element.path;
+
+		// glyph element
+		svg.Element.glyph = function(node) {
+			this.base = svg.Element.path;
+			this.base(node);
+
+			this.horizAdvX = this.attribute('horiz-adv-x').numValue();
+			this.unicode = this.attribute('unicode').value;
+			this.arabicForm = this.attribute('arabic-form').value;
+		}
+		svg.Element.glyph.prototype = new svg.Element.path;
+
+		// text element
+		svg.Element.text = function(node) {
+			this.base = svg.Element.RenderedElementBase;
+			this.base(node);
+
+			if (node != null) {
+				// add children
+				this.children = [];
+				for (var i=0; i<node.childNodes.length; i++) {
+					var childNode = node.childNodes[i];
+					if (childNode.nodeType == 1) { // capture tspan and tref nodes
+						this.addChild(childNode, true);
+					}
+					else if (childNode.nodeType == 3) { // capture text
+						this.addChild(new svg.Element.tspan(childNode), false);
+					}
+				}
+			}
+
+			this.baseSetContext = this.setContext;
+			this.setContext = function(ctx) {
+				this.baseSetContext(ctx);
+				if (this.style('dominant-baseline').hasValue()) ctx.textBaseline = this.style('dominant-baseline').value;
+				if (this.style('alignment-baseline').hasValue()) ctx.textBaseline = this.style('alignment-baseline').value;
+			}
+
+			this.renderChildren = function(ctx) {
+				var textAnchor = this.style('text-anchor').valueOrDefault('start');
+				var x = this.attribute('x').toPixels('x');
+				var y = this.attribute('y').toPixels('y');
+				for (var i=0; i<this.children.length; i++) {
+					var child = this.children[i];
+
+					if (child.attribute('x').hasValue()) {
+						child.x = child.attribute('x').toPixels('x');
+					}
+					else {
+						if (this.attribute('dx').hasValue()) y += this.attribute('dx').toPixels('x');
+						if (child.attribute('dx').hasValue()) x += child.attribute('dx').toPixels('x');
+						child.x = x;
+					}
+
+					var childLength = child.measureText(ctx);
+					if (textAnchor != 'start' && (i==0 || child.attribute('x').hasValue())) { // new group?
+						// loop through rest of children
+						var groupLength = childLength;
+						for (var j=i+1; j<this.children.length; j++) {
+							var childInGroup = this.children[j];
+							if (childInGroup.attribute('x').hasValue()) break; // new group
+							groupLength += childInGroup.measureText(ctx);
+						}
+						child.x -= (textAnchor == 'end' ? groupLength : groupLength / 2.0);
+					}
+					x = child.x + childLength;
+
+					if (child.attribute('y').hasValue()) {
+						child.y = child.attribute('y').toPixels('y');
+					}
+					else {
+						if (this.attribute('dy').hasValue()) y += this.attribute('dy').toPixels('y');
+						if (child.attribute('dy').hasValue()) y += child.attribute('dy').toPixels('y');
+						child.y = y;
+					}
+					y = child.y;
+
+					child.render(ctx);
+				}
+			}
+		}
+		svg.Element.text.prototype = new svg.Element.RenderedElementBase;
+
+		// text base
+		svg.Element.TextElementBase = function(node) {
+			this.base = svg.Element.RenderedElementBase;
+			this.base(node);
+
+			this.getGlyph = function(font, text, i) {
+				var c = text[i];
+				var glyph = null;
+				if (font.isArabic) {
+					var arabicForm = 'isolated';
+					if ((i==0 || text[i-1]==' ') && i<text.length-2 && text[i+1]!=' ') arabicForm = 'terminal';
+					if (i>0 && text[i-1]!=' ' && i<text.length-2 && text[i+1]!=' ') arabicForm = 'medial';
+					if (i>0 && text[i-1]!=' ' && (i == text.length-1 || text[i+1]==' ')) arabicForm = 'initial';
+					if (typeof(font.glyphs[c]) != 'undefined') {
+						glyph = font.glyphs[c][arabicForm];
+						if (glyph == null && font.glyphs[c].type == 'glyph') glyph = font.glyphs[c];
+					}
+				}
+				else {
+					glyph = font.glyphs[c];
+				}
+				if (glyph == null) glyph = font.missingGlyph;
+				return glyph;
+			}
+
+			this.renderChildren = function(ctx) {
+				var customFont = this.parent.style('font-family').getDefinition();
+				if (customFont != null) {
+					var fontSize = this.parent.style('font-size').numValueOrDefault(svg.Font.Parse(svg.ctx.font).fontSize);
+					var fontStyle = this.parent.style('font-style').valueOrDefault(svg.Font.Parse(svg.ctx.font).fontStyle);
+					var text = this.getText();
+					if (customFont.isRTL) text = text.split("").reverse().join("");
+
+					var dx = svg.ToNumberArray(this.parent.attribute('dx').value);
+					for (var i=0; i<text.length; i++) {
+						var glyph = this.getGlyph(customFont, text, i);
+						var scale = fontSize / customFont.fontFace.unitsPerEm;
+						ctx.translate(this.x, this.y);
+						ctx.scale(scale, -scale);
+						var lw = ctx.lineWidth;
+						ctx.lineWidth = ctx.lineWidth * customFont.fontFace.unitsPerEm / fontSize;
+						if (fontStyle == 'italic') ctx.transform(1, 0, .4, 1, 0, 0);
+						glyph.render(ctx);
+						if (fontStyle == 'italic') ctx.transform(1, 0, -.4, 1, 0, 0);
+						ctx.lineWidth = lw;
+						ctx.scale(1/scale, -1/scale);
+						ctx.translate(-this.x, -this.y);
+
+						this.x += fontSize * (glyph.horizAdvX || customFont.horizAdvX) / customFont.fontFace.unitsPerEm;
+						if (typeof(dx[i]) != 'undefined' && !isNaN(dx[i])) {
+							this.x += dx[i];
+						}
+					}
+					return;
+				}
+
+				if (ctx.strokeStyle != '') ctx.strokeText(svg.compressSpaces(this.getText()), this.x, this.y);
+				if (ctx.fillStyle != '') ctx.fillText(svg.compressSpaces(this.getText()), this.x, this.y);
+			}
+
+			this.getText = function() {
+				// OVERRIDE ME
+			}
+
+			this.measureText = function(ctx) {
+				var customFont = this.parent.style('font-family').getDefinition();
+				if (customFont != null) {
+					var fontSize = this.parent.style('font-size').numValueOrDefault(svg.Font.Parse(svg.ctx.font).fontSize);
+					var measure = 0;
+					var text = this.getText();
+					if (customFont.isRTL) text = text.split("").reverse().join("");
+					var dx = svg.ToNumberArray(this.parent.attribute('dx').value);
+					for (var i=0; i<text.length; i++) {
+						var glyph = this.getGlyph(customFont, text, i);
+						measure += (glyph.horizAdvX || customFont.horizAdvX) * fontSize / customFont.fontFace.unitsPerEm;
+						if (typeof(dx[i]) != 'undefined' && !isNaN(dx[i])) {
+							measure += dx[i];
+						}
+					}
+					return measure;
+				}
+
+				var textToMeasure = svg.compressSpaces(this.getText());
+				if (!ctx.measureText) return textToMeasure.length * 10;
+
+				ctx.save();
+				this.setContext(ctx);
+				var width = ctx.measureText(textToMeasure).width;
+				ctx.restore();
+				return width;
+			}
+		}
+		svg.Element.TextElementBase.prototype = new svg.Element.RenderedElementBase;
+
+		// tspan
+		svg.Element.tspan = function(node) {
+			this.base = svg.Element.TextElementBase;
+			this.base(node);
+
+			this.text = node.nodeType == 3 ? node.nodeValue : // text
+						node.childNodes.length > 0 ? node.childNodes[0].nodeValue : // element
+						node.text;
+			this.getText = function() {
+				return this.text;
+			}
+		}
+		svg.Element.tspan.prototype = new svg.Element.TextElementBase;
+
+		// tref
+		svg.Element.tref = function(node) {
+			this.base = svg.Element.TextElementBase;
+			this.base(node);
+
+			this.getText = function() {
+				var element = this.attribute('xlink:href').getDefinition();
+				if (element != null) return element.children[0].getText();
+			}
+		}
+		svg.Element.tref.prototype = new svg.Element.TextElementBase;
+
+		// a element
+		svg.Element.a = function(node) {
+			this.base = svg.Element.TextElementBase;
+			this.base(node);
+
+			this.hasText = true;
+			for (var i=0; i<node.childNodes.length; i++) {
+				if (node.childNodes[i].nodeType != 3) this.hasText = false;
+			}
+
+			// this might contain text
+			this.text = this.hasText ? node.childNodes[0].nodeValue : '';
+			this.getText = function() {
+				return this.text;
+			}
+
+			this.baseRenderChildren = this.renderChildren;
+			this.renderChildren = function(ctx) {
+				if (this.hasText) {
+					// render as text element
+					this.baseRenderChildren(ctx);
+					var fontSize = new svg.Property('fontSize', svg.Font.Parse(svg.ctx.font).fontSize);
+					svg.Mouse.checkBoundingBox(this, new svg.BoundingBox(this.x, this.y - fontSize.toPixels('y'), this.x + this.measureText(ctx), this.y));
+				}
+				else {
+					// render as temporary group
+					var g = new svg.Element.g();
+					g.children = this.children;
+					g.parent = this;
+					g.render(ctx);
+				}
+			}
+
+			this.onclick = function() {
+				window.open(this.attribute('xlink:href').value);
+			}
+
+			this.onmousemove = function() {
+				svg.ctx.canvas.style.cursor = 'pointer';
+			}
+		}
+		svg.Element.a.prototype = new svg.Element.TextElementBase;
+
+		// image element
+		svg.Element.image = function(node) {
+			this.base = svg.Element.RenderedElementBase;
+			this.base(node);
+
+			var href = this.attribute('xlink:href').value;
+			var isSvg = href.match(/\.svg$/)
+
+			svg.Images.push(this);
+			this.loaded = false;
+			if (!isSvg) {
+				this.img = document.createElement('img');
+				var self = this;
+				this.img.onload = function() { self.loaded = true; }
+				this.img.onerror = function() { if (console) console.log('ERROR: image "' + href + '" not found'); self.loaded = true; }
+				this.img.src = href;
+			}
+			else {
+				this.img = svg.ajax(href);
+				this.loaded = true;
+			}
+
+			this.renderChildren = function(ctx) {
+				var x = this.attribute('x').toPixels('x');
+				var y = this.attribute('y').toPixels('y');
+
+				var width = this.attribute('width').toPixels('x');
+				var height = this.attribute('height').toPixels('y');
+				if (width == 0 || height == 0) return;
+
+				ctx.save();
+				if (isSvg) {
+					ctx.drawSvg(this.img, x, y, width, height);
+				}
+				else {
+					ctx.translate(x, y);
+					svg.AspectRatio(ctx,
+									this.attribute('preserveAspectRatio').value,
+									width,
+									this.img.width,
+									height,
+									this.img.height,
+									0,
+									0);
+					ctx.drawImage(this.img, 0, 0);
+				}
+				ctx.restore();
+			}
+		}
+		svg.Element.image.prototype = new svg.Element.RenderedElementBase;
+
+		// group element
+		svg.Element.g = function(node) {
+			this.base = svg.Element.RenderedElementBase;
+			this.base(node);
+
+			this.getBoundingBox = function() {
+				var bb = new svg.BoundingBox();
+				for (var i=0; i<this.children.length; i++) {
+					bb.addBoundingBox(this.children[i].getBoundingBox());
+				}
+				return bb;
+			};
+		}
+		svg.Element.g.prototype = new svg.Element.RenderedElementBase;
+
+		// symbol element
+		svg.Element.symbol = function(node) {
+			this.base = svg.Element.RenderedElementBase;
+			this.base(node);
+
+			this.baseSetContext = this.setContext;
+			this.setContext = function(ctx) {
+				this.baseSetContext(ctx);
+
+				// viewbox
+				if (this.attribute('viewBox').hasValue()) {
+					var viewBox = svg.ToNumberArray(this.attribute('viewBox').value);
+					var minX = viewBox[0];
+					var minY = viewBox[1];
+					width = viewBox[2];
+					height = viewBox[3];
+
+					svg.AspectRatio(ctx,
+									this.attribute('preserveAspectRatio').value,
+									this.attribute('width').toPixels('x'),
+									width,
+									this.attribute('height').toPixels('y'),
+									height,
+									minX,
+									minY);
+
+					svg.ViewPort.SetCurrent(viewBox[2], viewBox[3]);
+				}
+			}
+		}
+		svg.Element.symbol.prototype = new svg.Element.RenderedElementBase;
+
+		// style element
+		svg.Element.style = function(node) {
+			this.base = svg.Element.ElementBase;
+			this.base(node);
+
+			// text, or spaces then CDATA
+			var css = node.childNodes[0].nodeValue + (node.childNodes.length > 1 ? node.childNodes[1].nodeValue : '');
+			css = css.replace(/(\/\*([^*]|[\r\n]|(\*+([^*\/]|[\r\n])))*\*+\/)|(^[\s]*\/\/.*)/gm, ''); // remove comments
+			css = svg.compressSpaces(css); // replace whitespace
+			var cssDefs = css.split('}');
+			for (var i=0; i<cssDefs.length; i++) {
+				if (svg.trim(cssDefs[i]) != '') {
+					var cssDef = cssDefs[i].split('{');
+					var cssClasses = cssDef[0].split(',');
+					var cssProps = cssDef[1].split(';');
+					for (var j=0; j<cssClasses.length; j++) {
+						var cssClass = svg.trim(cssClasses[j]);
+						if (cssClass != '') {
+							var props = {};
+							for (var k=0; k<cssProps.length; k++) {
+								var prop = cssProps[k].indexOf(':');
+								var name = cssProps[k].substr(0, prop);
+								var value = cssProps[k].substr(prop + 1, cssProps[k].length - prop);
+								if (name != null && value != null) {
+									props[svg.trim(name)] = new svg.Property(svg.trim(name), svg.trim(value));
+								}
+							}
+							svg.Styles[cssClass] = props;
+							if (cssClass == '@font-face') {
+								var fontFamily = props['font-family'].value.replace(/"/g,'');
+								var srcs = props['src'].value.split(',');
+								for (var s=0; s<srcs.length; s++) {
+									if (srcs[s].indexOf('format("svg")') > 0) {
+										var urlStart = srcs[s].indexOf('url');
+										var urlEnd = srcs[s].indexOf(')', urlStart);
+										var url = srcs[s].substr(urlStart + 5, urlEnd - urlStart - 6);
+										var doc = svg.parseXml(svg.ajax(url));
+										var fonts = doc.getElementsByTagName('font');
+										for (var f=0; f<fonts.length; f++) {
+											var font = svg.CreateElement(fonts[f]);
+											svg.Definitions[fontFamily] = font;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		svg.Element.style.prototype = new svg.Element.ElementBase;
+
+		// use element
+		svg.Element.use = function(node) {
+			this.base = svg.Element.RenderedElementBase;
+			this.base(node);
+
+			this.baseSetContext = this.setContext;
+			this.setContext = function(ctx) {
+				this.baseSetContext(ctx);
+				if (this.attribute('x').hasValue()) ctx.translate(this.attribute('x').toPixels('x'), 0);
+				if (this.attribute('y').hasValue()) ctx.translate(0, this.attribute('y').toPixels('y'));
+			}
+
+			this.getDefinition = function() {
+				var element = this.attribute('xlink:href').getDefinition();
+				if (this.attribute('width').hasValue()) element.attribute('width', true).value = this.attribute('width').value;
+				if (this.attribute('height').hasValue()) element.attribute('height', true).value = this.attribute('height').value;
+				return element;
+			}
+
+			this.path = function(ctx) {
+				var element = this.getDefinition();
+				if (element != null) element.path(ctx);
+			}
+
+			this.renderChildren = function(ctx) {
+				var element = this.getDefinition();
+				if (element != null) {
+					// temporarily detach from parent and render
+					var oldParent = element.parent;
+					element.parent = null;
+					element.render(ctx);
+					element.parent = oldParent;
+				}
+			}
+		}
+		svg.Element.use.prototype = new svg.Element.RenderedElementBase;
+
+		// mask element
+		svg.Element.mask = function(node) {
+			this.base = svg.Element.ElementBase;
+			this.base(node);
+
+			this.apply = function(ctx, element) {
+				// render as temp svg
+				var x = this.attribute('x').toPixels('x');
+				var y = this.attribute('y').toPixels('y');
+				var width = this.attribute('width').toPixels('x');
+				var height = this.attribute('height').toPixels('y');
+
+				// temporarily remove mask to avoid recursion
+				var mask = element.attribute('mask').value;
+				element.attribute('mask').value = '';
+
+					var cMask = document.createElement('canvas');
+					cMask.width = x + width;
+					cMask.height = y + height;
+					var maskCtx = cMask.getContext('2d');
+					this.renderChildren(maskCtx);
+
+					var c = document.createElement('canvas');
+					c.width = x + width;
+					c.height = y + height;
+					var tempCtx = c.getContext('2d');
+					element.render(tempCtx);
+					tempCtx.globalCompositeOperation = 'destination-in';
+					tempCtx.fillStyle = maskCtx.createPattern(cMask, 'no-repeat');
+					tempCtx.fillRect(0, 0, x + width, y + height);
+
+					ctx.fillStyle = tempCtx.createPattern(c, 'no-repeat');
+					ctx.fillRect(0, 0, x + width, y + height);
+
+				// reassign mask
+				element.attribute('mask').value = mask;
+			}
+
+			this.render = function(ctx) {
+				// NO RENDER
+			}
+		}
+		svg.Element.mask.prototype = new svg.Element.ElementBase;
+
+		// clip element
+		svg.Element.clipPath = function(node) {
+			this.base = svg.Element.ElementBase;
+			this.base(node);
+
+			this.apply = function(ctx) {
+				for (var i=0; i<this.children.length; i++) {
+					if (this.children[i].path) {
+						this.children[i].path(ctx);
+						ctx.clip();
+					}
+				}
+			}
+
+			this.render = function(ctx) {
+				// NO RENDER
+			}
+		}
+		svg.Element.clipPath.prototype = new svg.Element.ElementBase;
+
+		// filters
+		svg.Element.filter = function(node) {
+			this.base = svg.Element.ElementBase;
+			this.base(node);
+
+			this.apply = function(ctx, element) {
+				// render as temp svg
+				var bb = element.getBoundingBox();
+				var x = this.attribute('x').toPixels('x');
+				var y = this.attribute('y').toPixels('y');
+				if (x == 0 || y == 0) {
+					x = bb.x1;
+					y = bb.y1;
+				}
+				var width = this.attribute('width').toPixels('x');
+				var height = this.attribute('height').toPixels('y');
+				if (width == 0 || height == 0) {
+					width = bb.width();
+					height = bb.height();
+				}
+
+				// temporarily remove filter to avoid recursion
+				var filter = element.style('filter').value;
+				element.style('filter').value = '';
+
+				// max filter distance
+				var extraPercent = .20;
+				var px = extraPercent * width;
+				var py = extraPercent * height;
+
+				var c = document.createElement('canvas');
+				c.width = width + 2*px;
+				c.height = height + 2*py;
+				var tempCtx = c.getContext('2d');
+				tempCtx.translate(-x + px, -y + py);
+				element.render(tempCtx);
+
+				// apply filters
+				for (var i=0; i<this.children.length; i++) {
+					this.children[i].apply(tempCtx, 0, 0, width + 2*px, height + 2*py);
+				}
+
+				// render on me
+				ctx.drawImage(c, 0, 0, width + 2*px, height + 2*py, x - px, y - py, width + 2*px, height + 2*py);
+
+				// reassign filter
+				element.style('filter', true).value = filter;
+			}
+
+			this.render = function(ctx) {
+				// NO RENDER
+			}
+		}
+		svg.Element.filter.prototype = new svg.Element.ElementBase;
+
+		svg.Element.feGaussianBlur = function(node) {
+			this.base = svg.Element.ElementBase;
+			this.base(node);
+
+			function make_fgauss(sigma) {
+				sigma = Math.max(sigma, 0.01);
+				var len = Math.ceil(sigma * 4.0) + 1;
+				mask = [];
+				for (var i = 0; i < len; i++) {
+					mask[i] = Math.exp(-0.5 * (i / sigma) * (i / sigma));
+				}
+				return mask;
+			}
+
+			function normalize(mask) {
+				var sum = 0;
+				for (var i = 1; i < mask.length; i++) {
+					sum += Math.abs(mask[i]);
+				}
+				sum = 2 * sum + Math.abs(mask[0]);
+				for (var i = 0; i < mask.length; i++) {
+					mask[i] /= sum;
+				}
+				return mask;
+			}
+
+			function convolve_even(src, dst, mask, width, height) {
+			  for (var y = 0; y < height; y++) {
+				for (var x = 0; x < width; x++) {
+				  var a = imGet(src, x, y, width, height, 3)/255;
+				  for (var rgba = 0; rgba < 4; rgba++) {
+					  var sum = mask[0] * (a==0?255:imGet(src, x, y, width, height, rgba)) * (a==0||rgba==3?1:a);
+					  for (var i = 1; i < mask.length; i++) {
+						var a1 = imGet(src, Math.max(x-i,0), y, width, height, 3)/255;
+					    var a2 = imGet(src, Math.min(x+i, width-1), y, width, height, 3)/255;
+						sum += mask[i] *
+						  ((a1==0?255:imGet(src, Math.max(x-i,0), y, width, height, rgba)) * (a1==0||rgba==3?1:a1) +
+						   (a2==0?255:imGet(src, Math.min(x+i, width-1), y, width, height, rgba)) * (a2==0||rgba==3?1:a2));
+					  }
+					  imSet(dst, y, x, height, width, rgba, sum);
+				  }
+				}
+			  }
+			}
+
+			function imGet(img, x, y, width, height, rgba) {
+				return img[y*width*4 + x*4 + rgba];
+			}
+
+			function imSet(img, x, y, width, height, rgba, val) {
+				img[y*width*4 + x*4 + rgba] = val;
+			}
+
+			function blur(ctx, width, height, sigma)
+			{
+				var srcData = ctx.getImageData(0, 0, width, height);
+				var mask = make_fgauss(sigma);
+				mask = normalize(mask);
+				tmp = [];
+				convolve_even(srcData.data, tmp, mask, width, height);
+				convolve_even(tmp, srcData.data, mask, height, width);
+				ctx.clearRect(0, 0, width, height);
+				ctx.putImageData(srcData, 0, 0);
+			}
+
+			this.apply = function(ctx, x, y, width, height) {
+				// assuming x==0 && y==0 for now
+				blur(ctx, width, height, this.attribute('stdDeviation').numValue());
+			}
+		}
+		svg.Element.filter.prototype = new svg.Element.feGaussianBlur;
+
+		// title element, do nothing
+		svg.Element.title = function(node) {
+		}
+		svg.Element.title.prototype = new svg.Element.ElementBase;
+
+		// desc element, do nothing
+		svg.Element.desc = function(node) {
+		}
+		svg.Element.desc.prototype = new svg.Element.ElementBase;
+
+		svg.Element.MISSING = function(node) {
+			if (console) console.log('ERROR: Element \'' + node.nodeName + '\' not yet implemented.');
+		}
+		svg.Element.MISSING.prototype = new svg.Element.ElementBase;
+
+		// element factory
+		svg.CreateElement = function(node) {
+			var className = node.nodeName.replace(/^[^:]+:/,''); // remove namespace
+			className = className.replace(/\-/g,''); // remove dashes
+			var e = null;
+			if (typeof(svg.Element[className]) != 'undefined') {
+				e = new svg.Element[className](node);
+			}
+			else {
+				e = new svg.Element.MISSING(node);
+			}
+
+			e.type = node.nodeName;
+			return e;
+		}
+
+		// load from url
+		svg.load = function(ctx, url) {
+			svg.loadXml(ctx, svg.ajax(url));
+		}
+
+		// load from xml
+		svg.loadXml = function(ctx, xml) {
+			svg.loadXmlDoc(ctx, svg.parseXml(xml));
+		}
+
+		svg.loadXmlDoc = function(ctx, dom) {
+			svg.init(ctx);
+
+			var mapXY = function(p) {
+				var e = ctx.canvas;
+				while (e) {
+					p.x -= e.offsetLeft;
+					p.y -= e.offsetTop;
+					e = e.offsetParent;
+				}
+				if (window.scrollX) p.x += window.scrollX;
+				if (window.scrollY) p.y += window.scrollY;
+				return p;
+			}
+
+			// bind mouse
+			if (svg.opts['ignoreMouse'] != true) {
+				ctx.canvas.onclick = function(e) {
+					var p = mapXY(new svg.Point(e != null ? e.clientX : event.clientX, e != null ? e.clientY : event.clientY));
+					svg.Mouse.onclick(p.x, p.y);
+				};
+				ctx.canvas.onmousemove = function(e) {
+					var p = mapXY(new svg.Point(e != null ? e.clientX : event.clientX, e != null ? e.clientY : event.clientY));
+					svg.Mouse.onmousemove(p.x, p.y);
+				};
+			}
+
+			var e = svg.CreateElement(dom.documentElement);
+			e.root = true;
+
+			// render loop
+			var isFirstRender = true;
+			var draw = function() {
+				svg.ViewPort.Clear();
+				if (ctx.canvas.parentNode) svg.ViewPort.SetCurrent(ctx.canvas.parentNode.clientWidth, ctx.canvas.parentNode.clientHeight);
+
+				if (svg.opts['ignoreDimensions'] != true) {
+					// set canvas size
+					if (e.style('width').hasValue()) {
+						ctx.canvas.width = e.style('width').toPixels('x');
+						ctx.canvas.style.width = ctx.canvas.width + 'px';
+					}
+					if (e.style('height').hasValue()) {
+						ctx.canvas.height = e.style('height').toPixels('y');
+						ctx.canvas.style.height = ctx.canvas.height + 'px';
+					}
+				}
+				var cWidth = ctx.canvas.clientWidth || ctx.canvas.width;
+				var cHeight = ctx.canvas.clientHeight || ctx.canvas.height;
+				if (svg.opts['ignoreDimensions'] == true && e.style('width').hasValue() && e.style('height').hasValue()) {
+					cWidth = e.style('width').toPixels('x');
+					cHeight = e.style('height').toPixels('y');
+				}
+				svg.ViewPort.SetCurrent(cWidth, cHeight);
+
+				if (svg.opts['offsetX'] != null) e.attribute('x', true).value = svg.opts['offsetX'];
+				if (svg.opts['offsetY'] != null) e.attribute('y', true).value = svg.opts['offsetY'];
+				if (svg.opts['scaleWidth'] != null && svg.opts['scaleHeight'] != null) {
+					var xRatio = 1, yRatio = 1, viewBox = svg.ToNumberArray(e.attribute('viewBox').value);
+					if (e.attribute('width').hasValue()) xRatio = e.attribute('width').toPixels('x') / svg.opts['scaleWidth'];
+					else if (!isNaN(viewBox[2])) xRatio = viewBox[2] / svg.opts['scaleWidth'];
+					if (e.attribute('height').hasValue()) yRatio = e.attribute('height').toPixels('y') / svg.opts['scaleHeight'];
+					else if (!isNaN(viewBox[3])) yRatio = viewBox[3] / svg.opts['scaleHeight'];
+
+					e.attribute('width', true).value = svg.opts['scaleWidth'];
+					e.attribute('height', true).value = svg.opts['scaleHeight'];
+					e.attribute('viewBox', true).value = '0 0 ' + (cWidth * xRatio) + ' ' + (cHeight * yRatio);
+					e.attribute('preserveAspectRatio', true).value = 'none';
+				}
+
+				// clear and render
+				if (svg.opts['ignoreClear'] != true) {
+					ctx.clearRect(0, 0, cWidth, cHeight);
+				}
+				e.render(ctx);
+				if (isFirstRender) {
+					isFirstRender = false;
+					if (typeof(svg.opts['renderCallback']) == 'function') svg.opts['renderCallback']();
+				}
+			}
+
+			var waitingForImages = true;
+			if (svg.ImagesLoaded()) {
+				waitingForImages = false;
+				draw();
+			}
+			svg.intervalID = setInterval(function() {
+				var needUpdate = false;
+
+				if (waitingForImages && svg.ImagesLoaded()) {
+					waitingForImages = false;
+					needUpdate = true;
+				}
+
+				// need update from mouse events?
+				if (svg.opts['ignoreMouse'] != true) {
+					needUpdate = needUpdate | svg.Mouse.hasEvents();
+				}
+
+				// need update from animations?
+				if (svg.opts['ignoreAnimation'] != true) {
+					for (var i=0; i<svg.Animations.length; i++) {
+						needUpdate = needUpdate | svg.Animations[i].update(1000 / svg.FRAMERATE);
+					}
+				}
+
+				// need update from redraw?
+				if (typeof(svg.opts['forceRedraw']) == 'function') {
+					if (svg.opts['forceRedraw']() == true) needUpdate = true;
+				}
+
+				// render if needed
+				if (needUpdate) {
+					draw();
+					svg.Mouse.runEvents(); // run and clear our events
+				}
+			}, 1000 / svg.FRAMERATE);
+		}
+
+		svg.stop = function() {
+			if (svg.intervalID) {
+				clearInterval(svg.intervalID);
+			}
+		}
+
+		svg.Mouse = new (function() {
+			this.events = [];
+			this.hasEvents = function() { return this.events.length != 0; }
+
+			this.onclick = function(x, y) {
+				this.events.push({ type: 'onclick', x: x, y: y,
+					run: function(e) { if (e.onclick) e.onclick(); }
+				});
+			}
+
+			this.onmousemove = function(x, y) {
+				this.events.push({ type: 'onmousemove', x: x, y: y,
+					run: function(e) { if (e.onmousemove) e.onmousemove(); }
+				});
+			}
+
+			this.eventElements = [];
+
+			this.checkPath = function(element, ctx) {
+				for (var i=0; i<this.events.length; i++) {
+					var e = this.events[i];
+					if (ctx.isPointInPath && ctx.isPointInPath(e.x, e.y)) this.eventElements[i] = element;
+				}
+			}
+
+			this.checkBoundingBox = function(element, bb) {
+				for (var i=0; i<this.events.length; i++) {
+					var e = this.events[i];
+					if (bb.isPointInBox(e.x, e.y)) this.eventElements[i] = element;
+				}
+			}
+
+			this.runEvents = function() {
+				svg.ctx.canvas.style.cursor = '';
+
+				for (var i=0; i<this.events.length; i++) {
+					var e = this.events[i];
+					var element = this.eventElements[i];
+					while (element) {
+						e.run(element);
+						element = element.parent;
+					}
+				}
+
+				// done running, clear
+				this.events = [];
+				this.eventElements = [];
+			}
+		});
+
+		return svg;
+	}
+})();
+
+if (CanvasRenderingContext2D) {
+	CanvasRenderingContext2D.prototype.drawSvg = function(s, dx, dy, dw, dh) {
+		canvg(this.canvas, s, {
+			ignoreMouse: true,
+			ignoreAnimation: true,
+			ignoreDimensions: true,
+			ignoreClear: true,
+			offsetX: dx,
+			offsetY: dy,
+			scaleWidth: dw,
+			scaleHeight: dh
+		});
+	}
+}
+
+},{"./rgbcolor":34}],34:[function(require,module,exports){
+/**
+ * A class to parse color values
+ * @author Stoyan Stefanov <sstoo@gmail.com>
+ * @link   http://www.phpied.com/rgb-color-parser-in-javascript/
+ * @license Use it if you like it
+ */
+function RGBColor(color_string)
+{
+    this.ok = false;
+
+    // strip any leading #
+    if (color_string.charAt(0) == '#') { // remove # if any
+        color_string = color_string.substr(1,6);
+    }
+
+    color_string = color_string.replace(/ /g,'');
+    color_string = color_string.toLowerCase();
+
+    // before getting into regexps, try simple matches
+    // and overwrite the input
+    var simple_colors = {
+        aliceblue: 'f0f8ff',
+        antiquewhite: 'faebd7',
+        aqua: '00ffff',
+        aquamarine: '7fffd4',
+        azure: 'f0ffff',
+        beige: 'f5f5dc',
+        bisque: 'ffe4c4',
+        black: '000000',
+        blanchedalmond: 'ffebcd',
+        blue: '0000ff',
+        blueviolet: '8a2be2',
+        brown: 'a52a2a',
+        burlywood: 'deb887',
+        cadetblue: '5f9ea0',
+        chartreuse: '7fff00',
+        chocolate: 'd2691e',
+        coral: 'ff7f50',
+        cornflowerblue: '6495ed',
+        cornsilk: 'fff8dc',
+        crimson: 'dc143c',
+        cyan: '00ffff',
+        darkblue: '00008b',
+        darkcyan: '008b8b',
+        darkgoldenrod: 'b8860b',
+        darkgray: 'a9a9a9',
+        darkgreen: '006400',
+        darkkhaki: 'bdb76b',
+        darkmagenta: '8b008b',
+        darkolivegreen: '556b2f',
+        darkorange: 'ff8c00',
+        darkorchid: '9932cc',
+        darkred: '8b0000',
+        darksalmon: 'e9967a',
+        darkseagreen: '8fbc8f',
+        darkslateblue: '483d8b',
+        darkslategray: '2f4f4f',
+        darkturquoise: '00ced1',
+        darkviolet: '9400d3',
+        deeppink: 'ff1493',
+        deepskyblue: '00bfff',
+        dimgray: '696969',
+        dodgerblue: '1e90ff',
+        feldspar: 'd19275',
+        firebrick: 'b22222',
+        floralwhite: 'fffaf0',
+        forestgreen: '228b22',
+        fuchsia: 'ff00ff',
+        gainsboro: 'dcdcdc',
+        ghostwhite: 'f8f8ff',
+        gold: 'ffd700',
+        goldenrod: 'daa520',
+        gray: '808080',
+        green: '008000',
+        greenyellow: 'adff2f',
+        honeydew: 'f0fff0',
+        hotpink: 'ff69b4',
+        indianred : 'cd5c5c',
+        indigo : '4b0082',
+        ivory: 'fffff0',
+        khaki: 'f0e68c',
+        lavender: 'e6e6fa',
+        lavenderblush: 'fff0f5',
+        lawngreen: '7cfc00',
+        lemonchiffon: 'fffacd',
+        lightblue: 'add8e6',
+        lightcoral: 'f08080',
+        lightcyan: 'e0ffff',
+        lightgoldenrodyellow: 'fafad2',
+        lightgrey: 'd3d3d3',
+        lightgreen: '90ee90',
+        lightpink: 'ffb6c1',
+        lightsalmon: 'ffa07a',
+        lightseagreen: '20b2aa',
+        lightskyblue: '87cefa',
+        lightslateblue: '8470ff',
+        lightslategray: '778899',
+        lightsteelblue: 'b0c4de',
+        lightyellow: 'ffffe0',
+        lime: '00ff00',
+        limegreen: '32cd32',
+        linen: 'faf0e6',
+        magenta: 'ff00ff',
+        maroon: '800000',
+        mediumaquamarine: '66cdaa',
+        mediumblue: '0000cd',
+        mediumorchid: 'ba55d3',
+        mediumpurple: '9370d8',
+        mediumseagreen: '3cb371',
+        mediumslateblue: '7b68ee',
+        mediumspringgreen: '00fa9a',
+        mediumturquoise: '48d1cc',
+        mediumvioletred: 'c71585',
+        midnightblue: '191970',
+        mintcream: 'f5fffa',
+        mistyrose: 'ffe4e1',
+        moccasin: 'ffe4b5',
+        navajowhite: 'ffdead',
+        navy: '000080',
+        oldlace: 'fdf5e6',
+        olive: '808000',
+        olivedrab: '6b8e23',
+        orange: 'ffa500',
+        orangered: 'ff4500',
+        orchid: 'da70d6',
+        palegoldenrod: 'eee8aa',
+        palegreen: '98fb98',
+        paleturquoise: 'afeeee',
+        palevioletred: 'd87093',
+        papayawhip: 'ffefd5',
+        peachpuff: 'ffdab9',
+        peru: 'cd853f',
+        pink: 'ffc0cb',
+        plum: 'dda0dd',
+        powderblue: 'b0e0e6',
+        purple: '800080',
+        red: 'ff0000',
+        rosybrown: 'bc8f8f',
+        royalblue: '4169e1',
+        saddlebrown: '8b4513',
+        salmon: 'fa8072',
+        sandybrown: 'f4a460',
+        seagreen: '2e8b57',
+        seashell: 'fff5ee',
+        sienna: 'a0522d',
+        silver: 'c0c0c0',
+        skyblue: '87ceeb',
+        slateblue: '6a5acd',
+        slategray: '708090',
+        snow: 'fffafa',
+        springgreen: '00ff7f',
+        steelblue: '4682b4',
+        tan: 'd2b48c',
+        teal: '008080',
+        thistle: 'd8bfd8',
+        tomato: 'ff6347',
+        turquoise: '40e0d0',
+        violet: 'ee82ee',
+        violetred: 'd02090',
+        wheat: 'f5deb3',
+        white: 'ffffff',
+        whitesmoke: 'f5f5f5',
+        yellow: 'ffff00',
+        yellowgreen: '9acd32'
+    };
+    for (var key in simple_colors) {
+        if (color_string == key) {
+            color_string = simple_colors[key];
+        }
+    }
+    // emd of simple type-in colors
+
+    // array of color definition objects
+    var color_defs = [
+        {
+            re: /^rgb\((\d{1,3}),\s*(\d{1,3}),\s*(\d{1,3})\)$/,
+            example: ['rgb(123, 234, 45)', 'rgb(255,234,245)'],
+            process: function (bits){
+                return [
+                    parseInt(bits[1]),
+                    parseInt(bits[2]),
+                    parseInt(bits[3])
+                ];
+            }
+        },
+        {
+            re: /^(\w{2})(\w{2})(\w{2})$/,
+            example: ['#00ff00', '336699'],
+            process: function (bits){
+                return [
+                    parseInt(bits[1], 16),
+                    parseInt(bits[2], 16),
+                    parseInt(bits[3], 16)
+                ];
+            }
+        },
+        {
+            re: /^(\w{1})(\w{1})(\w{1})$/,
+            example: ['#fb0', 'f0f'],
+            process: function (bits){
+                return [
+                    parseInt(bits[1] + bits[1], 16),
+                    parseInt(bits[2] + bits[2], 16),
+                    parseInt(bits[3] + bits[3], 16)
+                ];
+            }
+        }
+    ];
+
+    // search through the definitions to find a match
+    for (var i = 0; i < color_defs.length; i++) {
+        var re = color_defs[i].re;
+        var processor = color_defs[i].process;
+        var bits = re.exec(color_string);
+        if (bits) {
+            channels = processor(bits);
+            this.r = channels[0];
+            this.g = channels[1];
+            this.b = channels[2];
+            this.ok = true;
+        }
+
+    }
+
+    // validate/cleanup values
+    this.r = (this.r < 0 || isNaN(this.r)) ? 0 : ((this.r > 255) ? 255 : this.r);
+    this.g = (this.g < 0 || isNaN(this.g)) ? 0 : ((this.g > 255) ? 255 : this.g);
+    this.b = (this.b < 0 || isNaN(this.b)) ? 0 : ((this.b > 255) ? 255 : this.b);
+
+    // some getters
+    this.toRGB = function () {
+        return 'rgb(' + this.r + ', ' + this.g + ', ' + this.b + ')';
+    }
+    this.toHex = function () {
+        var r = this.r.toString(16);
+        var g = this.g.toString(16);
+        var b = this.b.toString(16);
+        if (r.length == 1) r = '0' + r;
+        if (g.length == 1) g = '0' + g;
+        if (b.length == 1) b = '0' + b;
+        return '#' + r + g + b;
+    }
+
+    // help
+    this.getHelpXML = function () {
+
+        var examples = new Array();
+        // add regexps
+        for (var i = 0; i < color_defs.length; i++) {
+            var example = color_defs[i].example;
+            for (var j = 0; j < example.length; j++) {
+                examples[examples.length] = example[j];
+            }
+        }
+        // add type-in colors
+        for (var sc in simple_colors) {
+            examples[examples.length] = sc;
+        }
+
+        var xml = document.createElement('ul');
+        xml.setAttribute('id', 'rgbcolor-examples');
+        for (var i = 0; i < examples.length; i++) {
+            try {
+                var list_item = document.createElement('li');
+                var list_color = new RGBColor(examples[i]);
+                var example_div = document.createElement('div');
+                example_div.style.cssText =
+                        'margin: 3px; '
+                        + 'border: 1px solid black; '
+                        + 'background:' + list_color.toHex() + '; '
+                        + 'color:' + list_color.toHex()
+                ;
+                example_div.appendChild(document.createTextNode('test'));
+                var list_item_value = document.createTextNode(
+                    ' ' + examples[i] + ' -> ' + list_color.toRGB() + ' -> ' + list_color.toHex()
+                );
+                list_item.appendChild(example_div);
+                list_item.appendChild(list_item_value);
+                xml.appendChild(list_item);
+
+            } catch(e){}
+        }
+        return xml;
+
+    }
+
+}
+
+module.exports = RGBColor;
+
+},{}],35:[function(require,module,exports){
+LogEvent = function(name, value, time){
+  this.name = name;
+  this.value = value;
+  this.time = time;
+};
+
+LogEvent.CLICKED_TUTORIAL = "Clicked tutorial";
+LogEvent.CHANGED_TUTORIAL = "Changed tutorial";
+LogEvent.BLEW_FUSE = "Blew fuse";
+LogEvent.DMM_MEASUREMENT = "DMM measurement";
+LogEvent.CHANGED_CIRCUIT = "Changed circuit";
+LogEvent.ATTACHED_PROBE = "Attached probe";
+LogEvent.DETACHED_PROBE = "Detached probe";
+LogEvent.MOVED_DMM_DIAL = "Moved DMM dial";
+LogEvent.OSCOPE_MEASUREMENT = "OScope measurement";
+LogEvent.OSCOPE_V1_SCALE_CHANGED = "OScope V1 scale changed";
+LogEvent.OSCOPE_V2_SCALE_CHANGED = "OScope V2 scale changed";
+LogEvent.OSCOPE_T_SCALE_CHANGED = "OScope T scale changed";
+
+module.exports = LogEvent;
+
+},{}],36:[function(require,module,exports){
+/*global sparks $ */
+
+Meter = function() {};
+
+Meter.prototype = {
+  dmm: null,
+  oscope: null,
+
+  setProbeLocation: function (probe, loc) {
+    if (this.oscope) {
+      this.oscope.setProbeLocation(probe, loc);
+    }
+    if (this.dmm) {
+      this.dmm.setProbeLocation(probe, loc);
+    }
+  },
+
+  // moves any and all probes from oldLoc to newLoc
+  // useful for when a lead with connected probes is moved
+  moveProbe: function (oldLoc, newLoc) {
+    if (this.oscope) {
+      this.oscope.moveProbe(oldLoc, newLoc);
+    }
+    if (this.dmm) {
+      this.dmm.moveProbe(oldLoc, newLoc);
+    }
+  },
+
+  update: function () {
+    if (this.oscope) {
+      this.oscope.update();
+    }
+    if (this.dmm) {
+      this.dmm.update();
+    }
+  },
+
+  reset: function() {
+    if (this.oscope && this.oscope.reset) {
+      this.oscope.reset();
+    }
+    if (this.dmm && this.dmm.reset) {
+      this.dmm.reset();
+    }
+  }
+};
+
+module.exports = Meter;
+
+},{}],37:[function(require,module,exports){
+/*global sparks getBreadBoard breadModel */
+/* FILE oscilloscope.js */
+
+var LogEvent      = require('./log'),
+    logController = require('../controllers/log-controller');
+
+Oscilloscope = function (breadboardController) {
+  this.breadboardController = breadboardController;
+  this.probeLocation = [];
+  this.probeLocation[0] = null;     // pink probe
+  this.probeLocation[1] = null;     // yellow probe
+  this.view = null;
+  this.signals = [];
+  var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
+      initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
+  this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
+  this._horizontalScale = initHorizontalScale;
+  this.showAminusB = false;
+  this.showAplusB = false;
+  this.AminusBwasOn = false;  // whether A-B was turned on during current question
+  this.AplusBwasOn = false;
+};
+
+Oscilloscope.prototype = {
+
+  N_CHANNELS:     2,
+  PROBE_CHANNEL:  [1, 2],
+
+  HORIZONTAL_SCALES: [1e-3, 5e-4, 2.5e-4, 1e-4, 5e-5, 2.5e-5, 1e-5, 5e-6, 2.5e-6, 1e-6],  // sec/div
+  VERTICAL_SCALES:   [100,  50,   25,     10,   5,    2.5,    1,    0.5,  0.25,    0.1],  // V/div
+
+  INITIAL_HORIZONTAL_SCALE: 1e-5,
+  INITIAL_VERTICAL_SCALE:   5,
+
+  reset: function() {
+    this.probeLocation[0] = "left_positive21";      // yellow probe
+    this.probeLocation[1] = null;                   // pink probe
+    this.signals = [];
+    var initVerticalScale   = this.INITIAL_VERTICAL_SCALE,
+        initHorizontalScale = this.INITIAL_HORIZONTAL_SCALE;
+    this._verticalScale = [initVerticalScale, initVerticalScale, initVerticalScale];
+    this._horizontalScale = initHorizontalScale;
+    this.showAminusB = false;
+    this.showAplusB = false;
+    this.AminusBwasOn = false;  // whether A-B was turned on during current question
+    this.AplusBwasOn = false;
+  },
+
+  setView: function(view) {
+    this.view = view;
+    this.view.setModel(this);
+    this.update();         // we can update view immediately with the source trace
+  },
+
+  // @probe Name of probe being attached. We ignore everything but "red"
+  // @location Hole name, like 'a1' or can be null if probe is lifted
+  setProbeLocation: function(probe, location) {
+    if (probe === "probe_yellow" || probe === "probe_pink") {
+      var probeIndex = probe === "probe_yellow" ? 0 : 1;
+      if (this.probeLocation[probeIndex] !== location) {
+        this.probeLocation[probeIndex] = location;
+        this.update();
+      }
+    }
+  },
+
+  moveProbe: function(oldLoc, newLoc) {
+    for (var i = 0; i < 2; i++) {
+      if (this.probeLocation[i] === oldLoc) {
+        this.probeLocation[i] = newLoc;
+      }
+    }
+    this.update();
+  },
+
+  update: function() {
+    var source     = this.breadboardController.getComponents().source,
+        probeIndex,
+        sourceSignal,
+        probeNode;
+
+    if (!source || !source.frequency || !source.amplitude) {
+      return;                                     // we must have a source with a freq and an amplitude
+    }
+
+    for (probeIndex = 0; probeIndex < 2; probeIndex++) {
+      if (this.probeLocation[probeIndex]) {
+        probeNode = this.breadboardController.getHole(this.probeLocation[probeIndex]).nodeName();
+        if (probeNode === 'gnd') {
+          // short-circuit this operation and just return a flat trace
+          this.setSignal(this.PROBE_CHANNEL[probeIndex], {amplitude: 0, frequency: 0, phase: 0});
+          continue;
+        } else if (~probeNode.indexOf('powerPos')) {
+          // just return the source
+          sourceSignal = {
+            amplitude: source.amplitude * source.amplitudeScaleFactor,
+            frequency: source.frequency,
+            phase: 0
+          };
+          this.setSignal(this.PROBE_CHANNEL[probeIndex], sourceSignal);
+          continue;
+        }
+        this.breadboardController.query("oscope", probeNode, this.updateWithData, this, [probeNode, probeIndex]);
+      } else {
+        this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
+      }
+    }
+  },
+
+  updateWithData: function(ciso, probeInfo) {
+
+    var source     = this.breadboardController.getComponents().source,
+        probeNode  = probeInfo[0],
+        probeIndex = probeInfo[1],
+        result,
+        probeSignal;
+
+    result = ciso.getVoltageAt(probeInfo[0]);
+
+    if (result) {
+      probeSignal = {
+        amplitude: result.magnitude * source.amplitudeScaleFactor,
+        frequency: source.frequency,
+        phase:     result.angle
+      };
+
+      this.setSignal(this.PROBE_CHANNEL[probeIndex], probeSignal);
+
+      logController.addEvent(LogEvent.OSCOPE_MEASUREMENT, {
+          "probe": probeNode
+        });
+    } else {
+      this.clearSignal(this.PROBE_CHANNEL[probeIndex]);
+    }
+  },
+
+  setSignal: function(channel, signal) {
+    if (!this.view) return;
+    this.signals[channel] = signal;
+    this.view.renderSignal(channel);
+  },
+
+  getSignal: function(channel) {
+    return this.signals[channel];
+  },
+
+  clearSignal: function(channel) {
+    delete this.signals[channel];
+    if (this.view) {
+      this.view.removeTrace(channel);
+    }
+  },
+
+  setHorizontalScale: function(scale) {
+    this._horizontalScale = scale;
+    if (this.view) {
+      this.view.horizontalScaleChanged();
+    }
+
+    logController.addEvent(LogEvent.OSCOPE_T_SCALE_CHANGED, {
+        "scale": scale,
+        "goodnessOfScale": this.getGoodnessOfScale()
+      });
+  },
+
+  getHorizontalScale: function() {
+    if (!this._horizontalScale) {
+      // if you want to randomize the scales, hook something in here
+      this.setHorizontalScale(this.INITIAL_HORIZONTAL_SCALE);
+    }
+    return this._horizontalScale;
+  },
+
+  setVerticalScale: function(channel, scale) {
+    if (this.showAminusB || this.showAplusB){
+      if (channel === 1) {
+        this._verticalScale[2] = scale;
+      } else {
+        return;
+      }
+    }
+
+    this._verticalScale[channel] = scale;
+    if (this.view) {
+      this.view.verticalScaleChanged(1);
+      this.view.verticalScaleChanged(2);
+    }
+
+    var logEvent = channel == 1 ? LogEvent.OSCOPE_V1_SCALE_CHANGED : LogEvent.OSCOPE_V2_SCALE_CHANGED;
+    logController.addEvent(logEvent, {
+      "scale": scale,
+      "goodnessOfScale": this.getGoodnessOfScale()
+    });
+  },
+
+  getVerticalScale: function(channel) {
+    if (!this._verticalScale[channel]) {
+      // if you want to randomize the scales, hook something in here
+      this.setVerticalScale(channel, this.INITIAL_VERTICAL_SCALE);
+    }
+    return this._verticalScale[channel];
+  },
+
+  bumpHorizontalScale: function(direction) {
+    var currentScale = this.getHorizontalScale(),
+        newScale     = this._getNextScaleFromList(currentScale, this.HORIZONTAL_SCALES, direction);
+
+    if (newScale !== currentScale) {
+      this.setHorizontalScale(newScale);
+    }
+  },
+
+  bumpVerticalScale: function(channel, direction) {
+    var currentScale = this.getVerticalScale(channel),
+        newScale     = this._getNextScaleFromList(currentScale, this.VERTICAL_SCALES, direction);
+
+    if (newScale !== currentScale) {
+      this.setVerticalScale(channel, newScale);
+    }
+  },
+
+  toggleShowAminusB: function() {
+    this.showAminusB = !this.showAminusB;
+    if (this.showAminusB) {
+      this.AminusBwasOn = true;
+      this.showAplusB = false;
+      this.setVerticalScale(1, this._verticalScale[1]);
+    }
+  },
+
+  toggleShowAplusB: function() {
+    this.showAplusB = !this.showAplusB;
+    if (this.showAplusB) {
+      this.AplusBwasOn = true;
+      this.showAminusB = false;
+      this.setVerticalScale(1, this._verticalScale[1]);
+    }
+  },
+
+  /**
+    if A-B or A+B is off right now, set AminusBwasOn and/or
+    AplusBwasOn to false now.
+  */
+  resetABforQuestion: function() {
+    if (!this.showAminusB) {
+      this.AminusBwasOn = false;
+    }
+    if (!this.showAplusB) {
+      this.AplusBwasOn = false;
+    }
+  },
+
+  _getNextScaleFromList: function(scale, scales, direction) {
+    var i, len, prevIndex;
+
+    for (i = 0, len = scales.length; i < len; i++) {
+      if (scales[i] < scale) {
+        break;
+      }
+    }
+    prevIndex = (i > 0) ? i - 1 : 0;
+
+    if (direction === 1 && prevIndex - 1 >= 0) {
+      return scales[prevIndex - 1];
+    } else if (direction === -1 && prevIndex + 1 < scales.length) {
+      return scales[prevIndex + 1];
+    } else {
+      return scale;
+    }
+  },
+
+  // returns how "good" the current scale is, from 0-1.
+  // For a single trace, a perfect scale is 1 full wave across the screen and an amplitude
+  // that is exactly the screen's height. This will return a 1.0 if the scale is within 20%
+  // of these parameters, and 0.0 if it's 200% away from the perfect scale (i.e. if it's 3 times
+  // as big or 1/3 as big).
+  // There are two scale factors per trace. The goodness ranking for the entire trace is the average
+  // of the two with the lower value weighted three times as much.
+  // If there are two traces showing, this will return the lower of the two values.
+  //
+  getGoodnessOfScale: function() {
+    var self = this,
+
+        goodnessOfScale = function(channel) {
+          var timeScale  = self.signals[channel].frequency * (self._horizontalScale * 10),            // 0-inf, best is 1
+              ampScale   = (self.signals[channel].amplitude * 2) / (self._verticalScale[channel] * 8),
+              timeGoodness  = timeScale > 1 ? 1/timeScale : timeScale,                                // 0-1, best is 1
+              ampGoodness   = ampScale > 1 ? 1/ampScale : ampScale,
+              timeScore  = (timeGoodness - 0.3) / 0.5,                                                // scaled such that 0.3 = 0 and 0.8 = 1
+              ampScore   = (ampGoodness - 0.3) / 0.5,
+              minScore = Math.max(0,Math.min(timeScore, ampScore, 1)),                                // smallest of the two, no less than 0
+              maxScore = Math.min(1,Math.max(timeScore, ampScore, 0));                                // largest of the two, no greater than 1
+          return ((minScore * 3) + maxScore) / 4;
+        },
+
+        goodnesses = [null, null];
+
+    if (this.signals[1]) {
+      goodnesses[0] = goodnessOfScale([1]);
+    }
+
+    if (this.signals[2]) {
+      goodnesses[1] = goodnessOfScale([2]);
+    }
+    return goodnesses;
+  }
+
+};
+
+module.exports = Oscilloscope;
+
+},{"../controllers/log-controller":24,"./log":35}],38:[function(require,module,exports){
+var Meter         = require('./meter'),
+    WorkbenchView = require('../views/workbench-view');
+
+Workbench = function(props, breadboardController){
+  this.circuit = null;
+  this.meter = new Meter();
+
+  this.show_multimeter          = false;
+  this.show_oscilloscope        = false;
+  this.allow_move_yellow_probe  = false;
+  this.hide_pink_probe          = false;
+  this.showComponentDrawer      = false;
+
+  this.view = new WorkbenchView(this, breadboardController);
+};
+
+Workbench.prototype = {
+
+  toJSON: function () {
+    var json = {};
+    return json;
+  }
+
+};
+
+module.exports = Workbench;
+
+},{"../views/workbench-view":45,"./meter":36}],39:[function(require,module,exports){
+var workbenchController;
+
+embeddableComponents = {
+  resistor: {
+    image: "/common/images/blank-resistor.png",
+    imageWidth: 108,
+    property: "resistance",
+    initialValue: 100
+  },
+  capacitor: {
+    image: "/common/images/capacitor.png",
+    imageWidth: 48,
+    property: "capacitance",
+    initialValue: 1e-6
+  },
+  inductor: {
+    image: "/common/images/inductor.png",
+    imageWidth: 80,
+    property: "inductance",
+    initialValue: 1e-6
+  },
+  wire: {
+    image: "/common/images/wire.png",
+    imageWidth: 80,
+    leadDistance: 5
+  }
+}
+
+AddComponentsView = function(workbenchController, breadboardController){
+  this.breadboardController = breadboardController;
+
+  var self = this,
+      component;
+
+  this.$drawer = $(".component_drawer").empty();
+
+  this.lastHighlightedHole = null;
+
+  // create drawer
+  for (componentName in embeddableComponents) {
+    if (!embeddableComponents.hasOwnProperty(componentName)) continue;
+
+    component = embeddableComponents[componentName];
+
+    this.$drawer.append(
+     $("<img class='add_"+componentName+" add_component'>")
+      .attr("src", component.image)
+      .css("width", component.imageWidth)
+      .data("type", componentName)
+      .draggable({
+        containment: "#breadboard_wrapper",
+        helper: "clone",
+        start: function(evt, ui) {
+          $(ui.helper.context).hide().fadeIn(1200);
+        },
+        drag: function(evt, ui) {
+          if (self.lastHighlightedHole) {
+            self.lastHighlightedHole.attr("xlink:href", "#$:hole_not_connected");
+          }
+          loc = {x: ui.offset.left, y: ui.offset.top+(ui.helper.height()/2)};
+          var nearestHole = $($.nearest(loc, "use[hole]")[0]);
+          nearestHole.attr("xlink:href", "#$:hole_highlighted");
+          self.lastHighlightedHole = nearestHole;
+        }
+      })
+    );
+  }
+
+  // todo: don't add this twice
+  $(".breadboard").droppable({
+    drop: function(evt, ui) {
+      var type = ui.draggable.data("type"),
+          embeddableComponent = embeddableComponents[type],
+          hole = self.lastHighlightedHole.attr("hole"),
+          loc = hole + "," + hole,
+          possibleValues,
+          $propertyEditor = null,
+          propertyName,
+          initialValue, initialValueEng, initialValueText,
+          $editor, props, uid, comp;
+
+      if (embeddableComponent.leadDistance) {
+        var num = /\d*$/.exec(hole)[0] * 1;
+        num = Math.max(num-embeddableComponent.leadDistance, 1);
+        loc = loc.replace(/(\d*)$/, num);
+      }
+
+      // insert component into highlighted hole
+      props = {
+       "type": type,
+       "draggable": true,
+       "connections": loc
+      };
+      props[embeddableComponent.property] = embeddableComponent.initialValue;
+      uid = self.breadboardController.insertComponent(type, props);
+
+      comp = self.breadboardController.getComponents()[uid];
+
+      // move leads to correct width
+      self.breadboardController.checkLocation(comp);
+
+      // update meters
+      workbenchController.workbench.meter.update();
+
+      // show editor
+      workbenchController.workbench.view.showComponentEditor(uid);
+    }
+  })
+};
+
+AddComponentsView.prototype = {
+
+  openPane: function() {
+    $(".component_drawer").animate({left: 0}, 300, function(){
+      $(".add_components").css("overflow", "visible");
+    });
+  }
+
+};
+
+module.exports = AddComponentsView;
+
+},{}],40:[function(require,module,exports){
+/**
+ * @author Mobile.Lab (http://mlearner.com)
+ **/
+
+require('../libs/base64');
+require('../libs/canvg');
+
+var breadboardComm      = require('./svg_view_comm');
+
+window["breadboardSVGView"] = {
+  "options" : {
+    "rootpath" : "",
+    "magnifier" : {
+      "time": 400,
+      "size": 60,
+      "zoom": 2,
+      "offset": {
+        "x": 80,
+        "y": 80
+      }
+    }
+  },
+  "util" : {}
+};
+
+
+// window["breadboardSVGView"].connectionMade = function(component, location) {
+//   console.log('Received: connect, component|' + component + '|' + location);
+// };
+
+// window["breadboardSVGView"].connectionBroken = function(component, location) {
+//   console.log('Received: disconnect, component|' + component + '|' + location);
+// };
+
+// window["breadboardSVGView"].probeAdded = function(meter, color, location) {
+//   console.log('Received: connect, ' + meter + '|probe|' + color + '|' + location);
+// };
+
+// window["breadboardSVGView"].probeRemoved = function(meter, color) {
+//   console.log('Received: disconnect, ' + meter + '|probe|' + color);
+// };
+
+// window["breadboardSVGView"].dmmDialMoved = function(value) {
+//   console.log('Received: multimeter_dial >> ' + value);
+// };
+
+/**
+ * breadboard # util # require
+ * >> loading required resources
+ **/
+
+(function($, board) {
+
+  board.util.require = function(files, callback) {
+    return new LoadingStack(files, callback).load();
+  };
+
+  var LoadingStack = function(files, callback) {
+    // callback function
+    this.callback = callback;
+    // downloaded resources
+    this.resources = {};
+    // main stack of loading files
+    this.stack = files;
+    // counter of loaded files
+    this.loaded = 0;
+  };
+
+  LoadingStack.prototype.success = function() {
+    if (++this.loaded == this.stack.length) {
+      this.callback(this.resources);
+    }
+  };
+
+  LoadingStack.prototype.attachData = function(file, data) {
+    file = file.substring(file.lastIndexOf('\/') + 1, file.lastIndexOf('.'));
+    this.resources[file] = data;
+  };
+
+  LoadingStack.prototype.load = function() {
+    var f;
+    for (var i = this.stack.length; i--; ) {
+      f = this.stack[i];
+      this["load" + f.toUpperCase().substring( f.lastIndexOf('.') + 1 )](f);
+    }
+  };
+
+  LoadingStack.prototype.loadJS = function(file) {
+    file = board.options.rootpath + file;
+
+    $.getScript(file, function(stack) {
+      return function() {
+        stack.success();
+      };
+    }(this)).fail(function() {
+      console.log("# [error] (while requiring) failed load/compile javascript file: " + file);
+    });
+  };
+
+  LoadingStack.prototype.loadCSS = function(file) {
+    file = board.options.rootpath + file;
+
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = file;
+    document.head.appendChild(link);
+
+    this.success();
+  };
+
+  LoadingStack.prototype.loadSVG = function(file) {
+    this.loadResource(file);
+  };
+
+  LoadingStack.prototype.loadResource = function(file) {
+    file = board.options.rootpath + file;
+
+    $.ajax({
+      "url" : file,
+      "type" : "GET",
+      "dataType" : "html",
+      "success" : function(stack) {
+        return function(data) {
+          stack.attachData(file, data);
+          stack.success();
+        };
+      }(this),
+      "error" : function() {
+        console.log("# [error] (while requiring) failed load resource file: " + file);
+      }
+    });
+  };
+
+})(jQuery, window["breadboardSVGView"]);
+
+/**
+ * breadboardView # board
+ * >> create board object with API
+ **/
+
+(function($, board) {
+
+  // global link to common SVG-jQuery object
+  var paper = null;
+
+  // global event model
+  var touch = !!('ontouchstart' in document.documentElement);
+
+  var _mousedown = (touch ) ? 'touchstart' : 'mousedown';
+  var _mousemove = (touch ) ? 'touchmove' : 'mousemove';
+  var _mouseup = (touch ) ? 'touchend' : 'mouseup';
+  var _mouseover = (touch ) ? 'xxx' : 'mouseover';
+  var _mouseout = (touch ) ? 'xxx' : 'mouseout';
+
+  // object contains electronic and test equipment
+  var equipment = function() {
+  };
+  // object contains components added to breadboard
+  var component = function() {
+  };
+  // parts of more complex components on breadboard(need only for building)
+  var primitive = function() {
+  };
+  // board constructor
+  var CircuitBoard = function(id) {
+    this.workbenchController = require('../controllers/workbench-controller')
+
+    var self = this;
+    // link to main holder
+    this.holder = $('.' + id).html('').append(
+      SVGStorage.create('board')
+    ).addClass('circuit-board');
+    this.holder.h = this.holder.height();
+    this.holder.w = this.holder.width();
+
+    this.workspace = this.holder.find("[item=components]");
+    this.holes = {
+      'row' : {}
+    };
+    // model of links to components by id and as the array
+    this.component = {};
+    this.itemslist = [];
+
+    // create model of holes
+    var p = SVGStorage.point(), bbox, matrix, elem, name;
+    this.holder.find("[hole]").first().each(function() {
+      bbox = this.getBBox();
+      p.x = bbox.x + bbox.width / 2;
+      p.y = bbox.y + bbox.height / 2;
+    }).end().each(function() {
+      matrix = this.getCTM();
+      elem = $(this), name = elem.attr("hole");
+      elem = new CircuitBoardHole(elem);
+      elem.center = p.matrixTransform(matrix);
+      if (!self.holes.row[elem.y]) {
+        self.holes.row[elem.y] = {};
+      }
+      self.holes.row[elem.y][elem.x] = elem;
+      self.holes[name] = elem;
+    });
+    this.holes.find = findNearestHole;
+
+    // multimeter (DMM)
+    this.multimeter = null;
+    // battery
+    this.battery = null;
+    // probes
+    this.probes = [];
+
+    // init all leads draggable
+    primitive.prototype.initLeadDraggable(this);
+    // init all probes draggable
+    primitive.prototype.initProbeDraggable(this);
+    // init all components draggable
+    primitive.prototype.initComponentDraggable(this);
+  };
+
+  CircuitBoard.prototype.sendEventToModel = function(evName, params) {
+    breadboardComm[evName](this.workbenchController, params[0], params[1], params[2]);
+  };
+
+  CircuitBoard.prototype.addComponent = function(elem) {
+    this.component[elem["UID"]] = new component[ elem["type"] ](elem, this.holes, this);
+    this.component[elem["UID"]]["type"] = elem["type"];
+    this.component[elem["UID"]]["id"] = elem["UID"];
+    this.itemslist.push(this.component[elem["UID"]]);
+    this.workspace.append(this.component[elem["UID"]].view);
+    this.component[elem["UID"]]["image"] = new SVGImage(this, elem["UID"]);
+
+    if (this.rightClickFunction) {
+      var rightClickObj = this.rightClickObj,
+          func = this.rightClickFunction;
+
+      this.component[elem["UID"]].view.bind("contextmenu dblclick", function(evt) {
+        rightClickObj[func]($(this).attr("uid"));
+        evt.preventDefault();
+        return false;
+      });
+    }
+  };
+
+  CircuitBoard.prototype.changeResistorColors = function(id, colors) {
+    this.component[id].changeColors(colors);
+  };
+
+  CircuitBoard.prototype.removeComponent = function(id) {
+    if (!this.component[id]) return;
+    this.component[id].hole[0].disconnected();
+    this.component[id].hole[1].disconnected();
+    this.component[id].view.remove();
+    this.component[id] = null;
+    for (var i = this.itemslist.length; i--; ) {
+      if (this.itemslist[i].id === id) {
+        this.itemslist.splice(i, 1);
+      }
+    }
+  };
+
+  CircuitBoard.prototype.setRightClickFunction = function(obj, func) {
+    this.rightClickObj = obj;
+    this.rightClickFunction = func;
+    for (uid in this.component) {
+      this.component[uid].view.bind("contextmenu dblclick", function(evt) {
+        obj[func]($(this).attr("uid"));
+        evt.preventDefault();
+        return false;
+      });
+    }
+  };
+
+  CircuitBoard.prototype.addDMM = function(params) {
+    if (!this.multimeter) {
+      this.multimeter = new equipment.multimeter(this, params);
+      this.probes.push(this.multimeter.probe['black']);
+      this.probes.push(this.multimeter.probe['red']);
+    }
+    this.multimeter.probe['black'].view.show();
+    this.multimeter.probe['red'].view.show();
+    this.multimeter.mmbox.view.show();
+    this.setDMMText('  0.0 0');
+  };
+
+  CircuitBoard.prototype.setDMMText = function(text) {
+    if (this.multimeter) {
+      for (var i = text.length; i--; ) {
+        var val = '#:dmm-digit-' + text.charAt(i);
+        this.multimeter.mmbox.screen[i].setAttribute('xlink:href', val);
+      }
+    }
+  };
+
+  CircuitBoard.prototype.removeDMM = function() {
+    if (this.multimeter) {
+      this.multimeter.probe['black'].view.hide();
+      this.multimeter.probe['red'].view.hide();
+      this.multimeter.mmbox.view.hide();
+    }
+  };
+
+  CircuitBoard.prototype.addBattery = function(connections) {
+    var type = "battery";
+
+    if (!this.battery) {
+      this.battery = new equipment.battery(this, connections);
+      this.workspace.append(this.battery.view);
+      this.itemslist.push(this.battery);
+
+      this.component[type] = this.battery;
+      this.battery["type"] = type;
+      this.battery["image"] = new SVGImage(this, type);
+    }
+
+    this.battery.btbox.view.show();
+
+    this.battery.pts[0].connected();
+    this.battery.pts[1].connected();
+  };
+
+  CircuitBoard.prototype.removeBattery = function() {
+    if (this.battery) {
+      this.battery.btbox.view.hide();
+      // this.battery.blackWire.hide();
+      // this.battery.redWire.hide();
+
+      this.battery.pts[0].disconnected();
+      this.battery.pts[1].disconnected();
+    }
+  };
+
+  CircuitBoard.prototype.addOScope = function(params) {
+    if (!this.oscope) {
+      this.oscope = new equipment.oscope(this, params);
+      this.probes.push(this.oscope.probe['yellow']);
+      this.probes.push(this.oscope.probe['pink']);
+    }
+    this.oscope.probe['yellow'].view.show();
+    this.oscope.probe['pink'].view.show();
+  };
+
+  CircuitBoard.prototype.removeOScope = function() {
+    if (this.oscope) {
+      this.oscope.probe['yellow'].view.hide();
+      this.oscope.probe['pink'].view.hide();
+    }
+  };
+
+  CircuitBoard.prototype.toFront = function(component) {
+    var self = this, redrawId;
+    // resolve crash in Google Chrome by changing environment
+    setTimeout(function() {
+      var i = component.view.index();
+      if (component.view[0].ownerSVGElement.suspendRedraw) { // IE9 out
+        redrawId = component.view[0].ownerSVGElement.suspendRedraw(50);
+      }
+      // use prepend to avoid crash in iOS
+      self.workspace.prepend(component.view.parent().children(':gt(' + i + ')'));
+      if (component.view[0].ownerSVGElement.unsuspendRedraw) { // IE9 out
+        component.view[0].ownerSVGElement.unsuspendRedraw(redrawId);
+      }
+    }, 50);
+  };
+
+  CircuitBoard.prototype.initMagnifier = function() {
+    var brd = this, x, y, t, hole, show_magnifier = false, time;
+
+    var holder = brd.holder[0], active = false, svghead;
+    var dx, dy, z, r, pi2, wm, hm, wb, hb, sh, pos, old;
+
+    time = board.options.magnifier.time;
+    hole = SVGStorage.hole;
+    svghead = SVGStorage.info.svghead;
+    dx = board.options.magnifier.offset.x;
+    dy = board.options.magnifier.offset.y;
+    z = board.options.magnifier.zoom;
+    r = board.options.magnifier.size;
+    hm = brd.holder.h * z;
+    wm = brd.holder.w * z;
+    sh = 60 * z;
+    hb = hm - sh;
+    wb = wm;
+
+    // not active components buffer
+    var comp = context2d();
+    comp.canvas.height = hm;
+    comp.canvas.width = wm;
+
+    pi2 = Math.PI * 2;
+    z--; // for event;
+
+    var magnifier = $('<canvas class="magnifier">').attr({
+      'height': brd.holder.h + 'px',
+      'width': brd.holder.w + 'px'
+    }).appendTo(brd.holder);
+
+    var ctx = magnifier[0].getContext('2d'), buff, lead, elem;
+
+    // create buff image of background and holes
+    buff = context2d();
+    buff.canvas.height = hm;
+    buff.canvas.width = wm;
+    buff.fillStyle = '#999181';
+    buff.rect(0, 0, wb, sh), buff.fill();
+    buff.drawImage(SVGStorage.defs[':bg-green-board'], 0, sh, wb, hb);
+    buff.drawSvg( SVGStorage.info.svghole, 0, 0, wm, hm );
+    buff.fill();
+    //window.document.body.appendChild(ctx.canvas);
+
+    // set default style for canvas context2d object
+
+    holder.addEventListener( _mousedown, function(evt) {
+      lead = $(evt.target).data('primitive-lead') || null;
+      if (lead) {
+        elem = brd.component[lead.name];
+        comp.update(elem);
+        old = pos = getCoords(evt, brd.holder);
+        magnifier.draw();
+        active = true;
+        show_magnifier = true;
+        setTimeout(function() {
+          if (show_magnifier) {
+            magnifier.show();
+          }
+        }, time);
+      }
+      evt.preventDefault();
+    }, false);
+
+    holder.addEventListener( _mousemove, function(evt) {
+      pos = getCoords(evt, brd.holder);
+      if (active && ((pos.x != old.x) || (pos.y != old.y))) {
+        magnifier.show();
+        magnifier.draw();
+        old = pos;
+      }
+    }, false);
+
+    holder.addEventListener( _mouseup, function(evt) {
+      if (active) {
+        show_magnifier = false;
+        magnifier.hide();
+        active = false;
+        lead = null;
+        elem = null;
+      }
+    }, false);
+
+    ctx.font = "bold 16px Arial";
+
+    magnifier.draw = function() {
+      ctx.save();
+      ctx.clearRect(0, 0, brd.holder.w, brd.holder.h);
+
+      ctx.beginPath();
+      ctx.arc(pos.x-dx, pos.y-dy, r, 0, pi2, false);
+      ctx.closePath();
+      ctx.fill();
+      ctx.clip();
+
+      x = -z*pos.x - dx;
+      y = -z*pos.y - dy;
+
+      ctx.drawImage(buff.canvas, x, y, wm, hm);
+      if (brd.hole_target) {
+        ctx.save();
+        t = brd.hole_target.view[0].getCTM();
+        ctx.translate(x, y);
+        ctx.scale(z + 1, z + 1);
+        ctx.transform(t.a, t.b, t.c, t.d, t.e, t.f);
+        for (var i = 0, l = hole.length; i < l; i++) {
+          ctx.fillStyle = hole[i].c;
+          ctx.beginPath();
+          ctx.arc(hole[i].x, hole[i].y, hole[i].r, 0, pi2, false);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+      ctx.drawImage(comp.canvas, x, y, wm, hm);
+      ctx.drawImage(elem.image.update(), x, y, wm, hm);
+
+      ctx.restore();
+      ctx.save();
+      ctx.strokeStyle = '#3c3c3c';
+      ctx.shadowColor = '#000000';
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      ctx.shadowBlur = 8;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(pos.x-dx, pos.y-dy, r, 0, pi2, false);
+      ctx.closePath();
+      ctx.stroke();
+      if (brd.hole_target) {
+        ctx.save();
+        ctx.fillStyle = "#00ff00";
+        ctx.fillText(brd.hole_target.name, pos.x - r - dx, pos.y - r - dy);
+        ctx.restore();
+      }
+      ctx.restore();
+
+    };
+
+    comp.update = function(elem) {
+      this.clearRect(0, 0, wm, hm);
+      for (var i = 0, l = brd.itemslist.length; i < l; i++) {
+        if (brd.itemslist[i] != elem ) {
+          this.drawImage(brd.itemslist[i].image.cnv.canvas, 0, 0, wm, hm);
+        }
+      }
+      for (var p = 0, d = brd.probes.length; p < d; p++ ) {
+        this.drawImage(brd.probes[p].image.cnv.canvas, 0, 0, wm, hm);
+      }
+    };
+
+    // debugging
+    //comp.update();
+    //comp.canvas.style.border = '1p solir red';
+    //document.body.appendChild(comp.canvas);
+  };
+
+  CircuitBoard.prototype.showTooltip = function(uid, $tipPane) {
+    var $comp      = this.component[uid].view,
+        pos        = $comp.position(),
+        rect       = $comp[0].getBoundingClientRect(),
+        compWidth  = rect.width,
+        compHeight = rect.height,
+        tipWidth   = $tipPane.width(),
+        yOffset,
+        left,
+        tipHeight,
+        $tooltip;
+
+    if (compWidth > 300) {    // weird bug
+      compWidth = 120;
+    }
+
+    // wrap pane in bubble pane and then empty pane (for mousout)
+    $tooltip = $("<div>").append(
+      $("<div class='speech-bubble'>").append($tipPane)
+    );
+
+    // FIXME: We need a better cross-browser solution for this
+    if(typeof InstallTrigger !== 'undefined'){    // Firefox
+      yOffset = 180;
+      left = pos.left - (2.5*tipWidth)+ (compWidth*0.4);
+    } else {
+      yOffset = 50;
+      left = pos.left - (tipWidth/2)+ (compWidth*0.4);
+    }
+
+    this.holder.append($tooltip);
+
+    tipHeight = $tipPane.height();
+
+    $tooltip.css({
+      position: "absolute",
+      left:     left,
+      top:      pos.top - tipHeight - yOffset,
+      height:   tipHeight + compHeight + yOffset,
+      zIndex:   1000
+    });
+
+    // delete on mouseout
+    $tooltip.mouseleave(function(){
+      $tooltip.fadeOut( function() { $(this).remove(); });
+    });
+  };
+
+  var SVGImage = function(brd, uid) {
+    this.comp = brd.component[uid];
+    this.brd = brd;
+    // main model
+    this.view = this.comp.element.view;
+    this.cnv = context2d();
+    this.ctx = context2d();
+
+    // calc most used variables
+    this.ozoom = 1 / board.options.magnifier.zoom;
+    this.zoom = board.options.magnifier.zoom;
+    this.w = this.brd.holder.w * this.zoom;
+    this.h = this.brd.holder.h * this.zoom;
+
+    // set dimention (w * h) for canvas
+    this.cnv.canvas.height = this.ctx.canvas.height = this.h;
+    this.cnv.canvas.width = this.ctx.canvas.width = this.w;
+
+    // add pattern image of element
+    SVGImage[this.comp.type].call(this);
+
+    this.update();
+  };
+
+  SVGImage.prototype.update = function() {
+    var ctx = this.cnv, elem = this.comp, path, trns, p, l, i;
+
+  // clear context, common part
+    this.cnv.clearRect(0, 0, this.w, this.h);
+    this.cnv.save();
+  // set zoom transform, common part
+    this.cnv.scale(this.zoom, this.zoom);
+
+  // draw leads, common part
+    for (i = elem.leads.length; i--; ) {
+      path = elem.leads[i].state.path;
+      trns = path[0].getCTM();
+      for (p = 0, l = path.length; p < l; p++) {
+        SVGImage.draw_path.call(this, ctx, path[p], trns);
+      }
+    }
+
+  // draw connector, common part
+    path = elem.connector.view.path;
+    for (p = 0, l = path.length; p < l; p++) {
+      trns =  path[p].getCTM();
+      SVGImage.draw_path.call(this, ctx, path[p], trns);
+    }
+
+  // draw pattern, spetial part
+    this.cnv.save();
+    // set reversed transforms
+    this.cnv.transform(0.05, 0, 0, 0.05, 0, -50);
+    this.cnv.transform(0.8, 0, 0, 0.8, 0, 0);
+    // set real transform
+
+    var t = this.view.attr('transform');
+    // fix bug in IE with transforms
+    t = t.replace(/\) rotate/g,')#rotate')
+      .replace(/ /g,',').replace(/#/, ' ');
+    t = t.split(' ');
+    var t1 = getTransform(t[0]);
+    var t2 = getTransform(t[1]);
+    this.cnv.translate(t1[0], t1[1]);
+    this.cnv.translate(t2[1], t2[2]);
+    this.cnv.rotate(t2[0]*Math.PI/180);
+    this.cnv.translate(-t2[1], -t2[2]);
+    // set reversed spetial transform
+    this.cnv.translate(-5000, -5000);
+    // set other reversed transforms
+    this.cnv.transform(1.25, 0, 0, 1.25, 0, 0);
+    this.cnv.transform(20, 0, 0, 20, 0, 1000);
+    this.cnv.scale(this.ozoom, this.ozoom);
+    // draw pattern element
+    this.cnv.drawImage(this.ctx.canvas, 0, 0, this.w, this.h);
+    // restore context
+    this.cnv.restore();
+
+    // debugging
+    //this.cnv.canvas.style.border = "1px solid blue";
+    //document.body.appendChild(this.cnv.canvas);
+
+    this.cnv.restore();
+    return this.cnv.canvas;
+  };
+
+  SVGImage.wire = function(elem) {
+    // Nothing to do
+  };
+
+  SVGImage.battery = function(elem) {
+    // Nothing to do
+  };
+
+  SVGImage.capacitor = function(elem) {
+    var path = this.comp.element.view.path;
+
+    // set zoom transform
+    this.ctx.scale(this.zoom, this.zoom);
+    // set transform from svg (just copy by hand)
+    this.ctx.transform(0.05, 0, 0, 0.05, 0, -50);
+    this.ctx.transform(0.8, 0, 0, 0.8, 0, 0);
+    // set spetial transform, to make element visible on canvas
+    this.ctx.translate(5000, 5000);
+    // set this element group transform
+    var t = getTransform(this.view.children().first().attr('transform'));
+    this.ctx.transform(t[0], t[1], t[2], t[3], t[4], t[5]);
+
+    path = this.view.path;
+    for (var p = 0, l = path.length; p < l; p++) {
+      SVGImage.draw_path.call(this, this.ctx, path[p]);
+    }
+
+    // debugging
+    //this.ctx.canvas.style.border = "1px solid red";
+    //document.body.appendChild(this.ctx.canvas);
+  };
+
+  SVGImage.inductor = function(elem) {
+    var path = this.comp.element.view.path, g, t;
+
+    // set zoom transform
+    this.ctx.scale(this.zoom, this.zoom);
+    // set transform from svg (just copy by hand)
+    this.ctx.transform(0.05, 0, 0, 0.05, 0, -50);
+    this.ctx.transform(0.8, 0, 0, 0.8, 0, 0);
+    // set spetial transform, to make element visible on canvas
+    this.ctx.translate(5000, 5000);
+    // set this element group transform
+
+    g = this.view.children();
+    t = getTransform(g.attr('transform'));
+    this.ctx.transform(t[0], t[1], t[2], t[3], t[4], t[5]);
+
+    g = this.view.children().children().not('[type="label"]');
+    for (var i = 0, l = g.length; i< l; i++) {
+      t = getTransform(g[i].getAttribute('transform'));
+      this.ctx.save();
+      this.ctx.transform(t[0], t[1], t[2], t[3], t[4], t[5]);
+      path = $(g[i]).children()[0];
+      SVGImage.draw_path.call(this, this.ctx, path);
+      this.ctx.restore();
+    }
+
+    // debugging
+    //this.ctx.canvas.style.border = "1px solid red";
+    //document.body.appendChild(this.ctx.canvas);
+  };
+
+  SVGImage.resistor = function(elem) {
+    var g, u, t, i, l;
+
+    // set zoom transform
+    this.ctx.scale(this.zoom, this.zoom);
+    // set transform from svg (just copy by hand)
+    this.ctx.transform(0.05, 0, 0, 0.05, 0, -50);
+    this.ctx.transform(0.8, 0, 0, 0.8, 0, 0);
+    // set spetial transform, to make element visible on canvas
+    this.ctx.translate(5000, 5000);
+    // set this element group transform
+
+    this.ctx.transform(15, 0, 0, 15, 0, 150);
+    this.ctx.scale(0.6, 0.6);
+
+    g = this.view.children().children().not('[type="label"]');
+
+    u = g.children('use').not('[type="hint"]');
+    this.ctx.save();
+    this.ctx.translate(-94, -32);
+    for (i = 0, l = u.length; i< l; i++) {
+      SVGImage.draw_use.call(this, this.ctx, u[i]);
+    }
+    this.ctx.restore();
+
+    g = g.children('g');
+    for (i = 0, l = g.length; i< l; i++) {
+      this.ctx.save();
+
+      g[i] = $(g[i]);
+
+      t = g[i].attr('transform');
+      // fix bug in IE with transforms
+      t = t.replace(/\) rotate/g,')#rotate')
+        .replace(/ /g,',').replace(/#/, ' ');
+      t = t.split(' ');
+      var t1 = getTransform(t[0]);
+      this.ctx.translate(t1[0], t1[1]);
+      if (t[1]) {
+        var t2 = getTransform(t[1]);
+        this.ctx.scale(t2[0], t2[1]);
+      }
+      u = g[i].children()[0];
+      SVGImage.draw_use.call(this, this.ctx, u);
+      this.ctx.restore();
+    }
+
+    // debugging
+    //this.ctx.canvas.style.border = "1px solid red";
+    //document.body.appendChild(this.ctx.canvas);
+  };
+
+  SVGImage.probe = function(brd, elem) {
+    // main model
+    this.view = elem.view;
+    this.cnv = context2d();
+    this.ctx = context2d();
+
+    // calc most used variables
+    this.ozoom = 1 / board.options.magnifier.zoom;
+    this.zoom = board.options.magnifier.zoom;
+    this.w = brd.holder.w * this.zoom;
+    this.h = brd.holder.h * this.zoom;
+
+    // set dimention (w * h) for canvas
+    this.cnv.canvas.height = this.ctx.canvas.height = this.h;
+    this.cnv.canvas.width = this.ctx.canvas.width = this.w;
+
+    // add pattern image of element
+    SVGImage.probe.template.call(this);
+
+    // update
+    this.update();
+  };
+
+  SVGImage.probe.prototype.update = function() {
+    // clear context, common part
+    this.cnv.clearRect(0, 0, this.w, this.h);
+    this.cnv.save();
+
+    // set real transforms
+    this.cnv.scale(this.zoom, this.zoom);
+    this.cnv.transform(0.05, 0, 0, 0.05, 0, -100);
+    var t = this.view.attr('transform');
+    if (t) {
+      t = getTransform(t);
+      this.cnv.translate(t[0], t[1]);
+    }
+
+    t = this.view.children().attr('transform');
+    if (t) {
+      t = getTransform(t);
+      this.cnv.translate(t[0], t[1]);
+    }
+
+    t = this.view.children().children().attr('transform');
+    t = getTransform(t);
+
+    // set reversed transforms
+    this.cnv.translate(this.rt[0], this.rt[1]);
+    this.cnv.transform(20, 0, 0, 20, 0, 2000);
+    this.cnv.scale(this.ozoom, this.ozoom);
+
+    // draw template image
+    this.cnv.drawImage(this.ctx.canvas, 0, 0, this.w, this.h);
+
+    // debugging
+    //this.cnv.canvas.style.border = "1px solid blue";
+    //document.body.appendChild(this.cnv.canvas);
+
+    this.cnv.restore();
+    return this.cnv.canvas;
+  };
+
+  SVGImage.probe.template = function() {
+    var t = this.view.attr('transform-full-visibility');
+    t = getTransform(t);
+
+    this.ctx.save();
+    // add pattern image of element
+    this.ctx.scale(this.zoom, this.zoom);
+    this.ctx.transform(0.05, 0, 0, 0.05, 0, -100);
+    this.ctx.translate(t[0], t[1]);
+
+    // draw all elements, skip type="initial". used as (0, 0)
+    this.view.children().children().each(
+      SVGImage.probe.template_draw(this.ctx)
+    );
+    this.ctx.restore();
+
+    // save reversed transform, for update
+    this.rt = [-t[0], -t[1]];
+
+    // debugging
+    //this.ctx.canvas.style.border = "1px solid blue";
+    //document.body.appendChild(this.ctx.canvas);
+  };
+
+  SVGImage.probe.template_draw = function(ctx) {
+    return function() {
+      var elem = $(this), name = this.nodeName.toLowerCase();
+      if (name == 'g') {
+        ctx.save();
+        var t = this.getAttribute('transform');
+        if (t) {
+
+          t = getTransform(t);
+          ctx.transform(t[0], t[1], t[2], t[3], t[4], t[5]);
+        }
+        //console.log('g >> ', this.getAttribute('transform'));
+        elem.children().each(
+          SVGImage.probe.template_draw(ctx)
+        );
+        ctx.restore();
+      } else
+      if (name == 'path') {
+        //console.log('path >> ', this.getAttribute('transform'))
+        SVGImage.draw_path(ctx, this);
+      }
+    };
+  };
+
+  SVGImage.draw_use = function(ctx, use, trn) {
+    ctx.save();
+
+    if (trn) {
+      ctx.transform(trn.a, trn.b, trn.c, trn.d, trn.e, trn.f);
+    }
+
+    var xlink = use.getAttribute('xlink:href').replace('#','');
+    var img = SVGStorage.defs[xlink];
+    var x = parseInt(use.getAttribute('x'), 10);
+    var y = parseInt(use.getAttribute('y'), 10);
+    var ox = parseInt(img.ox, 10);
+    var oy = parseInt(img.oy, 10);
+
+    ctx.drawImage(img, x + ox, y + oy, img.width, img.height);
+
+    ctx.restore();
+  };
+
+  SVGImage.draw_path = function(ctx, path, trn) {
+    ctx.save();
+
+    if (trn) {
+      ctx.transform(trn.a, trn.b, trn.c, trn.d, trn.e, trn.f);
+    }
+
+    var str_lj = path.getAttribute('stroke-linejoin') || false;
+    var str_lc = path.getAttribute('stroke-linecap') || false;
+    var str_w = parseInt(path.getAttribute('stroke-width'), 10);
+    var str_c = path.getAttribute('stroke');
+    var fill = path.getAttribute('fill'), f;
+
+    if (str_c) {ctx.strokeStyle = str_c;}
+    if (str_w) {ctx.lineWidth = str_w;}
+    if (str_lj) {ctx.lineJoin = str_lj;}
+    if (str_lc) {ctx.lineCap = str_lc;}
+
+    ctx.beginPath();
+
+    var segs = path.pathSegList;
+    for (var i = 0, len = segs.numberOfItems; i < len; i++) {
+      var seg = segs.getItem(i), c = seg.pathSegTypeAsLetter;
+      if (c == "M") {
+        ctx.moveTo(seg.x, seg.y);
+      } else
+      if (c == "L") {
+        ctx.lineTo(seg.x, seg.y);
+      } else
+      if (c == "Q") {
+        ctx.quadraticCurveTo(seg.x1, seg.y1, seg.x, seg.y);
+      } else
+      if (c == "A") {
+       ctx.arc(seg.x - seg.r1, seg.y, seg.r1, 0, Math.PI * 2, true);
+      } else
+      if (c == "Z") {
+        ctx.closePath();
+      }
+    }
+
+    if (str_c) {ctx.stroke();}
+
+    if (fill && fill != 'none') {
+      if (fill.substring(0,3) == 'url') {
+        fill = fill.replace(/url\(/gm,'');
+        fill = fill.replace(/\)/gm,'');
+        f = this.brd.holder.find(fill);
+        SVGImage["draw_"+ f[0].nodeName.toLowerCase()](ctx, f);
+      } else {
+        ctx.fillStyle = fill;
+        ctx.fill();
+      }
+    }
+
+    ctx.restore();
+  };
+
+  SVGImage.draw_lineargradient = function(ctx, f) {
+    var x1 = parseFloat(f.attr('x1'), 10);
+    var y1 = parseFloat(f.attr('y1'), 10);
+    var x2 = parseFloat(f.attr('x2'), 10);
+    var y2 = parseFloat(f.attr('y2'), 10);
+
+    var trn = (f[0].getAttribute('gradientTransform') || '')
+         .replace(/\)/,'').replace(/matrix\(/,'').split(' ');
+
+    ctx.save();
+
+    if (trn) {
+      ctx.transform(
+        parseFloat(trn[0], 10), parseFloat(trn[1], 10),
+        parseFloat(trn[2], 10), parseFloat(trn[3], 10),
+        parseFloat(trn[4], 10), parseFloat(trn[5], 10)
+      );
+    }
+
+    var grad = ctx.createLinearGradient(x1, y1, x2, y2);
+
+    var s = f.children('stop'), i, l;
+    for (i = 0, l = s.length; i < l; i++) {
+      grad.addColorStop(
+        parseFloat(s[i].getAttribute('offset'), 10) ,
+        s[i].getAttribute('stop-color-rgba')
+      );
+    }
+
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.restore();
+  };
+
+  SVGImage.draw_radialgradient = function(ctx, f) {
+    var fx = parseFloat(f.attr('fx'), 10);
+    var fy = parseFloat(f.attr('fy'), 10);
+    var cx = parseFloat(f.attr('cx'), 10);
+    var cy = parseFloat(f.attr('cy'), 10);
+    var r = parseFloat(f.attr('r'), 10);
+    var trn = (f[0].getAttribute('gradientTransform') || '')
+         .replace(/\)/,'').replace(/matrix\(/,'').split(' ');
+
+    ctx.save();
+
+    if (trn) {
+      ctx.transform(
+        parseFloat(trn[0], 10), parseFloat(trn[1], 10),
+        parseFloat(trn[2], 10), parseFloat(trn[3], 10),
+        parseFloat(trn[4], 10), parseFloat(trn[5], 10)
+      );
+    }
+
+    var grad = ctx.createRadialGradient(fx, fy, 0, cx, cy, r);
+
+    var s = f.children('stop'), i, l;
+    for (i = 0, l = s.length; i < l; i++) {
+      grad.addColorStop(
+        parseFloat(s[i].getAttribute('offset'), 10) ,
+        s[i].getAttribute('stop-color-rgba')
+      );
+    }
+
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.restore();
+  };
+
+  // holes constructor
+
+  var CircuitBoardHole = function(elem) {
+    this.name = elem.attr('hole');
+    this.x = parseInt(elem.attr("transform").match(/(-?\d+\.\d+)|-?\d+/g)[4], 10);
+    this.y = parseInt(elem.attr("transform").match(/(-?\d+\.\d+)|-?\d+/g)[5], 10);
+    this.num = (elem.attr("xlink:href") == "#$:hole_connected") ? 1 : 0;
+    this.view = elem;
+  };
+
+  CircuitBoardHole.prototype.connected = function() {
+    this.num++;
+    this.view.attr("xlink:href", "#$:hole_connected");
+    return this;
+  };
+
+  CircuitBoardHole.prototype.disconnected = function() {
+    if (--this.num === 0) {
+      this.view.attr("xlink:href", "#$:hole_not_connected");
+    }
+    return this;
+  };
+
+  CircuitBoardHole.prototype.highlight = function() {
+    this.view.attr("xlink:href", "#$:hole_highlighted");
+    return this;
+  };
+
+  CircuitBoardHole.prototype.unhighlight = function() {
+    var pref = (this.num) ? '' : '_not';
+    this.view.attr("xlink:href", "#$:hole" + pref + "_connected");
+    return this;
+  };
+
+  /* === #equipments begin === */
+
+  equipment.multimeter = function(board, params) {
+    this.mmbox = new primitive.mmbox(board, params);
+    this.probe = {
+      "black" : new primitive.probe(board, {
+        'connection' : (params['black']) ? params.black.connection : false,
+        'draggable' : (params['black']) ? params.black.draggable : false,
+        'color' : 'black',
+        'name' : 'dmm'
+      }),
+      "red" : new primitive.probe(board, {
+        'connection' : (params['red']) ? params.red.connection : false,
+        'draggable' : (params['red']) ? params.red.draggable : false,
+        'color' : 'red',
+        'name' : 'dmm'
+      })
+    };
+  };
+
+  equipment.oscope = function(board, params) {
+    this.probe = {
+      "yellow" : new primitive.probe(board, {
+        'connection' : (params['yellow']) ? params.yellow.connection : false,
+        'draggable' : (params['yellow']) ? params.yellow.draggable : false,
+        'color' : 'yellow',
+        'name' : 'oscope'
+      }),
+      "pink" : new primitive.probe(board, {
+        'connection' : (params['pink']) ? params.pink.connection : false,
+        'draggable' : (params['pink']) ? params.pink.draggable : false,
+        'color' : 'pink',
+        'name' : 'oscope'
+      })
+    };
+  };
+
+  equipment.battery = function(board, connections) {
+    this.view = SVGStorage.create('group').attr({
+      'component' : 'battery'
+    });
+
+    // main model
+    this.btbox = new primitive.btbox(board);
+
+    var loc = connections.split(',');
+    this.pts = [board.holes[loc[0]], board.holes[loc[1]]];
+
+    // create leads
+
+    this.leads = addLeads(this.pts, [300, 45], loc, 'battery', false, board);
+
+    // create wires
+    this.wires = [
+      new primitive.battery_wire('black', this.pts[0]),
+      new primitive.battery_wire('red', this.pts[1])
+    ];
+
+    this.view.append(this.wires[0].view, this.wires[1].view);
+    this.view.append(this.leads[0].view, this.leads[1].view);
+
+    // model for SVGImage
+    this.connector = {"view": this.wires[0].view};
+    this.element = {"view": this.wires[0].view};
+    this.connector.view.path = this.view.children('g:lt(2)').find('path');
+
+  };
+
+  /* === #equipments end === */
+
+  /* === #components begin === */
+
+  component.prototype.init = function(params, holes, board) {
+    var loc = params["connections"].split(',');
+    this.pts = [holes[loc[0]], holes[loc[1]]];
+    this.angle = getAngleBetwPoints(this.pts);
+    this.leads = addLeads(this.pts, getDegsFromRad(this.angle), loc, params.UID, params.draggable, board);
+    this.view = SVGStorage.create('group').attr({
+      'component' : params.type,
+      'uid' : params.UID
+    });
+    this.hole = [this.pts[0].connected(), this.pts[1].connected()];
+  };
+
+  component.wire = function(params, holes, board) {
+    component.prototype.init.call(this, params, holes, board);
+    var color = params.color || "rgb(173,1,1)";
+    this.element = new primitive.connector(this.pts, this.angle, [color, color]);
+    this.connector = this.element;
+    this.view.append(this.element.view, this.leads[0].view, this.leads[1].view);
+    // add event handler for draggable
+    component.prototype.drag.call(this, params.draggable, params.type);
+  };
+
+  component.inductor = function(params, holes, board) {
+    component.prototype.init.call(this, params, holes, board);
+    this.connector = new primitive.connector(this.pts, this.angle, ['rgb(108,27,13)', 'rgb(185,77,42)']);
+    this.element = new primitive.inductor(this.pts, this.angle, params.label);
+    this.view.append(this.connector.view, this.leads[0].view, this.leads[1].view, this.element.view);
+    // add event handler for draggable
+    component.prototype.drag.call(this, params.draggable);
+  };
+
+  component.resistor = function(params, holes, board) {
+    component.prototype.init.call(this, params, holes, board);
+    this.connector = new primitive.connector(this.pts, this.angle);
+    this.element = new primitive.resistor(this.pts, this.angle, params.label, params.color);
+    this.view.append(this.leads[0].view, this.leads[1].view, this.connector.view, this.element.view);
+    // add event handler for draggable
+    component.prototype.drag.call(this, params.draggable);
+
+    this.changeColors = function(colors) {
+      bands = this.view.find('[type^=band]');
+      bands.each(function(i) {
+        if (i != (colors.length - 1)) {
+          $(this).attr('xlink:href', '#:$:band-s-' + colors[i]);
+        } else {
+          $(this).attr('xlink:href', '#:$:band-b-' + colors[i]);
+        }
+      });
+      tooltips = this.view.find('[tooltip^=band]');
+      tooltips.each(function(i) {
+        $(this).attr('xlink:href', '#:$:resistor-hint-' + colors[i]);
+      });
+    }
+  };
+
+  component.capacitor = function(params, holes, board) {
+    component.prototype.init.call(this, params, holes, board);
+    var color = params.color || "rgb(255,0,0)";
+    this.connector = new primitive.connector(this.pts, this.angle);
+    this.element = new primitive.capacitor(this.pts, this.angle, params.label, color);
+    this.view.append(this.leads[0].view, this.leads[1].view, this.connector.view, this.element.view);
+    // add event handler for draggable
+    component.prototype.drag.call(this, params.draggable);
+  };
+
+  component.prototype.drag = function(draggable, type) {
+    if (draggable) {
+      var self = this;
+      this.x = 0;
+      this.y = 0;
+      if (type == 'wire') {
+        this.view.find('[drag=area]').attr('display', 'inline');
+      }
+      this.element.view[0].addEventListener(_mousedown, function(evt) {
+        self.element.view.data('component', self);
+        evt._target = this;
+      }, false);
+    }
+  };
+
+  /* === #components end === */
+
+  /* === #primitive begin === */
+
+  primitive.prototype.initComponentDraggable = function(board) {
+    var component, s_pos, c_pos, x = 0, y = 0, coeff = 25, dx, dy;
+    var l1, l2, ho1, ho2, hn1, hn2, c, deg, angle;
+    var hi1, hi2;
+    var p1 = {
+      x : 0,
+      y : 0
+    }, p2 = {
+      x : 0,
+      y : 0
+    }, pts = [p2, p1];
+
+    board.holder[0].addEventListener(_mousedown, function(evt) {
+      if (!evt.touches || evt.touches.length == 1) {
+        component = $(evt._target).data('component') || null;
+        if (component) {
+          s_pos = getCoords(evt, board.holder);
+
+          l1 = component.leads[0];
+          l2 = component.leads[1];
+
+          p1.x = l1.x;
+          p1.y = l1.y;
+          p2.x = l2.x;
+          p2.y = l2.y;
+
+          ho1 = component.hole[0].highlight();
+          ho2 = component.hole[1].highlight();
+          hi1 = hn1 = ho1;
+          hi2 = hn2 = ho2;
+
+          board.toFront(component);
+          evt.preventDefault();
+        }
+      }
+    }, false);
+
+    board.holder[0].addEventListener(_mousemove, function(evt) {
+      if (!evt.touches || evt.touches.length == 1) {
+        if (component) {
+          c_pos = getCoords(evt, board.holder);
+          dx = c_pos.x - s_pos.x;
+          dy = c_pos.y - s_pos.y;
+          x = component.x + dx * coeff;
+          y = component.y + dy * coeff;
+          // update view of component
+          component.view.attr('transform', 'translate(' + x + ',' + y + ')');
+          // highlight nearest holes
+          p1.x = l1.x + dx * coeff;
+          p1.y = l1.y + dy * coeff;
+          p2.x = l2.x + dx * coeff;
+          p2.y = l2.y + dy * coeff;
+          hn1 = board.holes.find(p1);
+          hn2 = board.holes.find(p2);
+          if (hi1 || hi2) {
+            hi1.disconnected().highlight();
+            hi2.disconnected().highlight();
+            hi1 = hi2 = null;
+            // sent event to model
+            if (l1.state != l1.view_d) {
+              l1.board.sendEventToModel("connectionBroken", [l1.name, l1.hole]);
+            }
+            if (l2.state != l2.view_d) {
+              l2.board.sendEventToModel("connectionBroken", [l2.name, l2.hole]);
+            }
+          }
+          if (hn1 != ho1) {
+            ho1.unhighlight();
+            ho1 = hn1.highlight();
+          }
+          if (hn2 != ho2) {
+            ho2.unhighlight();
+            ho2 = hn2.highlight();
+          }
+        }
+      }
+    }, false);
+
+    board.holder[0].addEventListener(_mouseup, function(evt) {
+      if (!evt.touches || evt.touches.length === 0) {
+        if (component) {
+          // snap to nearest holes
+          component.hole[0] = hn1;
+          component.hole[1] = hn2;
+          l1.hole = hn1.name;
+          l2.hole = hn2.name;
+          component.x = 0;
+          component.y = 0;
+          // update all primitives
+          p1.x = l1.x = hn1.x;
+          p1.y = l1.y = hn1.y;
+          p2.x = l2.x = hn2.x;
+          p2.y = l2.y = hn2.y;
+          // update view
+          hn1.unhighlight();
+          hn2.unhighlight();
+          if (!hi1) {
+            hn1.connected();
+            l1.connect();
+          }
+          if (!hi2) {
+            hn2.connected();
+            l2.connect();
+          }
+          updateComponentView();
+          // reset temp variables
+          component = null;
+          hn1 = null;
+          hn2 = null;
+        }
+      }
+    }, false);
+
+    var updateComponentView = function() {
+      c = {
+        x : (p1.x + p2.x) / 2,
+        y : (p1.y + p2.y) / 2
+      };
+      angle = getDegsFromRad(getAngleBetwPoints(pts));
+      deg = (angle > 90 || angle < -90) ? (angle + 180) : angle;
+      // update view of primitives
+      component.view.removeAttr('transform');
+      l1.view.attr('transform', 'translate(' + l1.x + ',' + l1.y + ') rotate(' + angle + ',130,130)');
+      l2.view.attr('transform', 'translate(' + l2.x + ',' + l2.y + ') rotate(' + angle + ',130,130)');
+      component.element.view.attr('transform', 'translate(' + c.x + ',' + c.y + ') rotate(' + deg + ',132.5,132.5)');
+      setConnectorView(component.connector.view, pts, angle);
+      component.image.update();
+    };
+
+  };
+
+  primitive.prototype.initLeadDraggable = function(board) {
+    var lead_this, lead_pair, component, coeff = 25;
+    // coeff = 1 / (0.05*0.8)
+    var s_pos, c_pos, dx, dy, pts, angle, c;
+    var p1 = {
+      x : 0,
+      y : 0
+    }, p2 = {
+      x : 0,
+      y : 0
+    }, deg, hi, ho, hn;
+
+    board.holder[0].addEventListener(_mousedown, function(evt) {
+      if (!evt.touches || evt.touches.length == 1) {
+        lead_this = $(evt.target).data('primitive-lead') || null;
+        if (lead_this) {
+          component = board.component[lead_this.name];
+          lead_pair = findLeadPair(component, lead_this);
+          hi = board.holes.find(lead_this).highlight();
+          hn = ho = hi;
+          s_pos = getCoords(evt, board.holder);
+          p2.x = lead_pair.x;
+          p2.y = lead_pair.y;
+          pts = (lead_this.orientation == 1) ? [p1, p2] : [p2, p1];
+          evt.preventDefault();
+        }
+      }
+    }, false);
+
+    board.holder[0].addEventListener(_mousemove, function(evt) {
+      if (!evt.touches || evt.touches.length == 1) {
+        if (lead_this) {
+          // calc move params
+          c_pos = getCoords(evt, board.holder);
+          dx = c_pos.x - s_pos.x;
+          dy = c_pos.y - s_pos.y;
+          p1.x = lead_this.x + dx * coeff;
+          p1.y = lead_this.y + dy * coeff;
+          // update view of component
+          updateComponentView();
+          // update flag for hover events
+          lead_this.isDragged = true;
+          // find the nearest hole
+          hn = board.holes.find(p1);
+          board.hole_target = hn;
+          if (hi) {
+            hi.disconnected().highlight();
+            hi = null;
+            // sent event to model
+            if (lead_this.state != lead_this.view_d) {
+              lead_this.board.sendEventToModel("connectionBroken", [lead_this.name, lead_this.hole]);
+            }
+          }
+          if (hn != ho) {
+            ho.unhighlight();
+            ho = hn.highlight();
+          }
+        }
+      }
+    }, false);
+
+    board.holder[0].addEventListener(_mouseup, function(evt) {
+      if (!evt.touches || evt.touches.length === 0) {
+        if (lead_this) {
+          lead_this.isDragged = false;
+          lead_this.x = p1.x = hn.x;
+          lead_this.y = p1.y = hn.y;
+          lead_this.hole = hn.name;
+          component.hole[0] = board.holes[lead_this.hole];
+          component.hole[1] = board.holes[lead_pair.hole];
+          updateComponentView();
+          hn.unhighlight();
+          if (!hi) {
+            lead_this.connect();
+            hn.connected();
+          }
+          // reset temp links
+          hn = null;
+          ho = null;
+          lead_this = null;
+          lead_pair = null;
+        }
+        if ($(evt.target).data('component-lead')) {
+          var name = $(evt.target).data('component-lead');
+          board.component[name].image.update();
+        }
+      }
+    }, false);
+
+    var updateComponentView = function() {
+      lead_this.arrow.hide();
+      c = {
+        x : (p1.x + p2.x) / 2,
+        y : (p1.y + p2.y) / 2
+      };
+      angle = getDegsFromRad(getAngleBetwPoints(pts));
+      deg = (angle > 90 || angle < -90) ? (angle + 180) : angle;
+      // update view of primitives
+      lead_this.view.attr('transform', 'translate(' + p1.x + ',' + p1.y + ') rotate(' + angle + ',130,130)');
+      lead_pair.view.attr('transform', 'translate(' + p2.x + ',' + p2.y + ') rotate(' + angle + ',130,130)');
+      component.element.view.attr('transform', 'translate(' + c.x + ',' + c.y + ') rotate(' + deg + ',132.5,132.5)');
+      setConnectorView(component.connector.view, pts, angle);
+    };
+
+  };
+
+  primitive.lead = function(type, pos, angle, draggable) {
+    var lead = SVGStorage.create('lead').clone(), self = this;
+    this.view_d = lead.find('[type="disconnected"]').hide();
+    this.view_d.path = this.view_d.find('[type="wire"]>path');
+    this.view_c = lead.find('[type="connected"]').show();
+    this.view_c.path = this.view_c.find('[type="wire"]>path');
+
+    // name of component
+    this.name = pos.name;
+    // name of hole
+    this.hole = pos.hole;
+    // link to change colors
+    this.wire = lead.find('[type="wire"] path');
+    // link to current visible lead
+    this.state = this.view_c;
+    // link to probe;
+    this.probe = false;
+
+    // set the right direction
+    this.orientation = (type == 'left') ? 1 : -1;
+    lead.find('[type="orientation"]').attr({
+      "transform" : 'matrix(' + self.orientation + ' 0 0 1 0 0)'
+    });
+
+    // set the position
+    lead.attr("transform", "matrix(1 0 0 1 " + pos.x + " " + pos.y + ") rotate(" + (180 + angle) + ",130,130)");
+    this.x = pos.x;
+    this.y = pos.y;
+
+    this.arrow = lead.find('.arrow').hide();
+    // bind hover events
+    var action = lead.find("[type=action]");
+    if (!touch) {
+      action.bind('mouseover', function() {
+        self.arrow.show();
+      });
+      action.bind('mouseout', function() {
+        self.arrow.hide();
+      });
+    }
+    if (draggable) {
+      action.data('primitive-lead', this);
+    }
+    action.data('component-lead', this.name);
+
+    // bind onclick events
+    action[0].addEventListener(_mouseup, function(l) {
+      var f = false;
+      return function() {
+        if (!l.isDragged) {
+          l[ (f = !f) ? 'disconnect' : 'connect' ]();
+        }
+      };
+    }(this), false);
+
+    this.view = lead;
+  };
+
+  primitive.lead.prototype.connect = function() {
+    this.state = this.view_c;
+    this.view_d.hide();
+    this.view_c.show();
+    this.snapProbe();
+    this.board.sendEventToModel("connectionMade", [this.name, this.hole]);
+  };
+
+  primitive.lead.prototype.disconnect = function() {
+    this.state = this.view_d;
+    this.view_c.hide();
+    this.view_d.show();
+    this.snapProbe();
+    this.board.sendEventToModel("connectionBroken", [this.name, this.hole]);
+  };
+
+  primitive.lead.prototype.highlight = function(m) {
+    var colors = {// colors for each path
+      '0' : ['51, 51, 51', '160,160,160', '229,229,229'],
+      '1' : [' 51, 51,255', '160,160,255', '229,229,255'],
+      '2' : ['130,110,150', '240,220,160', '255,255,255']
+    };
+
+    for (var i = 3; i--; ) {
+      this.wire[i + 0].setAttribute('stroke', 'rgb(' + colors[m][i] + ')');
+      this.wire[i + 3].setAttribute('stroke', 'rgb(' + colors[m][i] + ')');
+    }
+  };
+
+  primitive.lead.prototype.calcbbox = function() {
+    var matrix = this.state[0].getCTM();
+    var bbox = this.state[0].getBBox();
+    var p = [SVGStorage.point(), SVGStorage.point(), SVGStorage.point(), SVGStorage.point()];
+    // top left point
+    p[0].x = bbox.x;
+    p[0].y = bbox.y;
+    // top right point
+    p[1].x = bbox.x + bbox.width;
+    p[1].y = bbox.y;
+    // bottom right point
+    p[2].x = bbox.x + bbox.width;
+    p[2].y = bbox.y + bbox.height;
+    // bottom left point
+    p[3].x = bbox.x;
+    p[3].y = bbox.y + bbox.height;
+    // apply matrix transform to all points
+    for (var i = p.length; i--; ) {
+      p[i] = p[i].matrixTransform(matrix);
+    }
+    // return result
+    this.state.bbox = p;
+  };
+
+  primitive.lead.prototype.hasPoint = function(p) {
+    var a, b, c, sa, sb, sc;
+    a = this.state.bbox[0];
+    b = this.state.bbox[2];
+    // first triangle
+    c = this.state.bbox[1];
+    sa = (a.x - p.x) * (b.y - a.y) - (b.x - a.x) * (a.y - p.y);
+    sb = (b.x - p.x) * (c.y - b.y) - (c.x - b.x) * (b.y - p.y);
+    sc = (c.x - p.x) * (a.y - c.y) - (a.x - c.x) * (c.y - p.y);
+    if ((sa >= 0 && sb >= 0 && sc >= 0) || (sa <= 0 && sb <= 0 && sc <= 0)) {
+      return true;
+    }
+    //second triangle
+    c = this.state.bbox[3];
+    sa = (a.x - p.x) * (b.y - a.y) - (b.x - a.x) * (a.y - p.y);
+    sb = (b.x - p.x) * (c.y - b.y) - (c.x - b.x) * (b.y - p.y);
+    sc = (c.x - p.x) * (a.y - c.y) - (a.x - c.x) * (c.y - p.y);
+    if ((sa >= 0 && sb >= 0 && sc >= 0) || (sa <= 0 && sb <= 0 && sc <= 0)) {
+      return true;
+    }
+    // return false if no
+    return false;
+  };
+
+  primitive.lead.prototype.snapProbe = function() {
+    if (this.probe) {
+      this.probe.snap();
+    }
+  };
+
+  primitive.connector = function(pts, angle, color) {
+    var connector = SVGStorage.create('connector').clone();
+    connector.path = connector.find('path');
+    angle = getDegsFromRad(angle) + 180;
+
+    setConnectorView(connector, [pts[1], pts[0]], angle);
+
+    if (color !== undefined) {
+      connector.find('[type=line]').eq(1).attr('stroke', color[0]);
+      connector.find('[type=line]').eq(2).attr('stroke', color[1]);
+    }
+    this.view = connector;
+  };
+
+  primitive.inductor = function(pts, angle, labelText, draggable) {
+    var inductor = SVGStorage.create('inductor').clone();
+    angle = getDegsFromRad(angle);
+
+    inductor.path = inductor.find('path').not('[type="label-bg"]');
+
+    if (angle > 90 || angle < -90) {
+      angle += 180;
+    }
+    inductor.attr('transform', 'translate(' + parseInt((pts[0].x + pts[1].x) / 2, 10) + ',' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
+
+    var label = inductor.find('[type=label]');
+    if (!touch && labelText) {
+      inductor.bind('mouseover', function() {
+        label.show();
+      });
+      inductor.bind('mouseout', function() {
+        label.hide();
+      });
+    } else if (labelText) {
+      label.show();
+    }
+    inductor.find('[type=label_text]').append(labelText);
+
+    this.view = inductor;
+  };
+
+  primitive.capacitor = function(pts, angle, labelText, color) {
+    var capacitor = SVGStorage.create('capacitor').clone();
+    var label = capacitor.find('[type=label]');
+    angle = getDegsFromRad(angle);
+
+    capacitor.path = capacitor.find('path');
+
+    if (angle > 90 || angle < -90) {
+      angle += 180;
+    }
+    capacitor.attr('transform', 'translate('+parseInt((pts[0].x + pts[1].x) / 2, 10) + ',' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
+
+    if (!touch && labelText) {
+      capacitor.bind('mouseover', function() {
+        label.show();
+      });
+      capacitor.bind('mouseout', function() {
+        label.hide();
+      });
+    } else if (labelText) {
+      label.show();
+    }
+    capacitor.find('[type=label_text]').append(labelText);
+    if (color !== undefined) {
+      capacitor.find('[type=cap]').eq(0).attr('fill', color);
+    }
+    this.view = capacitor;
+  };
+
+  primitive.resistor = function(pts, angle, labelText, colors) {
+    var resistor = SVGStorage.create('resistor' + colors.length + 'band').clone();
+    var tooltip = {};
+    var label = resistor.find('[type=label]');
+    var band = resistor.find('[type^=band]');
+    angle = getDegsFromRad(angle);
+
+    resistor.path = resistor.find('use')
+               .not('[type="label-bg"]')
+                  .not('[type="hint"]');
+
+    if (angle > 90 || angle < -90) {
+      angle += 180;
+    }
+    resistor.attr('transform', 'translate(' + parseInt((pts[0].x + pts[1].x) / 2, 10) + ',' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
+
+    band.each(function(i) {
+      if (i != (colors.length - 1)) {
+        $(this).attr('xlink:href', '#:$:band-s-' + colors[i]);
+      } else {
+        $(this).attr('xlink:href', '#:$:band-b-' + colors[i]);
+      }
+    });
+    if (!touch) {
+      if (labelText) {
+        resistor.bind('mouseover', function() {
+          label.show();
+        });
+        resistor.bind('mouseout', function() {
+          label.hide();
+        });
+      }
+
+      band.each(function(i) {
+        tooltip[$(this).attr('type')] = resistor.find('[tooltip=' + $(this).attr('type') + ']').attr('xlink:href', '#:$:resistor-hint-' + colors[i]);
+
+        $(this).bind('mouseover', function() {
+          $(this).attr('transform', 'scale(1.6)');
+          tooltip[$(this).attr('type')].show();
+        });
+        $(this).bind('mouseout', function() {
+          $(this).attr('transform', 'scale(1)');
+          tooltip[$(this).attr('type')].hide();
+        });
+      });
+    } else if (labelText) {
+      label.show();
+    }
+
+    resistor.find('[type=label_text]').append(labelText);
+
+    this.view = resistor;
+  };
+
+  primitive.prototype.initProbeDraggable = function(board) {
+    var active, lead_new, lead_old, lead_init, point;
+    var s_pos, c_pos, x, y, dx, dy, coeff = 20;
+
+    board.holder.find('[info=probe]').each(function() {
+      this.addEventListener(_mousedown, function(evt) {
+        if (!evt.touches || evt.touches.length == 1) {
+          active = $(this).data('primitive-probe') || {};
+          if (active.draggable) {
+            active.z.attr('transform', active.z.zoom);
+            s_pos = getCoords(evt, board.holder);
+            calcLeadsBBox.call(board);
+            lead_init = active.lead;
+            evt.stopPropagation();
+            evt.preventDefault();
+            // hack to avoid errors if mousedown+mouseup-mousemove
+            x = active.dx;
+            y = active.dy;
+            dx = dy = 0;
+          } else {
+            active = null;
+          }
+        }
+      }, false);
+    });
+
+    board.holder[0].addEventListener(_mousemove, function(evt) {
+      if (!evt.touches || evt.touches.length == 1) {
+        if (active) {
+          c_pos = getCoords(evt, board.holder);
+          dx = c_pos.x - s_pos.x;
+          dy = c_pos.y - s_pos.y;
+          //coord for view translations
+          x = active.dx + dx * coeff;
+          y = active.dy + dy * coeff;
+          active.view.attr('transform', 'translate(' + x + ',' + y + ')');
+          //coord for real probe coords
+          point = {
+            'x' : (active.x + dx),
+            'y' : (active.y + dy)
+          };
+          lead_new = findLeadUnderProbe(board, point);
+          if (lead_init) {
+            board.sendEventToModel("probeRemoved", [active.name, active.color]);
+            lead_init = null;
+          }
+          if (lead_new) {
+            lead_new.highlight(1);
+            lead_old = lead_new;
+            //active.lead = lead_new;
+          } else {
+            if (lead_old) {
+              lead_old.highlight(0);
+              lead_old = null;
+            }
+          }
+        }
+      }
+    }, false);
+
+    board.holder[0].addEventListener(_mouseup, function(evt) {
+      if (!evt.touches || evt.touches.length === 0) {
+        if (active) {
+          active.z.attr('transform', active.z.init);
+          active.x += dx;
+          active.y += dy;
+          active.dx = x;
+          active.dy = y;
+          if (lead_new) {
+            active.setState(lead_new);
+          } else if (active.lead) {
+            active.lead = null;
+          }
+          active.image.update();
+          active = null;
+        }
+      }
+    }, false);
+  };
+
+  primitive.probe = function(board, params) {
+    // shortcats
+    var self = this;
+    // temp vars
+    var point, coeff = 1.25, lead;
+
+    var elem = board.holder.find('[info=probe][name=' + params.color + ']');
+    var initial = elem.find('[type=initial]');
+
+    if (params.connection) {// move to this position
+      initial.attr('transform', 'translate(' + (board.holes[params.connection].x / coeff) + ',' + (board.holes[params.connection].y / coeff) + ')');
+    }
+
+    this.z = elem.find('[type="zooming"]');
+    this.z.zoom = this.z.attr('transform-zoomed');
+    this.z.init = this.z.attr('transform');
+
+    // make object
+    point = getAttractionPoint(elem);
+    this.draggable = params.draggable;
+    this.color = params.color;
+    this.name = params.name;
+    this.x = point.x;
+    this.y = point.y;
+    this.lead = null;
+    this.dx = 0;
+    this.dy = 0;
+    this.view = elem;
+    this.view.show = self.show;
+    this.view.hide = self.hide;
+    this.view.data('primitive-probe', this);
+    this.image = new SVGImage.probe(board, this);
+
+    if (params.connection) {// snap to lead
+      calcLeadsBBox.call(board);
+      lead = findLeadUnderProbe(board, {
+        'x' : this.x,
+        'y' : this.y
+      });
+      if (lead) {
+        this.setState(lead);
+      }
+    }
+
+  };
+
+  primitive.probe.prototype.setState = function(lead) {
+    this.lead = lead;
+    this.lead.probe = this;
+    this.lead.highlight(2);
+    this.snap();
+    lead.board.sendEventToModel("probeAdded", [this.name, this.color, this.lead.hole]);
+  };
+
+  primitive.probe.prototype.snap = function() {
+    if (this.lead) {
+      var p = getAttractionPoint(this.lead.state);
+      var coeff = 20;
+      var dx = p.x - this.x;
+      var dy = p.y - this.y;
+      var x = this.dx + dx * coeff;
+      var y = this.dy + dy * coeff;
+      this.view.attr('transform', 'translate(' + x + ',' + y + ')');
+      //coord for real probe coords
+      this.x += dx;
+      this.y += dy;
+      this.dx = x;
+      this.dy = y;
+    }
+  };
+
+  primitive.probe.prototype.show = function() {
+    this.css('visibility', 'visible');
+  };
+
+  primitive.probe.prototype.hide = function() {
+    this.css('visibility', 'hidden');
+  };
+
+  primitive.mmbox = function(board, params) {
+    this.view = board.holder.find('[info="multimeter"]');
+    this.bttn = this.view.find('[info="dmm-bttn"]');
+    this.over = this.view.find('[info="dmm-zoom"]');
+    this.item = this.view.find('[info="dmm-box"]');
+    this.help = this.view.find('[info="zoom-in"]');
+    this.board = board;
+    this.zoom = 0;
+    // 0-normal view, not zoomed, 1-zoomed
+    this.state = null;
+
+    this.screen = this.view.find('[type="dmm-screen-digits"]').children('use');
+
+    this.setState(this.model(params.dial || 0));
+
+    var self = this;
+
+    if (!touch) {
+      this.view.bind('mouseenter', function() {
+        if (!self.zoom) {
+          self.help.show();
+        }
+      });
+      this.view.bind('mouseleave', function() {
+        self.help.hide();
+        //self.zoomOut();
+      });
+    }
+
+    // hover helps
+    this.view.find('.help').each(function() {
+      var elem = $(this);
+      var usual = elem.find('.usual').show();
+      var hover = elem.find('.hover').hide();
+      var bttn = elem.find('.event');
+
+      if (!touch) {
+        bttn.bind('mouseenter', function() {
+          usual.hide();
+          hover.show();
+        });
+        bttn.bind('mouseleave', function() {
+          hover.hide();
+          usual.show();
+        });
+      }
+    });
+
+    this.view[0].addEventListener(_mousedown, function(evt) {
+      if (!self.zoom) {
+        self.zoomIn();
+      }
+      evt.stopPropagation();
+      evt.preventDefault();
+    }, false);
+    board.holder[0].addEventListener(_mousedown, function(evt) {
+      if (self.zoom) {
+        self.zoomOut();
+      }
+    }, false);
+
+    // bind events for bttn (tumbler)
+    this.point_center = null;
+    this.point_calibr = null;
+    var tumbler_on = false;
+
+    this.bttn[0].addEventListener(_mousedown, function(evt) {
+      self.point_center = getAttractionPoint(self.view, 'point-center');
+      self.point_calibr = getAttractionPoint(self.view, 'point-calibr');
+      self.rotate(getCoords(evt, board.holder));
+      tumbler_on = true;
+    }, false);
+    this.bttn[0].addEventListener(_mousemove, function(evt) {
+      if (tumbler_on) {
+        self.rotate(getCoords(evt, board.holder));
+      }
+    }, false);
+    board.holder[0].addEventListener(_mouseup, function(evt) {
+      self.point_center = null;
+      self.point_calibr = null;
+      tumbler_on = false;
+    }, false);
+  };
+
+  primitive.mmbox.prototype.model = function(v) {
+    var n = isNaN(parseInt(v, 10)) ? 1 : 0;
+    var k, i, d, md = 360;
+    var stack = [[0, 'acv_750'], [17, 'acv_200'], [35, 'p_9v'], [52, 'dca_200mc'], [70, 'dca_2000mc'], [88, 'dca_20m'], [105, 'dca_200m'], [122, 'c_10a'], [140, 'hfe'], [159, 'diode'], [178, 'r_200'], [196, 'r_2000'], [215, 'r_20k'], [233, 'r_200k'], [252, 'r_2000k'], [270, 'dcv_200m'], [288, 'dcv_2000m'], [306, 'dcv_20'], [324, 'dcv_200'], [342, 'dcv_1000']];
+    if (!n) {
+      v = parseInt(v, 10);
+      for ( i = stack.length; i--; ) {
+        d = Math.abs(stack[i][n] - v);
+        if (d > 180) {
+          d = 360 - d;
+        }
+        if (d < md) {
+          md = d;
+          k = i;
+        }
+      }
+      v = stack[k][n];
+    }
+    for ( i = stack.length; i--; ) {
+      if (stack[i][n] == v) {
+        return stack[i];
+      }
+    }
+  };
+
+  primitive.mmbox.prototype.rotate = function(p) {
+    var p1 = {
+      'x' : (this.point_calibr.x - this.point_center.x),
+      'y' : (this.point_calibr.y - this.point_center.y)
+    };
+    var p2 = {
+      'x' : (p.x - this.point_center.x),
+      'y' : (p.y - this.point_center.y)
+    };
+    var l1 = Math.sqrt(p1.x * p1.x + p1.y * p1.y);
+    var l2 = Math.sqrt(p2.x * p2.x + p2.y * p2.y);
+
+    var angle = getDegsFromRad(Math.acos((p1.x * p2.x + p1.y * p2.y) / (l1 * l2)));
+
+    if (p2.x < 0) {
+      angle = 360 - angle;
+    }
+
+    var model = this.model(angle);
+
+    if (this.state != model[1]) {
+      this.setState(model);
+    }
+  };
+
+  primitive.mmbox.prototype.setState = function(state) {
+    this.bttn.attr('transform', 'rotate(' + state[0] + ')');
+    this.state = state[1];
+    this.board.sendEventToModel("dmmDialMoved", [this.state]);
+  };
+
+  primitive.mmbox.prototype.zoomOut = function() {
+    this.item.attr('transform', 'scale(0.50)');
+    this.over.show();
+    this.zoom = 0;
+  };
+
+  primitive.mmbox.prototype.zoomIn = function() {
+    this.item.attr('transform', 'scale(1.00)');
+    this.help.hide();
+    this.over.hide();
+    this.zoom = 1;
+  };
+
+  primitive.btbox = function(board) {
+    var self = this;
+
+    this.view = board.holder.find('[info="battery"]');
+
+    this.view[0].addEventListener(_mouseup, function() {
+      self.view.attr('transform', 'scale(1.5)');
+      if (touch) {
+        setTimeout(function() {
+          self.view.attr('transform', 'scale(1)');
+        }, 3000);
+      }
+    });
+    this.view[0].addEventListener(_mouseout, function() {
+      self.view.attr('transform', 'scale(1)');
+    });
+  };
+
+  primitive.battery_wire = function(name, point) {
+    this.view = SVGStorage.create('battery_wire_' + name).clone();
+    this.view.attr('transform', 'translate('+ point.x +','+ point.y +') rotate(0,0,0)');
+  };
+
+  /* === #primitive end === */
+
+  /* === #utils start === */
+
+  var context2d = function() {
+    return document.createElement('canvas').getContext('2d');
+  };
+  var addLeads = function(pts, angle, loc, name, drag, board) {
+    var leads = ["right", "left"], angles = [];
+    angles = ($.isArray(angle)) ? [angle[0], angle[1]] : [angle, angle];
+
+    for (var i = 0; i < leads.length; i++) {
+      leads[i] = new primitive.lead(leads[i], {
+        x : pts[i].x,
+        y : pts[i].y,
+        hole : loc[i],
+        name : name
+      }, angles[i], drag);
+      leads[i].board = board;
+      leads[i].connect();
+    }
+    return leads;
+  };
+  var setConnectorView = function(elem, pts, deg) {
+    // calc transforms
+    var trn = 'translate(' + parseInt(pts[0].x, 10) + ',' + parseInt(pts[0].y, 10) + ') rotate(' + deg + ',130,130)';
+    // calc path
+    var leadLenght = 560, coeff = 0.6;
+    var dx = pts[0].x - pts[1].x, dy = pts[0].y - pts[1].y;
+    var l = Math.sqrt(dx * dx + dy * dy) - leadLenght * 2;
+    var path = 'M 0 0 L ' + l / coeff + ' 0';
+    if (l > 0) {
+      elem.find('[drag=area]').attr('width', l / coeff);
+    }
+    // set view
+    elem.attr('transform', trn);
+    elem.find('[type=line]').each(function() {
+      this.setAttribute('d', path);
+    });
+  };
+  var calcLeadsBBox = function() {
+    for (var i = this.itemslist.length; i--; ) {
+      for (var j = this.itemslist[i].leads.length; j--; ) {
+        this.itemslist[i].leads[j].calcbbox();
+      }
+    }
+  };
+  var findLeadUnderProbe = function(self, point) {
+    for (var i = self.itemslist.length; i--; ) {
+      for (var j = self.itemslist[i].leads.length; j--; ) {
+        var lead = self.itemslist[i].leads[j];
+        if (lead.hasPoint(point)) {
+          return lead;
+        }
+      }
+    }
+    return false;
+  };
+  var findLeadPair = function(elem, lead) {
+    return (elem.leads[0] === lead) ? elem.leads[1] : elem.leads[0];
+  };
+  var findNearestHole = function(p) {
+    p.y = Math.round(p.y / 50) * 50;
+    p.x = Math.round(p.x / 50) * 50;
+    var yd, yu, xd, xu, x, y;
+    yd = yu = p.y, xd = xu = p.x;
+    // first, find neares row
+    while (true) {
+      if (this.row[yd]) {
+        y = yd;
+        break;
+      }
+      if (this.row[yu]) {
+        y = yu;
+        break;
+      }
+      yd += 50, yu -= 50;
+    }
+    // second, find nearest cell
+    while (true) {
+      if (this.row[y][xd]) {
+        x = xd;
+        break;
+      }
+      if (this.row[y][xu]) {
+        x = xu;
+        break;
+      }
+      xd += 50, xu -= 50;
+    }
+    // return result
+    return this.row[y][x];
+  };
+  var getAttractionPoint = function(elem, name) {
+    name = name || 'attraction';
+    var point = elem.find('[type="'+name+'"]')[0];
+    var matrix = point.getCTM();
+    var bbox = point.getBBox();
+    var p = SVGStorage.point();
+    p.x = bbox.x + bbox.width / 2;
+    p.y = bbox.y + bbox.height / 2;
+    return p.matrixTransform(matrix);
+  };
+  var getAngleBetwPoints = function(pts) {
+    return Math.atan2((pts[1].y - pts[0].y), (pts[1].x - pts[0].x));
+  };
+  var getDegsFromRad = function(rad) {
+    return (180 / Math.PI) * rad;
+  };
+  var getCoords = function(evt, area) {
+    evt = evt || window.event;
+    var offset = area.offset();
+
+    var posx = 0, posy = 0;
+
+    if (evt.pageX || evt.pageY) {
+      posx = evt.pageX;
+      posy = evt.pageY;
+    } else if (evt.clientX || evt.clientY) {
+      posx = evt.clientX + document.body.scrollLeft + document.documentElement.scrollLeft;
+      posy = evt.clientY + document.body.scrollTop + document.documentElement.scrollTop;
+    }
+    if (evt.changedTouches) {
+      posx = evt.changedTouches[0].pageX;
+      posy = evt.changedTouches[0].pageY;
+    }
+
+    return {
+      x : (parseInt(posx, 10) - offset.left),
+      y : (parseInt(posy, 10) - offset.top)
+    };
+  };
+  var getTransform = function(trns) {
+    trns = trns.replace(/,/g, ' ');
+    var name = trns.match(/^[^\(]*/)[0];
+    trns = trns.match(/\([^\)]*\)/)[0];
+    trns = trns.replace(/\(|\)/g, '');
+    trns = trns.split(' ');
+    for (var i = trns.length; i--; ) {
+      trns[i] = parseFloat(trns[i], 10);
+    }
+    trns.name = name;
+    return trns;
+  };
+  /* === #utils stop === */
+
+  var SVGStorage = function(data) {
+    var h = "data:image/svg+xml;base64,";
+    var self = this, svg, a, b;
+
+    // create all image data resources
+    this.info = {
+      'svghead': data.match(/<svg[^>]*>/)[0] ,
+      'boardhl': new Image(),
+      'svghole': ''
+    };
+    // board with holes
+    a = data.search('<!-- breadboard start -->');
+    b = data.search('<!-- breadboard end -->');
+    svg += data.substring( (a + 25), b);
+    a = data.search('<!-- breadboard defs holes start -->');
+    b = data.search('<!-- breadboard defs holes end -->');
+    svg += data.substring( (a + 36), b);
+    svg = this.info.svghead + svg + '</svg>';
+    this.info.boardhl.src = h + btoa(svg);
+    this.info.svghole = svg;
+
+    // create all jQuery DOM resources
+    data = $(data);
+    this.defs = {};
+    this.view = {'board': data};
+    data.find('[primitive]').each(function() {
+      var elem = $(this), name = elem.attr('primitive');
+      elem.removeAttr('primitive');
+      self.view[name] = elem.remove();
+    });
+    // add info about holes
+    this.hole = [];
+    data.find('[id="$:hole_highlighted"]').each(function(){
+      var c = $(this).children('circle');
+      for (var i = 0, l = c.length; i < l; i++) {
+        self.hole.push({
+          'x': parseInt(c[i].getAttribute('cx'), 10),
+          'y': parseInt(c[i].getAttribute('cy'), 10),
+          'r': parseInt(c[i].getAttribute('r'), 10),
+          'c': c[i].getAttribute('fill')
+        });
+      }
+    });
+    // set paper value
+    paper = this.view.board;
+  };
+
+  SVGStorage.prototype.create = function(name) {
+    return this.view[name].clone();
+  };
+
+  SVGStorage.prototype.point = function() {
+    return this.view.board[0].createSVGPoint();
+  };
+
+  /* board object */
+
+  var $ready = false;
+  // flag, all critical objects built
+  var $stack = [];
+  // stack of callback functions
+
+  // hack-ish to get sparks.js directory, and assume that common is at ../common from it
+  var scripts = document.getElementsByTagName('script');
+  var path = scripts[scripts.length-1].src.split('?')[0];      // remove any ?query
+  var packageRoot = path.split('/').slice(0, -2).join('/')+'/';  // remove last folder and filename part of path
+
+  board.util.require([packageRoot+"/common/images/sparks.breadboard.svg"], function(data) {
+    // create base element
+    SVGStorage = new SVGStorage(data["sparks.breadboard"]);
+    // pre-cache all needed images
+    var stack = SVGStorage.view.board.find('image[pre-cache]'), all = stack.length;
+    // console.log('try cache '+all+' images');
+    var cache = function(image) {
+      var img = new Image();
+      img.onload = function() {
+        var opt = {
+          'id': image.getAttribute('id'),
+          'x': image.getAttribute('x'),
+          'y': image.getAttribute('y')
+        };
+        check(img, opt);
+      };
+      img.src = image.getAttribute('xlink:href');
+    };
+    for (var i = 0; i < all; i++) {
+      cache(stack[i]);
+    }
+    var check = function(img, opt) {
+      var ctx = document.createElement('canvas').getContext('2d');
+      ctx.canvas.height = img.height;
+      ctx.canvas.width = img.width;
+      ctx.drawImage(img, 0, 0, img.width, img.height);
+
+      SVGStorage.defs[opt.id] = ctx.canvas;
+      SVGStorage.defs[opt.id].ox = opt.x;
+      SVGStorage.defs[opt.id].oy = opt.y;
+      if (!--all) {start_activity();}
+    };
+
+    // run callbacks, if have been signed
+    var start_activity = function() {
+      $ready = true;
+      for (var i = 0, l = $stack.length; i < l; i++) {
+        $stack[i]();
+      }
+    };
+
+  });
+
+  board.create = function(id) {
+    return new CircuitBoard(id);
+  };
+
+  board.ready = function(callback) {
+    if ($ready) {
+      callback();
+    } else {
+      $stack.push(callback);
+    }
+  };
+
+  board.clear = function(circuitBoard) {
+    for (c in circuitBoard.component) {
+      if (c == "battery") continue;
+      circuitBoard.removeComponent(c);
+    }
+    circuitBoard.removeBattery();
+    circuitBoard.removeDMM();
+    circuitBoard.removeOScope();
+  };
+
+})(jQuery, window["breadboardSVGView"]);
+
+},{"../controllers/workbench-controller":25,"../libs/base64":32,"../libs/canvg":33,"./svg_view_comm":44}],41:[function(require,module,exports){
+var unit        = require('../helpers/unit');
+
+EditComponentsView = function(workbenchController, breadboardController){
+  this.workbenchController = workbenchController;
+  this.breadboardController = breadboardController;
+
+  if (workbenchController.breadboardView) {
+    workbenchController.breadboardView.setRightClickFunction(this, "showEditor");
+  } else {  // queue it up
+    workbenchController.workbench.view.setRightClickFunction(this, "showEditor");
+  }
+};
+
+EditComponentsView.prototype = {
+
+  showEditor: function(uid) {
+    var comp = this.breadboardController.getComponents()[uid],
+        section = this.workbenchController.workbench,
+        $propertyEditor = null,
+        self = this;
+    // create editor tooltip
+    possibleValues = comp.getEditablePropertyValues();
+
+    componentValueChanged = function (evt, ui) {
+      var val = possibleValues[ui.value],
+          eng = unit.toEngineering(val, comp.editableProperty.units);
+      $(".prop_value_"+uid).text(eng.value + eng.units);
+      comp.changeEditableValue(val);
+      section.meter.update();
+    }
+
+    if (comp.isEditable) {
+      propertyName = comp.editableProperty.name.charAt(0).toUpperCase() + comp.editableProperty.name.slice(1);
+      initialValue = comp[comp.editableProperty.name];
+      initialValueEng = unit.toEngineering(initialValue, comp.editableProperty.units);
+      initialValueText = initialValueEng.value + initialValueEng.units;
+      $propertyEditor = $("<div>").append(
+        $("<div>").slider({
+          max: possibleValues.length-1,
+          slide: componentValueChanged,
+          value: possibleValues.indexOf(initialValue)
+        })
+      ).append(
+        $("<div>").html(
+          propertyName + ": <span class='prop_value_"+uid+"'>"+initialValueText+"</span>"
+          )
+      );
+    }
+
+    $editor = $("<div class='editor'>").append(
+      $("<h3>").text("Edit "+comp.componentTypeName)
+    ).append(
+      $propertyEditor
+    ).append(
+      $("<button>").text("Remove").on('click', function() {
+        self.breadboardController.removeComponent(comp);
+        section.meter.update();
+        $(".speech-bubble").trigger('mouseleave');
+      })
+    ).css( { width: 130, textAlign: "right" } );
+
+    this.workbenchController.breadboardView.showTooltip(uid, $editor);
+  }
+
+};
+
+module.exports = EditComponentsView;
+
+},{"../helpers/unit":29}],42:[function(require,module,exports){
+/*globals sparks Raphael*/
+
+var mathParser  = require('../helpers/math-parser'),
+    unit        = require('../helpers/unit'),
+    util        = require('../helpers/util');
+
+FunctionGeneratorView = function (functionGenerator) {
+  this.$view          = null;
+  this.model          = functionGenerator;
+  this.frequencies    = [];
+  this.currentFreqString = "";
+  this.freqValueViews = [];
+  this.popup = null;
+};
+
+FunctionGeneratorView.prototype = {
+
+  width:    200,
+  height:   100,
+  nMinorTicks:      5,
+
+  faceplateColor:   '#EEEEEE',
+
+  getView: function () {
+    this.$view = $('<div>');
+
+    $("#fg_value").remove();
+    $freq_value = $("<span class='fg_value'></span").appendTo(this.$view);
+    this.freqValueViews.push($freq_value);
+
+    this.frequencies = this.model.getPossibleFrequencies();
+    this.setFrequency(this.model.frequency);
+
+    $overlayDiv = $('<div class="fg_mini_overlay"></div>').appendTo(this.$view);
+    var self = this;
+    $overlayDiv.click(function(){
+      self.openPopup();
+    })
+
+    return this.$view;
+  },
+
+  openPopup: function () {
+    if (!this.popup) {
+      $view = this.getLargeView();
+      this.popup = $view.dialog({
+        width: this.width + 10,
+        height: this.height+49,
+        dialogClass: 'tools-dialog fg_popup',
+        title: "Function Generator",
+        closeOnEscape: false,
+        resizable: false,
+        autoOpen: false
+      });
+    }
+
+    var self = this;
+    this.popup.bind('remove', function() {
+      self.popup = null;
+    });
+
+    var scrollPosition = [
+      self.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
+      self.pageYOffset || document.documentElement.scrollTop  || document.body.scrollTop
+    ];
+
+    this.popup.dialog('open').dialog("widget").position({
+       my: 'left top',
+       at: 'left top',
+       offset: '5, 5',
+       of: $(".breadboard")
+    });
+
+    window.scrollTo(scrollPosition[0], scrollPosition[1]);
+  },
+
+  getLargeView: function () {
+    var $canvasHolder,
+        self = this;
+
+    this.$view = $('<div>');
+    this.$view.css({
+      position: 'relative',
+      width: this.width,
+      height: this.height
+    });
+
+    // 'faceplate'
+    this.$faceplate = $('<div class="function_generator">').css({
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      height: this.height
+    }).appendTo(this.$view);
+
+    $freq_value = $('<p class="freq_value">'+this.currentFreqString+'</p>').css({
+      position:  'absolute',
+      top:       15,
+      left:      15,
+      height:    20,
+      textAlign: 'center'
+    }).appendTo(this.$faceplate);
+
+    this.freqValueViews.push($freq_value);
+
+    this.$controls = $('<div class="controls">').css({
+      position: 'absolute',
+      top:      28,
+      left:     0,
+      height:   70
+    }).appendTo(this.$faceplate);
+
+    this.$frequency = $('<div>').css({
+      position:  'absolute',
+      top:       12,
+      left:      10,
+      width:     150,
+      height:    55
+    }).appendTo(this.$controls);
+
+    var freqs = this.frequencies;
+    var initialStep = util.getClosestIndex(freqs, this.model.frequency, false);
+    this._addSliderControl(this.$frequency, freqs.length, initialStep, function (evt, ui) {
+      var i = ui.value;
+      if (i < 0) i = 0;
+      if (i > freqs.length-1) i = freqs.length-1;
+      var freq = freqs[i];
+      self.model.setFrequency(freq);
+      self.setFrequency(freq);
+    });
+
+    $('<span>Frequency</span>').css({
+      position:  'absolute',
+      top:       43,
+      left:      45,
+      width:     100,
+      height:    15
+    }).appendTo(this.$controls);
+
+    if (this.model.maxAmplitude){
+      this.$amplitude = $('<div>').css({
+        position: 'absolute',
+        top:      35,
+        left:     10,
+        width:    150,
+        height:   55
+      }).appendTo(this.$controls);
+
+      var minAmp = this.model.minAmplitude,
+          maxAmp = this.model.maxAmplitude,
+          amplitude = this.model.amplitude,
+          range = maxAmp - minAmp,
+          steps = 30,
+          value = ((amplitude - minAmp) / range) * steps;
+      this._addSliderControl(this.$amplitude, steps, value, function (evt, ui) {
+        var i = ui.value;
+        if (i < 0) i = 0;
+        if (i > steps) i = steps;
+        var amp = ((i / steps) * range) + minAmp;
+        self.model.setAmplitude(amp);
+      });
+
+      $('<span>Amplitude</span>').css({
+        position: 'absolute',
+        top:    66,
+        left:   45,
+        right:  100,
+        height: 15,
+        textAlign: 'center'
+      }).appendTo(this.$controls);
+    }
+
+    return this.$view;
+  },
+
+  setFrequency: function (freq) {
+    currentFreqString = this.currentFreqString = mathParser.standardizeUnits(unit.convertMeasurement(freq + " Hz"));
+    this.freqValueViews.forEach(function($view){$view.text(currentFreqString);});
+    return this.currentFreqString;
+  },
+
+  _addSliderControl: function ($el, steps, value, callback) {
+    $slider = $("<div class='fg_slider'>").css({
+      position: 'absolute',
+      top:   25,
+      left:  10,
+      right: 10
+    }).slider({ max: steps, slide: callback, value: value }).appendTo($el);
+  }
+};
+
+module.exports = FunctionGeneratorView;
+
+},{"../helpers/math-parser":26,"../helpers/unit":29,"../helpers/util":30}],43:[function(require,module,exports){
+require('../../bower_components/raphael/raphael-min');
+var sparksMath = require('../helpers/sparks-math');
+
+OscilloscopeView = function () {
+  this.$view         = null;
+  this.miniRaphaelCanvas = null;
+  this.raphaelCanvas = null;
+  this.miniTraces    = [];
+  this.traces        = [];
+  this.model         = null;
+  this.popup         = null;
+};
+
+OscilloscopeView.prototype = {
+
+  // Note that sizing and placement of the various elements of the view are handled ad-hoc in the getView() method;
+  // however, this.width and this.height indicate the dimensions of the gridded area where traces are drawn.
+  miniViewConfig: {
+    width: 132,
+    height: 100,
+    tickSize: 2
+  },
+
+  largeViewConfig: {
+    width:    400,
+    height:   320,
+    tickSize: 3
+  },
+
+  // These define the grid aka 'graticule'. This is pretty standard for scopes.
+  nVerticalMarks:   8,
+  nHorizontalMarks: 10,
+  nMinorTicks:      5,
+
+  faceplateColor:   '#EEEEEE',
+  displayAreaColor: '#324569',
+  traceBgColor:     '#324569',
+  tickColor:        '#9EBDDE',
+  textColor:        '#D8E1EB',
+  traceOuterColors: ['#FFFF4A', '#FF5C4A', '#33FF33'],
+  traceInnerColors: ['#FFFFFF', '#FFD3CF', '#EEFFEE'],
+  traceLabelColors: ['#FFFF99', '#FC8F85', '#99FC7B'],
+  // The famed "MV" pattern...
+  setModel: function (model) {
+    this.model = model;
+  },
+
+  getView: function () {
+    var $canvasHolder,
+        self = this,
+        conf = this.miniViewConfig;
+
+    this.$view = $('<div>');
+    this.$view.css({
+      position: 'relative',
+      width: conf.width+160,
+      height: conf.height+40
+    });
+
+
+    // display area (could split this out into separate method, though not a separate view
+    this.$displayArea = $('<div class="display-area">').css({
+      position: 'absolute',
+      top: 14,
+      left: 19,
+      width:    conf.width,
+      height:   conf.height,
+      backgroundColor: this.displayAreaColor
+    }).appendTo(this.$view);
+
+    $canvasHolder = $('<div class="raphael-holder">').css({
+      position: 'absolute',
+      top:  0,
+      left: 0,
+      backgroundColor: this.traceBgColor
+    }).appendTo(this.$displayArea);
+
+    this.miniRaphaelCanvas = Raphael($canvasHolder[0], conf.width, conf.height);
+
+    this.drawGrid(this.miniRaphaelCanvas, conf);
+
+    $overlayDiv = $('<div class="oscope_mini_overlay"></div>').appendTo(this.$view);
+
+    $overlayDiv.click(function(){
+      self.openPopup();
+    });
+    return this.$view;
+  },
+
+  openPopup: function () {
+    if (!this.popup) {
+      $view = this.getLargeView();
+      this.renderSignal(1, true);
+      this.renderSignal(2, true);
+      this.popup = $view.dialog({
+        width: this.largeViewConfig.width + 149,
+        height: this.largeViewConfig.height + 97,
+        dialogClass: 'tools-dialog oscope_popup',
+        title: "Oscilloscope",
+        closeOnEscape: false,
+        resizable: false,
+        autoOpen: false
+      });
+    }
+
+    var self = this;
+
+    var scrollPosition = [
+      self.pageXOffset || document.documentElement.scrollLeft || document.body.scrollLeft,
+      self.pageYOffset || document.documentElement.scrollTop  || document.body.scrollTop
+    ];
+
+    this.popup.dialog('open').dialog("widget").position({
+       my: 'left top',
+       at: 'center top',
+       of: $(".breadboard")
+    });
+
+    window.scrollTo(scrollPosition[0], scrollPosition[1]);
+
+    $('.ui-dialog').bind('remove', function() {
+      self.popup = null;
+    });
+  },
+
+  /**
+    @returns $view A jQuery object containing a Raphael canvas displaying the oscilloscope traces.
+
+    Sets this.$view to be the returned jQuery object.
+  */
+  getLargeView: function () {
+    var $canvasHolder,
+        self = this,
+        conf = this.largeViewConfig;
+
+    this.$view = $('<div>');
+    this.$view.css({
+      position: 'relative',
+      width: conf.width,
+      height: conf.height
+    });
+
+
+    // display area (could split this out into separate method, though not a separate view
+    this.$displayArea = $('<div class="display-area">').css({
+      position: 'absolute',
+      top: 25,
+      left: 18,
+      width:    conf.width + 6,
+      height:   conf.height + 30,
+      backgroundColor: this.displayAreaColor
+    }).appendTo(this.$view);
+
+    $canvasHolder = $('<div class="raphael-holder">').css({
+      position: 'absolute',
+      top:  5,
+      left: 7,
+      width:    conf.width,
+      height:   conf.height,
+      backgroundColor: this.traceBgColor
+    }).appendTo(this.$displayArea);
+
+    // add drag handler to canvasHolder
+    $canvasHolder
+      .drag(function( ev, dd ){
+        var viewWidth   = this.getBoundingClientRect().width,
+            perc        = dd.deltaX / viewWidth,
+            phaseOffset = (-2*Math.PI) * perc;
+
+        self.renderSignal(1, false, phaseOffset);
+        self.renderSignal(2, false, phaseOffset);
+      })
+      .drag("dragend", function (ev, dd) {
+        var viewWidth   = this.getBoundingClientRect().width,
+            perc        = dd.deltaX / viewWidth,
+            phaseOffset = (-2*Math.PI) * perc;
+
+        self.previousPhaseOffset += phaseOffset;
+      });
+
+    this.raphaelCanvas = Raphael($canvasHolder[0], conf.width, conf.height);
+
+    this.drawGrid(this.raphaelCanvas, conf);
+
+    $('<p id="cha"><span class="chname">CHA</span> <span class="vscale channel1"></span>V</p>').css({
+      position: 'absolute',
+      top:   10 + conf.height,
+      left:  5,
+      color: this.traceLabelColors[0]
+    }).appendTo(this.$displayArea);
+
+    $('<p id="chb"><span class="chname">CHB</span> <span class="vscale channel2"></span>V</p>').css({
+      position: 'absolute',
+      top:   10 + conf.height,
+      left:  5 + conf.width / 4,
+      color: this.traceLabelColors[1]
+    }).appendTo(this.$displayArea);
+
+    $('<p>M <span class="hscale"></span>s</p>').css({
+      position: 'absolute',
+      top:   10 + conf.height,
+      left:  5 + (conf.width*3)/4,
+      color: this.textColor
+    }).appendTo(this.$displayArea);
+
+
+    // 'faceplate'
+    this.$faceplate = $('<div class="faceplate">').css({
+      position: 'absolute',
+      left:   conf.width + 27,
+      top: 15,
+      backgroundColor: 'none',
+      width: 122,
+      height: 364,
+      overflow: 'hidden'
+    }).appendTo(this.$view);
+
+    this.$controls = $('<div>').css({
+      position: 'absolute',
+      top:      30,
+      left:     0,
+      right:    0,
+      height:   200
+    }).appendTo(this.$faceplate);
+
+    $('<p class="oscope-label">volts/div</p>').css({
+      top:       -33,
+      left:      14,
+      right:     0,
+      height:    20,
+      position: 'absolute'
+    }).appendTo(this.$controls);
+
+    this.$channel1 = $('<div class="channelA">').css({
+      position:  'absolute',
+      top:       19,
+      left:      11,
+      width:     122,
+      height:    100
+    }).appendTo(this.$controls);
+
+    $('<p>CH A</p>').css({
+      top:       -2,
+      left:      -2,
+      right:     0,
+      height:    20,
+      textAlign: 'center',
+      position:  'absolute'
+    }).appendTo(this.$channel1);
+
+    this._addScaleControl(this.$channel1, function () {
+      self.model.bumpVerticalScale(1, -1);
+    }, function () {
+      self.model.bumpVerticalScale(1, 1);
+    });
+
+    this.$channel2 = $('<div>').css({
+      position: 'absolute',
+      top:      121,
+      left:     11,
+      width:    122,
+      height:   100
+    }).appendTo(this.$controls);
+
+    $('<p>CH B</p>').css({
+      top:    -2,
+      left:   -2,
+      right:  0,
+      height: 20,
+      textAlign: 'center',
+  position: 'absolute'
+    }).appendTo(this.$channel2);
+
+    this._addScaleControl(this.$channel2, function () {
+      self.model.bumpVerticalScale(2, -1);
+    }, function () {
+      self.model.bumpVerticalScale(2, 1);
+    });
+
+    $('<p class="oscope-label">time/div</p>').css({
+      top:       179,
+      left:      16,
+      right:     0,
+      height:    20,
+      position:  'absolute'
+    }).appendTo(this.$controls);
+
+    this.$horizontal = $('<div>').css({
+      position:  'absolute',
+      top:       229,
+      left:      11,
+      width:     122,
+      height:    100
+    }).appendTo(this.$controls);
+
+    this._addScaleControl(this.$horizontal, function () {
+      self.model.bumpHorizontalScale(-1);
+    }, function () {
+      self.model.bumpHorizontalScale(1);
+    });
+
+    this.horizontalScaleChanged();
+    for (i = 1; i <= this.model.N_CHANNELS; i++) {
+      this.verticalScaleChanged(i);
+    }
+
+    $('<button id="AminusB" class="comboButton">A-B</button>').css({
+      top:       298,
+      left:      33,
+      height:    23,
+      width:     36,
+      fontSize:  12,
+      position:  'absolute'
+    }).click(function(){
+      self._toggleComboButton(true);
+    }).appendTo(this.$controls);
+
+    $('<button id="AplusB" class="comboButton">A+B</button>').css({
+      top:       298,
+      left:      74,
+      height:    23,
+      width:     36,
+      fontSize:  12,
+      position:  'absolute'
+    }).click(function(){
+      self._toggleComboButton(false);
+    }).appendTo(this.$controls);
+
+
+
+    // for testing the goodnessOfScale measurement
+    $('<p class="goodnessOfScale"></p>').css({
+      top:       229,
+      left:      55,
+      right:     0,
+      height:    20,
+      position:  'absolute'
+    }).appendTo(this.$controls);
+
+    return this.$view;
+  },
+
+_toggleComboButton: function (isAminusB) {
+  if (isAminusB) {
+      this.model.toggleShowAminusB();
+  } else {
+      this.model.toggleShowAplusB();
+  }
+
+  // force-render both signals to make them dim/brighten. Rendering these will
+  // automatically call the rendering of the combo trace if applicable
+  this.renderSignal(1, true, this.previousPhaseOffset);
+  this.renderSignal(2, true, this.previousPhaseOffset);
+
+
+  $('.comboButton').removeClass('active');
+
+  $('.channelA button').addClass('active')
+
+  if (this.model.showAminusB) {
+    $('#AminusB').addClass('active');
+  } else if (this.model.showAplusB) {
+    $('#AplusB').addClass('active');
+  } else {
+    $('.channelA button').removeClass('active');
+  }
+},
+
+  _addScaleControl: function ($el, minusCallback, plusCallback) {
+    $('<button>+</button>').css({
+      position: 'absolute',
+      top:   25,
+      left:  25,
+      width: 30
+    }).click(plusCallback).appendTo($el);
+
+    $('<button>&mdash;</button>').css({
+      position: 'absolute',
+      top:   25,
+      right: 25,
+      width: 30
+    }).click(minusCallback).appendTo($el);
+  },
+
+  previousPhaseOffset: 0,
+
+  renderSignal: function (channel, forced, _phaseOffset) {
+    var s = this.model.getSignal(channel),
+        t = this.traces[channel],
+        horizontalScale,
+        verticalScale,
+        phaseOffset = (_phaseOffset || 0) + this.previousPhaseOffset,
+        isComboActive = (this.model.showAminusB || this.model.showAplusB);
+
+    if (s) {
+      horizontalScale = this.model.getHorizontalScale();
+      verticalScale   = isComboActive? this.model.getVerticalScale(1) : this.model.getVerticalScale(channel);
+
+      // don't render the signal if we've already drawn it at the same scale
+      if (!t || forced || (t.amplitude !== s.amplitude || t.frequency !== s.frequency || t.phase !== (s.phase + phaseOffset) ||
+                 t.horizontalScale !== horizontalScale || t.verticalScale !== verticalScale)) {
+        this.removeTrace(channel);
+        this.traces[channel] = {
+          amplitude:          s.amplitude,
+          frequency:          s.frequency,
+          phase:              (s.phase + phaseOffset),
+          horizontalScale:    horizontalScale,
+          verticalScale:      verticalScale,
+          raphaelObjectMini:  this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset, isComboActive),
+          raphaelObject:      this.drawTrace(this.raphaelCanvas, this.largeViewConfig, s, channel, horizontalScale, verticalScale, phaseOffset, isComboActive)
+        };
+      }
+
+      // Make sure channel 2 is always in front
+      if (channel === 1 && this.traces[2]) {
+        if (!!this.traces[2].raphaelObjectMini) this.traces[2].raphaelObjectMini.toFront();
+        if (!!this.traces[2].raphaelObject) this.traces[2].raphaelObject.toFront();
+      }
+
+      // testing goodness of scale
+      if (sparks.testOscopeScaleQuality) {
+        var g = this.model.getGoodnessOfScale();
+        console.log(g)
+        var g0 = sparksMath.roundToSigDigits(g[0] ? g[0] : -1,4),
+            g1 = sparksMath.roundToSigDigits(g[1] ? g[1] : -1,4)
+        $(".goodnessOfScale").html("["+g0+","+g1+"]");
+      }
+    }
+    else {
+      this.removeTrace(channel);
+    }
+    this.renderComboTrace(phaseOffset);
+  },
+
+  renderComboTrace: function (phaseOffset) {
+    this.removeTrace(3);
+    if ((this.model.showAminusB || this.model.showAplusB) && this.model.getSignal(1) && this.model.getSignal(2)) {
+      var a  = this.model.getSignal(1),
+          b  = this.model.getSignal(2),
+          bPhase = this.model.showAplusB ? b.phase : (b.phase + Math.PI),     // offset b's phase by Pi if we're subtracting
+          rA = a.amplitude * Math.sin(a.phase),
+          iA = a.amplitude * Math.cos(a.phase),
+          rB = b.amplitude * Math.sin(bPhase),
+          iB = b.amplitude * Math.cos(bPhase),
+          combo = {
+              amplitude: Math.sqrt(Math.pow(rA+rB, 2) + Math.pow(iA+iB, 2)),
+              phase: Math.atan((rA+rB) / (iA+iB)) + phaseOffset + ((iA+iB) < 0 ? Math.PI : 0),
+              frequency: a.frequency
+          };
+      this.traces[3] = {
+          raphaelObjectMini: this.drawTrace(this.miniRaphaelCanvas, this.miniViewConfig, combo, 3, this.model.getHorizontalScale(), this.model.getVerticalScale(1), 0),
+          raphaelObject: this.drawTrace(this.raphaelCanvas, this.largeViewConfig, combo, 3, this.model.getHorizontalScale(), this.model.getVerticalScale(1), 0)
+      };
+      $('#cha .chname').html(this.model.showAminusB? "A-B" : "A+B");
+      $('#cha').css({color: this.traceLabelColors[2]});
+    } else {
+      $('#cha .chname').html("CHA");
+      $('#cha').css({color: this.traceLabelColors[0]});
+    }
+  },
+
+  removeTrace: function (channel) {
+    if (this.traces[channel]) {
+      if (this.traces[channel].raphaelObjectMini) this.traces[channel].raphaelObjectMini.remove();
+      if (this.traces[channel].raphaelObject) this.traces[channel].raphaelObject.remove();
+      delete this.traces[channel];
+    }
+    if (channel !== 3) {
+      this.renderComboTrace(this.previousPhaseOffset);
+    }
+  },
+
+  // Not moved to sparksMath because it's somewhat specialized for scope display
+  humanizeUnits: function (val) {
+    var prefixes  = ['M', 'k', '', 'm', 'μ', 'n', 'p'],
+        order     = Math.floor(Math.log10(val) + 0.01),    // accounts for: Math.log10(1e-6) = -5.999999999999999
+        rank      = Math.ceil(-1 * order / 3),
+        prefix    = prefixes[rank+2],
+        scaledVal = val * Math.pow(10, rank * 3),
+
+        // Make sure the result has sensible digits ... values in range 1.00 .. 5.00 of whatever unit
+        // (e.g, s, ms, μs, or ns) get 2 digits after the decimal point; values in range 10.0 .. 50.0 get 1 digit
+
+        decimalPlaces = order % 3 >= 0 ? 2 - (order % 3) : -1 * ((order + 1) % 3);
+
+    return scaledVal.toFixed(decimalPlaces) + prefix;
+  },
+
+  horizontalScaleChanged: function () {
+    var scale = this.model.getHorizontalScale(),
+        channel;
+
+    // TODO make the units a little more sophisticated.
+    this.$view.find('.hscale').html(this.humanizeUnits(scale));
+
+    for (channel = 1; channel <= this.model.N_CHANNELS; channel++) {
+      if (this.traces[channel]) this.renderSignal(channel);
+    }
+  },
+
+  verticalScaleChanged: function (channel) {
+    var scale = this.model.getVerticalScale(channel);
+
+    this.$view.find('.vscale.channel'+channel).html(this.humanizeUnits(scale));
+    if (this.traces[channel]) this.renderSignal(channel);
+  },
+
+  drawGrid: function (r, conf) {
+    var path = [],
+        x, dx, y, dy;
+
+    for (x = dx = conf.width / this.nHorizontalMarks; x <= conf.width - dx; x += dx) {
+      path.push('M');
+      path.push(x);
+      path.push(0);
+
+      path.push('L');
+      path.push(x);
+      path.push(conf.height);
+    }
+
+    for (y = dy = conf.height / this.nVerticalMarks; y <= conf.height - dy; y += dy) {
+      path.push('M');
+      path.push(0);
+      path.push(y);
+
+      path.push('L');
+      path.push(conf.width);
+      path.push(y);
+    }
+
+    y = conf.height / 2;
+
+    for (x = dx = conf.width / (this.nHorizontalMarks * this.nMinorTicks); x <= conf.width - dx; x += dx) {
+      path.push('M');
+      path.push(x);
+      path.push(y-conf.tickSize);
+
+      path.push('L');
+      path.push(x);
+      path.push(y+conf.tickSize);
+    }
+
+    x = conf.width / 2;
+
+    for (y = dy = conf.height / (this.nVerticalMarks * this.nMinorTicks); y <= conf.height - dy; y += dy) {
+      path.push('M');
+      path.push(x-conf.tickSize);
+      path.push(y);
+
+      path.push('L');
+      path.push(x+conf.tickSize);
+      path.push(y);
+    }
+
+    return r.path(path.join(' ')).attr({stroke: this.tickColor, opacity: 0.5});
+  },
+
+  drawTrace: function (r, conf, signal, channel, horizontalScale, verticalScale, phaseOffset, _isFaint) {
+    if (!r) return;
+    var path         = [],
+        height       = conf.height,
+        h            = height / 2,
+
+        overscan     = 5,                       // how many pixels to overscan on either side (see below)
+        triggerStart = conf.width / 2,          // horizontal position at which the rising edge of a 0-phase signal should cross zero
+
+        // (radians/sec * sec/div) / pixels/div  => radians / pixel
+        radiansPerPixel = (2 * Math.PI * signal.frequency * horizontalScale) / (conf.width / this.nHorizontalMarks),
+
+        // pixels/div / volts/div => pixels/volt
+        pixelsPerVolt = (conf.height / this.nVerticalMarks) / verticalScale,
+
+        isFaint = _isFaint || false,
+        opacity = isFaint ? 0.3 : 1,
+
+        x,
+        raphaelObject,
+        paths,
+        i;
+
+    // if we try and display too many waves on the screen (high radiansPerPixel) we end up with strange effects,
+    // like beats or flat lines. Cap radiansPerPixel to Pi/2, which displays a solid block.
+    if (radiansPerPixel > Math.PI / 2) radiansPerPixel = Math.PI / 2;
+
+    function clip(y) {
+      return y < 0 ? 0 : y > height ? height : y;
+    }
+
+    for (x = 0; x < conf.width + overscan * 2; x++) {
+      path.push(x ===  0 ? 'M' : 'L');
+      path.push(x);
+
+      // Avoid worrying about the odd appearance of the left and right edges of the trace by "overscanning" the trace
+      // a few pixels to either side of the scope window; we will translate the path the same # of pixels to the
+      // left later. (Done this way we don't have negative, i.e., invalid, x-coords in the path string.)
+      path.push(clip(h - signal.amplitude * pixelsPerVolt * Math.sin((x - overscan - triggerStart) * radiansPerPixel + (signal.phase + phaseOffset))));
+    }
+    path = path.join(' ');
+
+    // slight 3d effect (inspired by CRT scopes) by overlaying a thin, oversaturated line over a fatter colored line
+    paths = [];
+    paths.push(r.path(path).attr({stroke: this.traceOuterColors[channel-1], 'stroke-width': 4.5, opacity: opacity}));
+    paths.push(r.path(path).attr({stroke: this.traceInnerColors[channel-1], 'stroke-width': 2, opacity: opacity}));
+
+    raphaelObject = r.set.apply(r, paths);
+
+    // translate the path to the left to accomodate the overscan
+    raphaelObject.translate(-1 * overscan, 0);
+
+    return raphaelObject;
+  }
+
+};
+
+module.exports = OscilloscopeView;
+
+
+},{"../../bower_components/raphael/raphael-min":4,"../helpers/sparks-math":28}],44:[function(require,module,exports){
+/*globals console sparks $ document window alert navigator*/
+var LogEvent            = require('../models/log'),
+    util                = require('../helpers/util'),
+    sound               = require('../helpers/sound'),
+    logController       = require('../controllers/log-controller');
+
+breadboardComm = {};
+
+breadboardComm.openConnections = {};
+
+breadboardComm.connectionMade = function(workbenchController, component, hole) {
+  var workbench = workbenchController.workbench,
+      breadboardController = workbenchController.breadboardController,
+      comp, openConnections, openConnectionsArr, connectionReturning, connection;
+
+  if (!!hole){
+    openConnections = breadboardComm.openConnections[component];
+    if (!openConnections) return; // shouldn't happen
+
+    if (openConnections[hole]) {        // if we're just replacing a lead
+      breadboardController.unmapHole(hole);
+      delete openConnections[hole];
+    } else {                            // if we're putting lead in new hole
+      comp = breadboardController.getComponents()[component];
+      // transform to array
+      openConnectionsArr = util.getKeys(openConnections);
+      // pick first open lead
+      connectionReturning = openConnectionsArr[0];
+      breadboardController.unmapHole(connectionReturning);
+      //swap
+      for (var i = 0; i < comp.connections.length; i++) {
+        connection = comp.connections[i].getName();
+        if (connection === connectionReturning) {
+          comp.connections[i] = breadboardController.getHole(hole);
+          delete openConnections[connection];
+          workbench.meter.moveProbe(connection, hole);
+          break;
+        }
+      }
+
+      // check that we don't have two leads to close together
+      breadboardController.checkLocation(comp);
+    }
+
+  }
+  logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
+    "type": "connect lead",
+    "location": hole
+  });
+  workbench.meter.update();
+};
+
+breadboardComm.connectionBroken = function(workbenchController, component, hole) {
+  var workbench = workbenchController.workbench,
+      breadboardController = workbenchController.breadboardController;
+  if (!breadboardComm.openConnections[component]) {
+    breadboardComm.openConnections[component] = {}
+  }
+  breadboardComm.openConnections[component][hole] = true;
+
+  var newHole = breadboardController.getGhostHole(hole+"ghost");
+
+  breadboardController.mapHole(hole, newHole.nodeName());
+  logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
+    "type": "disconnect lead",
+    "location": hole});
+  workbench.meter.update();
+};
+
+breadboardComm.probeAdded = function(workbenchController, meter, color, location) {
+  workbenchController.workbench.meter.setProbeLocation("probe_"+color, location);
+  sound.play(sound.click)
+  logController.addEvent(LogEvent.ATTACHED_PROBE, {
+    "color": color,
+    "location": location
+  });
+};
+
+breadboardComm.probeRemoved = function(workbenchController, meter, color) {
+  workbenchController.workbench.meter.setProbeLocation("probe_"+color, null);
+  logController.addEvent(LogEvent.DETACHED_PROBE, {
+    "color": color,
+    "location": location
+  });
+};
+
+breadboardComm.dmmDialMoved = function(workbenchController, value) {
+  workbenchController.workbench.meter.dmm.dialPosition = value;
+  workbenchController.workbench.meter.update();
+  logController.addEvent(LogEvent.MOVED_DMM_DIAL, {
+    "valie": value
+  });
+};
+
+module.exports = breadboardComm;
+
+},{"../controllers/log-controller":24,"../helpers/sound":27,"../helpers/util":30,"../models/log":35}],45:[function(require,module,exports){
+require('./breadboard-svg-view');
+
+var AddComponentsView     = require('./add-components-view'),
+    EditComponentsView    = require('./edit-components-view'),
+    FunctionGeneratorView = require('./function-generator-view'),
+    OscilloscopeView      = require('./oscilloscope-view'),
+    sound                 = require('../helpers/sound'),
+    workbenchController;
+
+WorkbenchView = function(workbench, breadboardController){
+  workbenchController   = require('../controllers/workbench-controller');     // grrr
+  this.breadboardController = breadboardController;
+  this.workbench = workbench;
+};
+
+WorkbenchView.prototype = {
+  layout: function(elId) {
+    this.container = document.getElementById(elId);
+
+    if (!this.container) {
+      throw new Error("No DOM element found with the id "+elId);
+    }
+
+    if (this.container.classList)
+      this.container.classList.add("breadboard_container");
+    else
+      this.container.className += ' ' + "breadboard_container";
+
+    this.divs = {
+      breadboard:       this.getOrCreateDiv('breadboard'),
+      scope:            this.getOrCreateDiv('oscope_mini'),
+      fg:               this.getOrCreateDiv('fg_mini', true),
+      addCompsWrapper:  this.getOrCreateDiv('add_components')
+    };
+
+    var self = this;
+    breadboardSVGView.ready(function() {
+      if (workbenchController.breadboardView) {
+        breadboardSVGView.clear(workbenchController.breadboardView);
+      } else {
+        self.divs.breadboard.html('');
+        workbenchController.breadboardView = breadboardSVGView.create("breadboard");
+      }
+
+      // pass queued-up component right-click function to breadboard view
+      if (self.rightClickFunction) {
+        workbenchController.breadboardView.setRightClickFunction(self.rightClickObj, self.rightClickFunction);
+      }
+
+      self.breadboardController.updateView();
+
+      sound.mute = true;
+
+      self.showDMM(self.workbench.show_multimeter);
+      self.showOScope(self.workbench.show_oscilloscope);
+      // self.allowMoveYellowProbe(self.workbench.allow_move_yellow_probe);
+      // self.hidePinkProbe(self.workbench.hide_pink_probe);
+
+      sound.mute = false;
+
+      self.workbench.meter.update();
+    });
+
+    var source = this.breadboardController.getComponents().source;
+    if (source && source.frequency && !source.hidden) {
+      var fgView = new FunctionGeneratorView(source);
+      var $fg = fgView.getView();
+      this.divs.fg.append($fg);
+      this.divs.fg.show();
+    }
+    this.workbench.meter.reset();
+
+    if (this.workbench.showComponentDrawer || this.workbench.showComponentEditor) {
+      this.editComponentsView = new EditComponentsView(workbenchController, this.breadboardController);
+    }
+
+    if (this.workbench.showComponentDrawer) {
+      var drawer = $('<div class="component_drawer retracted"></div>'),
+          button = $('<button class="add_components_btn">Add a new Component</button>');
+
+      this.divs.addCompsWrapper.append(drawer);
+      this.divs.addCompsWrapper.append(button);
+
+      var addComponentsView = new AddComponentsView(workbenchController, this.breadboardController);
+
+      if (this.workbench.showComponentDrawer) {
+        this.divs.addCompsWrapper.show();
+        button.off();
+        button.on('click', addComponentsView.openPane);
+      }
+    }
+  },
+
+  showOScope: function(visible) {
+    this.divs.scope.html('');
+
+    if (visible) {
+     var scopeView = new OscilloscopeView();
+     var $scope = scopeView.getView();
+     this.divs.scope.append($scope);
+     this.divs.scope.show();
+     this.workbench.meter.oscope.setView(scopeView);
+
+     workbenchController.breadboardView.addOScope({
+          "yellow":{
+          "connection": "left_positive21",
+          "draggable": true
+        },"pink": {
+          "connection": "f22",
+          "draggable": true
+        }
+      });
+    }
+  },
+
+  showDMM: function(visible) {
+    if (visible) {
+      workbenchController.breadboardView.addDMM({
+          "dial": "dcv_20",
+          "black":{
+          "connection": "g12",
+          "draggable": true
+        },"red": {
+          "connection": "f3",
+          "draggable": true
+        }
+      });
+    }
+  },
+
+  allowMoveYellowProbe: function() {
+  },
+
+  hidePinkProbe: function() {
+  },
+
+  setRightClickFunction: function(obj, func) {
+    this.rightClickObj = obj;
+    this.rightClickFunction = func;
+  },
+
+  getOrCreateDiv: function(clazz, hide) {
+    $el = $(this.container).find('.'+clazz);
+    if (!$el.length)
+      $el = $('<div class="'+clazz+'"></div>').appendTo(this.container);
+    if (hide) $el.hide();
+    return $el;
+  },
+
+  showComponentEditor: function(id) {
+    this.editComponentsView.showEditor(id);
+  }
+}
+
+module.exports = WorkbenchView;
+
+},{"../controllers/workbench-controller":25,"../helpers/sound":27,"./add-components-view":39,"./breadboard-svg-view":40,"./edit-components-view":41,"./function-generator-view":42,"./oscilloscope-view":43}]},{},[31])(31)
 });
