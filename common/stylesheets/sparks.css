@@ -292,7 +292,7 @@ border-bottom-style:solid;
   background: #8E8;
 }
 
-#breadboard_wrapper {
+.breadboard_container, #breadboard_wrapper {
   position: relative;
 }
 
