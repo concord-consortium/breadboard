@@ -1,0 +1,129 @@
+<html>
+  <head>
+    <link href='http://fonts.googleapis.com/css?family=Anonymous+Pro:700' rel='stylesheet' type='text/css'>
+    <link href='css/breadboard.css' rel='stylesheet' type='text/css' />
+    <link href="examples.css" rel="stylesheet" type="text/css" >
+    <script src="js/sparks.js"></script>
+  </head>
+  <body>
+    <h2>Breadboard: Loading, Serializing and Logging</h2>
+
+    <div class="description">
+        <p>
+            This example shows how we can load and serialize an interactive via scripts, and how we can log to an
+            arbitrary logger (the lowest text area).
+        </p>
+    </div>
+
+    <div class="editors">
+        <div>
+            <textarea id="load_textarea"></textarea>
+            <p>
+                <button id="load_button">Load this workbench</button>
+            </p>
+        </div>
+        <div>
+            <textarea id="save_textarea"></textarea>
+            <p>
+                <button id="save_button">Save current workbench</button>
+            </p>
+        </div>
+    </div>
+
+    <div id="breadboard-wrapper">
+    </div>
+
+    <div class="editors">
+        <div>
+            <h3>Event Log</h3>
+            <textarea id="log_textarea"></textarea>
+        </div>
+    </div>
+
+    <script>
+        // setup initial JSON in first text area
+        var initialJSON = {
+            "showComponentEditor": true,
+            "show_multimeter": "true",
+             "allow_move_yellow_probe": "true",
+             "circuit": [
+                 {
+                     "type": "battery",
+                     "UID": "source",
+                     "voltage": 9
+                 },
+                 {
+                     "type": "resistor",
+                     "UID": "r1",
+                     "resistance": "100",
+                     "connections": "c17,c23",
+                     "label": "R1",
+                     "draggable": true
+                 },
+                 {
+                     "type": "resistor",
+                     "UID": "r2",
+                     "resistance": "100",
+                     "connections": "b11,b17",
+                     "label": "R2",
+                     "draggable": true
+                 },
+                 {
+                     "type": "wire",
+                     "connections": "left_negative19,a23",
+                     "draggable": true
+                 },
+                 {
+                     "type": "wire",
+                     "connections": "left_positive8,a11",
+                     "draggable": true
+                 }
+             ],
+          };
+
+      document.getElementById("load_textarea").value = JSON.stringify(initialJSON, null, '\t');
+
+      // setup load and save functions
+
+      function loadWorkbench(workbenchDef) {
+        sparks.createWorkbench(workbenchDef, "breadboard-wrapper");
+      }
+
+      function saveWorkbench() {
+        document.getElementById("save_textarea").value = sparks.workbenchController.serialize();
+      }
+
+      document.getElementById("load_button").onclick = function() {
+        var json = document.getElementById("load_textarea").value,
+            workbenchDef;
+        try {
+            workbenchDef = JSON.parse(json);
+            loadWorkbench(workbenchDef);
+        } catch (e) {               // catch malformed json
+            alert("Oops, there was a problem with your JSON.\nHere is the probably unhelpful error message:\n\n"+e);
+        }
+      }
+
+      document.getElementById("save_button").onclick = saveWorkbench;
+
+
+      // setup logging to bottom text area
+
+      sparks.logController.addListener(function(evt) {
+        var stringEvent = JSON.stringify(evt, null, '\t'),
+            currentLog  = document.getElementById("log_textarea").value;
+        if (currentLog) {
+            currentLog += ',\n';
+        }
+        document.getElementById("log_textarea").value = currentLog + stringEvent;
+      });
+
+      // load a blank workbench
+      var blankWorkbench = {
+        "showComponentEditor": true,
+         "circuit": [
+         ],
+      }
+      loadWorkbench(blankWorkbench);
+  </script>
+</html>
