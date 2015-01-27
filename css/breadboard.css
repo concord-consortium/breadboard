@@ -505,7 +505,7 @@ table.finalReport td button{font-size:.9em}
 .timeline li a .count{display:block;position:absolute;bottom:0;left:0;height:0;width:100%;background:#AFA;text-indent:-9999px;overflow:hidden}
 .timeline li:hover{background:#E99}
 .timeline li a .count:hover{background:#8E8}
-#breadboard_wrapper{position:relative}
+#breadboard_wrapper,.breadboard_container{position:relative}
 .oscope_mini{background:url(../common/images/oscope_mini.png) top left no-repeat;position:absolute;top:4px;left:296px;z-index:1}
 .oscope_mini_overlay{background:url(../common/images/oscope_mini_overlay.png) top left no-repeat;position:absolute;top:-4px;left:0;height:150px;width:280px;z-index:2}
 .oscope_mini_overlay:hover{background:url(../common/images/oscope_mini_overlay.png) 0 -150px no-repeat}
