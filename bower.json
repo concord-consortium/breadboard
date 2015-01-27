@@ -13,8 +13,7 @@
   ],
   "license": "MIT",
   "main": [
-    "public/js/app.js",
-    "public/css/app.css"
+    "dist/js/sparks.js"
   ],
   "dependencies": {
      "circuit-solver": ">=1.0.0",

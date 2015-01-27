@@ -1,6 +1,6 @@
 .DS_Store
 bower_components/*
 node_modules/*
-public/*
+dist/*
 tests/jspec/test-reports/*
 tests/jspec/reports/*

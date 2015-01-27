@@ -1,4 +1,4 @@
-var dest = './public';
+var dest = './dist';
 var src = './src';
 var common = './common';
 var jquery = './lib/jquery/css';

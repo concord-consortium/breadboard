@@ -2,7 +2,7 @@
 # from https://github.com/X1011/git-directory-deploy
 set -o errexit #abort if any command fails
 
-deploy_directory=public
+deploy_directory=dist
 deploy_branch=$1
 
 #repository to deploy to
