@@ -7,4 +7,6 @@ gulp.task('watch', function() {
     gulp.watch(config.examples.src, ['copy-examples']);
 });
 
+gulp.task('build', ['copy-resources', 'copy-examples', 'browserify', 'minify-css']);
+
 gulp.task('default', ['copy-resources', 'copy-examples', 'browserify', 'minify-css', 'watch']);

@@ -3,7 +3,7 @@
 Breadboard is a JavaScript library for simulating a circuit on a breadboard, with AC and DC inputs, digital
 multimeter, and oscilloscope.
 
-See [the examples here](http://concord-consortium.github.io/breadboard/examples/).
+See [the examples here](http://concord-consortium.github.io/breadboard/).
 
 Breadboard was built by [The Concord Consortium](http://concord.org/) for the
 [SPARKS Project](http://concord.org/sparks/virtual-electronics/) and the
@@ -63,6 +63,20 @@ The server runs on port 8080 by default. Open a browser and navigate to
 http://localhost:8080/
 
 In combination with Gulp above, this will reload your pages any time any source file is saved.
+
+### Deploying
+
+To deploy to gh-pages, simply run `npm run deploy`.
+
+To deploy a release to production
+
+```
+  git checkout production
+  git merge master
+  git tag           # check existing tags
+  git tag -a x.y.z -m 'release version x.y.z'
+  git push origin --follow-tags
+```
 
 
 ### Understanding the code
