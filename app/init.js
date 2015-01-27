@@ -6,7 +6,12 @@ require('../bower_components/circuit-solver/dist/circuitSolver.min');
 
 var workbenchController = require('./controllers/workbench-controller'),
     sound               = require('./helpers/sound'),
-    soundFiles          = {click: "../common/sounds/click.ogg"};
+
+    scripts             = document.getElementsByTagName('script'),
+    path                = scripts[scripts.length-1].src.split('?')[0],      // remove any ?query
+    packageRoot         = path.split('/').slice(0, -2).join('/')+'/',
+
+    soundFiles          = {click: packageRoot + "/common/sounds/click.ogg"};
 
 loadSounds = function () {
   var soundName, audio;
@@ -37,6 +42,8 @@ sparks.removeComponent = function(uid) {
 // this is probably too much access for an API, but doing it now for simplicity
 sparks.workbenchController = workbenchController;
 sparks.logController = workbenchController.logController;
+
+sparks.packageRoot = packageRoot;
 
 
 module.exports = sparks;
