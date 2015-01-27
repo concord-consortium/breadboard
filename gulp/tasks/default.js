@@ -7,6 +7,9 @@ gulp.task('watch', function() {
     gulp.watch(config.examples.src, ['copy-examples']);
 });
 
-gulp.task('build', ['copy-resources', 'copy-examples', 'browserify', 'minify-css']);
+gulp.task('build', ['copy-resources', 'browserify', 'minify-css']);
 
-gulp.task('default', ['copy-resources', 'copy-examples', 'browserify', 'minify-css', 'watch']);
+gulp.task('build-gh-pages', ['build', 'copy-examples', 'copy-info']);
+gulp.task('build-production', ['build', 'copy-info']);
+
+gulp.task('default', ['build', 'copy-examples', 'watch']);
