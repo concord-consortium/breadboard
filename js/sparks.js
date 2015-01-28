@@ -16617,7 +16617,9 @@ Workbench.prototype = {
 module.exports = Workbench;
 
 },{"../views/workbench-view":45,"./meter":36}],39:[function(require,module,exports){
-var workbenchController;
+var LogEvent            = require('../models/log'),
+    logController       = require('../controllers/log-controller'),
+    workbenchController;
 
 embeddableComponents = {
   resistor: {
@@ -16718,6 +16720,13 @@ AddComponentsView = function(workbenchController, breadboardController){
       // move leads to correct width
       self.breadboardController.checkLocation(comp);
 
+      logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
+        "type": "added new component",
+        "component_type": comp.type,
+        "UID": comp.UID,
+        "location": comp.getLocation()
+      });
+
       // update meters
       workbenchController.workbench.meter.update();
 
@@ -16739,7 +16748,7 @@ AddComponentsView.prototype = {
 
 module.exports = AddComponentsView;
 
-},{}],40:[function(require,module,exports){
+},{"../controllers/log-controller":24,"../models/log":35}],40:[function(require,module,exports){
 /**
  * @author Mobile.Lab (http://mlearner.com)
  **/
@@ -19072,7 +19081,9 @@ window["breadboardSVGView"] = {
 })(jQuery, window["breadboardSVGView"]);
 
 },{"../controllers/workbench-controller":25,"../libs/base64":32,"../libs/canvg":33,"./svg_view_comm":44}],41:[function(require,module,exports){
-var unit        = require('../helpers/unit');
+var LogEvent      = require('../models/log'),
+    logController = require('../controllers/log-controller'),
+    unit          = require('../helpers/unit');
 
 EditComponentsView = function(workbenchController, breadboardController){
   this.workbenchController = workbenchController;
@@ -19100,6 +19111,11 @@ EditComponentsView.prototype = {
           eng = unit.toEngineering(val, comp.editableProperty.units);
       $(".prop_value_"+uid).text(eng.value + eng.units);
       comp.changeEditableValue(val);
+      logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
+        "type": "changed component value",
+        "UID": comp.UID,
+        "value": val
+      });
       section.meter.update();
     }
 
@@ -19140,7 +19156,7 @@ EditComponentsView.prototype = {
 
 module.exports = EditComponentsView;
 
-},{"../helpers/unit":29}],42:[function(require,module,exports){
+},{"../controllers/log-controller":24,"../helpers/unit":29,"../models/log":35}],42:[function(require,module,exports){
 /*globals sparks Raphael*/
 
 var mathParser  = require('../helpers/math-parser'),
@@ -20044,7 +20060,7 @@ breadboardComm.dmmDialMoved = function(workbenchController, value) {
   workbenchController.workbench.meter.dmm.dialPosition = value;
   workbenchController.workbench.meter.update();
   logController.addEvent(LogEvent.MOVED_DMM_DIAL, {
-    "valie": value
+    "value": value
   });
 };
 
