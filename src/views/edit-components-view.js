@@ -1,4 +1,6 @@
-var unit        = require('../helpers/unit');
+var LogEvent      = require('../models/log'),
+    logController = require('../controllers/log-controller'),
+    unit          = require('../helpers/unit');
 
 EditComponentsView = function(workbenchController, breadboardController){
   this.workbenchController = workbenchController;
@@ -26,6 +28,11 @@ EditComponentsView.prototype = {
           eng = unit.toEngineering(val, comp.editableProperty.units);
       $(".prop_value_"+uid).text(eng.value + eng.units);
       comp.changeEditableValue(val);
+      logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
+        "type": "changed component value",
+        "UID": comp.UID,
+        "value": val
+      });
       section.meter.update();
     }
 

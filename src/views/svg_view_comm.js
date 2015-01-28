@@ -88,7 +88,7 @@ breadboardComm.dmmDialMoved = function(workbenchController, value) {
   workbenchController.workbench.meter.dmm.dialPosition = value;
   workbenchController.workbench.meter.update();
   logController.addEvent(LogEvent.MOVED_DMM_DIAL, {
-    "valie": value
+    "value": value
   });
 };
 

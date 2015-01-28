@@ -1,4 +1,6 @@
-var workbenchController;
+var LogEvent            = require('../models/log'),
+    logController       = require('../controllers/log-controller'),
+    workbenchController;
 
 embeddableComponents = {
   resistor: {
@@ -98,6 +100,13 @@ AddComponentsView = function(workbenchController, breadboardController){
 
       // move leads to correct width
       self.breadboardController.checkLocation(comp);
+
+      logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
+        "type": "added new component",
+        "component_type": comp.type,
+        "UID": comp.UID,
+        "location": comp.getLocation()
+      });
 
       // update meters
       workbenchController.workbench.meter.update();
