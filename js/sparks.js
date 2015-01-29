@@ -12012,10 +12012,10 @@ BreadboardController.prototype = {
   // clean up these three overlapping functions
   remove: function(type, connections){
     var comp = this.findComponent(type, connections);
+    workbenchController.breadboardView.removeComponent(comp.uid);
     if (!!comp){
       comp.destroy();
     }
-    workbenchController.breadboardView.removeComponent(uid);
   },
 
   removeComponent: function(comp){
