@@ -16623,26 +16623,18 @@ var LogEvent            = require('../models/log'),
 
 embeddableComponents = {
   resistor: {
-    image: "/common/images/blank-resistor.png",
-    imageWidth: 108,
     property: "resistance",
     initialValue: 100
   },
   capacitor: {
-    image: "/common/images/capacitor.png",
-    imageWidth: 48,
     property: "capacitance",
     initialValue: 1e-6
   },
   inductor: {
-    image: "/common/images/inductor.png",
-    imageWidth: 80,
     property: "inductance",
     initialValue: 1e-6
   },
   wire: {
-    image: "/common/images/wire.png",
-    imageWidth: 80,
     leadDistance: 5
   }
 }
@@ -16664,9 +16656,7 @@ AddComponentsView = function(workbenchController, breadboardController){
     component = embeddableComponents[componentName];
 
     this.$drawer.append(
-     $("<img class='add_"+componentName+" add_component'>")
-      .attr("src", component.image)
-      .css("width", component.imageWidth)
+     $("<div class='add_"+componentName+" add_component'></div>")
       .data("type", componentName)
       .draggable({
         containment: "#breadboard_wrapper",

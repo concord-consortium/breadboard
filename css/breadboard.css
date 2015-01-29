@@ -522,10 +522,10 @@ table.finalReport td button{font-size:.9em}
 .add_components_btn{position:absolute;top:193px;left:7px;width:115px;padding:8px}
 .component_drawer{position:absolute;top:0;left:150px;width:137px;height:175px;background-color:#bbb;-moz-border-radius:5px;-webkit-border-radius:5px;border-radius:5px;border:1px solid;box-shadow:0 0 10px}
 .add_component{position:relative;cursor:pointer}
-.add_resistor{top:12px;left:12px}
-.add_capacitor{top:16px;left:43px}
-.add_inductor{top:55px;left:-19px}
-.add_wire{top:64px;left:29px}
+.add_resistor{top:12px;left:12px;width:108px;height:25px;background-image:url(../common/images/blank-resistor.png);background-size:100%}
+.add_capacitor{top:27px;left:43px;width:48px;height:28px;background-image:url(../common/images/capacitor.png);background-size:100%}
+.add_inductor{top:49px;left:29px;width:80px;height:25px;background-image:url(../common/images/inductor.png);background-size:100%}
+.add_wire{top:64px;left:29px;width:80px;height:15px;background-image:url(../common/images/wire.png);background-size:100%}
 .speech-bubble{position:relative;padding:15px;color:#000;background:#fbfcd1;-moz-border-radius:10px;-webkit-border-radius:10px;border-radius:10px}
 .speech-bubble:after{content:"";display:block;position:absolute;bottom:-30px;left:50px;width:0;height:0;border-width:15px;border-style:solid;border-color:#fbfcd1 transparent transparent}
 .editor div,.editor h3{text-align:center}
