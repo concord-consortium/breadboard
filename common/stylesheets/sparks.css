@@ -420,21 +420,37 @@ border-bottom-style:solid;
 .add_resistor {
   top: 12px;
   left: 12px;
+  width: 108px;
+  height: 25px;
+  background-image: url("../common/images/blank-resistor.png");
+  background-size: 100%;
 }
 
 .add_capacitor {
-  top: 16px;
+  top: 27px;
   left: 43px;
+  width: 48px;
+  height: 28px;
+  background-image: url("../common/images/capacitor.png");
+  background-size: 100%;
 }
 
 .add_inductor {
-  top: 55px;
-  left: -19px;
+  top: 49px;
+  left: 29px;
+  width: 80px;
+  height: 25px;
+  background-image: url("../common/images/inductor.png");
+  background-size: 100%;
 }
 
 .add_wire {
   top: 64px;
   left: 29px;
+  width: 80px;
+  height: 15px;
+  background-image: url("../common/images/wire.png");
+  background-size: 100%;
 }
 
 .speech-bubble {
