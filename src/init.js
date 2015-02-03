@@ -35,10 +35,6 @@ sparks.createWorkbench = function(props, elId) {
   workbenchController.createWorkbench(props, elId);
 }
 
-sparks.removeComponent = function(uid) {
-  workbenchController.breadboardView.removeComponent(uid);
-}
-
 // this is probably too much access for an API, but doing it now for simplicity
 sparks.workbenchController = workbenchController;
 sparks.logController = workbenchController.logController;
