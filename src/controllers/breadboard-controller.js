@@ -347,7 +347,7 @@ BreadboardController.prototype = {
   removeComponent: function(comp){
     var uid = comp.UID;
     comp.destroy();
-    if (uid) {
+    if (uid && workbenchController.breadboardView) {
       workbenchController.breadboardView.removeComponent(uid);
     }
   },
