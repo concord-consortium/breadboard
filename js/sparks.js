@@ -12021,7 +12021,7 @@ BreadboardController.prototype = {
   removeComponent: function(comp){
     var uid = comp.UID;
     comp.destroy();
-    if (uid) {
+    if (uid && workbenchController.breadboardView) {
       workbenchController.breadboardView.removeComponent(uid);
     }
   },
@@ -13084,10 +13084,6 @@ var sparks = {};
 
 sparks.createWorkbench = function(props, elId) {
   workbenchController.createWorkbench(props, elId);
-}
-
-sparks.removeComponent = function(uid) {
-  workbenchController.breadboardView.removeComponent(uid);
 }
 
 // this is probably too much access for an API, but doing it now for simplicity
