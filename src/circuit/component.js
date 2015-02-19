@@ -200,6 +200,7 @@ Component.prototype = {
     if (this.amplitude)         jsonComp.amplitude = this.amplitude;
     if (this.frequencies)       jsonComp.frequencies = this.frequencies;
     if (this.initialFrequency)  jsonComp.initialFrequency = this.initialFrequency;
+    if (this.frequency)         jsonComp.initialFrequency = this.frequency;
     if (this.capacitance)       jsonComp.capacitance = this.capacitance;
     if (this.inductance)        jsonComp.inductance = this.inductance;
     if (this.impedance)         jsonComp.impedance = this.impedance;
