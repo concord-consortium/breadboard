@@ -1,5 +1,7 @@
 var extend              = require('../helpers/util').extend,
-    Component           = require('./component');
+    Component           = require('./component'),
+    LogEvent            = require('../models/log'),
+    logController       = require('../controllers/log-controller');
 
 FunctionGenerator = function (props, breadboardController, workbenchController) {
   FunctionGenerator.parentConstructor.call(this, props, breadboardController);
@@ -68,6 +70,10 @@ extend(FunctionGenerator, Component, {
     if (this.workbenchController.workbench.meter) {
       this.workbenchController.workbench.meter.update();
     }
+    logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
+      "type": "changed frequency",
+      "value": frequency
+    });
   },
 
   // instead of modifying the base amplitude, which would cause us to re-ask QUCS for new values,
@@ -78,6 +84,10 @@ extend(FunctionGenerator, Component, {
     if (this.workbenchController.workbench.meter) {
       this.workbenchController.workbench.meter.update();
     }
+    logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
+      "type": "changed amplitude",
+      "value": newAmplitude
+    });
   },
 
   getFrequency: function() {
