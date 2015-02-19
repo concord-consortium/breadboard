@@ -10114,6 +10114,7 @@ Component.prototype = {
     if (this.amplitude)         jsonComp.amplitude = this.amplitude;
     if (this.frequencies)       jsonComp.frequencies = this.frequencies;
     if (this.initialFrequency)  jsonComp.initialFrequency = this.initialFrequency;
+    if (this.frequency)         jsonComp.initialFrequency = this.frequency;
     if (this.capacitance)       jsonComp.capacitance = this.capacitance;
     if (this.inductance)        jsonComp.inductance = this.inductance;
     if (this.impedance)         jsonComp.impedance = this.impedance;
@@ -10130,7 +10131,9 @@ module.exports = Component;
 
 },{}],12:[function(require,module,exports){
 var extend              = require('../helpers/util').extend,
-    Component           = require('./component');
+    Component           = require('./component'),
+    LogEvent            = require('../models/log'),
+    logController       = require('../controllers/log-controller');
 
 FunctionGenerator = function (props, breadboardController, workbenchController) {
   FunctionGenerator.parentConstructor.call(this, props, breadboardController);
@@ -10199,6 +10202,10 @@ extend(FunctionGenerator, Component, {
     if (this.workbenchController.workbench.meter) {
       this.workbenchController.workbench.meter.update();
     }
+    logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
+      "type": "changed frequency",
+      "value": frequency
+    });
   },
 
   // instead of modifying the base amplitude, which would cause us to re-ask QUCS for new values,
@@ -10209,6 +10216,10 @@ extend(FunctionGenerator, Component, {
     if (this.workbenchController.workbench.meter) {
       this.workbenchController.workbench.meter.update();
     }
+    logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
+      "type": "changed amplitude",
+      "value": newAmplitude
+    });
   },
 
   getFrequency: function() {
@@ -10262,7 +10273,7 @@ extend(FunctionGenerator, Component, {
 
 module.exports = FunctionGenerator;
 
-},{"../helpers/util":30,"./component":11}],13:[function(require,module,exports){
+},{"../controllers/log-controller":24,"../helpers/util":30,"../models/log":35,"./component":11}],13:[function(require,module,exports){
 var extend            = require('../helpers/util').extend,
     ReactiveComponent = require('./reactive-component');
 
