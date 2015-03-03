@@ -54,7 +54,7 @@ extend(Multimeter, MultimeterBase, {
   // this is called after update() is called and ciso returns
   updateWithData: function (ciso) {
     var measurement = this.currentMeasurement,
-        source, b, p1, p2, v1, v2, current, drop,
+        source, b, p1, p2, v1, v2, current,
         result;
 
     if (ciso) {
@@ -75,17 +75,22 @@ extend(Multimeter, MultimeterBase, {
 
         // exit quickly if ciso was not able to solve circuit
         if (!v1 || !v2) {
+          this.value = 0;
           this.absoluteValue = 0;
           this.updateDisplay();
           return;
         }
 
-        drop = v1.subtract(v2).magnitude;
-
-        if (measurement === "current") {
-          result = drop / 1e-6;
-        } else {
-          result = drop;
+        switch (measurement) {
+          case "voltage":
+            result = v1.real - v2.real;
+            break;
+          case "ac_voltage":
+            result = v1.subtract(v2).magnitude;
+            break;
+          case "current":
+            result = v1.subtract(v2).magnitude / 1e-6
+            break;
         }
       }
 
@@ -107,6 +112,10 @@ extend(Multimeter, MultimeterBase, {
         }
         result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
 
+        // track both the value and the absolute value.  the absolute value lets us
+        // make simpler one-sided comparisons to zero and the value lets us display
+        // the negative sign
+        this.value = result;
         this.absoluteValue = Math.abs(result);
 
         if (measurement === "current" && this.absoluteValue > 0.44){
