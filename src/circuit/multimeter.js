@@ -75,6 +75,7 @@ extend(Multimeter, MultimeterBase, {
 
         // exit quickly if ciso was not able to solve circuit
         if (!v1 || !v2) {
+          this.value = 0;
           this.absoluteValue = 0;
           this.updateDisplay();
           return;
@@ -107,6 +108,10 @@ extend(Multimeter, MultimeterBase, {
         }
         result = Math.round(result*Math.pow(10,8))/Math.pow(10,8);
 
+        // track both the value and the absolute value.  the absolute value lets us
+        // make simpler one-sided comparisons to zero and the value lets us display
+        // the negative sign
+        this.value = result;
         this.absoluteValue = Math.abs(result);
 
         if (measurement === "current" && this.absoluteValue > 0.44){
