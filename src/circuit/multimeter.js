@@ -54,7 +54,7 @@ extend(Multimeter, MultimeterBase, {
   // this is called after update() is called and ciso returns
   updateWithData: function (ciso) {
     var measurement = this.currentMeasurement,
-        source, b, p1, p2, v1, v2, current, drop,
+        source, b, p1, p2, v1, v2, current,
         result;
 
     if (ciso) {
@@ -81,12 +81,16 @@ extend(Multimeter, MultimeterBase, {
           return;
         }
 
-        drop = v1.subtract(v2).magnitude;
-
-        if (measurement === "current") {
-          result = drop / 1e-6;
-        } else {
-          result = drop;
+        switch (measurement) {
+          case "voltage":
+            result = v1.real - v2.real;
+            break;
+          case "ac_voltage":
+            result = v1.subtract(v2).magnitude;
+            break;
+          case "current":
+            result = v1.subtract(v2).magnitude / 1e-6
+            break;
         }
       }
 
