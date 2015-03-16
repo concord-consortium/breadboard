@@ -58,13 +58,18 @@ EditComponentsView.prototype = {
       $("<h3>").text("Edit "+comp.componentTypeName)
     ).append(
       $propertyEditor
-    ).append(
-      $("<button>").text("Remove").on('click', function() {
-        self.breadboardController.removeComponent(comp);
-        section.meter.update();
-        $(".speech-bubble").trigger('mouseleave');
-      })
     ).css( { width: 130, textAlign: "right" } );
+
+    // only allow removes when the components can be added back
+    if (this.workbenchController.workbench.showComponentDrawer) {
+      $editor.append(
+        $("<button>").text("Remove").on('click', function() {
+          self.breadboardController.removeComponent(comp);
+          section.meter.update();
+          $(".speech-bubble").trigger('mouseleave');
+        })
+      )
+    }
 
     this.workbenchController.breadboardView.showTooltip(uid, $editor);
   }
