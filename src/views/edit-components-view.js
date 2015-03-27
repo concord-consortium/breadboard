@@ -31,9 +31,21 @@ EditComponentsView.prototype = {
       logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
         "type": "changed component value",
         "UID": comp.UID,
-        "value": val
+        "value": val,
+        "via": evt.originalEvent ? evt.originalEvent.type || 'n/a' : 'n/a'
       });
       section.meter.update();
+    }
+
+    componentValueFinished = function (evt, ui) {
+      if (evt.originalEvent && (evt.originalEvent.type == 'mouseup')) {
+        logController.addEvent(LogEvent.CHANGED_CIRCUIT, {
+          "type": "changed component value",
+          "UID": comp.UID,
+          "value": possibleValues[ui.value],
+          "via": evt.originalEvent.type
+        });
+      }
     }
 
     if (comp.isEditable) {
@@ -45,6 +57,7 @@ EditComponentsView.prototype = {
         $("<div>").slider({
           max: possibleValues.length-1,
           slide: componentValueChanged,
+          stop: componentValueFinished,
           value: possibleValues.indexOf(initialValue)
         })
       ).append(
