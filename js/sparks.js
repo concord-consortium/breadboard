@@ -11676,16 +11676,14 @@ extend(Wire, Component, {
 
   getColor: function () {
     var location = this.getLocation();
-    if (location.indexOf("positive") > -1) {
+    if (this.color) {
+      return this.color;
+    } else if (location.indexOf("positive") > -1) {
       return "red";
     } else if (location.indexOf("negative") > -1) {
       return "black";
     } else {
-      if (Math.random() < 0.5){
-        return "green";
-      } else {
-        return "blue";
-      }
+      return "green";
     }
   },
 

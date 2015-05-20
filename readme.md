@@ -59,13 +59,13 @@ gh-pages and production releases are based on the contents of the /dist folder.
 
 To deploy to gh-pages, simply run `npm run deploy`.
 
-To deploy to production, run `npm run production`.
+To deploy to production, run `npm run release`.
 
 Check that the production commit looks right, then tag it:
 
 ```
   git tag           # check existing tags
-  git tag -a 0.0.1 -m 'release version 0.0.1' production
+  git tag -a 0.0.5 -m 'release version 0.0.5' production
   git push origin --tags
 ```
 
