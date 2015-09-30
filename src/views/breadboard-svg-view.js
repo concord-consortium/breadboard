@@ -18,11 +18,11 @@ window["breadboardSVGView"] = {
         "x": 80,
         "y": 80
       }
-    }
+    },
+    "fixedCircuit": false
   },
   "util" : {}
 };
-
 
 // window["breadboardSVGView"].connectionMade = function(component, location) {
 //   console.log('Received: connect, component|' + component + '|' + location);
@@ -152,6 +152,8 @@ window["breadboardSVGView"] = {
   var _mouseup = (touch ) ? 'touchend' : 'mouseup';
   var _mouseover = (touch ) ? 'xxx' : 'mouseover';
   var _mouseout = (touch ) ? 'xxx' : 'mouseout';
+
+  var options = board.options;
 
   // object contains electronic and test equipment
   var equipment = function() {
@@ -1224,6 +1226,10 @@ window["breadboardSVGView"] = {
       y : 0
     }, pts = [p2, p1];
 
+    if (options.fixedCircuit) {
+      return;
+    }
+
     board.holder[0].addEventListener(_mousedown, function(evt) {
       if (!evt.touches || evt.touches.length == 1) {
         component = $(evt._target).data('component') || null;
@@ -1354,6 +1360,10 @@ window["breadboardSVGView"] = {
       x : 0,
       y : 0
     }, deg, hi, ho, hn;
+
+    if (options.fixedCircuit) {
+      return;
+    }
 
     board.holder[0].addEventListener(_mousedown, function(evt) {
       if (!evt.touches || evt.touches.length == 1) {
@@ -1495,14 +1505,16 @@ window["breadboardSVGView"] = {
     action.data('component-lead', this.name);
 
     // bind onclick events
-    action[0].addEventListener(_mouseup, function(l) {
-      var f = false;
-      return function() {
-        if (!l.isDragged) {
-          l[ (f = !f) ? 'disconnect' : 'connect' ]();
-        }
-      };
-    }(this), false);
+    if (!options.fixedCircuit) {
+      action[0].addEventListener(_mouseup, function(l) {
+        var f = false;
+        return function() {
+          if (!l.isDragged) {
+            l[ (f = !f) ? 'disconnect' : 'connect' ]();
+          }
+        };
+      }(this), false);
+    }
 
     this.view = lead;
   };
