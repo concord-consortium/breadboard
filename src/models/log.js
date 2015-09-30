@@ -11,6 +11,7 @@ LogEvent.DMM_MEASUREMENT = "DMM measurement";
 LogEvent.CHANGED_CIRCUIT = "Changed circuit";
 LogEvent.ATTACHED_PROBE = "Attached probe";
 LogEvent.DETACHED_PROBE = "Detached probe";
+LogEvent.DROPPED_PROBE = "Dropped probe";
 LogEvent.MOVED_DMM_DIAL = "Moved DMM dial";
 LogEvent.OSCOPE_MEASUREMENT = "OScope measurement";
 LogEvent.OSCOPE_V1_SCALE_CHANGED = "OScope V1 scale changed";

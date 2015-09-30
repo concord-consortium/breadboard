@@ -1757,7 +1757,7 @@ window["breadboardSVGView"] = {
           };
           lead_new = findLeadUnderProbe(board, point);
           if (lead_init) {
-            board.sendEventToModel("probeRemoved", [active.name, active.color]);
+            board.sendEventToModel("probeRemoved", [active.name, active.color, lead_init.hole]);
             lead_init = null;
           }
           if (lead_new) {
@@ -1784,8 +1784,11 @@ window["breadboardSVGView"] = {
           active.dy = y;
           if (lead_new) {
             active.setState(lead_new);
-          } else if (active.lead) {
-            active.lead = null;
+          } else {
+            board.sendEventToModel("probeDropped", [active.name, active.color, {x: active.x, y: active.y, dx: active.dx, dy: active.dy}]);
+            if (active.lead) {
+              active.lead = null;
+            }
           }
           active.image.update();
           active = null;
@@ -1871,6 +1874,14 @@ window["breadboardSVGView"] = {
 
   primitive.probe.prototype.hide = function() {
     this.css('visibility', 'hidden');
+  };
+
+  primitive.probe.prototype.move = function(pos) {
+    this.x = pos.x;
+    this.y = pos.y;
+    this.dx = pos.dx;
+    this.dy = pos.dy;
+    this.view.attr('transform', 'translate(' + this.dx + ',' + this.dy + ')');
   };
 
   primitive.mmbox = function(board, params) {
