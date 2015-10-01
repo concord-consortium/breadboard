@@ -76,11 +76,19 @@ breadboardComm.probeAdded = function(workbenchController, meter, color, location
   });
 };
 
-breadboardComm.probeRemoved = function(workbenchController, meter, color) {
+breadboardComm.probeRemoved = function(workbenchController, meter, color, location) {
   workbenchController.workbench.meter.setProbeLocation("probe_"+color, null);
   logController.addEvent(LogEvent.DETACHED_PROBE, {
     "color": color,
     "location": location
+  });
+};
+
+breadboardComm.probeDropped = function(workbenchController, meter, color, position) {
+  //workbenchController.workbench.meter.setProbeLocation("probe_"+color, null);
+  logController.addEvent(LogEvent.DROPPED_PROBE, {
+    "color": color,
+    "position": position
   });
 };
 
