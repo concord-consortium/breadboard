@@ -65,7 +65,7 @@ Check that the production commit looks right, then tag it:
 
 ```
   git tag           # check existing tags
-  git tag -a 0.0.5 -m 'release version 0.0.5' production
+  git tag -a 0.0.1 -m 'release version 0.0.1' production
   git push origin --tags
 ```
 

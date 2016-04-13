@@ -12037,7 +12037,7 @@ BreadboardController.prototype = {
   // clean up these three overlapping functions
   remove: function(type, connections){
     var comp = this.findComponent(type, connections);
-    workbenchController.breadboardView.removeComponent(comp.uid);
+    workbenchController.breadboardView.removeComponent(comp.UID);
     if (!!comp){
       comp.destroy();
     }
@@ -16239,6 +16239,7 @@ LogEvent.DMM_MEASUREMENT = "DMM measurement";
 LogEvent.CHANGED_CIRCUIT = "Changed circuit";
 LogEvent.ATTACHED_PROBE = "Attached probe";
 LogEvent.DETACHED_PROBE = "Detached probe";
+LogEvent.DROPPED_PROBE = "Dropped probe";
 LogEvent.MOVED_DMM_DIAL = "Moved DMM dial";
 LogEvent.OSCOPE_MEASUREMENT = "OScope measurement";
 LogEvent.OSCOPE_V1_SCALE_CHANGED = "OScope V1 scale changed";
@@ -16780,11 +16781,11 @@ window["breadboardSVGView"] = {
         "x": 80,
         "y": 80
       }
-    }
+    },
+    "fixedCircuit": false
   },
   "util" : {}
 };
-
 
 // window["breadboardSVGView"].connectionMade = function(component, location) {
 //   console.log('Received: connect, component|' + component + '|' + location);
@@ -16914,6 +16915,8 @@ window["breadboardSVGView"] = {
   var _mouseup = (touch ) ? 'touchend' : 'mouseup';
   var _mouseover = (touch ) ? 'xxx' : 'mouseover';
   var _mouseout = (touch ) ? 'xxx' : 'mouseout';
+
+  var options = board.options;
 
   // object contains electronic and test equipment
   var equipment = function() {
@@ -17986,6 +17989,10 @@ window["breadboardSVGView"] = {
       y : 0
     }, pts = [p2, p1];
 
+    if (options.fixedCircuit) {
+      return;
+    }
+
     board.holder[0].addEventListener(_mousedown, function(evt) {
       if (!evt.touches || evt.touches.length == 1) {
         component = $(evt._target).data('component') || null;
@@ -18116,6 +18123,10 @@ window["breadboardSVGView"] = {
       x : 0,
       y : 0
     }, deg, hi, ho, hn;
+
+    if (options.fixedCircuit) {
+      return;
+    }
 
     board.holder[0].addEventListener(_mousedown, function(evt) {
       if (!evt.touches || evt.touches.length == 1) {
@@ -18257,14 +18268,16 @@ window["breadboardSVGView"] = {
     action.data('component-lead', this.name);
 
     // bind onclick events
-    action[0].addEventListener(_mouseup, function(l) {
-      var f = false;
-      return function() {
-        if (!l.isDragged) {
-          l[ (f = !f) ? 'disconnect' : 'connect' ]();
-        }
-      };
-    }(this), false);
+    if (!options.fixedCircuit) {
+      action[0].addEventListener(_mouseup, function(l) {
+        var f = false;
+        return function() {
+          if (!l.isDragged) {
+            l[ (f = !f) ? 'disconnect' : 'connect' ]();
+          }
+        };
+      }(this), false);
+    }
 
     this.view = lead;
   };
@@ -18519,7 +18532,7 @@ window["breadboardSVGView"] = {
           };
           lead_new = findLeadUnderProbe(board, point);
           if (lead_init) {
-            board.sendEventToModel("probeRemoved", [active.name, active.color]);
+            board.sendEventToModel("probeRemoved", [active.name, active.color, lead_init.hole]);
             lead_init = null;
           }
           if (lead_new) {
@@ -18546,8 +18559,11 @@ window["breadboardSVGView"] = {
           active.dy = y;
           if (lead_new) {
             active.setState(lead_new);
-          } else if (active.lead) {
-            active.lead = null;
+          } else {
+            board.sendEventToModel("probeDropped", [active.name, active.color, {x: active.x, y: active.y, dx: active.dx, dy: active.dy}]);
+            if (active.lead) {
+              active.lead = null;
+            }
           }
           active.image.update();
           active = null;
@@ -18633,6 +18649,14 @@ window["breadboardSVGView"] = {
 
   primitive.probe.prototype.hide = function() {
     this.css('visibility', 'hidden');
+  };
+
+  primitive.probe.prototype.move = function(pos) {
+    this.x = pos.x;
+    this.y = pos.y;
+    this.dx = pos.dx;
+    this.dy = pos.dy;
+    this.view.attr('transform', 'translate(' + this.dx + ',' + this.dy + ')');
   };
 
   primitive.mmbox = function(board, params) {
@@ -20077,11 +20101,19 @@ breadboardComm.probeAdded = function(workbenchController, meter, color, location
   });
 };
 
-breadboardComm.probeRemoved = function(workbenchController, meter, color) {
+breadboardComm.probeRemoved = function(workbenchController, meter, color, location) {
   workbenchController.workbench.meter.setProbeLocation("probe_"+color, null);
   logController.addEvent(LogEvent.DETACHED_PROBE, {
     "color": color,
     "location": location
+  });
+};
+
+breadboardComm.probeDropped = function(workbenchController, meter, color, position) {
+  //workbenchController.workbench.meter.setProbeLocation("probe_"+color, null);
+  logController.addEvent(LogEvent.DROPPED_PROBE, {
+    "color": color,
+    "position": position
   });
 };
 
