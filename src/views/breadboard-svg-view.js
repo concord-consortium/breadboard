@@ -216,6 +216,8 @@ window["breadboardSVGView"] = {
     primitive.prototype.initProbeDraggable(this);
     // init all components draggable
     primitive.prototype.initComponentDraggable(this);
+
+    this.tooltipPosition = null;
   };
 
   CircuitBoard.prototype.sendEventToModel = function(evName, params) {
@@ -521,6 +523,10 @@ window["breadboardSVGView"] = {
     //document.body.appendChild(comp.canvas);
   };
 
+  CircuitBoard.prototype.setTooltipPosition = function(position) {
+    this.tooltipPosition = position;
+  };
+
   CircuitBoard.prototype.showTooltip = function(uid, $tipPane) {
     var $comp      = this.component[uid].view,
         pos        = $comp.position(),
@@ -557,8 +563,8 @@ window["breadboardSVGView"] = {
 
     $tooltip.css({
       position: "absolute",
-      left:     left,
-      top:      pos.top - tipHeight - yOffset,
+      left:     this.tooltipPosition ? this.tooltipPosition.left : left,
+      top:      this.tooltipPosition ? this.tooltipPosition.top : pos.top - tipHeight - yOffset,
       height:   tipHeight + compHeight + yOffset,
       zIndex:   1000
     });
