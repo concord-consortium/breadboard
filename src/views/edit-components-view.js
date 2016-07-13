@@ -21,6 +21,7 @@ EditComponentsView.prototype = {
         $propertyEditor = null,
         sliderChange, selectChange, updateValue, options,
         self = this;
+
     // create editor tooltip
     possibleValues = comp.getEditablePropertyValues();
 
@@ -30,6 +31,9 @@ EditComponentsView.prototype = {
 
     selectChange = function (evt) {
       updateValue(evt, this.value);
+
+      // remove focus from the select so that the mouseleave event in the tooltip activates more smoothly
+      $(this).blur();
     }
 
     updateValue = function (evt, val) {
