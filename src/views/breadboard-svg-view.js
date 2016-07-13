@@ -534,17 +534,23 @@ window["breadboardSVGView"] = {
         compWidth  = rect.width,
         compHeight = rect.height,
         tipWidth   = $tipPane.width(),
+        divId      = "tooltip_" + uid,
         yOffset,
         left,
         tipHeight,
         $tooltip;
+
+    // don't allow multiple tootips to show for the same component (double click events were adding 2x tooltips)
+    if ($("#" + divId).length > 0) {
+      return;
+    }
 
     if (compWidth > 300) {    // weird bug
       compWidth = 120;
     }
 
     // wrap pane in bubble pane and then empty pane (for mousout)
-    $tooltip = $("<div>").append(
+    $tooltip = $("<div id='" + divId + "'>").append(
       $("<div class='speech-bubble'>").append($tipPane)
     );
 
