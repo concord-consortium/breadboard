@@ -2297,7 +2297,7 @@ window["breadboardSVGView"] = {
   var path = scripts[scripts.length-1].src.split('?')[0];      // remove any ?query
   var packageRoot = path.split('/').slice(0, -2).join('/')+'/';  // remove last folder and filename part of path
 
-  board.util.require([packageRoot+"/common/images/sparks.breadboard.svg"], function(data) {
+  board.util.require([packageRoot+"common/images/sparks.breadboard.svg"], function(data) {
     // create base element
     SVGStorage = new SVGStorage(data["sparks.breadboard"]);
     // pre-cache all needed images

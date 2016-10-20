@@ -11,7 +11,7 @@ var workbenchController = require('./controllers/workbench-controller'),
     path                = scripts[scripts.length-1].src.split('?')[0],      // remove any ?query
     packageRoot         = path.split('/').slice(0, -2).join('/')+'/',
 
-    soundFiles          = {click: packageRoot + "/common/sounds/click.ogg"};
+    soundFiles          = {click: packageRoot + "common/sounds/click.ogg"};
 
 loadSounds = function () {
   var soundName, audio;
