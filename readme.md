@@ -59,7 +59,7 @@ gh-pages and production releases are based on the contents of the /dist folder.
 
 To deploy to gh-pages, simply run `npm run deploy`.
 
-To deploy to production, run `npm run release`.
+To deploy to production, run `npm run production`.
 
 Check that the production commit looks right, then tag it:
 
