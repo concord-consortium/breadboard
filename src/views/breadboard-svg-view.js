@@ -218,6 +218,21 @@ window["breadboardSVGView"] = {
     primitive.prototype.initComponentDraggable(this);
 
     this.tooltipPosition = null;
+    this.lastClick = 0;
+  };
+
+  CircuitBoard.prototype.bindClickFunction = function(view, obj, func) {
+    view.bind("contextmenu click", function(evt) {
+      var now = (new Date()).getTime(),
+          // fix for double-click events breaking in Chrome 54.0.2840.71 (https://www.pivotaltracker.com/story/show/133182959)
+          triggerEvent = (evt.type == "contextmenu") || (now - this.lastClick <= 250);
+      this.lastClick = now;
+      if (triggerEvent) {
+        obj[func]($(this).attr("uid"));
+      }
+      evt.preventDefault();
+      return false;
+    });
   };
 
   CircuitBoard.prototype.sendEventToModel = function(evName, params) {
@@ -233,14 +248,7 @@ window["breadboardSVGView"] = {
     this.component[elem["UID"]]["image"] = new SVGImage(this, elem["UID"]);
 
     if (this.rightClickFunction) {
-      var rightClickObj = this.rightClickObj,
-          func = this.rightClickFunction;
-
-      this.component[elem["UID"]].view.bind("contextmenu dblclick", function(evt) {
-        rightClickObj[func]($(this).attr("uid"));
-        evt.preventDefault();
-        return false;
-      });
+      this.bindClickFunction(this.component[elem["UID"]].view, this.rightClickObj, this.rightClickFunction);
     }
   };
 
@@ -265,11 +273,7 @@ window["breadboardSVGView"] = {
     this.rightClickObj = obj;
     this.rightClickFunction = func;
     for (uid in this.component) {
-      this.component[uid].view.bind("contextmenu dblclick", function(evt) {
-        obj[func]($(this).attr("uid"));
-        evt.preventDefault();
-        return false;
-      });
+      this.bindClickFunction(this.component[uid].view, obj, func);
     }
   };
 
