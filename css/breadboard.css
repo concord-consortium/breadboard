@@ -527,7 +527,7 @@ table.finalReport td button{font-size:.9em}
 .add_inductor{top:49px;left:29px;width:80px;height:25px;background-image:url(../common/images/inductor.png);background-size:100%}
 .add_wire{top:64px;left:29px;width:80px;height:15px;background-image:url(../common/images/wire.png);background-size:100%}
 .speech-bubble{position:relative;padding:15px;color:#000;background:#fbfcd1;-moz-border-radius:10px;-webkit-border-radius:10px;border-radius:10px}
-.speech-bubble:after{content:"";display:block;position:absolute;bottom:-30px;left:50px;width:0;height:0;border-width:15px;border-style:solid;border-color:#fbfcd1 transparent transparent}
+.speech-bubble:after{content:"";display:block;position:absolute;bottom:-30px;left:65px;width:0;height:0;border-width:15px;border-style:solid;border-color:#fbfcd1 transparent transparent}
 .editor div,.editor h3{text-align:center}
 .editor h3{margin-top:-10px;padding:7px}
 .editor .ui-slider{margin-bottom:6px}

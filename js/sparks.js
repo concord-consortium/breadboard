@@ -16980,7 +16980,6 @@ window["breadboardSVGView"] = {
     // init all components draggable
     primitive.prototype.initComponentDraggable(this);
 
-    this.tooltipPosition = null;
     this.lastClick = 0;
   };
 
@@ -17291,54 +17290,48 @@ window["breadboardSVGView"] = {
   };
 
   CircuitBoard.prototype.setTooltipPosition = function(position) {
-    this.tooltipPosition = position;
+    // noop - leaving this in for now as older Teaching Teamwork code calls this
   };
 
   CircuitBoard.prototype.showTooltip = function(uid, $tipPane) {
-    var $comp      = this.component[uid].view,
-        pos        = $comp.position(),
-        rect       = $comp[0].getBoundingClientRect(),
-        compWidth  = rect.width,
-        compHeight = rect.height,
-        tipWidth   = $tipPane.width(),
-        divId      = "tooltip_" + uid,
-        yOffset,
-        left,
-        tipHeight,
-        $tooltip;
+    var $comp        = this.component[uid].view,
+        holderOffset = this.holder.offset(),
+        compOffset   = $comp.offset(),
+        compCTM      = $comp[0].getCTM(),
+        compWidth    = $comp[0].getBoundingClientRect().width * compCTM.a,  // need to scale the width to the containing SVG
+        top          = compOffset.top - holderOffset.top,
+        left         = compOffset.left - holderOffset.left,
+        divId        = "tooltip_" + uid,
+        $tooltip,
+        tipWidth,
+        tipHeight;
 
     // don't allow multiple tootips to show for the same component (double click events were adding 2x tooltips)
     if ($("#" + divId).length > 0) {
       return;
     }
 
-    if (compWidth > 300) {    // weird bug
-      compWidth = 120;
-    }
-
-    // wrap pane in bubble pane and then empty pane (for mousout)
+    // wrap pane in bubble pane and then empty pane (for mouseout)
     $tooltip = $("<div id='" + divId + "'>").append(
       $("<div class='speech-bubble'>").append($tipPane)
     );
-
-    // FIXME: We need a better cross-browser solution for this
-    if(typeof InstallTrigger !== 'undefined'){    // Firefox
-      yOffset = 180;
-      left = pos.left - (2.5*tipWidth)+ (compWidth*0.4);
-    } else {
-      yOffset = 50;
-      left = pos.left - (tipWidth/2)+ (compWidth*0.4);
-    }
-
     this.holder.append($tooltip);
-
+    tipWidth = $tipPane.width();
     tipHeight = $tipPane.height();
+
+    left = left + ((tipWidth - compWidth) / 2);
+    top  = top - tipHeight - 30; // 30 is height of triangle plus some margin
+
+    // HACK: Firefox does not report the .offset() calls the same as Chrome and IE so manually adjust them
+    if (typeof InstallTrigger !== 'undefined') {
+      left += (tipWidth / 1.5);
+      top += tipHeight * 1.5;
+    }
 
     $tooltip.css({
       position: "absolute",
-      left:     this.tooltipPosition ? this.tooltipPosition.left : left,
-      top:      this.tooltipPosition ? this.tooltipPosition.top : pos.top - tipHeight - yOffset,
-      height:   tipHeight + compHeight + yOffset,
+      left:     left,
+      top:      top,
       zIndex:   1000
     });
 
