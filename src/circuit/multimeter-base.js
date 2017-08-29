@@ -18,7 +18,6 @@ MultimeterBase.prototype = {
 
         this.absoluteValue = 0;   // current absolute meter value
         this.value = 0;           // current real meter value
-        
         this.displayText = '       ';
 
         this.redProbeConnection = null;
@@ -28,6 +27,7 @@ MultimeterBase.prototype = {
         this.dialPosition = 'acv_750';
         this.powerOn = false;
         this.disabledPositions = [];
+        this.hideDisplayText = false;
     },
 
     // @probe Either "red" or "black"
@@ -65,6 +65,10 @@ MultimeterBase.prototype = {
               return s.substr(0, 1) === '-' ? 'h-' + text.substring(2) : 'h' + text.substring(1)
             },
             vm, imc, im;
+
+        if (workbenchController.breadboardView && this.hideDisplayText) {
+            workbenchController.breadboardView.hideDMMText();
+        }
 
         if (!this.powerOn) {
             this.displayText = '       ';

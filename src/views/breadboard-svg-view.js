@@ -288,6 +288,14 @@ window["breadboardSVGView"] = {
     this.setDMMText('  0.0 0');
   };
 
+  CircuitBoard.prototype.hideDMMText = function() {
+    if (this.multimeter) {
+      for (var i = this.multimeter.mmbox.screen.length; i--; ) {
+        this.multimeter.mmbox.screen[i].setAttribute('visibility', 'hidden');
+      }
+    }
+  };
+
   CircuitBoard.prototype.setDMMText = function(text) {
     if (this.multimeter) {
       for (var i = text.length; i--; ) {
@@ -1171,12 +1179,20 @@ window["breadboardSVGView"] = {
   };
 
   component.resistor = function(params, holes, board) {
+
     component.prototype.init.call(this, params, holes, board);
     this.connector = new primitive.connector(this.pts, this.angle);
     this.element = new primitive.resistor(this.pts, this.angle, params.label, params.color);
     this.view.append(this.leads[0].view, this.leads[1].view, this.connector.view, this.element.view);
     // add event handler for draggable
     component.prototype.drag.call(this, params.draggable);
+
+    if (board.workbenchController.workbench.interface.hideResistorBands) {
+      bands = this.view.find('[type^=band]');
+      bands.each(function(i) {
+        $(this).attr('visibility', 'hidden');
+      });
+    }
 
     this.changeColors = function(colors) {
       bands = this.view.find('[type^=band]');
@@ -1191,7 +1207,7 @@ window["breadboardSVGView"] = {
       tooltips.each(function(i) {
         $(this).attr('xlink:href', '#:$:resistor-hint-' + colors[i]);
       });
-    }
+    };
   };
 
   component.capacitor = function(params, holes, board) {

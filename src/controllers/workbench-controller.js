@@ -35,11 +35,14 @@ WorkbenchController.prototype = {
     workbench.showComponentDrawer = !(!(props.showComponentDrawer) || props.showComponentDrawer === "false");
     workbench.showComponentEditor = !(!(props.showComponentEditor) || props.showComponentEditor === "false");
 
+    workbench.interface = props.interface || {hideResistorBands: false, hideDMMResult: false};
+
     if (workbench.show_multimeter) {
       workbench.meter.dmm = new Multimeter(breadboardController);
       if(workbench.disable_multimeter_position){
         workbench.meter.dmm.set_disable_multimeter_position(workbench.disable_multimeter_position);
       }
+      workbench.meter.dmm.hideDisplayText = !!workbench.interface.hideDMMResult;
     } else {
       workbench.meter.dmm = null;
     }
