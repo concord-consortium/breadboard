@@ -10331,7 +10331,6 @@ MultimeterBase.prototype = {
 
         this.absoluteValue = 0;   // current absolute meter value
         this.value = 0;           // current real meter value
-        
         this.displayText = '       ';
 
         this.redProbeConnection = null;
@@ -10341,6 +10340,7 @@ MultimeterBase.prototype = {
         this.dialPosition = 'acv_750';
         this.powerOn = false;
         this.disabledPositions = [];
+        this.hideDisplayText = false;
     },
 
     // @probe Either "red" or "black"
@@ -10378,6 +10378,10 @@ MultimeterBase.prototype = {
               return s.substr(0, 1) === '-' ? 'h-' + text.substring(2) : 'h' + text.substring(1)
             },
             vm, imc, im;
+
+        if (workbenchController.breadboardView && this.hideDisplayText) {
+            workbenchController.breadboardView.hideDMMText();
+        }
 
         if (!this.powerOn) {
             this.displayText = '       ';
@@ -12334,11 +12338,14 @@ WorkbenchController.prototype = {
     workbench.showComponentDrawer = !(!(props.showComponentDrawer) || props.showComponentDrawer === "false");
     workbench.showComponentEditor = !(!(props.showComponentEditor) || props.showComponentEditor === "false");
 
+    workbench.interface = props.interface || {hideResistorBands: false, hideDMMResult: false};
+
     if (workbench.show_multimeter) {
       workbench.meter.dmm = new Multimeter(breadboardController);
       if(workbench.disable_multimeter_position){
         workbench.meter.dmm.set_disable_multimeter_position(workbench.disable_multimeter_position);
       }
+      workbench.meter.dmm.hideDisplayText = !!workbench.interface.hideDMMResult;
     } else {
       workbench.meter.dmm = null;
     }
@@ -17051,6 +17058,14 @@ window["breadboardSVGView"] = {
     this.setDMMText('  0.0 0');
   };
 
+  CircuitBoard.prototype.hideDMMText = function() {
+    if (this.multimeter) {
+      for (var i = this.multimeter.mmbox.screen.length; i--; ) {
+        this.multimeter.mmbox.screen[i].setAttribute('visibility', 'hidden');
+      }
+    }
+  };
+
   CircuitBoard.prototype.setDMMText = function(text) {
     if (this.multimeter) {
       for (var i = text.length; i--; ) {
@@ -17934,12 +17949,20 @@ window["breadboardSVGView"] = {
   };
 
   component.resistor = function(params, holes, board) {
+
     component.prototype.init.call(this, params, holes, board);
     this.connector = new primitive.connector(this.pts, this.angle);
     this.element = new primitive.resistor(this.pts, this.angle, params.label, params.color);
     this.view.append(this.leads[0].view, this.leads[1].view, this.connector.view, this.element.view);
     // add event handler for draggable
     component.prototype.drag.call(this, params.draggable);
+
+    if (board.workbenchController.workbench.interface.hideResistorBands) {
+      bands = this.view.find('[type^=band]');
+      bands.each(function(i) {
+        $(this).attr('visibility', 'hidden');
+      });
+    }
 
     this.changeColors = function(colors) {
       bands = this.view.find('[type^=band]');
@@ -17954,7 +17977,7 @@ window["breadboardSVGView"] = {
       tooltips.each(function(i) {
         $(this).attr('xlink:href', '#:$:resistor-hint-' + colors[i]);
       });
-    }
+    };
   };
 
   component.capacitor = function(params, holes, board) {
