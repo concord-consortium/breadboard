@@ -19,7 +19,7 @@
     "gulp-concat": "^2.4.3",
     "gulp-minify-css": "^0.3.11",
     "combine-css": "0.0.2",
-    "require-dir": "^0.1.0",
+    "require-dir": "^0.3.2",
     "browserify": "^8.1.1",
     "vinyl-transform": "^1.0.0",
     "gulp-rename": "^1.2.0"
