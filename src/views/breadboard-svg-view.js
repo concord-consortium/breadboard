@@ -7,7 +7,7 @@ require('../libs/canvg');
 
 var breadboardComm      = require('./svg_view_comm');
 
-window["breadboardSVGView"] = {
+window.breadboardSVGView = {
   "options" : {
     "rootpath" : "",
     "magnifier" : {
@@ -50,6 +50,7 @@ window["breadboardSVGView"] = {
  **/
 
 (function($, board) {
+  $window = $(window);
 
   board.util.require = function(files, callback) {
     return new LoadingStack(files, callback).load();
@@ -132,7 +133,7 @@ window["breadboardSVGView"] = {
     });
   };
 
-})(jQuery, window["breadboardSVGView"]);
+})(jQuery, window.breadboardSVGView);
 
 /**
  * breadboardView # board
@@ -144,14 +145,15 @@ window["breadboardSVGView"] = {
   // global link to common SVG-jQuery object
   var paper = null;
 
-  // global event model
+  // altough this doesn't work on laptop touch screens it does work on tablets
   var touch = !!('ontouchstart' in document.documentElement);
 
-  var _mousedown = (touch ) ? 'touchstart' : 'mousedown';
-  var _mousemove = (touch ) ? 'touchmove' : 'mousemove';
-  var _mouseup = (touch ) ? 'touchend' : 'mouseup';
-  var _mouseover = (touch ) ? 'xxx' : 'mouseover';
-  var _mouseout = (touch ) ? 'xxx' : 'mouseout';
+  // unify events for jQuery .on() handlers
+  var _mousedown = 'touchstart mousedown';
+  var _mousemove = 'touchmove mousemove';
+  var _mouseup = 'touchend mouseup';
+  var _mouseover = 'mouseover';
+  var _mouseout = 'mouseout';
 
   var options = board.options;
 
@@ -166,7 +168,7 @@ window["breadboardSVGView"] = {
   };
   // board constructor
   var CircuitBoard = function(id) {
-    this.workbenchController = require('../controllers/workbench-controller')
+    this.workbenchController = require('../controllers/workbench-controller');
 
     var self = this;
     // link to main holder
@@ -192,7 +194,8 @@ window["breadboardSVGView"] = {
       p.y = bbox.y + bbox.height / 2;
     }).end().each(function() {
       matrix = this.getCTM();
-      elem = $(this), name = elem.attr("hole");
+      elem = $(this);
+      name = elem.attr("hole");
       elem = new CircuitBoardHole(elem);
       elem.center = p.matrixTransform(matrix);
       if (!self.holes.row[elem.y]) {
@@ -239,15 +242,15 @@ window["breadboardSVGView"] = {
   };
 
   CircuitBoard.prototype.addComponent = function(elem) {
-    this.component[elem["UID"]] = new component[ elem["type"] ](elem, this.holes, this);
-    this.component[elem["UID"]]["type"] = elem["type"];
-    this.component[elem["UID"]]["id"] = elem["UID"];
-    this.itemslist.push(this.component[elem["UID"]]);
-    this.workspace.append(this.component[elem["UID"]].view);
-    this.component[elem["UID"]]["image"] = new SVGImage(this, elem["UID"]);
+    this.component[elem.UID] = new component[elem.type](elem, this.holes, this);
+    this.component[elem.UID].type = elem.type;
+    this.component[elem.UID].id = elem.UID;
+    this.itemslist.push(this.component[elem.UID]);
+    this.workspace.append(this.component[elem.UID].view);
+    this.component[elem.UID].image = new SVGImage(this, elem.UID);
 
     if (this.rightClickFunction) {
-      this.bindClickFunction(this.component[elem["UID"]].view, this.rightClickObj, this.rightClickFunction);
+      this.bindClickFunction(this.component[elem.UID].view, this.rightClickObj, this.rightClickFunction);
     }
   };
 
@@ -271,7 +274,7 @@ window["breadboardSVGView"] = {
   CircuitBoard.prototype.setRightClickFunction = function(obj, func) {
     this.rightClickObj = obj;
     this.rightClickFunction = func;
-    for (uid in this.component) {
+    for (var uid in this.component) {
       this.bindClickFunction(this.component[uid].view, obj, func);
     }
   };
@@ -279,11 +282,11 @@ window["breadboardSVGView"] = {
   CircuitBoard.prototype.addDMM = function(params) {
     if (!this.multimeter) {
       this.multimeter = new equipment.multimeter(this, params);
-      this.probes.push(this.multimeter.probe['black']);
-      this.probes.push(this.multimeter.probe['red']);
+      this.probes.push(this.multimeter.probe.black);
+      this.probes.push(this.multimeter.probe.red);
     }
-    this.multimeter.probe['black'].view.show();
-    this.multimeter.probe['red'].view.show();
+    this.multimeter.probe.black.view.show();
+    this.multimeter.probe.red.view.show();
     this.multimeter.mmbox.view.show();
     this.setDMMText('  0.0 0');
   };
@@ -307,8 +310,8 @@ window["breadboardSVGView"] = {
 
   CircuitBoard.prototype.removeDMM = function() {
     if (this.multimeter) {
-      this.multimeter.probe['black'].view.hide();
-      this.multimeter.probe['red'].view.hide();
+      this.multimeter.probe.black.view.hide();
+      this.multimeter.probe.red.view.hide();
       this.multimeter.mmbox.view.hide();
     }
   };
@@ -322,8 +325,8 @@ window["breadboardSVGView"] = {
       this.itemslist.push(this.battery);
 
       this.component[type] = this.battery;
-      this.battery["type"] = type;
-      this.battery["image"] = new SVGImage(this, type);
+      this.battery.type = type;
+      this.battery.image = new SVGImage(this, type);
     }
 
     this.battery.btbox.view.show();
@@ -346,17 +349,17 @@ window["breadboardSVGView"] = {
   CircuitBoard.prototype.addOScope = function(params) {
     if (!this.oscope) {
       this.oscope = new equipment.oscope(this, params);
-      this.probes.push(this.oscope.probe['yellow']);
-      this.probes.push(this.oscope.probe['pink']);
+      this.probes.push(this.oscope.probe.yellow);
+      this.probes.push(this.oscope.probe.pink);
     }
-    this.oscope.probe['yellow'].view.show();
-    this.oscope.probe['pink'].view.show();
+    this.oscope.probe.yellow.view.show();
+    this.oscope.probe.pink.view.show();
   };
 
   CircuitBoard.prototype.removeOScope = function() {
     if (this.oscope) {
-      this.oscope.probe['yellow'].view.hide();
-      this.oscope.probe['pink'].view.hide();
+      this.oscope.probe.yellow.view.hide();
+      this.oscope.probe.pink.view.hide();
     }
   };
 
@@ -379,7 +382,7 @@ window["breadboardSVGView"] = {
   CircuitBoard.prototype.initMagnifier = function() {
     var brd = this, x, y, t, hole, show_magnifier = false, time;
 
-    var holder = brd.holder[0], active = false, svghead;
+    var holder = brd.holder, active = false, svghead;
     var dx, dy, z, r, pi2, wm, hm, wb, hb, sh, pos, old;
 
     time = board.options.magnifier.time;
@@ -389,8 +392,8 @@ window["breadboardSVGView"] = {
     dy = board.options.magnifier.offset.y;
     z = board.options.magnifier.zoom;
     r = board.options.magnifier.size;
-    hm = brd.holder.h * z;
-    wm = brd.holder.w * z;
+    hm = holder.h * z;
+    wm = holder.w * z;
     sh = 60 * z;
     hb = hm - sh;
     wb = wm;
@@ -404,9 +407,9 @@ window["breadboardSVGView"] = {
     z--; // for event;
 
     var magnifier = $('<canvas class="magnifier">').attr({
-      'height': brd.holder.h + 'px',
-      'width': brd.holder.w + 'px'
-    }).appendTo(brd.holder);
+      'height': holder.h + 'px',
+      'width': holder.w + 'px'
+    }).appendTo(holder);
 
     var ctx = magnifier[0].getContext('2d'), buff, lead, elem;
 
@@ -415,7 +418,8 @@ window["breadboardSVGView"] = {
     buff.canvas.height = hm;
     buff.canvas.width = wm;
     buff.fillStyle = '#999181';
-    buff.rect(0, 0, wb, sh), buff.fill();
+    buff.rect(0, 0, wb, sh);
+    buff.fill();
     buff.drawImage(SVGStorage.defs[':bg-green-board'], 0, sh, wb, hb);
     buff.drawSvg( SVGStorage.info.svghole, 0, 0, wm, hm );
     buff.fill();
@@ -423,12 +427,32 @@ window["breadboardSVGView"] = {
 
     // set default style for canvas context2d object
 
-    holder.addEventListener( _mousedown, function(evt) {
+    var magnify = function (evt) {
+      pos = getCoords(evt.originalEvent, holder);
+      if (active && ((pos.x != old.x) || (pos.y != old.y))) {
+        magnifier.show();
+        magnifier.draw();
+        old = pos;
+      }
+    };
+    var drop = function (evt) {
+      if (active) {
+        show_magnifier = false;
+        magnifier.hide();
+        active = false;
+        lead = null;
+        elem = null;
+      }
+      $window.off(_mousemove, magnify);
+      $window.off(_mouseup, drop);
+    };
+
+    holder.on(_mousedown, function(evt) {
       lead = $(evt.target).data('primitive-lead') || null;
       if (lead) {
         elem = brd.component[lead.name];
         comp.update(elem);
-        old = pos = getCoords(evt, brd.holder);
+        old = pos = getCoords(evt.originalEvent, holder);
         magnifier.draw();
         active = true;
         show_magnifier = true;
@@ -437,34 +461,17 @@ window["breadboardSVGView"] = {
             magnifier.show();
           }
         }, time);
+        $window.on(_mousemove, magnify);
+        $window.on(_mouseup, drop);
       }
       evt.preventDefault();
-    }, false);
-
-    holder.addEventListener( _mousemove, function(evt) {
-      pos = getCoords(evt, brd.holder);
-      if (active && ((pos.x != old.x) || (pos.y != old.y))) {
-        magnifier.show();
-        magnifier.draw();
-        old = pos;
-      }
-    }, false);
-
-    holder.addEventListener( _mouseup, function(evt) {
-      if (active) {
-        show_magnifier = false;
-        magnifier.hide();
-        active = false;
-        lead = null;
-        elem = null;
-      }
-    }, false);
+    });
 
     ctx.font = "bold 16px Arial";
 
     magnifier.draw = function() {
       ctx.save();
-      ctx.clearRect(0, 0, brd.holder.w, brd.holder.h);
+      ctx.clearRect(0, 0, holder.w, holder.h);
 
       ctx.beginPath();
       ctx.arc(pos.x-dx, pos.y-dy, r, 0, pi2, false);
@@ -1081,14 +1088,14 @@ window["breadboardSVGView"] = {
     this.mmbox = new primitive.mmbox(board, params);
     this.probe = {
       "black" : new primitive.probe(board, {
-        'connection' : (params['black']) ? params.black.connection : false,
-        'draggable' : (params['black']) ? params.black.draggable : false,
+        'connection' : (params.black) ? params.black.connection : false,
+        'draggable' : (params.black) ? params.black.draggable : false,
         'color' : 'black',
         'name' : 'dmm'
       }),
       "red" : new primitive.probe(board, {
-        'connection' : (params['red']) ? params.red.connection : false,
-        'draggable' : (params['red']) ? params.red.draggable : false,
+        'connection' : (params.red) ? params.red.connection : false,
+        'draggable' : (params.red) ? params.red.draggable : false,
         'color' : 'red',
         'name' : 'dmm'
       })
@@ -1098,14 +1105,14 @@ window["breadboardSVGView"] = {
   equipment.oscope = function(board, params) {
     this.probe = {
       "yellow" : new primitive.probe(board, {
-        'connection' : (params['yellow']) ? params.yellow.connection : false,
-        'draggable' : (params['yellow']) ? params.yellow.draggable : false,
+        'connection' : (params.yellow) ? params.yellow.connection : false,
+        'draggable' : (params.yellow) ? params.yellow.draggable : false,
         'color' : 'yellow',
         'name' : 'oscope'
       }),
       "pink" : new primitive.probe(board, {
-        'connection' : (params['pink']) ? params.pink.connection : false,
-        'draggable' : (params['pink']) ? params.pink.draggable : false,
+        'connection' : (params.pink) ? params.pink.connection : false,
+        'draggable' : (params.pink) ? params.pink.draggable : false,
         'color' : 'pink',
         'name' : 'oscope'
       })
@@ -1148,7 +1155,7 @@ window["breadboardSVGView"] = {
   /* === #components begin === */
 
   component.prototype.init = function(params, holes, board) {
-    var loc = params["connections"].split(',');
+    var loc = params.connections.split(',');
     this.pts = [holes[loc[0]], holes[loc[1]]];
     this.angle = getAngleBetwPoints(this.pts);
     this.leads = addLeads(this.pts, getDegsFromRad(this.angle), loc, params.UID, params.draggable, board);
@@ -1228,10 +1235,11 @@ window["breadboardSVGView"] = {
       if (type == 'wire') {
         this.view.find('[drag=area]').attr('display', 'inline');
       }
-      this.element.view[0].addEventListener(_mousedown, function(evt) {
+      this.element.view.on(_mousedown, function(evt) {
         self.element.view.data('component', self);
         evt._target = this;
-      }, false);
+        evt.originalEvent._target = this;
+      });
     }
   };
 
@@ -1255,106 +1263,104 @@ window["breadboardSVGView"] = {
       return;
     }
 
-    board.holder[0].addEventListener(_mousedown, function(evt) {
-      if (!evt.touches || evt.touches.length == 1) {
-        component = $(evt._target).data('component') || null;
-        if (component) {
-          s_pos = getCoords(evt, board.holder);
-
-          l1 = component.leads[0];
-          l2 = component.leads[1];
-
-          p1.x = l1.x;
-          p1.y = l1.y;
-          p2.x = l2.x;
-          p2.y = l2.y;
-
-          ho1 = component.hole[0].highlight();
-          ho2 = component.hole[1].highlight();
-          hi1 = hn1 = ho1;
-          hi2 = hn2 = ho2;
-
-          board.toFront(component);
-          evt.preventDefault();
-        }
-      }
-    }, false);
-
-    board.holder[0].addEventListener(_mousemove, function(evt) {
-      if (!evt.touches || evt.touches.length == 1) {
-        if (component) {
-          c_pos = getCoords(evt, board.holder);
-          dx = c_pos.x - s_pos.x;
-          dy = c_pos.y - s_pos.y;
-          x = component.x + dx * coeff;
-          y = component.y + dy * coeff;
-          // update view of component
-          component.view.attr('transform', 'translate(' + x + ',' + y + ')');
-          // highlight nearest holes
-          p1.x = l1.x + dx * coeff;
-          p1.y = l1.y + dy * coeff;
-          p2.x = l2.x + dx * coeff;
-          p2.y = l2.y + dy * coeff;
-          hn1 = board.holes.find(p1);
-          hn2 = board.holes.find(p2);
-          if (hi1 || hi2) {
-            hi1.disconnected().highlight();
-            hi2.disconnected().highlight();
-            hi1 = hi2 = null;
-            // sent event to model
-            if (l1.state != l1.view_d) {
-              l1.board.sendEventToModel("connectionBroken", [l1.name, l1.hole]);
-            }
-            if (l2.state != l2.view_d) {
-              l2.board.sendEventToModel("connectionBroken", [l2.name, l2.hole]);
-            }
+    var drag = function (evt) {
+      if (component) {
+        c_pos = getCoords(evt.originalEvent, board.holder);
+        dx = c_pos.x - s_pos.x;
+        dy = c_pos.y - s_pos.y;
+        x = component.x + dx * coeff;
+        y = component.y + dy * coeff;
+        // update view of component
+        component.view.attr('transform', 'translate(' + x + ',' + y + ')');
+        // highlight nearest holes
+        p1.x = l1.x + dx * coeff;
+        p1.y = l1.y + dy * coeff;
+        p2.x = l2.x + dx * coeff;
+        p2.y = l2.y + dy * coeff;
+        hn1 = board.holes.find(p1);
+        hn2 = board.holes.find(p2);
+        if (hi1 || hi2) {
+          hi1.disconnected().highlight();
+          hi2.disconnected().highlight();
+          hi1 = hi2 = null;
+          // sent event to model
+          if (l1.state != l1.view_d) {
+            l1.board.sendEventToModel("connectionBroken", [l1.name, l1.hole]);
           }
-          if (hn1 != ho1) {
-            ho1.unhighlight();
-            ho1 = hn1.highlight();
-          }
-          if (hn2 != ho2) {
-            ho2.unhighlight();
-            ho2 = hn2.highlight();
+          if (l2.state != l2.view_d) {
+            l2.board.sendEventToModel("connectionBroken", [l2.name, l2.hole]);
           }
         }
-      }
-    }, false);
-
-    board.holder[0].addEventListener(_mouseup, function(evt) {
-      if (!evt.touches || evt.touches.length === 0) {
-        if (component) {
-          // snap to nearest holes
-          component.hole[0] = hn1;
-          component.hole[1] = hn2;
-          l1.hole = hn1.name;
-          l2.hole = hn2.name;
-          component.x = 0;
-          component.y = 0;
-          // update all primitives
-          p1.x = l1.x = hn1.x;
-          p1.y = l1.y = hn1.y;
-          p2.x = l2.x = hn2.x;
-          p2.y = l2.y = hn2.y;
-          // update view
-          hn1.unhighlight();
-          hn2.unhighlight();
-          if (!hi1) {
-            hn1.connected();
-            l1.connect();
-          }
-          if (!hi2) {
-            hn2.connected();
-            l2.connect();
-          }
-          updateComponentView();
-          // reset temp variables
-          component = null;
-          hn1 = null;
-          hn2 = null;
+        if (hn1 != ho1) {
+          ho1.unhighlight();
+          ho1 = hn1.highlight();
+        }
+        if (hn2 != ho2) {
+          ho2.unhighlight();
+          ho2 = hn2.highlight();
         }
       }
-    }, false);
+    };
+    var drop = function (evt) {
+      if (component) {
+        // snap to nearest holes
+        component.hole[0] = hn1;
+        component.hole[1] = hn2;
+        l1.hole = hn1.name;
+        l2.hole = hn2.name;
+        component.x = 0;
+        component.y = 0;
+        // update all primitives
+        p1.x = l1.x = hn1.x;
+        p1.y = l1.y = hn1.y;
+        p2.x = l2.x = hn2.x;
+        p2.y = l2.y = hn2.y;
+        // update view
+        hn1.unhighlight();
+        hn2.unhighlight();
+        if (!hi1) {
+          hn1.connected();
+          l1.connect();
+        }
+        if (!hi2) {
+          hn2.connected();
+          l2.connect();
+        }
+        updateComponentView();
+        // reset temp variables
+        component = null;
+        hn1 = null;
+        hn2 = null;
+      }
+      $window.off(_mousemove, drag);
+      $window.off(_mouseup, drop);
+    };
+
+    board.holder.on(_mousedown, function(evt) {
+      component = $(evt._target).data('component') || null;
+      if (component) {
+        s_pos = getCoords(evt.originalEvent, board.holder);
+
+        l1 = component.leads[0];
+        l2 = component.leads[1];
+
+        p1.x = l1.x;
+        p1.y = l1.y;
+        p2.x = l2.x;
+        p2.y = l2.y;
+
+        ho1 = component.hole[0].highlight();
+        ho2 = component.hole[1].highlight();
+        hi1 = hn1 = ho1;
+        hi2 = hn2 = ho2;
+
+        board.toFront(component);
+        evt.preventDefault();
+
+        $window.on(_mousemove, drag);
+        $window.on(_mouseup, drop);
+      }
+    });
 
     var updateComponentView = function() {
       c = {
@@ -1390,82 +1396,80 @@ window["breadboardSVGView"] = {
       return;
     }
 
-    board.holder[0].addEventListener(_mousedown, function(evt) {
-      if (!evt.touches || evt.touches.length == 1) {
-        lead_this = $(evt.target).data('primitive-lead') || null;
-        if (lead_this) {
-          component = board.component[lead_this.name];
-          lead_pair = findLeadPair(component, lead_this);
-          hi = board.holes.find(lead_this).highlight();
-          hn = ho = hi;
-          s_pos = getCoords(evt, board.holder);
-          p2.x = lead_pair.x;
-          p2.y = lead_pair.y;
-          pts = (lead_this.orientation == 1) ? [p1, p2] : [p2, p1];
-          evt.preventDefault();
+    var drag = function (evt) {
+      if (lead_this) {
+        // calc move params
+        c_pos = getCoords(evt.originalEvent, board.holder);
+        dx = c_pos.x - s_pos.x;
+        dy = c_pos.y - s_pos.y;
+        p1.x = lead_this.x + dx * coeff;
+        p1.y = lead_this.y + dy * coeff;
+        // update view of component
+        updateComponentView();
+        // update flag for hover events
+        lead_this.isDragged = true;
+        // find the nearest hole
+        hn = board.holes.find(p1);
+        board.hole_target = hn;
+        if (hi) {
+          hi.disconnected().highlight();
+          hi = null;
+          // sent event to model
+          if (lead_this.state != lead_this.view_d) {
+            lead_this.board.sendEventToModel("connectionBroken", [lead_this.name, lead_this.hole]);
+          }
+        }
+        if (hn != ho) {
+          ho.unhighlight();
+          ho = hn.highlight();
         }
       }
-    }, false);
+    };
+    var drop = function (evt) {
+      if (lead_this) {
+        lead_this.isDragged = false;
+        lead_this.x = p1.x = hn.x;
+        lead_this.y = p1.y = hn.y;
+        lead_this.hole = hn.name;
+        component.hole[0] = board.holes[lead_this.hole];
+        component.hole[1] = board.holes[lead_pair.hole];
+        updateComponentView();
+        hn.unhighlight();
+        if (!hi) {
+          lead_this.connect();
+          hn.connected();
+        }
+        // reset temp links
+        hn = null;
+        ho = null;
+        lead_this = null;
+        lead_pair = null;
+      }
+      if ($(evt.originalEvent.target).data('component-lead')) {
+        var name = $(evt.originalEvent.target).data('component-lead');
+        board.component[name].image.update();
+      }
+      $window.off(_mousemove, drag);
+      $window.off(_mouseup, drop);
+    };
 
-    board.holder[0].addEventListener(_mousemove, function(evt) {
-      if (!evt.touches || evt.touches.length == 1) {
-        if (lead_this) {
-          // calc move params
-          c_pos = getCoords(evt, board.holder);
-          dx = c_pos.x - s_pos.x;
-          dy = c_pos.y - s_pos.y;
-          p1.x = lead_this.x + dx * coeff;
-          p1.y = lead_this.y + dy * coeff;
-          // update view of component
-          updateComponentView();
-          // update flag for hover events
-          lead_this.isDragged = true;
-          // find the nearest hole
-          hn = board.holes.find(p1);
-          board.hole_target = hn;
-          if (hi) {
-            hi.disconnected().highlight();
-            hi = null;
-            // sent event to model
-            if (lead_this.state != lead_this.view_d) {
-              lead_this.board.sendEventToModel("connectionBroken", [lead_this.name, lead_this.hole]);
-            }
-          }
-          if (hn != ho) {
-            ho.unhighlight();
-            ho = hn.highlight();
-          }
-        }
+    board.holder.on(_mousedown, function(evt) {
+      lead_this = $(evt.target).data('primitive-lead') || null;
+      if (lead_this) {
+        lead_this.isDragged = false;
+        component = board.component[lead_this.name];
+        lead_pair = findLeadPair(component, lead_this);
+        hi = board.holes.find(lead_this).highlight();
+        hn = ho = hi;
+        s_pos = getCoords(evt, board.holder);
+        p2.x = lead_pair.x;
+        p2.y = lead_pair.y;
+        pts = (lead_this.orientation == 1) ? [p1, p2] : [p2, p1];
+        evt.preventDefault();
+        $window.on(_mousemove, drag);
+        $window.on(_mouseup, drop);
       }
-    }, false);
-
-    board.holder[0].addEventListener(_mouseup, function(evt) {
-      if (!evt.touches || evt.touches.length === 0) {
-        if (lead_this) {
-          lead_this.isDragged = false;
-          lead_this.x = p1.x = hn.x;
-          lead_this.y = p1.y = hn.y;
-          lead_this.hole = hn.name;
-          component.hole[0] = board.holes[lead_this.hole];
-          component.hole[1] = board.holes[lead_pair.hole];
-          updateComponentView();
-          hn.unhighlight();
-          if (!hi) {
-            lead_this.connect();
-            hn.connected();
-          }
-          // reset temp links
-          hn = null;
-          ho = null;
-          lead_this = null;
-          lead_pair = null;
-        }
-        if ($(evt.target).data('component-lead')) {
-          var name = $(evt.target).data('component-lead');
-          board.component[name].image.update();
-        }
-      }
-    }, false);
+    });
 
     var updateComponentView = function() {
       lead_this.arrow.hide();
@@ -1516,14 +1520,12 @@ window["breadboardSVGView"] = {
     this.arrow = lead.find('.arrow').hide();
     // bind hover events
     var action = lead.find("[type=action]");
-    if (!touch) {
-      action.bind('mouseover', function() {
-        self.arrow.show();
-      });
-      action.bind('mouseout', function() {
-        self.arrow.hide();
-      });
-    }
+    action.on('mouseover', function() {
+      self.arrow.show();
+    });
+    action.on('mouseout', function() {
+      self.arrow.hide();
+    });
     if (draggable) {
       action.data('primitive-lead', this);
     }
@@ -1531,14 +1533,18 @@ window["breadboardSVGView"] = {
 
     // bind onclick events
     if (!options.fixedCircuit) {
-      action[0].addEventListener(_mouseup, function(l) {
-        var f = false;
-        return function() {
-          if (!l.isDragged) {
+      action.on(_mouseup, function(l) {
+        var f = false,
+            lastCall = 0;
+        return function(evt) {
+          var now = Date.now();
+          // since this could get both the touched and mouseup events ignore the second event if there is one
+          if (now - lastCall > 100) {
             l[ (f = !f) ? 'disconnect' : 'connect' ]();
           }
+          lastCall = now;
         };
-      }(this), false);
+      }(this));
     }
 
     this.view = lead;
@@ -1653,11 +1659,11 @@ window["breadboardSVGView"] = {
     inductor.attr('transform', 'translate(' + parseInt((pts[0].x + pts[1].x) / 2, 10) + ',' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
 
     var label = inductor.find('[type=label]');
-    if (!touch && labelText) {
-      inductor.bind('mouseover', function() {
+    if (labelText) {
+      inductor.on('mouseover', function() {
         label.show();
       });
-      inductor.bind('mouseout', function() {
+      inductor.on('mouseout', function() {
         label.hide();
       });
     } else if (labelText) {
@@ -1680,11 +1686,11 @@ window["breadboardSVGView"] = {
     }
     capacitor.attr('transform', 'translate('+parseInt((pts[0].x + pts[1].x) / 2, 10) + ',' + parseInt((pts[0].y + pts[1].y) / 2, 10) + ') rotate(' + angle + ',132.5,132.5)');
 
-    if (!touch && labelText) {
-      capacitor.bind('mouseover', function() {
+    if (labelText) {
+      capacitor.on('mouseover', function() {
         label.show();
       });
-      capacitor.bind('mouseout', function() {
+      capacitor.on('mouseout', function() {
         label.hide();
       });
     } else if (labelText) {
@@ -1755,83 +1761,78 @@ window["breadboardSVGView"] = {
     var active, lead_new, lead_old, lead_init, point;
     var s_pos, c_pos, x, y, dx, dy, coeff = 20;
 
-    board.holder.find('[info=probe]').each(function() {
-      this.addEventListener(_mousedown, function(evt) {
-        if (!evt.touches || evt.touches.length == 1) {
-          active = $(this).data('primitive-probe') || {};
-          if (active.draggable) {
-            active.z.attr('transform', active.z.zoom);
-            s_pos = getCoords(evt, board.holder);
-            calcLeadsBBox.call(board);
-            lead_init = active.lead;
-            evt.stopPropagation();
-            evt.preventDefault();
-            // hack to avoid errors if mousedown+mouseup-mousemove
-            x = active.dx;
-            y = active.dy;
-            dx = dy = 0;
-          } else {
-            active = null;
+    var drag = function (evt) {
+      if (active) {
+        c_pos = getCoords(evt.originalEvent, board.holder);
+        dx = c_pos.x - s_pos.x;
+        dy = c_pos.y - s_pos.y;
+        //coord for view translations
+        x = active.dx + dx * coeff;
+        y = active.dy + dy * coeff;
+        active.view.attr('transform', 'translate(' + x + ',' + y + ')');
+        //coord for real probe coords
+        point = {
+          'x' : (active.x + dx),
+          'y' : (active.y + dy)
+        };
+        lead_new = findLeadUnderProbe(board, point);
+        if (lead_init) {
+          board.sendEventToModel("probeRemoved", [active.name, active.color, lead_init.hole]);
+          lead_init = null;
+        }
+        if (lead_new) {
+          lead_new.highlight(1);
+          lead_old = lead_new;
+          //active.lead = lead_new;
+        } else {
+          if (lead_old) {
+            lead_old.highlight(0);
+            lead_old = null;
           }
         }
-      }, false);
+      }
+    };
+    var drop = function (evt) {
+      if (active) {
+        active.z.attr('transform', active.z.init);
+        active.x += dx;
+        active.y += dy;
+        active.dx = x;
+        active.dy = y;
+        if (lead_new) {
+          active.setState(lead_new);
+        } else {
+          board.sendEventToModel("probeDropped", [active.name, active.color, {x: active.x, y: active.y, dx: active.dx, dy: active.dy}]);
+          if (active.lead) {
+            active.lead = null;
+          }
+        }
+        active.image.update();
+        active = null;
+      }
+      $window.off(_mousemove, drag);
+      $window.off(_mouseup, drop);
+    };
+
+    board.holder.find('[info=probe]').on(_mousedown, function(evt) {
+      active = $(this).data('primitive-probe') || {};
+      if (active.draggable) {
+        active.z.attr('transform', active.z.zoom);
+        s_pos = getCoords(evt.originalEvent, board.holder);
+        calcLeadsBBox.call(board);
+        lead_init = active.lead;
+        evt.stopPropagation();
+        evt.preventDefault();
+        // hack to avoid errors if mousedown+mouseup-mousemove
+        x = active.dx;
+        y = active.dy;
+        dx = dy = 0;
+        $window.on(_mousemove, drag);
+        $window.on(_mouseup, drop);
+      } else {
+        active = null;
+      }
     });
-
-    board.holder[0].addEventListener(_mousemove, function(evt) {
-      if (!evt.touches || evt.touches.length == 1) {
-        if (active) {
-          c_pos = getCoords(evt, board.holder);
-          dx = c_pos.x - s_pos.x;
-          dy = c_pos.y - s_pos.y;
-          //coord for view translations
-          x = active.dx + dx * coeff;
-          y = active.dy + dy * coeff;
-          active.view.attr('transform', 'translate(' + x + ',' + y + ')');
-          //coord for real probe coords
-          point = {
-            'x' : (active.x + dx),
-            'y' : (active.y + dy)
-          };
-          lead_new = findLeadUnderProbe(board, point);
-          if (lead_init) {
-            board.sendEventToModel("probeRemoved", [active.name, active.color, lead_init.hole]);
-            lead_init = null;
-          }
-          if (lead_new) {
-            lead_new.highlight(1);
-            lead_old = lead_new;
-            //active.lead = lead_new;
-          } else {
-            if (lead_old) {
-              lead_old.highlight(0);
-              lead_old = null;
-            }
-          }
-        }
-      }
-    }, false);
-
-    board.holder[0].addEventListener(_mouseup, function(evt) {
-      if (!evt.touches || evt.touches.length === 0) {
-        if (active) {
-          active.z.attr('transform', active.z.init);
-          active.x += dx;
-          active.y += dy;
-          active.dx = x;
-          active.dy = y;
-          if (lead_new) {
-            active.setState(lead_new);
-          } else {
-            board.sendEventToModel("probeDropped", [active.name, active.color, {x: active.x, y: active.y, dx: active.dx, dy: active.dy}]);
-            if (active.lead) {
-              active.lead = null;
-            }
-          }
-          active.image.update();
-          active = null;
-        }
-      }
-    }, false);
   };
 
   primitive.probe = function(board, params) {
@@ -1938,17 +1939,15 @@ window["breadboardSVGView"] = {
 
     var self = this;
 
-    if (!touch) {
-      this.view.bind('mouseenter', function() {
-        if (!self.zoom) {
-          self.help.show();
-        }
-      });
-      this.view.bind('mouseleave', function() {
-        self.help.hide();
-        //self.zoomOut();
-      });
-    }
+    this.view.on('mouseenter', function() {
+      if (!self.zoom) {
+        self.help.show();
+      }
+    });
+    this.view.on('mouseleave', function() {
+      self.help.hide();
+      //self.zoomOut();
+    });
 
     // hover helps
     this.view.find('.help').each(function() {
@@ -1957,52 +1956,55 @@ window["breadboardSVGView"] = {
       var hover = elem.find('.hover').hide();
       var bttn = elem.find('.event');
 
-      if (!touch) {
-        bttn.bind('mouseenter', function() {
-          usual.hide();
-          hover.show();
-        });
-        bttn.bind('mouseleave', function() {
-          hover.hide();
-          usual.show();
-        });
-      }
+      bttn.on('mouseenter', function() {
+        usual.hide();
+        hover.show();
+      });
+      bttn.on('mouseleave', function() {
+        hover.hide();
+        usual.show();
+      });
     });
 
-    this.view[0].addEventListener(_mousedown, function(evt) {
+    this.view.on(_mousedown, function(evt) {
       if (!self.zoom) {
         self.zoomIn();
       }
       evt.stopPropagation();
       evt.preventDefault();
-    }, false);
-    board.holder[0].addEventListener(_mousedown, function(evt) {
+    });
+    board.holder.on(_mousedown, function(evt) {
       if (self.zoom) {
         self.zoomOut();
       }
-    }, false);
+    });
 
     // bind events for bttn (tumbler)
     this.point_center = null;
     this.point_calibr = null;
     var tumbler_on = false;
 
-    this.bttn[0].addEventListener(_mousedown, function(evt) {
-      self.point_center = getAttractionPoint(self.view, 'point-center');
-      self.point_calibr = getAttractionPoint(self.view, 'point-calibr');
-      self.rotate(getCoords(evt, board.holder));
-      tumbler_on = true;
-    }, false);
-    this.bttn[0].addEventListener(_mousemove, function(evt) {
+    var rotate = function (evt) {
       if (tumbler_on) {
-        self.rotate(getCoords(evt, board.holder));
+        self.rotate(getCoords(evt.originalEvent, board.holder));
       }
-    }, false);
-    board.holder[0].addEventListener(_mouseup, function(evt) {
+    };
+    var drop = function (evt) {
       self.point_center = null;
       self.point_calibr = null;
       tumbler_on = false;
-    }, false);
+      $window.off(_mousemove, rotate);
+      $window.off(_mouseup, drop);
+    };
+
+    this.bttn.on(_mousedown, function(evt) {
+      self.point_center = getAttractionPoint(self.view, 'point-center');
+      self.point_calibr = getAttractionPoint(self.view, 'point-calibr');
+      self.rotate(getCoords(evt.originalEvent, board.holder));
+      tumbler_on = true;
+      $window.on(_mousemove, rotate);
+      $window.on(_mouseup, drop);
+    });
   };
 
   primitive.mmbox.prototype.model = function(v) {
@@ -2079,15 +2081,13 @@ window["breadboardSVGView"] = {
 
     this.view = board.holder.find('[info="battery"]');
 
-    this.view[0].addEventListener(_mouseup, function() {
+    this.view.on(_mouseup, function() {
       self.view.attr('transform', 'scale(1.5)');
-      if (touch) {
-        setTimeout(function() {
-          self.view.attr('transform', 'scale(1)');
-        }, 3000);
-      }
+      setTimeout(function() {
+        self.view.attr('transform', 'scale(1)');
+      }, 3000);
     });
-    this.view[0].addEventListener(_mouseout, function() {
+    this.view.on(_mouseout, function() {
       self.view.attr('transform', 'scale(1)');
     });
   };
@@ -2162,7 +2162,8 @@ window["breadboardSVGView"] = {
     p.y = Math.round(p.y / 50) * 50;
     p.x = Math.round(p.x / 50) * 50;
     var yd, yu, xd, xu, x, y;
-    yd = yu = p.y, xd = xu = p.x;
+    yd = yu = p.y;
+    xd = xu = p.x;
     // first, find neares row
     while (true) {
       if (this.row[yd]) {
@@ -2173,7 +2174,8 @@ window["breadboardSVGView"] = {
         y = yu;
         break;
       }
-      yd += 50, yu -= 50;
+      yd += 50;
+      yu -= 50;
     }
     // second, find nearest cell
     while (true) {
@@ -2185,7 +2187,8 @@ window["breadboardSVGView"] = {
         x = xu;
         break;
       }
-      xd += 50, xu -= 50;
+      xd += 50;
+      xu -= 50;
     }
     // return result
     return this.row[y][x];
@@ -2366,7 +2369,7 @@ window["breadboardSVGView"] = {
   };
 
   board.clear = function(circuitBoard) {
-    for (c in circuitBoard.component) {
+    for (var c in circuitBoard.component) {
       if (c == "battery") continue;
       circuitBoard.removeComponent(c);
     }
@@ -2375,4 +2378,4 @@ window["breadboardSVGView"] = {
     circuitBoard.removeOScope();
   };
 
-})(jQuery, window["breadboardSVGView"]);
+})(jQuery, window.breadboardSVGView);
