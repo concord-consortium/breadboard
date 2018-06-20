@@ -667,7 +667,9 @@ window.breadboardSVGView = {
     this.cnv.transform(20, 0, 0, 20, 0, 1000);
     this.cnv.scale(this.ozoom, this.ozoom);
     // draw pattern element
-    this.cnv.drawImage(this.ctx.canvas, 0, 0, this.w, this.h);
+    if ((this.w > 0) && (this.h > 0)) {
+      this.cnv.drawImage(this.ctx.canvas, 0, 0, this.w, this.h);
+    }
     // restore context
     this.cnv.restore();
 
@@ -846,7 +848,9 @@ window.breadboardSVGView = {
     this.cnv.scale(this.ozoom, this.ozoom);
 
     // draw template image
-    this.cnv.drawImage(this.ctx.canvas, 0, 0, this.w, this.h);
+    if ((this.w > 0) && (this.h > 0)) {
+      this.cnv.drawImage(this.ctx.canvas, 0, 0, this.w, this.h);
+    }
 
     // debugging
     //this.cnv.canvas.style.border = "1px solid blue";
