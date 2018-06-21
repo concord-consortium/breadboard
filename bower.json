@@ -1,6 +1,6 @@
 {
   "name": "breadboard",
-  "version": "0.0.12",
+  "version": "0.0.15",
   "homepage": "https://github.com/concord-consortium/breadboard",
   "description": "A DC and AC breadboard circuit simulator",
   "authors": [
